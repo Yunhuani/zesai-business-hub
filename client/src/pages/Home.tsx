@@ -25,12 +25,20 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-4">
             {isAuthenticated && (
-              <Link href="/history">
-                <Button variant="ghost" className="gap-2">
-                  <Icons.History className="w-4 h-4" />
-                  历史记录
-                </Button>
-              </Link>
+              <>
+                <Link href="/pricing">
+                  <Button variant="outline" className="gap-2">
+                    <Icons.Sparkles className="w-4 h-4" />
+                    升级套餐
+                  </Button>
+                </Link>
+                <Link href="/history">
+                  <Button variant="ghost" className="gap-2">
+                    <Icons.History className="w-4 h-4" />
+                    历史记录
+                  </Button>
+                </Link>
+              </>
             )}
             {loading ? (
               <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />

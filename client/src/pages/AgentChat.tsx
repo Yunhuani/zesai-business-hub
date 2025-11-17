@@ -19,6 +19,7 @@ export default function AgentChat() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   
   const { data: agent, isLoading: agentLoading } = trpc.agent.getById.useQuery({ id: agentId });
+  const { data: subscriptionData } = trpc.subscription.get.useQuery(undefined, { enabled: isAuthenticated });
   const [conversationId, setConversationId] = useState<number | null>(null);
   const [userInputs, setUserInputs] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
@@ -126,12 +127,21 @@ export default function AgentChat() {
               </div>
             </div>
           </div>
-          <Link href="/history">
-            <Button variant="ghost" className="gap-2">
-              <Icons.History className="w-4 h-4" />
-              历史记录
-            </Button>
-          </Link>
+          <div className="flex items-center gap-4">
+            {subscriptionData && (
+              <div className="text-sm text-muted-foreground">
+                {subscriptionData.usage.limit === 0
+                  ? "无限次咨询"
+                  : `剩余 ${subscriptionData.usage.remaining}/${subscriptionData.usage.limit} 次`}
+              </div>
+            )}
+            <Link href="/history">
+              <Button variant="ghost" className="gap-2">
+                <Icons.History className="w-4 h-4" />
+                历史记录
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 

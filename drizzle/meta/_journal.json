@@ -15,6 +15,13 @@
       "when": 1763355030321,
       "tag": "0001_spooky_vampiro",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1763357279077,
+      "tag": "0002_tough_silverclaw",
+      "breakpoints": true
     }
   ]
 }

@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import AgentChat from "./pages/AgentChat";
 import History from "./pages/History";
+import Pricing from "./pages/Pricing";
 
 function Router() {
   return (
@@ -14,6 +15,7 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path="/agent/:id" component={AgentChat} />
       <Route path="/history" component={History} />
+      <Route path="/pricing" component={Pricing} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
