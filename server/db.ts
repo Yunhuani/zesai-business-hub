@@ -89,4 +89,71 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// Agent queries
+export async function getAllAgents() {
+  const db = await getDb();
+  if (!db) return [];
+  const { agents } = await import("../drizzle/schema");
+  return db.select().from(agents);
+}
+
+export async function getAgentById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const { agents } = await import("../drizzle/schema");
+  const result = await db.select().from(agents).where(eq(agents.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// Conversation queries
+export async function createConversation(data: { userId: number; agentId: number; title: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const { conversations } = await import("../drizzle/schema");
+  const result = await db.insert(conversations).values(data);
+  return result[0];
+}
+
+export async function getUserConversations(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const { conversations, agents } = await import("../drizzle/schema");
+  return db
+    .select({
+      id: conversations.id,
+      title: conversations.title,
+      agentId: conversations.agentId,
+      agentName: agents.name,
+      agentIcon: agents.icon,
+      createdAt: conversations.createdAt,
+      updatedAt: conversations.updatedAt,
+    })
+    .from(conversations)
+    .leftJoin(agents, eq(conversations.agentId, agents.id))
+    .where(eq(conversations.userId, userId))
+    .orderBy(conversations.updatedAt);
+}
+
+export async function getConversationById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const { conversations } = await import("../drizzle/schema");
+  const result = await db.select().from(conversations).where(eq(conversations.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// Message queries
+export async function createMessage(data: { conversationId: number; role: "user" | "assistant" | "system"; content: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const { messages } = await import("../drizzle/schema");
+  const result = await db.insert(messages).values(data);
+  return result[0];
+}
+
+export async function getConversationMessages(conversationId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const { messages } = await import("../drizzle/schema");
+  return db.select().from(messages).where(eq(messages.conversationId, conversationId)).orderBy(messages.createdAt);
+}
