@@ -267,9 +267,18 @@ export async function incrementUsage(userId: number) {
 export async function checkUsageLimit(userId: number): Promise<{ allowed: boolean; remaining: number; limit: number }> {
   const subscription = await getUserSubscription(userId);
   
-  // Default free plan
+  // Default free plan: 3 times per month
   if (!subscription || subscription.plan === "free") {
-    return { allowed: false, remaining: 0, limit: 0 };
+    const now = new Date();
+    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const usage = await getOrCreateUsageRecord(userId, month);
+    const freeLimit = 3;
+    const remaining = freeLimit - usage.usageCount;
+    return {
+      allowed: remaining > 0,
+      remaining: Math.max(0, remaining),
+      limit: freeLimit,
+    };
   }
   
   // Check if subscription is active

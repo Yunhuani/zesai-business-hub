@@ -10,15 +10,30 @@ import { toast } from "sonner";
 
 const plans = [
   {
+    id: "free",
+    name: "免费版",
+    price: 0,
+    limit: 3,
+    features: [
+      "每月3次AI咨询",
+      "访问所有6个专业顾问",
+      "历史记录仅7天",
+      "无法导出报告",
+    ],
+    icon: Icons.Gift,
+    color: "from-gray-400 to-gray-500",
+    isFree: true,
+  },
+  {
     id: "basic",
     name: "基础版",
     price: 99,
-    limit: 10,
+    limit: 20,
     features: [
-      "每月10次AI咨询",
+      "每月20次AI咨询",
       "访问所有6个专业顾问",
-      "对话历史保存",
-      "标准响应速度",
+      "对话历史永久保存",
+      "可导出 PDF/Word 报告",
     ],
     icon: Icons.Zap,
     color: "from-blue-500 to-cyan-500",
@@ -27,13 +42,13 @@ const plans = [
     id: "professional",
     name: "专业版",
     price: 299,
-    limit: 50,
+    limit: 100,
     features: [
-      "每月50次AI咨询",
+      "每月100次AI咨询",
       "访问所有6个专业顾问",
-      "对话历史保存",
+      "对话历史永久保存",
       "优先响应速度",
-      "导出咨询报告(即将推出)",
+      "可导出 PDF/Word 报告",
     ],
     icon: Icons.Rocket,
     color: "from-purple-500 to-pink-500",
@@ -47,9 +62,9 @@ const plans = [
     features: [
       "无限次AI咨询",
       "访问所有6个专业顾问",
-      "对话历史保存",
+      "对话历史永久保存",
       "最高优先级响应",
-      "导出咨询报告(即将推出)",
+      "可导出 PDF/Word 报告",
       "专属客户支持",
     ],
     icon: Icons.Crown,
@@ -143,7 +158,7 @@ export default function Pricing() {
         )}
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {plans.map((plan) => {
             const IconComponent = plan.icon;
             const isCurrentPlan = currentPlan === plan.id;
