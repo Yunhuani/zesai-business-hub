@@ -2,6 +2,15 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { TRPCError } from "@trpc/server";
+
+// Admin-only procedure
+const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.user.role !== "admin") {
+    throw new TRPCError({ code: "FORBIDDEN", message: "仅管理员可访问" });
+  }
+  return next({ ctx });
+});
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -14,6 +23,64 @@ export const appRouter = router({
       return {
         success: true,
       } as const;
+    }),
+  }),
+
+  // Admin routes
+  admin: router({
+    // Agent management
+    agents: router({
+      list: adminProcedure.query(async () => {
+        const { getAllAgents } = await import("./db");
+        return getAllAgents();
+      }),
+      update: adminProcedure.input((val: unknown) => {
+        if (typeof val === "object" && val !== null && "id" in val && typeof val.id === "number") {
+          return val as { id: number; name?: string; description?: string; icon?: string; systemPrompt?: string; inputFields?: string };
+        }
+        throw new Error("Invalid input");
+      }).mutation(async ({ input }) => {
+        const { updateAgent } = await import("./db");
+        await updateAgent(input.id, input);
+        return { success: true };
+      }),
+    }),
+    // User statistics
+    stats: router({
+      overview: adminProcedure.query(async () => {
+        const { getDb } = await import("./db");
+        const { users, conversations, subscriptions } = await import("../drizzle/schema");
+        const { sql } = await import("drizzle-orm");
+        const db = await getDb();
+        if (!db) return { totalUsers: 0, totalConversations: 0, activeSubscriptions: 0 };
+        
+        const [userCount] = await db.select({ count: sql<number>`count(*)` }).from(users);
+        const [convCount] = await db.select({ count: sql<number>`count(*)` }).from(conversations);
+        const [subCount] = await db.select({ count: sql<number>`count(*)` }).from(subscriptions).where(sql`status = 'active'`);
+        
+        return {
+          totalUsers: Number(userCount.count),
+          totalConversations: Number(convCount.count),
+          activeSubscriptions: Number(subCount.count),
+        };
+      }),
+      users: adminProcedure.query(async () => {
+        const { getDb } = await import("./db");
+        const { users, subscriptions } = await import("../drizzle/schema");
+        const db = await getDb();
+        if (!db) return [];
+        
+        const allUsers = await db.select().from(users).orderBy(users.createdAt);
+        const allSubs = await db.select().from(subscriptions);
+        
+        return allUsers.map(user => {
+          const sub = allSubs.find(s => s.userId === user.id);
+          return {
+            ...user,
+            subscription: sub || null,
+          };
+        });
+      }),
     }),
   }),
 

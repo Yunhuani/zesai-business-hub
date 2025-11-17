@@ -26,6 +26,14 @@ export default function Home() {
           <div className="flex items-center gap-4">
             {isAuthenticated && (
               <>
+                {user?.role === "admin" && (
+                  <Link href="/admin">
+                    <Button variant="outline" className="gap-2">
+                      <Icons.Settings className="w-4 h-4" />
+                      管理后台
+                    </Button>
+                  </Link>
+                )}
                 <Link href="/pricing">
                   <Button variant="outline" className="gap-2">
                     <Icons.Sparkles className="w-4 h-4" />

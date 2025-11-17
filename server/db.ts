@@ -105,6 +105,13 @@ export async function getAgentById(id: number) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function updateAgent(id: number, data: { name?: string; description?: string; icon?: string; systemPrompt?: string; inputFields?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const { agents } = await import("../drizzle/schema");
+  await db.update(agents).set(data).where(eq(agents.id, id));
+}
+
 // Conversation queries
 export async function createConversation(data: { userId: number; agentId: number; title: string }) {
   const db = await getDb();
