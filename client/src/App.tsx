@@ -11,6 +11,7 @@ import Pricing from "./pages/Pricing";
 import Admin from "./pages/Admin";
 import AdminAgents from "./pages/AdminAgents";
 import AdminUsers from "./pages/AdminUsers";
+import WechatLogin from "./pages/WechatLogin";
 
 function Router() {
   return (
@@ -22,6 +23,8 @@ function Router() {
       <Route path="/admin" component={Admin} />
       <Route path="/admin/agents" component={AdminAgents} />
       <Route path="/admin/users" component={AdminUsers} />
+      <Route path="/wechat-login" component={WechatLogin} />
+      <Route path="/wechat-callback" component={WechatLogin} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

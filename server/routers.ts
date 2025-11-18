@@ -3,6 +3,11 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
+import { getWechatAuthUrl, getWechatAccessToken, getWechatUserInfo } from "./wechat";
+import { sdk } from "./_core/sdk";
+import { z } from "zod";
+
+const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
 // Admin-only procedure
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -24,6 +29,52 @@ export const appRouter = router({
         success: true,
       } as const;
     }),
+    getWechatAuthUrl: publicProcedure
+      .input(z.object({ redirectUri: z.string() }))
+      .query(({ input }) => {
+        return { url: getWechatAuthUrl(input.redirectUri) };
+      }),
+    wechatCallback: publicProcedure
+      .input(z.object({ code: z.string() }))
+      .mutation(async ({ input, ctx }) => {
+        try {
+          const { upsertUser, getUserByOpenId } = await import("./db");
+          
+          // Exchange code for access token
+          const { access_token, openid } = await getWechatAccessToken(input.code);
+          
+          // Get user info
+          const userInfo = await getWechatUserInfo(access_token, openid);
+          
+          // Create or update user
+          const wechatOpenId = `wechat_${userInfo.openid}`;
+          await upsertUser({
+            openId: wechatOpenId,
+            name: userInfo.nickname,
+            loginMethod: "wechat",
+            lastSignedIn: new Date(),
+          });
+          
+          // Get user from database
+          const user = await getUserByOpenId(wechatOpenId);
+          if (!user) {
+            throw new Error("Failed to create user");
+          }
+          
+          // Create session token and set cookie
+          const sessionToken = await sdk.createSessionToken(wechatOpenId, {
+            name: userInfo.nickname || "",
+            expiresInMs: ONE_YEAR_MS,
+          });
+          const cookieOptions = getSessionCookieOptions(ctx.req);
+          ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+          
+          return { success: true, user };
+        } catch (error) {
+          console.error("WeChat login error:", error);
+          throw new Error("WeChat login failed");
+        }
+      }),
   }),
 
   // Admin routes
