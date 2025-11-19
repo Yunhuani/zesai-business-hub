@@ -7,6 +7,7 @@ import { getWechatAuthUrl, getWechatAccessToken, getWechatUserInfo } from "./wec
 import { sdk } from "./_core/sdk";
 import { z } from "zod";
 import { paymentRouter } from "./routers/payment";
+import { exportRouter } from "./routers/export";
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
@@ -223,6 +224,9 @@ export const appRouter = router({
 
   // Payment routes
   payment: paymentRouter,
+
+  // Export routes
+  export: exportRouter,
 
   // Message routes
   message: router({

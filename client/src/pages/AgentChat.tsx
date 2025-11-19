@@ -10,6 +10,7 @@ import * as Icons from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { Link, useParams, useLocation } from "wouter";
 import { Streamdown } from "streamdown";
+import { EnhancedMessage } from "@/components/EnhancedMessage";
 import { toast } from "sonner";
 
 export default function AgentChat() {
@@ -59,6 +60,44 @@ export default function AgentChat() {
     },
   });
 
+  const exportPDF = trpc.export.exportPDF.useMutation({
+    onSuccess: (data) => {
+      // Download as markdown file
+      const blob = new Blob([data.content], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = data.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("导出成功!");
+    },
+    onError: (error) => {
+      toast.error("导出失败: " + error.message);
+    },
+  });
+
+  const exportPPT = trpc.export.exportPPT.useMutation({
+    onSuccess: (data) => {
+      // Download as JSON file (can be converted to PPT later)
+      const blob = new Blob([JSON.stringify(data.slides, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = data.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("PPT 结构生成成功!");
+    },
+    onError: (error) => {
+      toast.error("生成失败: " + error.message);
+    },
+  });
+
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       window.location.href = getLoginUrl();
@@ -95,6 +134,16 @@ export default function AgentChat() {
       agentId: agent.id,
       title: `${agent.name} - ${new Date().toLocaleDateString()}`,
     });
+  };
+
+  const handleExportPDF = () => {
+    if (!conversationId) return;
+    exportPDF.mutate({ conversationId });
+  };
+
+  const handleExportPPT = () => {
+    if (!conversationId) return;
+    exportPPT.mutate({ conversationId });
   };
 
   const handleSendMessage = () => {
@@ -201,7 +250,7 @@ export default function AgentChat() {
                     }`}
                   >
                     {msg.role === "assistant" ? (
-                      <Streamdown>{msg.content}</Streamdown>
+                      <EnhancedMessage content={msg.content} />
                     ) : (
                       <p className="whitespace-pre-wrap">{msg.content}</p>
                     )}
@@ -217,6 +266,38 @@ export default function AgentChat() {
               )}
               <div ref={messagesEndRef} />
             </div>
+
+            {/* Export buttons */}
+            {conversationId && messages && messages.length > 0 && (
+              <div className="flex gap-2 mb-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleExportPDF()}
+                  disabled={exportPDF.isPending}
+                >
+                  {exportPDF.isPending ? (
+                    <Icons.Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Icons.FileText className="w-4 h-4 mr-2" />
+                  )}
+                  导出 PDF
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleExportPPT()}
+                  disabled={exportPPT.isPending}
+                >
+                  {exportPPT.isPending ? (
+                    <Icons.Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Icons.Presentation className="w-4 h-4 mr-2" />
+                  )}
+                  生成 PPT
+                </Button>
+              </div>
+            )}
 
             {/* Input */}
             <Card>
