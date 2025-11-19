@@ -109,10 +109,31 @@ export default function AgentChat() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast.success("导出PPT结构成功!");
+      toast.success("导u51faPPT结u6784u6210u529f!");
     },
     onError: (error) => {
-      toast.error("导出失败: " + error.message);
+      toast.error("导u51fau5931u8d25: " + error.message);
+    },
+  });
+
+  const uploadDocument = trpc.document.upload.useMutation({
+    onSuccess: (data) => {
+      if (data.error) {
+        toast.warning(data.error);
+      } else {
+        toast.success("文u6863u4e0au4f20u6210u529f！");
+      }
+      // 将提取的文本内容作为消息发送
+      if (data.extractedText && conversationId) {
+        const summary = `我上u4f20了一份文档：${data.filename}\n\n文档内容：\n${data.extractedText.substring(0, 3000)}${data.extractedText.length > 3000 ? '...(内容过长，已截断)' : ''}`;
+        sendMessage.mutate({
+          conversationId,
+          content: summary,
+        });
+      }
+    },
+    onError: (error) => {
+      toast.error("文档上u4f20失败: " + error.message);
     },
   });
 
@@ -177,9 +198,40 @@ export default function AgentChat() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // TODO: 实现文件上传逻辑
-      toast.info("文件上传功能开发中...");
+      // 验证文件大小(16MB)
+      const maxSize = 16 * 1024 * 1024;
+      if (file.size > maxSize) {
+        toast.error("文件大小超过16MB限制");
+        return;
+      }
+
+      // 验证文件类型
+      const allowedTypes = [
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-excel",
+      ];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("不支持的文件类型。仅支持 PDF、Word 和 Excel 文件。");
+        return;
+      }
+
+      // 读取文件并转换为Base64
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64Content = (reader.result as string).split(',')[1];
+        uploadDocument.mutate({
+          filename: file.name,
+          content: base64Content,
+          mimeType: file.type,
+        });
+      };
+      reader.readAsDataURL(file);
     }
+    // 清空输入，允许上传相同文件
+    e.target.value = '';
   };
 
   return (
