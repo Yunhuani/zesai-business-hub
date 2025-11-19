@@ -1,14 +1,94 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import * as Icons from "lucide-react";
+import { useState } from "react";
 import { Link } from "wouter";
+
+// Agent分类配置
+const AGENT_CATEGORIES = [
+  {
+    id: "strategy",
+    name: "战略与规划",
+    icon: "Target",
+    description: "企业战略、商业模式、融资路演",
+    agentNames: ["战略规划", "融资BP与路演", "商业模式", "寻找第二曲线", "商业洞察"],
+    defaultOpen: true,
+    colors: {
+      gradient: "from-purple-600 to-blue-600",
+      iconBg: "bg-gradient-to-br from-purple-600 to-blue-600",
+      cardBorder: "hover:border-purple-500/50",
+      text: "text-purple-600",
+    },
+  },
+  {
+    id: "marketing",
+    name: "营销与增长",
+    icon: "TrendingUp",
+    description: "获客增长、品牌营销、定价策略",
+    agentNames: ["获客增长专家", "品牌营销策划师", "定价策略专家", "竞品分析专家"],
+    defaultOpen: false,
+    colors: {
+      gradient: "from-green-600 to-emerald-500",
+      iconBg: "bg-gradient-to-br from-green-600 to-emerald-500",
+      cardBorder: "hover:border-green-500/50",
+      text: "text-green-600",
+    },
+  },
+  {
+    id: "operation",
+    name: "运营与管理",
+    icon: "Users",
+    description: "股权设计、绩效管理、价值主张",
+    agentNames: ["股权设计", "OKR与绩效考核", "价值主张slogan"],
+    defaultOpen: false,
+    colors: {
+      gradient: "from-blue-600 to-cyan-500",
+      iconBg: "bg-gradient-to-br from-blue-600 to-cyan-500",
+      cardBorder: "hover:border-blue-500/50",
+      text: "text-blue-600",
+    },
+  },
+  {
+    id: "investment",
+    name: "投资与机会",
+    icon: "Lightbulb",
+    description: "创业机会、投资顾问、职业规划",
+    agentNames: ["前沿创业机会雷达", "大类资产投资顾问", "AI机会挖掘", "职业路径规划师", "高考专业规划师"],
+    defaultOpen: false,
+    colors: {
+      gradient: "from-orange-600 to-amber-500",
+      iconBg: "bg-gradient-to-br from-orange-600 to-amber-500",
+      cardBorder: "hover:border-orange-500/50",
+      text: "text-orange-600",
+    },
+  },
+];
 
 export default function Home() {
   const { user, loading, isAuthenticated } = useAuth();
   const { data: agents, isLoading: agentsLoading } = trpc.agent.list.useQuery();
+  
+  // 控制每个分类的展开/折叠状态
+  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>(
+    Object.fromEntries(AGENT_CATEGORIES.map(cat => [cat.id, cat.defaultOpen]))
+  );
+
+  const toggleCategory = (categoryId: string) => {
+    setOpenCategories(prev => ({
+      ...prev,
+      [categoryId]: !prev[categoryId],
+    }));
+  };
+
+  // 按分类组织agents
+  const getAgentsByCategory = (categoryAgentNames: string[]) => {
+    if (!agents) return [];
+    return agents.filter(agent => categoryAgentNames.includes(agent.name));
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -81,37 +161,97 @@ export default function Home() {
         </p>
       </section>
 
-      {/* Agents Grid */}
+      {/* Agents by Category */}
       <section className="container pb-20">
         {agentsLoading ? (
           <div className="flex justify-center py-20">
             <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {agents?.map((agent) => {
-              const IconComponent = (Icons as any)[agent.icon] || Icons.Sparkles;
+          <div className="space-y-8 max-w-6xl mx-auto">
+            {AGENT_CATEGORIES.map((category) => {
+              const CategoryIcon = (Icons as any)[category.icon] || Icons.Folder;
+              const categoryAgents = getAgentsByCategory(category.agentNames);
+              const isOpen = openCategories[category.id];
+
               return (
-                <Card
-                  key={agent.id}
-                  className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-primary/50"
+                <Collapsible
+                  key={category.id}
+                  open={isOpen}
+                  onOpenChange={() => toggleCategory(category.id)}
                 >
-                  <Link href={`/agent/${agent.id}`}>
-                    <CardHeader>
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                        <IconComponent className="w-6 h-6 text-white" />
-                      </div>
-                      <CardTitle className="text-xl">{agent.name}</CardTitle>
-                      <CardDescription className="text-base">{agent.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Button variant="ghost" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                        开始咨询
-                        <Icons.ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </CardContent>
-                  </Link>
-                </Card>
+                  <Card className="border-2 overflow-hidden">
+                    <CollapsibleTrigger className="w-full">
+                      <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-lg ${category.colors.iconBg} flex items-center justify-center`}>
+                              <CategoryIcon className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="text-left">
+                              <CardTitle className="text-2xl flex items-center gap-2">
+                                {category.name}
+                                <span className="text-sm font-normal text-muted-foreground">
+                                  ({categoryAgents.length}个顾问)
+                                </span>
+                              </CardTitle>
+                              <CardDescription className="text-base mt-1">
+                                {category.description}
+                              </CardDescription>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {isOpen ? (
+                              <Icons.ChevronUp className="w-6 h-6 text-muted-foreground" />
+                            ) : (
+                              <Icons.ChevronDown className="w-6 h-6 text-muted-foreground" />
+                            )}
+                          </div>
+                        </div>
+                      </CardHeader>
+                    </CollapsibleTrigger>
+
+                    <CollapsibleContent>
+                      <CardContent className="pt-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {categoryAgents.map((agent) => {
+                            const IconComponent = (Icons as any)[agent.icon] || Icons.Sparkles;
+                            return (
+                              <Card
+                                key={agent.id}
+                                className={`group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer border ${category.colors.cardBorder}`}
+                              >
+                                <Link href={`/agent/${agent.id}`}>
+                                  <CardHeader>
+                                    <div className="flex items-start gap-3">
+                                      <div className={`w-12 h-12 rounded-lg ${category.colors.iconBg} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                                        <IconComponent className="w-6 h-6 text-white" />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <CardTitle className={`text-lg mb-2 group-hover:${category.colors.text} transition-colors`}>
+                                          {agent.name}
+                                        </CardTitle>
+                                        <CardDescription className="text-sm line-clamp-2">
+                                          {agent.description}
+                                        </CardDescription>
+                                      </div>
+                                    </div>
+                                  </CardHeader>
+                                  <CardContent>
+                                    <div className={`flex items-center text-sm ${category.colors.text} font-medium group-hover:gap-2 transition-all`}>
+                                      开始咨询
+                                      <Icons.ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    </div>
+                                  </CardContent>
+                                </Link>
+                              </Card>
+                            );
+                          })}
+                        </div>
+                      </CardContent>
+                    </CollapsibleContent>
+                  </Card>
+                </Collapsible>
               );
             })}
           </div>
@@ -119,9 +259,9 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t bg-white/80 backdrop-blur-sm py-8">
+      <footer className="border-t py-8 bg-white/50">
         <div className="container text-center text-sm text-muted-foreground">
-          <p>© 2024 {APP_TITLE}. 专业的AI商业咨询平台</p>
+          © 2024 {APP_TITLE} - 专业AI商业咨询平台
         </div>
       </footer>
     </div>
