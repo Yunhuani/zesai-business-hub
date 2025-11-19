@@ -6,6 +6,7 @@ import { TRPCError } from "@trpc/server";
 import { getWechatAuthUrl, getWechatAccessToken, getWechatUserInfo } from "./wechat";
 import { sdk } from "./_core/sdk";
 import { z } from "zod";
+import { paymentRouter } from "./routers/payment";
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
@@ -219,6 +220,9 @@ export const appRouter = router({
       return { success: true };
     }),
   }),
+
+  // Payment routes
+  payment: paymentRouter,
 
   // Message routes
   message: router({

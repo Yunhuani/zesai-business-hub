@@ -104,3 +104,23 @@ export const usageRecords = mysqlTable("usageRecords", {
 
 export type UsageRecord = typeof usageRecords.$inferSelect;
 export type InsertUsageRecord = typeof usageRecords.$inferInsert;
+
+/**
+ * Orders table - stores payment orders
+ */
+export const orders = mysqlTable("orders", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  outTradeNo: varchar("outTradeNo", { length: 64 }).notNull().unique(), // 商户订单号
+  tradeNo: varchar("tradeNo", { length: 64 }), // 支付宝交易号
+  plan: mysqlEnum("plan", ["free", "basic", "professional", "enterprise"]).notNull(),
+  amount: int("amount").notNull(), // 订单金额(分)
+  status: mysqlEnum("status", ["pending", "paid", "cancelled", "refunded"]).default("pending").notNull(),
+  paymentMethod: varchar("paymentMethod", { length: 20 }).default("alipay").notNull(), // alipay, wechat
+  paidAt: timestamp("paidAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Order = typeof orders.$inferSelect;
+export type InsertOrder = typeof orders.$inferInsert;

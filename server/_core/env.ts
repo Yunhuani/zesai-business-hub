@@ -7,4 +7,9 @@ export const ENV = {
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  alipayAppId: process.env.ALIPAY_APP_ID ?? "",
+  alipayPrivateKey: process.env.ALIPAY_PRIVATE_KEY ?? "",
+  alipayPublicKey: process.env.ALIPAY_PUBLIC_KEY ?? "",
+  wechatAppId: process.env.WECHAT_APP_ID ?? "",
+  wechatAppSecret: process.env.WECHAT_APP_SECRET ?? "",
 };

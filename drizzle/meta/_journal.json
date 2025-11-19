@@ -22,6 +22,13 @@
       "when": 1763357279077,
       "tag": "0002_tough_silverclaw",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1763534927948,
+      "tag": "0003_serious_rocket_raccoon",
+      "breakpoints": true
     }
   ]
 }

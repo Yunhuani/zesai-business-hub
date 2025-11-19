@@ -302,3 +302,51 @@ export async function checkUsageLimit(userId: number): Promise<{ allowed: boolea
     limit: subscription.monthlyLimit,
   };
 }
+
+// Order queries
+export async function createOrder(data: {
+  userId: number;
+  outTradeNo: string;
+  plan: "free" | "basic" | "professional" | "enterprise";
+  amount: number;
+  paymentMethod?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const { orders } = await import("../drizzle/schema");
+  const result = await db.insert(orders).values({
+    userId: data.userId,
+    outTradeNo: data.outTradeNo,
+    plan: data.plan,
+    amount: data.amount,
+    paymentMethod: data.paymentMethod || "alipay",
+    status: "pending",
+  });
+  return result[0];
+}
+
+export async function getOrderByOutTradeNo(outTradeNo: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const { orders } = await import("../drizzle/schema");
+  const result = await db.select().from(orders).where(eq(orders.outTradeNo, outTradeNo)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateOrderStatus(outTradeNo: string, data: {
+  status: "pending" | "paid" | "cancelled" | "refunded";
+  tradeNo?: string;
+  paidAt?: Date;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const { orders } = await import("../drizzle/schema");
+  await db.update(orders).set(data).where(eq(orders.outTradeNo, outTradeNo));
+}
+
+export async function getUserOrders(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const { orders } = await import("../drizzle/schema");
+  return db.select().from(orders).where(eq(orders.userId, userId)).orderBy(orders.createdAt);
+}

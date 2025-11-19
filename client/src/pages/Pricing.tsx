@@ -203,23 +203,21 @@ export default function Pricing() {
                   <Button
                     className="w-full"
                     variant={plan.popular ? "default" : "outline"}
-                    disabled={isCurrentPlan || upgradeMutation.isPending}
-                    onClick={() => upgradeMutation.mutate({ plan: plan.id as any })}
+                    disabled={isCurrentPlan || plan.isFree}
+                    onClick={() => {
+                      if (!plan.isFree && !isCurrentPlan) {
+                        setLocation(`/payment/${plan.id}`);
+                      }
+                    }}
                   >
-                    {upgradeMutation.isPending ? (
-                      <>
-                        <Icons.Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        处理中...
-                      </>
-                    ) : isCurrentPlan ? (
+                    {isCurrentPlan ? (
                       "当前套餐"
+                    ) : plan.isFree ? (
+                      "免费使用"
                     ) : (
-                      "立即订阅"
+                      "立即购买"
                     )}
                   </Button>
-                  <p className="text-xs text-center text-muted-foreground">
-                    注意:此为演示版本,暂未接入真实支付
-                  </p>
                 </CardContent>
               </Card>
             );
@@ -236,7 +234,7 @@ export default function Pricing() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  目前支付功能正在对接中,支持支付宝和微信支付。完成对接后,您可以直接在线支付。
+                  我们支持支付宝扫码支付。点击"立即购买"按钮后,会生成支付二维码,使用支付宝扫码即可完成支付。
                 </p>
               </CardContent>
             </Card>
