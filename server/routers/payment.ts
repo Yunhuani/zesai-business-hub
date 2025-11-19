@@ -62,7 +62,7 @@ export const paymentRouter = router({
       });
       
       // 创建支付宝支付订单
-      const notifyUrl = `${process.env.VITE_APP_URL || "https://3000-i7l4zq7rduk5xdx0l1nji-fdf6b89b.manusvm.computer"}/api/payment/alipay/notify`;
+      const notifyUrl = "https://www.zhesiai.com/api/payment/alipay/notify";
       
       try {
         const qrCode = await createAlipayQrCodePayment({

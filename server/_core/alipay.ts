@@ -68,13 +68,21 @@ export async function createAlipayQrCodePayment(params: {
       notifyUrl: params.notifyUrl,
     });
     
+    console.log('[Alipay] API response:', JSON.stringify(result, null, 2));
+    
     if (result.code === '10000' && result.qrCode) {
       return result.qrCode;
     }
     
-    throw new Error(`创建支付订单失败: ${result.subMsg || result.msg}`);
+    const errorMsg = `创建支付订单失败: ${result.subMsg || result.msg || '未知错误'} (code: ${result.code || 'N/A'})`;
+    console.error('[Alipay] API error:', errorMsg);
+    throw new Error(errorMsg);
   } catch (error) {
     console.error('[Alipay] Create QR code payment error:', error);
+    if (error instanceof Error) {
+      console.error('[Alipay] Error message:', error.message);
+      console.error('[Alipay] Error stack:', error.stack);
+    }
     throw error;
   }
 }
