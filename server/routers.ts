@@ -230,6 +230,35 @@ export const appRouter = router({
 
   // Message routes
   message: router({
+    sendWelcome: protectedProcedure.input((val: unknown) => {
+      if (typeof val === "object" && val !== null && "conversationId" in val && "agentId" in val && typeof val.conversationId === "number" && typeof val.agentId === "number") {
+        return val as { conversationId: number; agentId: number };
+      }
+      throw new Error("Invalid input: expected { conversationId: number, agentId: number }");
+    }).mutation(async ({ ctx, input }) => {
+      const { createMessage, getAgentById } = await import("./db");
+      
+      const agent = await getAgentById(input.agentId);
+      if (!agent) throw new Error("Agent not found");
+      
+      // 根据Agent生成欢迎语
+      const welcomeMessages: Record<string, string> = {
+        "战略规划": "👋 您好！我是您的**哲思AI战略规划顾问**。\n\n为了给您提供最精准的战略建议，我想先了解一下您的企业情况。您可以通过对话或上传文档（如商业计划书、财务报表）的方式告诉我。\n\n💡 **提示**: 您提供的信息越详细，方案质量就越高！\n\n请问：\n1. 您的企业处于什么阶段？（初创期/成长期/成熟期）\n2. 主要业务和目标客户是什么？\n3. 当前面临的最大挑战是什么？",
+        "融资BP与路演": "👋 您好！我是您的**哲思AI融资BP与路演顾问**。\n\n我将帮助您打造一份专业的融资BP和路演方案。您可以通过对话或上传现有材料（BP草稿、财务数据、产品介绍等）的方式提供信息。\n\n💡 **提示**: 信息越全面，BP质量越高，投资人越感兴趣！\n\n请问：\n1. 您的项目处于什么阶段？（初创/成长/扩张）\n2. 计划融资多少金额？融资轮次？\n3. 核心产品/服务是什么？",
+        "商业模式": "👋 您好！我是您的**哲思AI商业模式顾问**。\n\n我将帮助您设计或优化商业模式，包括价值主张、收入模式、成本结构等。\n\n💡 **提示**: 您提供的信息越详细，我生成的商业模式分析就越精准！\n\n请问：\n1. 您的产品/服务解决什么问题？\n2. 目标客户是谁？\n3. 当前的收入模式是什么？",
+      };
+      
+      const welcomeMessage = welcomeMessages[agent.name] || `👋 您好！我是您的**哲思AI${agent.name}**。\n\n我将帮助您${agent.description}。您可以通过对话或上传文档的方式提供信息。\n\n💡 **提示**: 您提供的信息越详细，生成的方案质量就越高！\n\n请告诉我您的需求和情况。`;
+      
+      // 保存欢迎消息
+      await createMessage({
+        conversationId: input.conversationId,
+        role: "assistant",
+        content: welcomeMessage,
+      });
+      
+      return { content: welcomeMessage };
+    }),
     send: protectedProcedure.input((val: unknown) => {
       if (typeof val === "object" && val !== null && "conversationId" in val && "content" in val && "userInputs" in val && typeof val.conversationId === "number" && typeof val.content === "string") {
         return val as { conversationId: number; content: string; userInputs?: Record<string, string> };

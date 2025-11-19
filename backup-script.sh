@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 泽思AI商业智库 - 每周自动备份脚本
+# 哲思AI商业智库 - 每周自动备份脚本
 # 执行时间: 每周一凌晨2点
 
 set -e
@@ -56,7 +56,7 @@ fi
 
 # 3. 创建备份说明文件
 cat > "${BACKUP_PATH}/README.txt" << EOF
-泽思AI商业智库 - 备份文件
+哲思AI商业智库 - 备份文件
 备份时间: $(date '+%Y-%m-%d %H:%M:%S')
 备份内容:
   - code.tar.gz: 项目源代码(不含 node_modules)
