@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
-import { createAlipayQrCodePayment, queryAlipayOrder, verifyAlipayCallback } from "../_core/alipay";
+import { createAlipayPagePayment, queryAlipayOrder, verifyAlipayCallback } from "../_core/alipay";
 import { createOrder, getOrderByOutTradeNo, updateOrderStatus, createOrUpdateSubscription } from "../db";
 import { TRPCError } from "@trpc/server";
 
@@ -62,20 +62,22 @@ export const paymentRouter = router({
       });
       
       // 创建支付宝支付订单
+      const returnUrl = "https://www.zhesiai.com/payment/result";
       const notifyUrl = "https://www.zhesiai.com/api/payment/alipay/notify";
       
       try {
-        const qrCode = await createAlipayQrCodePayment({
+        const paymentForm = await createAlipayPagePayment({
           outTradeNo,
           totalAmount: (config.price / 100).toFixed(2), // 转换为元
-          subject: `泽思AI商业智库 - ${config.name}`,
+          subject: `哲思AI商业智库 - ${config.name}`,
           body: `订阅${config.name},${config.monthlyLimit === 0 ? "无限次" : `${config.monthlyLimit}次/月`}咨询服务`,
+          returnUrl,
           notifyUrl,
         });
         
         return {
           outTradeNo,
-          qrCode,
+          paymentForm,
           amount: config.price,
           plan: config.name,
         };

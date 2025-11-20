@@ -13,6 +13,7 @@ import AdminAgents from "./pages/AdminAgents";
 import AdminUsers from "./pages/AdminUsers";
 import WechatLogin from "./pages/WechatLogin";
 import Payment from "./pages/Payment";
+import PaymentResult from "./pages/PaymentResult";
 import CaseExample from "./pages/CaseExample";
 
 function Router() {
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/wechat-login" component={WechatLogin} />
       <Route path="/wechat-callback" component={WechatLogin} />
       <Route path="/payment/:plan" component={Payment} />
+      <Route path="/payment/result" component={PaymentResult} />
       <Route path="/case-example" component={CaseExample} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
