@@ -131,17 +131,9 @@ export default function Home() {
                 <span className="text-sm text-muted-foreground">欢迎, {user?.name}</span>
               </div>
             ) : (
-              <div className="flex items-center gap-3">
-                <Button variant="outline" asChild>
-                  <Link href="/wechat-login">
-                    <Icons.Smartphone className="w-4 h-4 mr-2" />
-                    微信登录
-                  </Link>
-                </Button>
-                <Button asChild>
-                  <a href={getLoginUrl()}>其他登录</a>
-                </Button>
-              </div>
+              <Button asChild>
+                <a href={getLoginUrl()}>登录</a>
+              </Button>
             )}
           </div>
         </div>
