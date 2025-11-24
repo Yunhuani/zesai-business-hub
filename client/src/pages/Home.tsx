@@ -96,8 +96,8 @@ export default function Home() {
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/zhesi-logo.png" alt="哲思AI" className="w-10 h-10" />
-            <h1 className="text-2xl font-bold">哲思AI商业智库</h1>
+            <img src="/zenith-icon-only.png" alt="泽思AI" className="w-10 h-10 rounded-lg" />
+            <h1 className="text-2xl font-bold">泽思AI商业智库</h1>
           </div>
           <div className="flex items-center gap-4">
             {isAuthenticated && (
