@@ -15,6 +15,7 @@ import WechatLogin from "./pages/WechatLogin";
 import Payment from "./pages/Payment";
 import PaymentResult from "./pages/PaymentResult";
 import CaseExample from "./pages/CaseExample";
+import EmailLogin from "./pages/EmailLogin";
 
 function Router() {
   return (
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/admin/users" component={AdminUsers} />
       <Route path="/wechat-login" component={WechatLogin} />
       <Route path="/wechat-callback" component={WechatLogin} />
+      <Route path="/email-login" component={EmailLogin} />
       <Route path="/payment/:plan" component={Payment} />
       <Route path="/payment/result" component={PaymentResult} />
       <Route path="/case-example" component={CaseExample} />

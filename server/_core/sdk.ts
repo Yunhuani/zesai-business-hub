@@ -268,6 +268,21 @@ class SDKServer {
 
     const sessionUserId = session.openId;
     const signedInAt = new Date();
+    
+    // Check if this is an email login user (openId starts with "email_")
+    if (sessionUserId.startsWith("email_")) {
+      const email = sessionUserId.substring(6); // Remove "email_" prefix
+      const { getUserByEmail } = await import("../dbEmail");
+      let user = await getUserByEmail(email);
+      
+      if (!user) {
+        throw ForbiddenError("Email user not found");
+      }
+      
+      return user;
+    }
+    
+    // Original OAuth flow
     let user = await db.getUserByOpenId(sessionUserId);
 
     // If user not in DB, sync from OAuth server automatically

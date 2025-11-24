@@ -78,6 +78,73 @@ export const appRouter = router({
           throw new Error("WeChat login failed");
         }
       }),
+    // Email verification code login
+    sendVerificationCode: publicProcedure
+      .input(z.object({ email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        const { checkRateLimit, generateVerificationCode, saveVerificationCode, sendVerificationEmail } = await import("./emailVerification");
+        
+        // Check rate limit
+        const rateCheck = checkRateLimit(input.email);
+        if (!rateCheck.allowed) {
+          throw new TRPCError({
+            code: "TOO_MANY_REQUESTS",
+            message: `请稍后再试，还需等待 ${rateCheck.remainingSeconds} 秒`,
+          });
+        }
+        
+        // Generate and save verification code
+        const code = generateVerificationCode();
+        saveVerificationCode(input.email, code);
+        
+        // Send email
+        try {
+          await sendVerificationEmail(input.email, code);
+          return { success: true, message: "验证码已发送到您的邮箱" };
+        } catch (error) {
+          console.error("[Email] Failed to send verification code:", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "发送验证码失败，请稍后重试",
+          });
+        }
+      }),
+    verifyEmailCode: publicProcedure
+      .input(z.object({ email: z.string().email(), code: z.string().length(6) }))
+      .mutation(async ({ input, ctx }) => {
+        const { verifyCode } = await import("./emailVerification");
+        const { upsertEmailUser } = await import("./dbEmail");
+        
+        // Verify code
+        const verifyResult = verifyCode(input.email, input.code);
+        if (!verifyResult.success) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: verifyResult.message || "验证码错误",
+          });
+        }
+        
+        // Create or update user
+        const user = await upsertEmailUser(input.email);
+        if (!user) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "创建用户失败",
+          });
+        }
+        
+        // Create session token using email as identifier
+        const sessionToken = await sdk.createSessionToken(`email_${input.email}`, {
+          name: user.name || "",
+          expiresInMs: ONE_YEAR_MS,
+        });
+        
+        // Set cookie
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        
+        return { success: true, user };
+      }),
   }),
 
   // Admin routes
