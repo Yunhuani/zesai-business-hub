@@ -81,23 +81,70 @@ export default function AgentChat() {
   });
 
   const exportPDF = trpc.export.exportPDF.useMutation({
-    onSuccess: (data) => {
-      const blob = new Blob([data.content], { type: 'text/markdown' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = data.filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast.success("导出成功!");
+    onSuccess: async (data) => {
+      try {
+        // Convert base64 to blob
+        const binaryString = atob(data.data);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: data.mimeType });
+        
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = data.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        toast.success("专业PDF报告已生成！");
+      } catch (error) {
+        console.error('Export error:', error);
+        toast.error("导出失败");
+      }
     },
     onError: (error) => {
       toast.error("导出失败: " + error.message);
     },
   });
 
+  const generatePPTMutation = trpc.export.generatePPT.useMutation({
+    onSuccess: async (data) => {
+      try {
+        // Convert base64 to blob
+        const binaryString = atob(data.data);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: data.mimeType });
+        
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = data.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        toast.success("专业PPT已生成！");
+      } catch (error) {
+        console.error('Export error:', error);
+        toast.error("导出失败");
+      }
+    },
+    onError: (error) => {
+      toast.error("生成失败: " + error.message);
+    },
+  });
+  
+  // Keep legacy exportPPT for compatibility
   const exportPPT = trpc.export.exportPPT.useMutation({
     onSuccess: (data) => {
       const blob = new Blob([JSON.stringify(data.slides, null, 2)], { type: 'application/json' });
@@ -109,10 +156,10 @@ export default function AgentChat() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast.success("导u51faPPT结u6784u6210u529f!");
+      toast.success("导出PPT结构成功!");
     },
     onError: (error) => {
-      toast.error("导u51fau5931u8d25: " + error.message);
+      toast.error("导出失败: " + error.message);
     },
   });
 
@@ -173,7 +220,7 @@ export default function AgentChat() {
 
   const handleExportPPT = () => {
     if (!conversationId) return;
-    exportPPT.mutate({ conversationId });
+    generatePPTMutation.mutate({ conversationId });
   };
 
   const handleSendMessage = () => {
@@ -337,15 +384,15 @@ export default function AgentChat() {
                 variant="outline"
                 size="sm"
                 onClick={handleExportPPT}
-                disabled={exportPPT.isPending}
+                disabled={generatePPTMutation.isPending}
                 className="gap-2"
               >
-                {exportPPT.isPending ? (
+                {generatePPTMutation.isPending ? (
                   <Icons.Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <Icons.Presentation className="w-4 h-4" />
                 )}
-                导出PPT
+                生成PPT
               </Button>
             </div>
           )}
