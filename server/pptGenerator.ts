@@ -1,4 +1,4 @@
-import PptxGenJS from 'pptxgenjs';
+import pptxgen from 'pptxgenjs';
 
 interface Message {
   role: string;
@@ -12,7 +12,7 @@ export async function generatePPT(
   messages: Message[],
   title: string
 ): Promise<Buffer> {
-  const pptx = new PptxGenJS();
+  const pptx = new pptxgen();
   
   // Set presentation properties
   pptx.author = '泽思AI商业智库';
