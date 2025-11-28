@@ -36,6 +36,20 @@
       "when": 1763957687807,
       "tag": "0004_third_jimmy_woo",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1764301131626,
+      "tag": "0005_fresh_millenium_guard",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1764301523284,
+      "tag": "0006_icy_harpoon",
+      "breakpoints": true
     }
   ]
 }

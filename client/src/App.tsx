@@ -16,6 +16,7 @@ import Payment from "./pages/Payment";
 import PaymentResult from "./pages/PaymentResult";
 import CaseExample from "./pages/CaseExample";
 import EmailLogin from "./pages/EmailLogin";
+import Credits from "./pages/Credits";
 
 function Router() {
   return (
@@ -33,6 +34,7 @@ function Router() {
       <Route path="/payment/:plan" component={Payment} />
       <Route path="/payment/result" component={PaymentResult} />
       <Route path="/case-example" component={CaseExample} />
+      <Route path="/credits" component={Credits} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

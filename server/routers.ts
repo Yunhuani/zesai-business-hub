@@ -331,13 +331,26 @@ export const appRouter = router({
       }
       throw new Error("Invalid input: expected { conversationId: number, content: string, userInputs?: Record<string, string> }");
     }).mutation(async ({ ctx, input }) => {
-      const { createMessage, getConversationMessages, getConversationById, getAgentById, checkUsageLimit, incrementUsage } = await import("./db");
+      const { createMessage, getConversationMessages, getConversationById, getAgentById } = await import("./db");
+      const { checkCredits, deductCredits, CREDITS_COST, checkAndResetCredits, getUserCredits } = await import("./creditsManager");
       
-      // Check usage limit
-      const usageCheck = await checkUsageLimit(ctx.user.id);
-      if (!usageCheck.allowed) {
-        throw new Error("您的本月咨询次数已用完,请升级套餐以继续使用。");
+      // Check and reset credits if needed
+      await checkAndResetCredits(ctx.user.id);
+      
+      // Check if user has enough credits
+      const hasCredits = await checkCredits(ctx.user.id, CREDITS_COST.BASIC_CHAT);
+      if (!hasCredits) {
+        const credits = await getUserCredits(ctx.user.id);
+        throw new TRPCError({ 
+          code: "FORBIDDEN", 
+          message: JSON.stringify({
+            error: "INSUFFICIENT_CREDITS",
+            credits: credits,
+            required: CREDITS_COST.BASIC_CHAT
+          })
+        });
       }
+      
       const { invokeLLM } = await import("./_core/llm");
 
       // Get conversation and agent
@@ -390,8 +403,8 @@ export const appRouter = router({
         content: assistantMessage,
       });
       
-      // Increment usage count
-      await incrementUsage(ctx.user.id);
+      // Deduct credits
+      await deductCredits(ctx.user.id, CREDITS_COST.BASIC_CHAT, `基础对话 - Conversation #${input.conversationId}`);
 
       return { content: assistantMessage };
     }),
@@ -409,6 +422,18 @@ export const appRouter = router({
       if (conversation.userId !== ctx.user.id) throw new Error("Unauthorized");
 
       return getConversationMessages(input.conversationId);
+    }),
+  }),
+  
+  // Credits management
+  credits: router({
+    get: protectedProcedure.query(async ({ ctx }) => {
+      const { getUserCredits } = await import("./creditsManager");
+      return await getUserCredits(ctx.user.id);
+    }),
+    history: protectedProcedure.query(async ({ ctx }) => {
+      const { getTransactionHistory } = await import("./creditsManager");
+      return await getTransactionHistory(ctx.user.id);
     }),
   }),
 });

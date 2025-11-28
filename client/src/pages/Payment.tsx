@@ -3,7 +3,7 @@ import { useLocation, useRoute } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, CheckCircle2, XCircle, ArrowLeft } from "lucide-react";
+import { Loader2, XCircle, ArrowLeft } from "lucide-react";
 
 const PLAN_NAMES = {
   basic: "基础版",
@@ -18,16 +18,29 @@ const PLAN_PRICES = {
 };
 
 export default function Payment() {
+  const [location, setLocation] = useLocation();
   const [, params] = useRoute("/payment/:plan");
-  const [, setLocation] = useLocation();
   const plan = params?.plan as "basic" | "professional" | "enterprise" | undefined;
 
+  // Parse orderId from query string
+  const urlParams = new URLSearchParams(location.split('?')[1] || '');
+  const orderId = urlParams.get('orderId');
+
   const [paymentStatus, setPaymentStatus] = useState<"pending" | "paid" | "failed">("pending");
+  const [paymentForm, setPaymentForm] = useState<string>("");
   const formContainerRef = useRef<HTMLDivElement>(null);
 
   const createPayment = trpc.payment.createPayment.useMutation();
 
   useEffect(() => {
+    // If orderId is provided, use the paymentForm from the previous page
+    if (orderId) {
+      // The payment form should be submitted from the Credits page
+      // This page just shows loading state
+      return;
+    }
+
+    // Legacy flow: subscription plan payment
     if (!plan || !["basic", "professional", "enterprise"].includes(plan)) {
       setLocation("/pricing");
       return;
@@ -38,14 +51,7 @@ export default function Payment() {
       { plan },
       {
         onSuccess: (data) => {
-          // Insert payment form HTML and auto-submit
-          if (formContainerRef.current && data.paymentForm) {
-            formContainerRef.current.innerHTML = data.paymentForm;
-            const form = formContainerRef.current.querySelector('form');
-            if (form) {
-              form.submit();
-            }
-          }
+          setPaymentForm(data.paymentForm);
         },
         onError: (error) => {
           console.error("Failed to create payment:", error);
@@ -53,22 +59,33 @@ export default function Payment() {
         },
       }
     );
-  }, [plan]);
+  }, [plan, orderId]);
 
-  if (!plan) {
-    return null;
-  }
+  // Auto-submit payment form when it's ready
+  useEffect(() => {
+    if (paymentForm && formContainerRef.current) {
+      formContainerRef.current.innerHTML = paymentForm;
+      const form = formContainerRef.current.querySelector('form');
+      if (form) {
+        form.submit();
+      }
+    }
+  }, [paymentForm]);
+
+  const displayTitle = orderId ? "正在跳转到支付页面" : 
+                       plan ? `${PLAN_NAMES[plan]} - ${PLAN_PRICES[plan]}/月` : 
+                       "支付";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container max-w-4xl py-12">
         <Button
           variant="ghost"
-          onClick={() => setLocation("/pricing")}
+          onClick={() => setLocation(orderId ? "/credits" : "/pricing")}
           className="mb-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          返回套餐选择
+          {orderId ? "返回积分购买" : "返回套餐选择"}
         </Button>
 
         <Card className="shadow-lg">
@@ -77,13 +94,15 @@ export default function Payment() {
               {paymentStatus === "pending" && "正在跳转到支付页面"}
               {paymentStatus === "failed" && "支付失败"}
             </CardTitle>
-            <CardDescription className="text-lg">
-              {PLAN_NAMES[plan]} - {PLAN_PRICES[plan]}/月
-            </CardDescription>
+            {!orderId && plan && (
+              <CardDescription className="text-lg">
+                {displayTitle}
+              </CardDescription>
+            )}
           </CardHeader>
 
           <CardContent className="flex flex-col items-center gap-6 py-8">
-            {createPayment.isPending && (
+            {(createPayment.isPending || paymentStatus === "pending") && (
               <div className="flex flex-col items-center gap-4">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
                 <p className="text-muted-foreground">正在创建订单...</p>
@@ -98,8 +117,8 @@ export default function Payment() {
                 <div className="text-center">
                   <h3 className="text-xl font-semibold mb-2">支付失败</h3>
                   <p className="text-muted-foreground mb-4">创建支付订单失败,请稍后重试</p>
-                  <Button onClick={() => setLocation("/pricing")}>
-                    返回套餐选择
+                  <Button onClick={() => setLocation(orderId ? "/credits" : "/pricing")}>
+                    {orderId ? "返回积分购买" : "返回套餐选择"}
                   </Button>
                 </div>
               </div>

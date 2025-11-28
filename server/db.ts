@@ -307,7 +307,7 @@ export async function checkUsageLimit(userId: number): Promise<{ allowed: boolea
 export async function createOrder(data: {
   userId: number;
   outTradeNo: string;
-  plan: "free" | "basic" | "professional" | "enterprise";
+  plan: string; // Changed to string to support both subscription plans and credit pack IDs
   amount: number;
   paymentMethod?: string;
 }) {

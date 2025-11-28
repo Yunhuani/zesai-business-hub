@@ -9,6 +9,7 @@ import { useEffect, useState, useRef } from "react";
 import { Link, useParams, useLocation } from "wouter";
 import { EnhancedMessage } from "@/components/EnhancedMessage";
 import { toast } from "sonner";
+import { InsufficientCreditsDialog } from "@/components/InsufficientCreditsDialog";
 
 export default function AgentChat() {
   const params = useParams();
@@ -23,6 +24,7 @@ export default function AgentChat() {
   const [isFirstMessage, setIsFirstMessage] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showInsufficientCreditsDialog, setShowInsufficientCreditsDialog] = useState(false);
 
   const { data: messages, refetch: refetchMessages } = trpc.message.list.useQuery(
     { conversationId: conversationId! },
@@ -76,6 +78,16 @@ export default function AgentChat() {
       setIsFirstMessage(false);
     },
     onError: (error) => {
+      // Check if error is insufficient credits
+      try {
+        const errorData = JSON.parse(error.message);
+        if (errorData.error === "INSUFFICIENT_CREDITS") {
+          setShowInsufficientCreditsDialog(true);
+          return;
+        }
+      } catch {
+        // Not a JSON error, proceed with normal error handling
+      }
       toast.error("发送消息失败: " + error.message);
     },
   });
@@ -449,6 +461,12 @@ export default function AgentChat() {
           </Card>
         </div>
       </div>
+
+      {/* Insufficient Credits Dialog */}
+      <InsufficientCreditsDialog
+        open={showInsufficientCreditsDialog}
+        onOpenChange={setShowInsufficientCreditsDialog}
+      />
     </div>
   );
 }

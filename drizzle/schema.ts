@@ -18,6 +18,12 @@ export const users = mysqlTable("users", {
   email: varchar("email", { length: 320 }).unique(),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  /** Credits purchased by user (永久有效的充值积分) */
+  creditsPurchased: int("creditsPurchased").default(0).notNull(),
+  /** Credits from subscription (每月重置的订阅积分) */
+  creditsSubscription: int("creditsSubscription").default(100).notNull(), // Free plan gets 100 credits
+  /** Date when subscription credits will reset */
+  creditsResetDate: timestamp("creditsResetDate").defaultNow().notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -114,7 +120,7 @@ export const orders = mysqlTable("orders", {
   userId: int("userId").notNull(),
   outTradeNo: varchar("outTradeNo", { length: 64 }).notNull().unique(), // 商户订单号
   tradeNo: varchar("tradeNo", { length: 64 }), // 支付宝交易号
-  plan: mysqlEnum("plan", ["free", "basic", "professional", "enterprise"]).notNull(),
+  plan: varchar("plan", { length: 50 }).notNull(), // Changed to varchar to support both subscription plans and credit pack IDs
   amount: int("amount").notNull(), // 订单金额(分)
   status: mysqlEnum("status", ["pending", "paid", "cancelled", "refunded"]).default("pending").notNull(),
   paymentMethod: varchar("paymentMethod", { length: 20 }).default("alipay").notNull(), // alipay, wechat
@@ -125,3 +131,21 @@ export const orders = mysqlTable("orders", {
 
 export type Order = typeof orders.$inferSelect;
 export type InsertOrder = typeof orders.$inferInsert;
+
+/**
+ * Credits transactions table - records all credit operations
+ */
+export const creditsTransactions = mysqlTable("creditsTransactions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  type: mysqlEnum("type", ["consume", "purchase", "subscription_grant", "refund"]).notNull(),
+  amount: int("amount").notNull(), // Positive for add, negative for deduct
+  balancePurchased: int("balancePurchased").notNull(), // Balance after transaction
+  balanceSubscription: int("balanceSubscription").notNull(), // Balance after transaction
+  description: text("description").notNull(),
+  relatedOrderId: int("relatedOrderId"), // Link to order if applicable
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CreditsTransaction = typeof creditsTransactions.$inferSelect;
+export type InsertCreditsTransaction = typeof creditsTransactions.$inferInsert;

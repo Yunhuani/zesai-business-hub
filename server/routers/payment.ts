@@ -28,9 +28,92 @@ const PLAN_CONFIG = {
   },
 } as const;
 
+/**
+ * 积分包配置
+ */
+const CREDIT_PACK_CONFIG: Record<string, { name: string; credits: number; price: number }> = {
+  pack_500: { name: "入门包", credits: 500, price: 4900 },
+  pack_1200: { name: "超值包", credits: 1200, price: 9900 },
+  pack_3000: { name: "专业包", credits: 3000, price: 19900 },
+  pack_8000: { name: "企业包", credits: 8000, price: 39900 },
+};
+
 export const paymentRouter = router({
   /**
-   * 创建支付订单
+   * 创建订单（支持订阅套餐和积分购买）
+   */
+  createOrder: protectedProcedure
+    .input(
+      z.object({
+        type: z.enum(["subscription", "credits"]),
+        planId: z.string(),
+        amount: z.number(),
+        credits: z.number().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { type, planId, amount, credits } = input;
+      
+      // 生成商户订单号
+      const outTradeNo = `ZS${Date.now()}${ctx.user.id}`;
+      
+      let subject = "";
+      let body = "";
+      
+      if (type === "subscription") {
+        const config = PLAN_CONFIG[planId as keyof typeof PLAN_CONFIG];
+        if (!config) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "无效的套餐类型" });
+        }
+        subject = `哲思AI商业智库 - ${config.name}`;
+        body = `订阅${config.name},${config.monthlyLimit === 0 ? "无限次" : `${config.monthlyLimit}次/月`}咨询服务`;
+      } else if (type === "credits") {
+        const config = CREDIT_PACK_CONFIG[planId];
+        if (!config) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "无效的积分包类型" });
+        }
+        subject = `哲思AI商业智库 - ${config.name}`;
+        body = `购买${config.credits}积分`;
+      }
+      
+      // 创建订单记录
+      await createOrder({
+        userId: ctx.user.id,
+        outTradeNo,
+        plan: planId,
+        amount: amount * 100, // 转换为分
+        paymentMethod: "alipay",
+      });
+      
+      // 创建支付宝支付订单
+      const returnUrl = "https://www.zhesiai.com/payment/result";
+      const notifyUrl = "https://www.zhesiai.com/api/payment/alipay/notify";
+      
+      try {
+        const paymentForm = await createAlipayPagePayment({
+          outTradeNo,
+          totalAmount: amount.toFixed(2),
+          subject,
+          body,
+          returnUrl,
+          notifyUrl,
+        });
+        
+        return {
+          orderId: outTradeNo,
+          paymentForm,
+        };
+      } catch (error) {
+        console.error("[Payment] Create payment error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "创建支付订单失败,请稍后重试",
+        });
+      }
+    }),
+
+  /**
+   * 创建支付订单（旧接口，保留兼容性）
    */
   createPayment: protectedProcedure
     .input(
@@ -136,19 +219,26 @@ export const paymentRouter = router({
             paidAt: new Date(),
           });
           
-          // 更新用户订阅
-          const config = PLAN_CONFIG[order.plan as keyof typeof PLAN_CONFIG];
-          if (config) {
+          // Check if it's a subscription or credit pack order
+          const subscriptionConfig = PLAN_CONFIG[order.plan as keyof typeof PLAN_CONFIG];
+          const creditPackConfig = CREDIT_PACK_CONFIG[order.plan];
+          
+          if (subscriptionConfig) {
+            // Handle subscription order
             const endDate = new Date();
-            endDate.setDate(endDate.getDate() + config.duration);
+            endDate.setDate(endDate.getDate() + subscriptionConfig.duration);
             
             await createOrUpdateSubscription({
               userId: order.userId,
               plan: order.plan as any,
-              monthlyLimit: config.monthlyLimit,
-              price: config.price,
+              monthlyLimit: subscriptionConfig.monthlyLimit,
+              price: subscriptionConfig.price,
               endDate,
             });
+          } else if (creditPackConfig) {
+            // Handle credit pack order
+            const { addPurchasedCredits } = await import("../creditsManager");
+            await addPurchasedCredits(order.userId, creditPackConfig.credits, order.id);
           }
           
           return {
@@ -216,19 +306,26 @@ export const paymentRouter = router({
           paidAt: new Date(),
         });
         
-        // 更新用户订阅
-        const config = PLAN_CONFIG[order.plan as keyof typeof PLAN_CONFIG];
-        if (config) {
+        // Check if it's a subscription or credit pack order
+        const subscriptionConfig = PLAN_CONFIG[order.plan as keyof typeof PLAN_CONFIG];
+        const creditPackConfig = CREDIT_PACK_CONFIG[order.plan];
+        
+        if (subscriptionConfig) {
+          // Handle subscription order
           const endDate = new Date();
-          endDate.setDate(endDate.getDate() + config.duration);
+          endDate.setDate(endDate.getDate() + subscriptionConfig.duration);
           
           await createOrUpdateSubscription({
             userId: order.userId,
             plan: order.plan as any,
-            monthlyLimit: config.monthlyLimit,
-            price: config.price,
+            monthlyLimit: subscriptionConfig.monthlyLimit,
+            price: subscriptionConfig.price,
             endDate,
           });
+        } else if (creditPackConfig) {
+          // Handle credit pack order
+          const { addPurchasedCredits } = await import("../creditsManager");
+          await addPurchasedCredits(order.userId, creditPackConfig.credits, order.id);
         }
         
         console.log("[Payment] Payment success:", outTradeNo);
