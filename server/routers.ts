@@ -326,7 +326,7 @@ export const appRouter = router({
       return { content: welcomeMessage };
     }),
     send: protectedProcedure.input((val: unknown) => {
-      if (typeof val === "object" && val !== null && "conversationId" in val && "content" in val && "userInputs" in val && typeof val.conversationId === "number" && typeof val.content === "string") {
+      if (typeof val === "object" && val !== null && "conversationId" in val && "content" in val && typeof val.conversationId === "number" && typeof val.content === "string") {
         return val as { conversationId: number; content: string; userInputs?: Record<string, string> };
       }
       throw new Error("Invalid input: expected { conversationId: number, content: string, userInputs?: Record<string, string> }");

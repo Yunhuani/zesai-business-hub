@@ -22,6 +22,7 @@ export default function AgentChat() {
   const [conversationId, setConversationId] = useState<number | null>(null);
   const [message, setMessage] = useState("");
   const [isFirstMessage, setIsFirstMessage] = useState(true);
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showInsufficientCreditsDialog, setShowInsufficientCreditsDialog] = useState(false);
@@ -51,17 +52,27 @@ export default function AgentChat() {
 
   const createConversation = trpc.conversation.create.useMutation({
     onSuccess: (data) => {
-      setConversationId(data.insertId as number);
+      const newConversationId = data.insertId as number;
+      setConversationId(newConversationId);
       // 自动发送欢迎消息
       setTimeout(() => {
         sendWelcomeMessage.mutate({
-          conversationId: data.insertId as number,
+          conversationId: newConversationId,
           agentId: agentId,
         });
+        // 如果有待发送的消息，现在发送
+        if (pendingMessage) {
+          sendMessage.mutate({
+            conversationId: newConversationId,
+            content: pendingMessage,
+          });
+          setPendingMessage(null);
+        }
       }, 500);
     },
     onError: (error) => {
       toast.error("创建对话失败: " + error.message);
+      setPendingMessage(null);
     },
   });
 
@@ -236,7 +247,16 @@ export default function AgentChat() {
   };
 
   const handleSendMessage = () => {
-    if (!message.trim() || !conversationId) return;
+    if (!message.trim()) return;
+    
+    if (!conversationId) {
+      // Conversation还未创建，将消息加入待发送队列
+      setPendingMessage(message);
+      setMessage("");
+      toast.info("正在创建对话...");
+      return;
+    }
+    
     sendMessage.mutate({
       conversationId,
       content: message,
