@@ -4,9 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import * as Icons from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
+import { ExpertConsultationDialog } from "@/components/ExpertConsultationDialog";
 
 const plans = [
   {
@@ -15,8 +16,8 @@ const plans = [
     price: 0,
     limit: 3,
     features: [
-      "每月3次AI咨询",
-      "访问所有6个专业顾问",
+      "专业AI模型咨询",
+      "访问核心知识模型",
       "历史记录仅7天",
       "无法导出报告",
     ],
@@ -30,10 +31,11 @@ const plans = [
     price: 99,
     limit: 20,
     features: [
-      "每月20次AI咨询",
-      "访问所有6个专业顾问",
+      "专业AI模型咨询",
+      "访问核心知识模型",
       "对话历史永久保存",
-      "可导出 PDF/Word 报告",
+      "可导出 PDF/PPT 报告",
+      "优先响应速度",
     ],
     icon: Icons.Zap,
     color: "from-blue-500 to-cyan-500",
@@ -44,11 +46,11 @@ const plans = [
     price: 299,
     limit: 100,
     features: [
-      "每月100次AI咨询",
-      "访问所有6个专业顾问",
+      "专业AI模型咨询",
+      "访问核心知识模型",
       "对话历史永久保存",
       "优先响应速度",
-      "可导出 PDF/Word 报告",
+      "可导出 PDF/PPT 报告",
     ],
     icon: Icons.Rocket,
     color: "from-purple-500 to-pink-500",
@@ -60,11 +62,11 @@ const plans = [
     price: 999,
     limit: 0,
     features: [
-      "无限次AI咨询",
-      "访问所有6个专业顾问",
+      "专业AI模型咨询",
+      "访问核心知识模型",
       "对话历史永久保存",
       "最高优先级响应",
-      "可导出 PDF/Word 报告",
+      "可导出 PDF/PPT 报告",
       "专属客户支持",
     ],
     icon: Icons.Crown,
@@ -74,6 +76,7 @@ const plans = [
 
 export default function Pricing() {
   const [, setLocation] = useLocation();
+  const [expertDialogOpen, setExpertDialogOpen] = useState(false);
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { data: subscriptionData } = trpc.subscription.get.useQuery(undefined, {
     enabled: isAuthenticated,
@@ -224,43 +227,36 @@ export default function Pricing() {
           })}
         </div>
 
-        {/* FAQ */}
+        {/* Expert Consultation */}
         <div className="mt-16 max-w-3xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-8">常见问题</h2>
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">如何支付?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  我们支持支付宝扫码支付。点击"立即购买"按钮后,会生成支付二维码,使用支付宝扫码即可完成支付。
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">可以随时取消订阅吗?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  可以。您可以随时取消订阅,已支付的费用将在当前周期结束前继续有效。
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">企业版真的无限次吗?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  是的,企业版提供无限次咨询服务,适合高频使用的企业用户。
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+          <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50">
+            <CardHeader className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
+                <Icons.Users className="w-8 h-8 text-white" />
+              </div>
+              <CardTitle className="text-2xl">需要人工专家指导？</CardTitle>
+              <CardDescription className="text-base mt-2">
+                我们的专家顾问团队随时为您提供一对一的专业咨询服务
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                onClick={() => setExpertDialogOpen(true)}
+              >
+                <Icons.MessageCircle className="w-5 h-5 mr-2" />
+                联系专家顾问
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
+
+      <ExpertConsultationDialog 
+        open={expertDialogOpen} 
+        onOpenChange={setExpertDialogOpen} 
+      />
     </div>
   );
 }

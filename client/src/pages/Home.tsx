@@ -6,6 +6,7 @@ import { APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import * as Icons from "lucide-react";
 import { useState } from "react";
+import { ExpertConsultationDialog } from "@/components/ExpertConsultationDialog";
 import { Link } from "wouter";
 
 // Agent分类配置
@@ -76,6 +77,7 @@ export default function Home() {
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>(
     Object.fromEntries(AGENT_CATEGORIES.map(cat => [cat.id, cat.defaultOpen]))
   );
+  const [expertDialogOpen, setExpertDialogOpen] = useState(false);
 
   const toggleCategory = (categoryId: string) => {
     setOpenCategories(prev => ({
@@ -97,7 +99,7 @@ export default function Home() {
         <div className="container py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/zenith-icon-only.png" alt="泽思AI" className="w-10 h-10 rounded-lg" />
-            <h1 className="text-2xl font-bold">泽思AI商业智库</h1>
+            <h1 className="text-2xl font-bold">泽思 Zenith AI</h1>
           </div>
           <div className="flex items-center gap-4">
             {isAuthenticated && (
@@ -246,12 +248,42 @@ export default function Home() {
         )}
       </section>
 
+      {/* Expert Consultation CTA */}
+      <section className="container pb-16">
+        <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50 max-w-3xl mx-auto">
+          <CardHeader className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
+              <Icons.Users className="w-8 h-8 text-white" />
+            </div>
+            <CardTitle className="text-2xl">需要人工专家指导？</CardTitle>
+            <CardDescription className="text-base mt-2">
+              我们的专家顾问团队随时为您提供一对一的专业咨询服务
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Button 
+              size="lg" 
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              onClick={() => setExpertDialogOpen(true)}
+            >
+              <Icons.MessageCircle className="w-5 h-5 mr-2" />
+              联系专家顾问
+            </Button>
+          </CardContent>
+        </Card>
+      </section>
+
       {/* Footer */}
       <footer className="border-t py-8 bg-white/50">
         <div className="container text-center text-sm text-muted-foreground">
-          © 2024 {APP_TITLE} - 专业AI商业咨询平台
+          © 2025 泽思 Zenith AI - 专业AI商业咨询平台
         </div>
       </footer>
+
+      <ExpertConsultationDialog 
+        open={expertDialogOpen} 
+        onOpenChange={setExpertDialogOpen} 
+      />
     </div>
   );
 }

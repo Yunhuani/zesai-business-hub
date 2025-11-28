@@ -9,6 +9,7 @@ import { z } from "zod";
 import { paymentRouter } from "./routers/payment";
 import { exportRouter } from "./routers/export";
 import { documentRouter } from "./routers/document";
+import { adminRouter } from "./routers/admin";
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
@@ -149,6 +150,7 @@ export const appRouter = router({
 
   // Admin routes
   admin: router({
+    ...adminRouter._def.procedures,
     // Agent management
     agents: router({
       list: adminProcedure.query(async () => {
