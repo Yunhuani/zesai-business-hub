@@ -21,6 +21,7 @@ export default function PasswordLogin() {
   // Register form state
   const [registerUsername, setRegisterUsername] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
+  const [registerConfirmPassword, setRegisterConfirmPassword] = useState("");
   const [registerName, setRegisterName] = useState("");
 
   const loginMutation = trpc.auth.login.useMutation({
@@ -60,6 +61,10 @@ export default function PasswordLogin() {
     }
     if (registerPassword.length < 6) {
       toast.error("密码长度至少6位");
+      return;
+    }
+    if (registerPassword !== registerConfirmPassword) {
+      toast.error("两次输入的密码不一致");
       return;
     }
     registerMutation.mutate({
@@ -189,6 +194,18 @@ export default function PasswordLogin() {
                       placeholder="至少6位密码"
                       value={registerPassword}
                       onChange={(e) => setRegisterPassword(e.target.value)}
+                      disabled={registerMutation.isPending}
+                      autoComplete="new-password"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="register-confirm-password">确认密码</Label>
+                    <Input
+                      id="register-confirm-password"
+                      type="password"
+                      placeholder="再次输入密码"
+                      value={registerConfirmPassword}
+                      onChange={(e) => setRegisterConfirmPassword(e.target.value)}
                       disabled={registerMutation.isPending}
                       autoComplete="new-password"
                     />

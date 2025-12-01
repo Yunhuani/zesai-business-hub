@@ -35,6 +35,12 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  // Stream chat endpoint
+  app.post("/api/chat/stream", async (req, res) => {
+    const { handleStreamChat } = await import("../streamChat");
+    await handleStreamChat(req, res);
+  });
+  
   // Alipay callback route (must be before tRPC middleware)
   app.post("/api/payment/alipay/notify", async (req, res) => {
     try {

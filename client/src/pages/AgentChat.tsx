@@ -26,6 +26,8 @@ export default function AgentChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showInsufficientCreditsDialog, setShowInsufficientCreditsDialog] = useState(false);
+  const [streamingMessage, setStreamingMessage] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
 
   const { data: messages, refetch: refetchMessages } = trpc.message.list.useQuery(
     { conversationId: conversationId! },
@@ -246,7 +248,7 @@ export default function AgentChat() {
     generatePPTMutation.mutate({ conversationId });
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!message.trim()) return;
     
     if (!conversationId) {
@@ -257,10 +259,75 @@ export default function AgentChat() {
       return;
     }
     
-    sendMessage.mutate({
-      conversationId,
-      content: message,
-    });
+    const userMessage = message;
+    setMessage("");
+    setIsStreaming(true);
+    setStreamingMessage("");
+    
+    try {
+      const response = await fetch("/api/chat/stream", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          conversationId,
+          content: userMessage,
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (errorData.error === "INSUFFICIENT_CREDITS") {
+          setShowInsufficientCreditsDialog(true);
+          return;
+        }
+        throw new Error(errorData.error || "Stream failed");
+      }
+      
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No reader available");
+      
+      const decoder = new TextDecoder();
+      let fullContent = "";
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split("\n");
+        
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = line.slice(6);
+            if (data === "[DONE]") continue;
+            
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.delta) {
+                fullContent += parsed.delta;
+                setStreamingMessage(fullContent);
+              }
+            } catch (e) {
+              // Skip invalid JSON
+            }
+          }
+        }
+      }
+      
+      // Refresh messages after streaming completes
+      await refetchMessages();
+      setIsStreaming(false);
+      setStreamingMessage("");
+    } catch (error: any) {
+      console.error("Stream error:", error);
+      toast.error("发送消息失败: " + error.message);
+      setIsStreaming(false);
+      setStreamingMessage("");
+      setMessage(userMessage); // Restore message on error
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -352,7 +419,7 @@ export default function AgentChat() {
         </div>
       </header>
 
-      <div className="container py-8 max-w-4xl">
+      <div className="container py-8 max-w-5xl">
         <div className="space-y-6">
           {/* Messages */}
           <div className="space-y-4 min-h-[500px] max-h-[600px] overflow-y-auto bg-white rounded-lg border shadow-sm p-6">
@@ -364,28 +431,38 @@ export default function AgentChat() {
                 </div>
               </div>
             ) : (
-              messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                >
+              <>
+                {messages.map((msg) => (
                   <div
-                    className={`max-w-[85%] rounded-lg p-4 ${
-                      msg.role === "user"
-                        ? "bg-gradient-to-br from-blue-600 to-purple-600 text-white"
-                        : "bg-gray-50 border"
-                    }`}
+                    key={msg.id}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
-                    {msg.role === "assistant" ? (
-                      <EnhancedMessage content={msg.content} />
-                    ) : (
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
-                    )}
+                    <div
+                      className={`max-w-[85%] rounded-lg p-4 ${
+                        msg.role === "user"
+                          ? "bg-gradient-to-br from-blue-600 to-purple-600 text-white"
+                          : "bg-gray-50 border"
+                      }`}
+                    >
+                      {msg.role === "assistant" ? (
+                        <EnhancedMessage content={msg.content} />
+                      ) : (
+                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                      )}
                   </div>
                 </div>
-              ))
+              ))}
+              {/* Streaming message */}
+              {isStreaming && streamingMessage && (
+                <div className="flex justify-start">
+                  <div className="max-w-[85%] bg-gray-50 border rounded-lg p-4">
+                    <EnhancedMessage content={streamingMessage} />
+                  </div>
+                </div>
+              )}
+            </>
             )}
-            {sendMessage.isPending && (
+            {sendMessage.isPending && !isStreaming && (
               <div className="flex justify-start">
                 <div className="bg-gray-50 border rounded-lg p-4">
                   <Icons.Loader2 className="w-5 h-5 animate-spin text-blue-600" />
@@ -395,39 +472,7 @@ export default function AgentChat() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Export buttons */}
-          {conversationId && messages && messages.length > 2 && (
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportPDF}
-                disabled={exportPDF.isPending}
-                className="gap-2"
-              >
-                {exportPDF.isPending ? (
-                  <Icons.Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Icons.FileText className="w-4 h-4" />
-                )}
-                导出PDF
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportPPT}
-                disabled={generatePPTMutation.isPending}
-                className="gap-2"
-              >
-                {generatePPTMutation.isPending ? (
-                  <Icons.Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Icons.Presentation className="w-4 h-4" />
-                )}
-                生成PPT
-              </Button>
-            </div>
-          )}
+          {/* Export buttons removed - will be triggered by AI suggestion in conversation */}
 
           {/* Input area */}
           <Card className="p-4 bg-white shadow-sm">

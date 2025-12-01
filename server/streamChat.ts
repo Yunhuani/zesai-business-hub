@@ -1,0 +1,161 @@
+import { Request, Response } from "express";
+import { sdk } from "./_core/sdk";
+
+/**
+ * Stream chat endpoint for real-time streaming responses
+ * POST /api/chat/stream
+ */
+export async function handleStreamChat(req: Request, res: Response) {
+  try {
+    // Verify authentication
+    const user = await sdk.authenticateRequest(req);
+    if (!user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const userId = user.id;
+
+    // Parse request body
+    const { conversationId, content, userInputs } = req.body;
+    if (!conversationId || !content) {
+      res.status(400).json({ error: "Missing conversationId or content" });
+      return;
+    }
+
+    const { createMessage, getConversationMessages, getConversationById, getAgentById } = await import("./db");
+    const { checkCredits, deductCredits, CREDITS_COST, checkAndResetCredits, getUserCredits } = await import("./creditsManager");
+    
+    // Check and reset credits if needed
+    await checkAndResetCredits(userId);
+    
+    // Check if user has enough credits
+    const hasCredits = await checkCredits(userId, CREDITS_COST.BASIC_CHAT);
+    if (!hasCredits) {
+      const credits = await getUserCredits(userId);
+      res.status(403).json({
+        error: "INSUFFICIENT_CREDITS",
+        credits: credits,
+        required: CREDITS_COST.BASIC_CHAT
+      });
+      return;
+    }
+
+    // Get conversation and agent
+    const conversation = await getConversationById(conversationId);
+    if (!conversation) {
+      res.status(404).json({ error: "Conversation not found" });
+      return;
+    }
+    if (conversation.userId !== userId) {
+      res.status(403).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const agent = await getAgentById(conversation.agentId);
+    if (!agent) {
+      res.status(404).json({ error: "Agent not found" });
+      return;
+    }
+
+    // Save user message
+    await createMessage({
+      conversationId,
+      role: "user",
+      content,
+    });
+
+    // Get conversation history
+    const history = await getConversationMessages(conversationId);
+    const messages = history.map(msg => ({
+      role: msg.role as "system" | "user" | "assistant",
+      content: msg.content,
+    }));
+
+    // Build system prompt with global rules + agent-specific prompt + user inputs
+    const { GLOBAL_PROMPT_RULES } = await import("../shared/promptRules");
+    
+    let systemPrompt = `${GLOBAL_PROMPT_RULES}\n\n## 专业角色\n${agent.systemPrompt}`;
+    
+    if (userInputs) {
+      const inputFields = JSON.parse(agent.inputFields) as Array<{ name: string; label: string }>;
+      const inputContext = inputFields
+        .map((field: { name: string; label: string }) => `${field.label}: ${userInputs[field.name] || "未提供"}`) 
+        .join("\n");
+      systemPrompt = `${systemPrompt}\n\n## 用户提供的信息\n${inputContext}`;
+    }
+
+    // Set up SSE (Server-Sent Events)
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+
+    const { invokeLLMStream } = await import("./_core/llm");
+
+    // Call LLM stream
+    const stream = await invokeLLMStream({
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...messages.filter(m => m.role !== "system"),
+      ],
+    });
+
+    let fullContent = "";
+    const reader = stream.getReader();
+    const decoder = new TextDecoder();
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = line.slice(6);
+            if (data === "[DONE]") continue;
+
+            try {
+              const parsed = JSON.parse(data);
+              const delta = parsed.choices?.[0]?.delta?.content;
+              if (delta) {
+                fullContent += delta;
+                // Send delta to client
+                res.write(`data: ${JSON.stringify({ delta, fullContent })}\n\n`);
+              }
+            } catch (e) {
+              // Skip invalid JSON
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Stream error:", error);
+      res.write(`data: ${JSON.stringify({ error: "Stream failed" })}\n\n`);
+    }
+
+    // Save assistant message
+    await createMessage({
+      conversationId,
+      role: "assistant",
+      content: fullContent || "抱歉,我无法生成回复。",
+    });
+    
+    // Deduct credits
+    await deductCredits(userId, CREDITS_COST.BASIC_CHAT, `基础对话 - Conversation #${conversationId}`);
+
+    // End stream
+    res.write("data: [DONE]\n\n");
+    res.end();
+  } catch (error) {
+    console.error("Stream chat error:", error);
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Internal server error" });
+    } else {
+      res.write(`data: ${JSON.stringify({ error: "Internal server error" })}\n\n`);
+      res.end();
+    }
+  }
+}
