@@ -1,200 +1,241 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { trpc } from "@/lib/trpc";
-import { Loader2, Mail, Shield } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { Loader2, LogIn, UserPlus } from "lucide-react";
+import { APP_LOGO, APP_TITLE } from "@/const";
 
 export default function EmailLogin() {
   const [, setLocation] = useLocation();
-  const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
-  const [step, setStep] = useState<"email" | "code">("email");
-  const [countdown, setCountdown] = useState(0);
+  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
 
-  const sendCodeMutation = trpc.auth.sendVerificationCode.useMutation({
+  // Login form state
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+
+  // Register form state
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+  const [registerName, setRegisterName] = useState("");
+
+  const loginMutation = trpc.auth.loginWithEmail.useMutation({
     onSuccess: () => {
-      toast.success("验证码已发送到您的邮箱");
-      setStep("code");
-      setCountdown(60);
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+      toast.success("登录成功");
+      setLocation("/");
     },
     onError: (error) => {
-      toast.error(error.message || "发送验证码失败");
+      toast.error(error.message || "登录失败");
     },
   });
 
-  const verifyCodeMutation = trpc.auth.verifyEmailCode.useMutation({
+  const registerMutation = trpc.auth.registerWithEmail.useMutation({
     onSuccess: () => {
-      toast.success("登录成功！");
-      setTimeout(() => {
-        setLocation("/");
-      }, 500);
+      toast.success("注册成功，已自动登录");
+      setLocation("/");
     },
     onError: (error) => {
-      toast.error(error.message || "验证码错误");
+      toast.error(error.message || "注册失败");
     },
   });
 
-  const handleSendCode = (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) {
-      toast.error("请输入邮箱地址");
+    if (!loginEmail || !loginPassword) {
+      toast.error("请输入邮箱和密码");
       return;
     }
-    sendCodeMutation.mutate({ email });
+    loginMutation.mutate({ email: loginEmail, password: loginPassword });
   };
 
-  const handleVerifyCode = (e: React.FormEvent) => {
+  const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!code || code.length !== 6) {
-      toast.error("请输入6位验证码");
+    if (!registerEmail || !registerPassword) {
+      toast.error("请输入邮箱和密码");
       return;
     }
-    verifyCodeMutation.mutate({ email, code });
-  };
-
-  const handleResendCode = () => {
-    if (countdown > 0) return;
-    sendCodeMutation.mutate({ email });
+    if (registerPassword.length < 6) {
+      toast.error("密码长度至少6位");
+      return;
+    }
+    registerMutation.mutate({
+      email: registerEmail,
+      password: registerPassword,
+      name: registerName || registerEmail.split('@')[0],
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <img src="/zhesi-logo.png" alt="哲思AI" className="w-16 h-16" />
-          </div>
-          <CardTitle className="text-2xl font-bold">欢迎来到哲思AI</CardTitle>
-          <CardDescription>
-            {step === "email" ? "输入邮箱地址以接收验证码" : "输入验证码以完成登录"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {step === "email" ? (
-            <form onSubmit={handleSendCode} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">邮箱地址</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10"
-                    disabled={sendCodeMutation.isPending}
-                    autoFocus
-                  />
-                </div>
-              </div>
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={sendCodeMutation.isPending || !email}
-              >
-                {sendCodeMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    发送中...
-                  </>
-                ) : (
-                  <>
-                    <Mail className="w-4 h-4 mr-2" />
-                    获取验证码
-                  </>
-                )}
-              </Button>
-            </form>
-          ) : (
-            <form onSubmit={handleVerifyCode} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="code">验证码</Label>
-                <div className="relative">
-                  <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="code"
-                    type="text"
-                    placeholder="输入6位验证码"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    className="pl-10 text-center text-2xl tracking-widest"
-                    disabled={verifyCodeMutation.isPending}
-                    autoFocus
-                    maxLength={6}
-                  />
-                </div>
-                <p className="text-sm text-muted-foreground text-center">
-                  验证码已发送到 <span className="font-medium">{email}</span>
-                </p>
-              </div>
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={verifyCodeMutation.isPending || code.length !== 6}
-              >
-                {verifyCodeMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    验证中...
-                  </>
-                ) : (
-                  "登录"
-                )}
-              </Button>
-              <div className="flex items-center justify-between text-sm">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setStep("email");
-                    setCode("");
-                  }}
-                  disabled={verifyCodeMutation.isPending}
-                >
-                  更换邮箱
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleResendCode}
-                  disabled={countdown > 0 || sendCodeMutation.isPending}
-                >
-                  {countdown > 0 ? `重新发送 (${countdown}s)` : "重新发送"}
-                </Button>
-              </div>
-            </form>
-          )}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 p-4">
+      <div className="w-full max-w-md">
+        {/* Logo and Title */}
+        <div className="text-center mb-8">
+          <img src={APP_LOGO} alt={APP_TITLE} className="h-16 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            {APP_TITLE}
+          </h1>
+          <p className="text-gray-600 mt-2">专业的AI商业咨询平台</p>
+        </div>
 
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>登录即表示您同意我们的</p>
-            <p>
-              <a href="#" className="text-primary hover:underline">
-                服务条款
-              </a>
-              {" 和 "}
-              <a href="#" className="text-primary hover:underline">
-                隐私政策
-              </a>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "register")}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="login">登录</TabsTrigger>
+            <TabsTrigger value="register">注册</TabsTrigger>
+          </TabsList>
+
+          {/* Login Tab */}
+          <TabsContent value="login">
+            <Card>
+              <CardHeader>
+                <CardTitle>邮箱登录</CardTitle>
+                <CardDescription>使用邮箱和密码登录</CardDescription>
+              </CardHeader>
+              <form onSubmit={handleLogin}>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="login-email">邮箱</Label>
+                    <Input
+                      id="login-email"
+                      type="email"
+                      placeholder="请输入邮箱"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      disabled={loginMutation.isPending}
+                      autoComplete="email"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="login-password">密码</Label>
+                    <Input
+                      id="login-password"
+                      type="password"
+                      placeholder="请输入密码"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      disabled={loginMutation.isPending}
+                      autoComplete="current-password"
+                    />
+                  </div>
+                </CardContent>
+                <CardFooter className="flex flex-col gap-4">
+                  <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+                    {loginMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        登录中...
+                      </>
+                    ) : (
+                      <>
+                        <LogIn className="mr-2 h-4 w-4" />
+                        登录
+                      </>
+                    )}
+                  </Button>
+                  <div className="text-center text-sm text-gray-600">
+                    还没有账号？
+                    <button
+                      type="button"
+                      className="text-purple-600 hover:underline ml-1"
+                      onClick={() => setActiveTab("register")}
+                    >
+                      立即注册
+                    </button>
+                  </div>
+                  <div className="text-center text-sm text-gray-600">
+                    或者
+                    <button
+                      type="button"
+                      className="text-purple-600 hover:underline ml-1"
+                      onClick={() => setLocation("/login")}
+                    >
+                      使用用户名登录
+                    </button>
+                  </div>
+                </CardFooter>
+              </form>
+            </Card>
+          </TabsContent>
+
+          {/* Register Tab */}
+          <TabsContent value="register">
+            <Card>
+              <CardHeader>
+                <CardTitle>注册账号</CardTitle>
+                <CardDescription>创建新账号开始使用</CardDescription>
+              </CardHeader>
+              <form onSubmit={handleRegister}>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="register-email">邮箱</Label>
+                    <Input
+                      id="register-email"
+                      type="email"
+                      placeholder="请输入邮箱地址"
+                      value={registerEmail}
+                      onChange={(e) => setRegisterEmail(e.target.value)}
+                      disabled={registerMutation.isPending}
+                      autoComplete="email"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="register-password">密码</Label>
+                    <Input
+                      id="register-password"
+                      type="password"
+                      placeholder="至少6位密码"
+                      value={registerPassword}
+                      onChange={(e) => setRegisterPassword(e.target.value)}
+                      disabled={registerMutation.isPending}
+                      autoComplete="new-password"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="register-name">昵称（可选）</Label>
+                    <Input
+                      id="register-name"
+                      type="text"
+                      placeholder="显示名称"
+                      value={registerName}
+                      onChange={(e) => setRegisterName(e.target.value)}
+                      disabled={registerMutation.isPending}
+                      autoComplete="name"
+                    />
+                  </div>
+                </CardContent>
+                <CardFooter className="flex flex-col gap-4">
+                  <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
+                    {registerMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        注册中...
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        注册
+                      </>
+                    )}
+                  </Button>
+                  <div className="text-center text-sm text-gray-600">
+                    已有账号？
+                    <button
+                      type="button"
+                      className="text-purple-600 hover:underline ml-1"
+                      onClick={() => setActiveTab("login")}
+                    >
+                      立即登录
+                    </button>
+                  </div>
+                </CardFooter>
+              </form>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }

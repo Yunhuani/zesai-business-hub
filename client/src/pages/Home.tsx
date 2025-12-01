@@ -134,7 +134,7 @@ export default function Home() {
               </div>
             ) : (
               <Button asChild>
-                <a href="/login">登录</a>
+                <a href="/email-login">登录</a>
               </Button>
             )}
           </div>
