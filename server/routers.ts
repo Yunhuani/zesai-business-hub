@@ -488,14 +488,17 @@ export const appRouter = router({
         content: msg.content,
       }));
 
-      // Build system prompt with user inputs if provided
-      let systemPrompt = agent.systemPrompt;
+      // Build system prompt with global rules + agent-specific prompt + user inputs
+      const { GLOBAL_PROMPT_RULES } = await import("../shared/promptRules");
+      
+      let systemPrompt = `${GLOBAL_PROMPT_RULES}\n\n## 专业角色\n${agent.systemPrompt}`;
+      
       if (input.userInputs) {
         const inputFields = JSON.parse(agent.inputFields) as Array<{ name: string; label: string }>;
         const inputContext = inputFields
           .map(field => `${field.label}: ${input.userInputs![field.name] || "未提供"}`) 
           .join("\n");
-        systemPrompt = `${agent.systemPrompt}\n\n用户提供的信息:\n${inputContext}`;
+        systemPrompt = `${systemPrompt}\n\n## 用户提供的信息\n${inputContext}`;
       }
 
       // Call LLM

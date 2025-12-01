@@ -16,7 +16,7 @@ const AGENT_CATEGORIES = [
     name: "战略与规划",
     icon: "Target",
     description: "企业战略、商业模式、融资路演",
-    agentNames: ["战略规划", "融资BP与路演", "商业模式", "寻找第二曲线", "商业洞察"],
+    agentNames: ["战略规划", "融资BP与路演", "商业模式"],
     defaultOpen: true,
     colors: {
       gradient: "from-purple-600 to-blue-600",
@@ -29,8 +29,8 @@ const AGENT_CATEGORIES = [
     id: "marketing",
     name: "营销与增长",
     icon: "TrendingUp",
-    description: "获客增长、品牌营销、定价策略",
-    agentNames: ["获客增长专家", "品牌营销策划师", "定价策略专家", "竞品分析专家"],
+    description: "获客增长、品牌营销、新媒体运营",
+    agentNames: ["获客增长专家", "品牌营销策划师", "新媒体运营专家"],
     defaultOpen: false,
     colors: {
       gradient: "from-green-600 to-emerald-500",
@@ -43,8 +43,8 @@ const AGENT_CATEGORIES = [
     id: "operation",
     name: "运营与管理",
     icon: "Users",
-    description: "股权设计、绩效管理、价值主张",
-    agentNames: ["股权设计", "OKR与绩效考核", "价值主张slogan"],
+    description: "股权设计、绩效管理、目标管理",
+    agentNames: ["股权设计", "OKR与绩效考核"],
     defaultOpen: false,
     colors: {
       gradient: "from-blue-600 to-cyan-500",
@@ -57,8 +57,8 @@ const AGENT_CATEGORIES = [
     id: "investment",
     name: "投资与机会",
     icon: "Lightbulb",
-    description: "创业机会、投资顾问、职业规划",
-    agentNames: ["前沿创业机会雷达", "大类资产投资顾问", "AI机会挖掘", "职业路径规划师", "高考专业规划师"],
+    description: "创业机会、赛道分析、趋势观察",
+    agentNames: ["前沿创业机会雷达"],
     defaultOpen: false,
     colors: {
       gradient: "from-orange-600 to-amber-500",
