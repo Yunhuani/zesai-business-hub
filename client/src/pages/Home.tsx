@@ -15,8 +15,8 @@ const AGENT_CATEGORIES = [
     id: "strategy",
     name: "战略与规划",
     icon: "Target",
-    description: "企业战略、商业模式、融资路演",
-    agentNames: ["战略规划", "融资BP与路演", "商业模式"],
+    description: "企业战略、商业模式、融资路演、竞品分析、一人公司",
+    agentNames: ["战略规划", "融资BP与路演", "竞品分析专家", "商业模式设计", "一人公司顾问"],
     defaultOpen: true,
     colors: {
       gradient: "from-purple-600 to-blue-600",
@@ -29,8 +29,8 @@ const AGENT_CATEGORIES = [
     id: "marketing",
     name: "营销与增长",
     icon: "TrendingUp",
-    description: "获客增长、品牌营销、新媒体运营",
-    agentNames: ["获客增长专家", "品牌营销策划师", "新媒体运营专家"],
+    description: "品牌营销、获客增长、营收增长、流量运营",
+    agentNames: ["品牌营销策划师", "获客增长专家", "营收增长专家", "流量运营专家"],
     defaultOpen: false,
     colors: {
       gradient: "from-green-600 to-emerald-500",
@@ -43,8 +43,8 @@ const AGENT_CATEGORIES = [
     id: "operation",
     name: "运营与管理",
     icon: "Users",
-    description: "股权设计、绩效管理、目标管理",
-    agentNames: ["股权设计", "OKR与绩效考核"],
+    description: "股权架构、绩效管理、用户需求洞察",
+    agentNames: ["股权架构设计", "绩效管理与激励", "用户需求洞察"],
     defaultOpen: false,
     colors: {
       gradient: "from-blue-600 to-cyan-500",
@@ -57,8 +57,8 @@ const AGENT_CATEGORIES = [
     id: "investment",
     name: "投资与机会",
     icon: "Lightbulb",
-    description: "创业机会、赛道分析、趋势观察",
-    agentNames: ["前沿创业机会雷达"],
+    description: "资产配置、职业规划、高考志愿、创业商机",
+    agentNames: ["大类资产投资顾问", "职业路径规划师", "高考专业规划师", "创业商机雷达"],
     defaultOpen: false,
     colors: {
       gradient: "from-orange-600 to-amber-500",
