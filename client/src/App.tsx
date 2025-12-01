@@ -16,6 +16,7 @@ import Payment from "./pages/Payment";
 import PaymentResult from "./pages/PaymentResult";
 import CaseExample from "./pages/CaseExample";
 import EmailLogin from "./pages/EmailLogin";
+import PasswordLogin from "./pages/PasswordLogin";
 import Credits from "./pages/Credits";
 import UserManagement from "./pages/UserManagement";
 
@@ -32,6 +33,7 @@ function Router() {
       <Route path="/wechat-login" component={WechatLogin} />
       <Route path="/wechat-callback" component={WechatLogin} />
       <Route path="/email-login" component={EmailLogin} />
+      <Route path="/login" component={PasswordLogin} />
       <Route path="/payment/:plan" component={Payment} />
       <Route path="/payment/result" component={PaymentResult} />
       <Route path="/case-example" component={CaseExample} />

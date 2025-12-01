@@ -16,6 +16,10 @@ export const users = mysqlTable("users", {
   name: text("name"),
   /** Email address for email-based login. Unique per user. */
   email: varchar("email", { length: 320 }).unique(),
+  /** Username for password-based login. Unique per user. */
+  username: varchar("username", { length: 64 }).unique(),
+  /** Hashed password for password-based login */
+  password: varchar("password", { length: 255 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
   /** Credits purchased by user (永久有效的充值积分) */

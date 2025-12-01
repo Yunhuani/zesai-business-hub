@@ -146,6 +146,95 @@ export const appRouter = router({
         
         return { success: true, user };
       }),
+    // Username/Password registration
+    register: publicProcedure
+      .input(z.object({ 
+        username: z.string().min(3).max(20).regex(/^[a-zA-Z0-9_]+$/, "用户名只能包含字母、数字和下划线"),
+        password: z.string().min(6).max(50),
+        name: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const { registerUser } = await import("./passwordAuth");
+        
+        try {
+          // Register user
+          const user = await registerUser(input.username, input.password, input.name);
+          
+          if (!user) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "注册失败",
+            });
+          }
+          
+          // Create session token
+          const sessionToken = await sdk.createSessionToken(`username_${input.username}`, {
+            name: user.name || "",
+            expiresInMs: ONE_YEAR_MS,
+          });
+          
+          // Set cookie
+          const cookieOptions = getSessionCookieOptions(ctx.req);
+          ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+          
+          return { success: true, user };
+        } catch (error) {
+          if (error instanceof Error) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: error.message,
+            });
+          }
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "注册失败",
+          });
+        }
+      }),
+    // Username/Password login
+    login: publicProcedure
+      .input(z.object({ 
+        username: z.string(),
+        password: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const { loginUser } = await import("./passwordAuth");
+        
+        try {
+          // Login user
+          const user = await loginUser(input.username, input.password);
+          
+          if (!user) {
+            throw new TRPCError({
+              code: "UNAUTHORIZED",
+              message: "用户名或密码错误",
+            });
+          }
+          
+          // Create session token
+          const sessionToken = await sdk.createSessionToken(`username_${input.username}`, {
+            name: user.name || "",
+            expiresInMs: ONE_YEAR_MS,
+          });
+          
+          // Set cookie
+          const cookieOptions = getSessionCookieOptions(ctx.req);
+          ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+          
+          return { success: true, user };
+        } catch (error) {
+          if (error instanceof Error) {
+            throw new TRPCError({
+              code: "UNAUTHORIZED",
+              message: error.message,
+            });
+          }
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "登录失败",
+          });
+        }
+      }),
   }),
 
   // Admin routes
