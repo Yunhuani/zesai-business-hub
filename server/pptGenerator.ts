@@ -23,13 +23,28 @@ export async function generatePPT(
   const colors = {
     primary: '7C3AED', // Purple
     secondary: '3B82F6', // Blue
+    accent: 'A78BFA', // Light Purple
     text: '1F2937',
-    lightBg: 'F3F4F6',
+    lightText: '6B7280',
+    lightBg: 'F9FAFB',
+    white: 'FFFFFF',
   };
   
-  // Add title slide
+  // Add title slide with gradient
   const titleSlide = pptx.addSlide();
-  titleSlide.background = { fill: colors.primary };
+  titleSlide.background = { 
+    fill: colors.primary,
+  };
+  
+  // Add decorative circle
+  titleSlide.addShape(pptx.ShapeType.ellipse, {
+    x: 7.5,
+    y: 0.5,
+    w: 3,
+    h: 3,
+    fill: { type: 'solid', color: colors.accent, transparency: 70 },
+    line: { type: 'none' },
+  });
   
   titleSlide.addText(title, {
     x: 0.5,
@@ -70,39 +85,75 @@ export async function generatePPT(
       
       for (const section of sections) {
         const slide = pptx.addSlide();
-        slide.background = { fill: 'FFFFFF' };
+        slide.background = { fill: colors.lightBg };
         
-        // Add header with gradient
+        // Add decorative accent bar
         slide.addShape(pptx.ShapeType.rect, {
           x: 0,
           y: 0,
-          w: 10,
-          h: 1,
+          w: 0.15,
+          h: 7.5,
           fill: { type: 'solid', color: colors.primary },
+          line: { type: 'none' },
         });
         
-        // Add title
+        // Add title with background
+        slide.addShape(pptx.ShapeType.rect, {
+          x: 0.3,
+          y: 0.5,
+          w: 9.4,
+          h: 0.9,
+          fill: { type: 'solid', color: colors.white },
+          line: { type: 'none' },
+          shadow: {
+            type: 'outer',
+            blur: 8,
+            offset: 2,
+            angle: 90,
+            opacity: 0.1,
+            color: '000000',
+          },
+        });
+        
         slide.addText(section.title, {
           x: 0.5,
-          y: 0.2,
+          y: 0.6,
           w: 9,
-          h: 0.6,
+          h: 0.7,
           fontSize: 28,
           bold: true,
-          color: 'FFFFFF',
+          color: colors.primary,
         });
         
-        // Add content
+        // Add content in card
+        slide.addShape(pptx.ShapeType.rect, {
+          x: 0.3,
+          y: 1.7,
+          w: 9.4,
+          h: 4.8,
+          fill: { type: 'solid', color: colors.white },
+          line: { type: 'none' },
+          shadow: {
+            type: 'outer',
+            blur: 8,
+            offset: 2,
+            angle: 90,
+            opacity: 0.1,
+            color: '000000',
+          },
+        });
+        
         const contentLines = formatContent(section.content);
         
         slide.addText(contentLines, {
-          x: 0.5,
-          y: 1.5,
-          w: 9,
-          h: 4,
+          x: 0.6,
+          y: 2.0,
+          w: 8.8,
+          h: 4.2,
           fontSize: 16,
           color: colors.text,
           valign: 'top',
+          lineSpacing: 24,
         });
         
         // Add footer
