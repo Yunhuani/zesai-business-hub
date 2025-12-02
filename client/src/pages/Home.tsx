@@ -2,6 +2,14 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import * as Icons from "lucide-react";
@@ -72,6 +80,7 @@ const AGENT_CATEGORIES = [
 export default function Home() {
   const { user, loading, isAuthenticated } = useAuth();
   const { data: agents, isLoading: agentsLoading } = trpc.agent.list.useQuery();
+  const logoutMutation = trpc.auth.logout.useMutation();
   
   // 控制每个分类的展开/折叠状态
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>(
@@ -129,9 +138,36 @@ export default function Home() {
             {loading ? (
               <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
             ) : isAuthenticated ? (
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground">欢迎, {user?.name}</span>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="gap-2">
+                    <Icons.User className="w-4 h-4" />
+                    {user?.name || user?.email || user?.username}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>我的账号</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                    {user?.email && <div>邮箱: {user.email}</div>}
+                    {user?.username && <div>用户名: {user.username}</div>}
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-red-600 focus:text-red-600"
+                    onClick={() => {
+                      logoutMutation.mutate(undefined, {
+                        onSuccess: () => {
+                          window.location.href = '/email-login';
+                        },
+                      });
+                    }}
+                  >
+                    <Icons.LogOut className="w-4 h-4 mr-2" />
+                    退出登录
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Button asChild>
                 <a href="/email-login">登录</a>
