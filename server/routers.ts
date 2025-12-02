@@ -421,22 +421,23 @@ export const appRouter = router({
       throw new Error("Invalid input: expected { conversationId: number, agentId: number }");
     }).mutation(async ({ ctx, input }) => {
       const { createMessage, getAgentById } = await import("./db");
-      const { getWelcomeMessage } = await import("./welcomeMessages");
       
       const agent = await getAgentById(input.agentId);
       if (!agent) throw new Error("Agent not found");
       
-      // 获取欢迎语
-      const welcomeMessage = getWelcomeMessage(agent.name, agent.description);
+      // 如果agent有welcomeMessage，使用它；否则不发送欢迎消息
+      if (!agent.welcomeMessage) {
+        return { content: null };
+      }
       
       // 保存欢迎消息
       await createMessage({
         conversationId: input.conversationId,
         role: "assistant",
-        content: welcomeMessage,
+        content: agent.welcomeMessage,
       });
       
-      return { content: welcomeMessage };
+      return { content: agent.welcomeMessage };
     }),
     send: protectedProcedure.input((val: unknown) => {
       if (typeof val === "object" && val !== null && "conversationId" in val && "content" in val && typeof val.conversationId === "number" && typeof val.content === "string") {

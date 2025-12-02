@@ -46,6 +46,7 @@ export const agents = mysqlTable("agents", {
   icon: varchar("icon", { length: 50 }).notNull(), // lucide icon name
   systemPrompt: text("systemPrompt").notNull(),
   inputFields: text("inputFields").notNull(), // JSON string of field configurations
+  welcomeMessage: text("welcomeMessage"), // Optional welcome message shown when user opens the agent
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

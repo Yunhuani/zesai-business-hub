@@ -1,0 +1,9 @@
+{
+  "query": "-- 战略规划专家\nUPDATE agents SET welcomeMessage = '👋 您好！我是您的泽思AI战略规划专家。\n\n我将帮助您制定清晰的战略规划和发展路径。您可以通过对话或上传现有材料（战略文档、市场分析、财务数据等）的方式提供信息。\n\n💡 提示: 信息越全面，战略规划质量越高，执行效果越好！\n\n请问：\n- 您的企业目前处于什么发展阶段？\n- 面临的主要挑战是什么？\n- 希望实现什么样的战略目标？' WHERE name = '战略规划专家';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute -- 战略规划专家\nUPDATE agents SET welcomeMessage = '👋 您好！我是您的泽思AI战略规划专家。\n\n我将帮助您制定清晰的战略规划和发展路径。您可以通过对话或上传现有材料（战略文档、市场分析、财务数据等）的方式提供信息。\n\n💡 提示: 信息越全面，战略规划质量越高，执行效果越好！\n\n请问：\n- 您的企业目前处于什么发展阶段？\n- 面临的主要挑战是什么？\n- 希望实现什么样的战略目标？' WHERE name = '战略规划专家';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 371
+}
