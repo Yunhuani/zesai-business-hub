@@ -381,10 +381,10 @@ export default function AgentChat() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="flex flex-col h-screen bg-white">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container py-4 flex items-center justify-between">
+      <header className="border-b bg-white sticky top-0 z-10 flex-shrink-0">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
               <Link href="/">
@@ -412,10 +412,10 @@ export default function AgentChat() {
         </div>
       </header>
 
-      <div className="container py-8 max-w-5xl">
-        <div className="space-y-6">
-          {/* Messages */}
-          <div className="space-y-4 min-h-[500px] max-h-[600px] overflow-y-auto bg-white rounded-lg border shadow-sm p-6">
+      {/* Messages area - scrollable */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <div className="space-y-4">
             {!messages || messages.length === 0 ? (
               <div className="flex items-center justify-center h-[400px]">
                 <div className="text-center text-muted-foreground">
@@ -431,7 +431,7 @@ export default function AgentChat() {
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[85%] rounded-lg p-4 ${
+                      className={`max-w-[85%] rounded-lg p-3 text-sm ${
                         msg.role === "user"
                           ? "bg-gradient-to-br from-blue-600 to-purple-600 text-white"
                           : "bg-gray-50 border"
@@ -448,7 +448,7 @@ export default function AgentChat() {
               {/* Streaming message */}
               {isStreaming && streamingMessage && (
                 <div className="flex justify-start">
-                  <div className="max-w-[85%] bg-gray-50 border rounded-lg p-4">
+                  <div className="max-w-[85%] bg-gray-50 border rounded-lg p-3 text-sm">
                     <EnhancedMessage content={streamingMessage} />
                   </div>
                 </div>
@@ -464,11 +464,13 @@ export default function AgentChat() {
             )}
             <div ref={messagesEndRef} />
           </div>
+        </div>
+      </div>
 
-          {/* Export buttons removed - will be triggered by AI suggestion in conversation */}
-
-          {/* Input area */}
-          <Card className="p-4 bg-white shadow-sm">
+      {/* Input area - fixed at bottom */}
+      <div className="border-t bg-white flex-shrink-0">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <Card className="p-4 bg-white shadow-none border-0">
             <div className="space-y-3">
               {isFirstMessage && (
                 <div className="flex items-start gap-2 text-sm text-muted-foreground bg-blue-50 p-3 rounded-lg">
