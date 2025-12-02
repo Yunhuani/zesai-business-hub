@@ -82,12 +82,16 @@ export default function OrderManagement() {
   };
 
   const formatDate = (date: string | Date) => {
-    return new Date(date).toLocaleString("zh-CN", {
+    // Convert UTC to Beijing time (UTC+8)
+    const utcDate = new Date(date);
+    const beijingTime = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);
+    return beijingTime.toLocaleString("zh-CN", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: "Asia/Shanghai",
     });
   };
 
@@ -124,12 +128,12 @@ export default function OrderManagement() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>订单号</TableHead>
-                    <TableHead>用户ID</TableHead>
+                    <TableHead>用户信息</TableHead>
                     <TableHead>套餐</TableHead>
                     <TableHead>金额</TableHead>
                     <TableHead>支付方式</TableHead>
                     <TableHead>状态</TableHead>
-                    <TableHead>创建时间</TableHead>
+                    <TableHead>创建时间（北京时间）</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -138,7 +142,12 @@ export default function OrderManagement() {
                       <TableCell className="font-mono text-sm">
                         {order.outTradeNo}
                       </TableCell>
-                      <TableCell>{order.userId}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{order.userName || "未知用户"}</span>
+                          <span className="text-xs text-muted-foreground">{order.userEmail || `ID: ${order.userId}`}</span>
+                        </div>
+                      </TableCell>
                       <TableCell>{getPlanName(order.plan)}</TableCell>
                       <TableCell className="font-semibold">
                         {formatAmount(order.amount)}

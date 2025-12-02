@@ -557,11 +557,31 @@ export const appRouter = router({
   // Order management
   order: router({
     list: adminProcedure.query(async () => {
-      const { orders } = await import("../drizzle/schema");
-      const { desc } = await import("drizzle-orm");
+      const { orders, users } = await import("../drizzle/schema");
+      const { desc, eq } = await import("drizzle-orm");
       const db = await (await import("./db")).getDb();
       if (!db) return [];
-      return db.select().from(orders).orderBy(desc(orders.createdAt));
+      
+      // Join orders with users to get user information
+      const result = await db
+        .select({
+          id: orders.id,
+          userId: orders.userId,
+          userName: users.name,
+          userEmail: users.email,
+          outTradeNo: orders.outTradeNo,
+          plan: orders.plan,
+          amount: orders.amount,
+          paymentMethod: orders.paymentMethod,
+          status: orders.status,
+          createdAt: orders.createdAt,
+          updatedAt: orders.updatedAt,
+        })
+        .from(orders)
+        .leftJoin(users, eq(orders.userId, users.id))
+        .orderBy(desc(orders.createdAt));
+      
+      return result;
     }),
   }),
 });
