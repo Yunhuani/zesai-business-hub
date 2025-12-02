@@ -86,8 +86,8 @@ export const paymentRouter = router({
       });
       
       // 创建支付宝支付订单
-      const returnUrl = "https://www.zhesiai.com/payment/result";
-      const notifyUrl = "https://www.zhesiai.com/api/payment/alipay/notify";
+      const returnUrl = "https://www.zesiai.com/payment/result";
+      const notifyUrl = "https://www.zesiai.com/api/payment/alipay/notify";
       
       try {
         const paymentForm = await createAlipayPagePayment({
@@ -145,8 +145,8 @@ export const paymentRouter = router({
       });
       
       // 创建支付宝支付订单
-      const returnUrl = "https://www.zhesiai.com/payment/result";
-      const notifyUrl = "https://www.zhesiai.com/api/payment/alipay/notify";
+      const returnUrl = "https://www.zesiai.com/payment/result";
+      const notifyUrl = "https://www.zesiai.com/api/payment/alipay/notify";
       
       try {
         const paymentForm = await createAlipayPagePayment({

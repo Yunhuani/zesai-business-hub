@@ -19,7 +19,7 @@ describe('WeChat Official Account Integration', () => {
   });
 
   it('should generate valid OAuth authorization URL for Official Account', () => {
-    const redirectUri = 'https://www.zhesiai.com/wechat-callback';
+    const redirectUri = 'https://www.zesiai.com/wechat-callback';
     const authUrl = getWechatAuthUrl(redirectUri, 'TEST_STATE');
     
     expect(authUrl).toContain('https://open.weixin.qq.com/connect/oauth2/authorize');
@@ -33,7 +33,7 @@ describe('WeChat Official Account Integration', () => {
   });
 
   it('should use Official Account OAuth endpoint (not Open Platform)', () => {
-    const redirectUri = 'https://www.zhesiai.com/wechat-callback';
+    const redirectUri = 'https://www.zesiai.com/wechat-callback';
     const authUrl = getWechatAuthUrl(redirectUri);
     
     // 公众号使用 oauth2/authorize,不是开放平台的 qrconnect

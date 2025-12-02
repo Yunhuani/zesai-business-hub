@@ -120,6 +120,22 @@ export default function Admin() {
               </Button>
             </CardContent>
           </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setLocation("/admin/orders")}>
+            <CardHeader>
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mb-4">
+                <Icons.ShoppingCart className="w-6 h-6 text-white" />
+              </div>
+              <CardTitle>订单管理</CardTitle>
+              <CardDescription>查看所有支付订单和状态</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" className="w-full">
+                <Icons.Receipt className="w-4 h-4 mr-2" />
+                查看订单
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

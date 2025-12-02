@@ -553,6 +553,17 @@ export const appRouter = router({
       return await getTransactionHistory(ctx.user.id);
     }),
   }),
+  
+  // Order management
+  order: router({
+    list: adminProcedure.query(async () => {
+      const { orders } = await import("../drizzle/schema");
+      const { desc } = await import("drizzle-orm");
+      const db = await (await import("./db")).getDb();
+      if (!db) return [];
+      return db.select().from(orders).orderBy(desc(orders.createdAt));
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

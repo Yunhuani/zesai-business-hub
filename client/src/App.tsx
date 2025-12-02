@@ -19,6 +19,7 @@ import EmailLogin from "./pages/EmailLogin";
 import PasswordLogin from "./pages/PasswordLogin";
 import Credits from "./pages/Credits";
 import UserManagement from "./pages/UserManagement";
+import OrderManagement from "./pages/OrderManagement";
 
 function Router() {
   return (
@@ -39,6 +40,7 @@ function Router() {
       <Route path="/case-example" component={CaseExample} />
       <Route path="/credits" component={Credits} />
       <Route path="/admin/user-management" component={UserManagement} />
+      <Route path="/admin/orders" component={OrderManagement} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
