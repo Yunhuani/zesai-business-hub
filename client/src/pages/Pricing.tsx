@@ -253,6 +253,23 @@ export default function Pricing() {
         </div>
       </div>
 
+      {/* Footer */}
+      <footer className="border-t py-8 bg-white/50 mt-16">
+        <div className="container text-center text-sm text-muted-foreground space-y-2">
+          <div>© 2025 泽思 Zenith AI - 专业AI商业咨询平台</div>
+          <div>
+            <a 
+              href="https://beian.miit.gov.cn/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-foreground transition-colors"
+            >
+              沪ICP备2024048847号
+            </a>
+          </div>
+        </div>
+      </footer>
+
       <ExpertConsultationDialog 
         open={expertDialogOpen} 
         onOpenChange={setExpertDialogOpen} 
