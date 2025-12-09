@@ -13,11 +13,22 @@ import { InsufficientCreditsDialog } from "@/components/InsufficientCreditsDialo
 
 export default function AgentChat() {
   const params = useParams();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const agentId = parseInt(params.id || "0");
+  const urlConversationId = location.startsWith('/conversation/') ? parseInt(params.id || "0") : null;
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   
-  const { data: agent, isLoading: agentLoading } = trpc.agent.getById.useQuery({ id: agentId });
+  // Get conversation data if loading from URL
+  const { data: conversationData } = trpc.conversation.getById.useQuery(
+    { id: urlConversationId! },
+    { enabled: !!urlConversationId }
+  );
+  
+  const effectiveAgentId = urlConversationId && conversationData ? conversationData.agentId : agentId;
+  const { data: agent, isLoading: agentLoading } = trpc.agent.getById.useQuery(
+    { id: effectiveAgentId },
+    { enabled: !!effectiveAgentId }
+  );
   const { data: subscriptionData } = trpc.subscription.get.useQuery(undefined, { enabled: isAuthenticated });
   const [conversationId, setConversationId] = useState<number | null>(null);
   const [message, setMessage] = useState("");
@@ -42,15 +53,22 @@ export default function AgentChat() {
     scrollToBottom();
   }, [messages]);
 
+  // Load conversation from URL if present
+  useEffect(() => {
+    if (urlConversationId && isAuthenticated) {
+      setConversationId(urlConversationId);
+    }
+  }, [urlConversationId, isAuthenticated]);
+
   // 自动创建对话并发送欢迎消息
   useEffect(() => {
-    if (agent && isAuthenticated && !conversationId) {
+    if (agent && isAuthenticated && !conversationId && !urlConversationId) {
       createConversation.mutate({
         agentId: agent.id,
         title: `${agent.name} - ${new Date().toLocaleDateString()}`,
       });
     }
-  }, [agent, isAuthenticated]);
+  }, [agent, isAuthenticated, urlConversationId]);
 
   const createConversation = trpc.conversation.create.useMutation({
     onSuccess: (data) => {
@@ -108,6 +126,7 @@ export default function AgentChat() {
   const exportPDF = trpc.export.exportPDF.useMutation({
     onSuccess: async (data) => {
       try {
+        console.log('PDF export response:', { dataLength: data.data?.length, filename: data.filename });
         // Convert base64 to blob
         const binaryString = atob(data.data);
         const bytes = new Uint8Array(binaryString.length);
@@ -408,6 +427,36 @@ export default function AgentChat() {
                 历史记录
               </Button>
             </Link>
+            {conversationId && messages && messages.length > 0 && (
+              <>
+                <Button
+                  variant="ghost"
+                  className="gap-2"
+                  onClick={handleExportPDF}
+                  disabled={exportPDF.isPending}
+                >
+                  {exportPDF.isPending ? (
+                    <Icons.Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Icons.FileText className="w-4 h-4" />
+                  )}
+                  导出PDF
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="gap-2"
+                  onClick={handleExportPPT}
+                  disabled={generatePPTMutation.isPending}
+                >
+                  {generatePPTMutation.isPending ? (
+                    <Icons.Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Icons.FileText className="w-4 h-4" />
+                  )}
+                  导出PPT
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>

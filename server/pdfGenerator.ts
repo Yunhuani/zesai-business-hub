@@ -124,7 +124,7 @@ export async function generatePDF(
     // Add footer to all pages
     const range = doc.bufferedPageRange();
     for (let i = 0; i < range.count; i++) {
-      doc.switchToPage(i);
+      doc.switchToPage(range.start + i);
       doc
         .fillColor('#999999')
         .fontSize(10)

@@ -68,7 +68,7 @@ export default function History() {
                   key={conv.id}
                   className="hover:shadow-lg transition-shadow cursor-pointer"
                 >
-                  <Link href={`/agent/${conv.agentId}`}>
+                  <Link href={`/conversation/${conv.id}`}>
                     <CardHeader>
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
