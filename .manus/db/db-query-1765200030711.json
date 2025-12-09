@@ -1,0 +1,16 @@
+{
+  "query": "SELECT id, email, name, password FROM users WHERE email = 'yunhua.ni@gmail.com';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, email, name, password FROM users WHERE email = 'yunhua.ni@gmail.com';",
+  "rows": [
+    {
+      "id": "1",
+      "email": "yunhua.ni@gmail.com",
+      "name": "Zenith",
+      "password": "$2b$10$s5MaFi5vZhc2AydLJdDTJuJ.wD6ljbw1/vHpDpLvRGYbVTecbc5/6"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tname\tpassword\n1\tyunhua.ni@gmail.com\tZenith\t$2b$10$s5MaFi5vZhc2AydLJdDTJuJ.wD6ljbw1/vHpDpLvRGYbVTecbc5/6\n",
+  "stderr": "",
+  "execution_time_ms": 1599
+}

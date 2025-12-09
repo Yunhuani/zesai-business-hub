@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE users SET creditsPurchased = creditsPurchased + 500 WHERE email = '18601389681@163.com';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute UPDATE users SET creditsPurchased = creditsPurchased + 500 WHERE email = '18601389681@163.com';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1669
+}

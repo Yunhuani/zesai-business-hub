@@ -1,0 +1,17 @@
+{
+  "query": "SELECT id, name, email, creditsPurchased, creditsSubscription FROM users WHERE email = '18601389681@163.com';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, name, email, creditsPurchased, creditsSubscription FROM users WHERE email = '18601389681@163.com';",
+  "rows": [
+    {
+      "id": "6360001",
+      "name": "18601389681",
+      "email": "18601389681@163.com",
+      "creditsPurchased": "0",
+      "creditsSubscription": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tcreditsPurchased\tcreditsSubscription\n6360001\t18601389681\t18601389681@163.com\t0\t0\n",
+  "stderr": "",
+  "execution_time_ms": 2839
+}

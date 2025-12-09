@@ -1,0 +1,20 @@
+{
+  "query": "SELECT o.id, o.outTradeNo, o.plan, o.amount, o.status, o.paidAt, o.createdAt, u.email \nFROM orders o \nLEFT JOIN users u ON o.userId = u.id \nWHERE u.email = '18601389681@163.com';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT o.id, o.outTradeNo, o.plan, o.amount, o.status, o.paidAt, o.createdAt, u.email \nFROM orders o \nLEFT JOIN users u ON o.userId = u.id \nWHERE u.email = '18601389681@163.com';",
+  "rows": [
+    {
+      "id": "420001",
+      "outTradeNo": "ZS17650071167906360001",
+      "plan": "pack_500",
+      "amount": "4900",
+      "status": "pending",
+      "paidAt": "NULL",
+      "createdAt": "2025-12-06 07:45:16",
+      "email": "18601389681@163.com"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\toutTradeNo\tplan\tamount\tstatus\tpaidAt\tcreatedAt\temail\n420001\tZS17650071167906360001\tpack_500\t4900\tpending\tNULL\t2025-12-06 07:45:16\t18601389681@163.com\n",
+  "stderr": "",
+  "execution_time_ms": 1554
+}
