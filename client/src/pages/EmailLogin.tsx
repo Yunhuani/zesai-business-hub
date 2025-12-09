@@ -75,8 +75,8 @@ export default function EmailLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 p-4">
+      <div className="w-full max-w-md flex-1 flex flex-col justify-center">
         {/* Logo and Title */}
         <div className="text-center mb-8">
           <img src={APP_LOGO} alt={APP_TITLE} className="h-16 mx-auto mb-4" />
@@ -255,8 +255,8 @@ export default function EmailLogin() {
       </div>
 
       {/* Footer */}
-      <footer className="py-8">
-        <div className="container text-center text-sm text-muted-foreground space-y-2">
+      <footer className="w-full py-6 mt-8">
+        <div className="text-center text-sm text-muted-foreground space-y-2">
           <div>© 2025 泽思 Zenith AI - 专业AI商业咨询平台</div>
           <div>
             <a 

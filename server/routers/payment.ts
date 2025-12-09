@@ -308,7 +308,17 @@ export const paymentRouter = router({
         
         // Check if it's a subscription or credit pack order
         const subscriptionConfig = PLAN_CONFIG[order.plan as keyof typeof PLAN_CONFIG];
-        const creditPackConfig = CREDIT_PACK_CONFIG[order.plan];
+        
+        // Extract pack ID from plan (handle both "pack_500" and "pack_500_49" formats)
+        let packId = order.plan;
+        if (order.plan.startsWith('pack_') && order.plan.includes('_', 5)) {
+          // Format: pack_500_49 -> extract pack_500
+          const parts = order.plan.split('_');
+          if (parts.length >= 2) {
+            packId = `${parts[0]}_${parts[1]}`; // pack_500
+          }
+        }
+        const creditPackConfig = CREDIT_PACK_CONFIG[packId];
         
         if (subscriptionConfig) {
           // Handle subscription order

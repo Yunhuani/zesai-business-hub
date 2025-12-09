@@ -1,0 +1,17 @@
+{
+  "query": "SELECT id, userId, plan, amount, status FROM orders WHERE plan LIKE 'pack_%' AND status = 'paid' ORDER BY createdAt",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, userId, plan, amount, status FROM orders WHERE plan LIKE 'pack_%' AND status = 'paid' ORDER BY createdAt",
+  "rows": [
+    {
+      "id": "570001",
+      "userId": "7350017",
+      "plan": "pack_1200",
+      "amount": "9900",
+      "status": "paid"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserId\tplan\tamount\tstatus\n570001\t7350017\tpack_1200\t9900\tpaid\n",
+  "stderr": "",
+  "execution_time_ms": 1553
+}

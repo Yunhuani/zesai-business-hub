@@ -1,0 +1,16 @@
+{
+  "query": "SELECT id, email, creditsPurchased, creditsSubscription FROM users WHERE id = 7350017",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, email, creditsPurchased, creditsSubscription FROM users WHERE id = 7350017",
+  "rows": [
+    {
+      "id": "7350017",
+      "email": "1558328644@qq.com",
+      "creditsPurchased": "1200",
+      "creditsSubscription": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tcreditsPurchased\tcreditsSubscription\n7350017\t1558328644@qq.com\t1200\t0\n",
+  "stderr": "",
+  "execution_time_ms": 1596
+}
