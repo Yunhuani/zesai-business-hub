@@ -499,6 +499,15 @@
 - [x] 生成测试PDF并验证中文显示效果。
 - [x] 创建修复后的checkpoint。
 
+## 对话历史加载问题诊断
+- [x] 检查对话消息保存逻辑（streamChat.ts，代码逻辑正确）
+- [x] 检查对话历史加载逻辑（getConversationMessages，代码逻辑正确）
+- [x] 检查AgentChat页面的消息加载代码（使用/api/chat/stream）
+- [x] 检查createMessage函数（db.ts，代码逻辑正确）
+- [x] 数据库查询：发现最新对话没有任何消息记录
+- [ ] 问题未解决：消息未被保存到数据库，但代码逻辑看起来正确
+- [ ] 需要进一步调试：添加日志输出或实时监控数据库插入操作
+
 
 ## 运营与管理模块Agent调整
 - [x] 查询数据库中运营与管理模块的所有Agent
@@ -550,4 +559,21 @@
 - [x] 添加exportMessageExcel的tRPC接口
 - [x] 在MessageDownloadButtons中集成Excel下载功能
 - [x] 测试Excel导出功能（成功生成7.48KB Excel文件，表格样式专业）
+- [x] 创建检查点
+
+
+## 对话历史加载问题修复
+- [ ] 检查对话消息保存逻辑（sendMessage接口）
+- [ ] 检查对话历史加载逻辑（getConversationMessages接口）
+- [ ] 检查AgentChat页面的消息加载代码
+- [ ] 修复历史对话加载问题
+- [ ] 测试对话历史功能
 - [ ] 创建检查点
+
+
+## 紧急修复：编译错误和用户体验问题
+- [x] 修复MessageDownloadButtons组件导入错误（添加Button导入）
+- [x] 移除Header顶部的"历史记录"按钮（Home和AgentChat页面）
+- [x] 修复欢迎语重复显示问题（移除重复useEffect）
+- [x] 测试对话功能（欢迎语只显示一次，对话正常）
+- [x] 创建检查点

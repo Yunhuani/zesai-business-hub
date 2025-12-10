@@ -129,12 +129,6 @@ export default function Home() {
                     升级套餐
                   </Button>
                 </Link>
-                <Link href="/history">
-                  <Button variant="ghost" className="gap-2">
-                    <Icons.History className="w-4 h-4" />
-                    历史记录
-                  </Button>
-                </Link>
               </>
             )}
             {loading ? (

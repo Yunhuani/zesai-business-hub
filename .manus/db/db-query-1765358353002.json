@@ -1,0 +1,100 @@
+{
+  "query": "SELECT c.id, c.userId, c.agentId, c.title, c.createdAt, a.name as agentName,\n(SELECT COUNT(*) FROM messages m WHERE m.conversationId = c.id) as messageCount\nFROM conversations c\nLEFT JOIN agents a ON c.agentId = a.id\nORDER BY c.id DESC\nLIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT c.id, c.userId, c.agentId, c.title, c.createdAt, a.name as agentName,\n(SELECT COUNT(*) FROM messages m WHERE m.conversationId = c.id) as messageCount\nFROM conversations c\nLEFT JOIN agents a ON c.agentId = a.id\nORDER BY c.id DESC\nLIMIT 10;",
+  "rows": [
+    {
+      "id": "1350003",
+      "userId": "7470018",
+      "agentId": "120002",
+      "title": "融资BP与路演 - 12/10/2025",
+      "createdAt": "2025-12-10 08:33:25",
+      "agentName": "融资BP与路演",
+      "messageCount": "3"
+    },
+    {
+      "id": "1350002",
+      "userId": "7470018",
+      "agentId": "120002",
+      "title": "融资BP与路演 - 12/10/2025",
+      "createdAt": "2025-12-10 08:29:56",
+      "agentName": "融资BP与路演",
+      "messageCount": "1"
+    },
+    {
+      "id": "1350001",
+      "userId": "7470018",
+      "agentId": "120002",
+      "title": "融资BP与路演 - 12/10/2025",
+      "createdAt": "2025-12-10 08:29:07",
+      "agentName": "融资BP与路演",
+      "messageCount": "1"
+    },
+    {
+      "id": "1320002",
+      "userId": "7470018",
+      "agentId": "120002",
+      "title": "融资BP与路演 - 12/10/2025",
+      "createdAt": "2025-12-10 08:12:15",
+      "agentName": "融资BP与路演",
+      "messageCount": "1"
+    },
+    {
+      "id": "1320001",
+      "userId": "7470018",
+      "agentId": "120001",
+      "title": "战略规划 - 12/10/2025",
+      "createdAt": "2025-12-10 08:11:18",
+      "agentName": "战略规划",
+      "messageCount": "3"
+    },
+    {
+      "id": "1290001",
+      "userId": "7470018",
+      "agentId": "120001",
+      "title": "战略规划 - 12/10/2025",
+      "createdAt": "2025-12-10 07:52:28",
+      "agentName": "战略规划",
+      "messageCount": "1"
+    },
+    {
+      "id": "1260001",
+      "userId": "7470018",
+      "agentId": "120001",
+      "title": "战略规划 - 12/10/2025",
+      "createdAt": "2025-12-10 06:28:03",
+      "agentName": "战略规划",
+      "messageCount": "4"
+    },
+    {
+      "id": "1230002",
+      "userId": "1",
+      "agentId": "150005",
+      "title": "业务增长专家 - 2025/12/10",
+      "createdAt": "2025-12-10 04:19:29",
+      "agentName": "业务增长专家",
+      "messageCount": "1"
+    },
+    {
+      "id": "1230001",
+      "userId": "1",
+      "agentId": "150005",
+      "title": "业务增长专家 - 2025/12/10",
+      "createdAt": "2025-12-10 04:19:07",
+      "agentName": "业务增长专家",
+      "messageCount": "1"
+    },
+    {
+      "id": "1200001",
+      "userId": "7350017",
+      "agentId": "120002",
+      "title": "融资BP与路演 - 2025/12/10",
+      "createdAt": "2025-12-10 02:48:29",
+      "agentName": "融资BP与路演",
+      "messageCount": "48"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserId\tagentId\ttitle\tcreatedAt\tagentName\tmessageCount\n1350003\t7470018\t120002\t融资BP与路演 - 12/10/2025\t2025-12-10 08:33:25\t融资BP与路演\t3\n1350002\t7470018\t120002\t融资BP与路演 - 12/10/2025\t2025-12-10 08:29:56\t融资BP与路演\t1\n1350001\t7470018\t120002\t融资BP与路演 - 12/10/2025\t2025-12-10 08:29:07\t融资BP与路演\t1\n1320002\t7470018\t120002\t融资BP与路演 - 12/10/2025\t2025-12-10 08:12:15\t融资BP与路演\t1\n1320001\t7470018\t120001\t战略规划 - 12/10/2025\t2025-12-10 08:11:18\t战略规划\t3\n1290001\t7470018\t120001\t战略规划 - 12/10/2025\t2025-12-10 07:52:28\t战略规划\t1\n1260001\t7470018\t120001\t战略规划 - 12/10/2025\t2025-12-10 06:28:03\t战略规划\t4\n1230002\t1\t150005\t业务增长专家 - 2025/12/10\t2025-12-10 04:19:29\t业务增长专家\t1\n1230001\t1\t150005\t业务增长专家 - 2025/12/10\t2025-12-10 04:19:07\t业务增长专家\t1\n1200001\t7350017\t120002\t融资BP与路演 - 2025/12/10\t2025-12-10 02:48:29\t融资BP与路演\t48\n",
+  "stderr": "",
+  "execution_time_ms": 1722
+}

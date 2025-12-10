@@ -74,15 +74,6 @@ export default function AgentChat() {
       if (latestConversation) {
         // Load existing conversation
         setConversationId(latestConversation.id);
-        // Send welcome message if conversation has no messages
-        setTimeout(() => {
-          if (!messages || messages.length === 0) {
-            sendWelcomeMessage.mutate({
-              conversationId: latestConversation.id,
-              agentId: agent.id,
-            });
-          }
-        }, 500);
       } else {
         // Create new conversation
         createConversation.mutate({
@@ -92,6 +83,9 @@ export default function AgentChat() {
       }
     }
   }, [agent, isAuthenticated, urlConversationId, latestConversation]);
+
+  // Welcome message is sent automatically when creating a new conversation
+  // No need to send it again when loading existing conversations
 
   const createConversation = trpc.conversation.create.useMutation({
     onSuccess: (data) => {
@@ -444,12 +438,6 @@ export default function AgentChat() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/history">
-              <Button variant="ghost" className="gap-2">
-                <Icons.History className="w-4 h-4" />
-                历史记录
-              </Button>
-            </Link>
             {latestConversation && conversationId === latestConversation.id && (
               <Button
                 variant="ghost"

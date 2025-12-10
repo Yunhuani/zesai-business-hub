@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, userId, agentId, title, createdAt \nFROM conversations \nORDER BY id DESC \nLIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, userId, agentId, title, createdAt \nFROM conversations \nORDER BY id DESC \nLIMIT 5;",
+  "rows": [
+    {
+      "id": "1350003",
+      "userId": "7470018",
+      "agentId": "120002",
+      "title": "融资BP与路演 - 12/10/2025",
+      "createdAt": "2025-12-10 08:33:25"
+    },
+    {
+      "id": "1350002",
+      "userId": "7470018",
+      "agentId": "120002",
+      "title": "融资BP与路演 - 12/10/2025",
+      "createdAt": "2025-12-10 08:29:56"
+    },
+    {
+      "id": "1350001",
+      "userId": "7470018",
+      "agentId": "120002",
+      "title": "融资BP与路演 - 12/10/2025",
+      "createdAt": "2025-12-10 08:29:07"
+    },
+    {
+      "id": "1320002",
+      "userId": "7470018",
+      "agentId": "120002",
+      "title": "融资BP与路演 - 12/10/2025",
+      "createdAt": "2025-12-10 08:12:15"
+    },
+    {
+      "id": "1320001",
+      "userId": "7470018",
+      "agentId": "120001",
+      "title": "战略规划 - 12/10/2025",
+      "createdAt": "2025-12-10 08:11:18"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserId\tagentId\ttitle\tcreatedAt\n1350003\t7470018\t120002\t融资BP与路演 - 12/10/2025\t2025-12-10 08:33:25\n1350002\t7470018\t120002\t融资BP与路演 - 12/10/2025\t2025-12-10 08:29:56\n1350001\t7470018\t120002\t融资BP与路演 - 12/10/2025\t2025-12-10 08:29:07\n1320002\t7470018\t120002\t融资BP与路演 - 12/10/2025\t2025-12-10 08:12:15\n1320001\t7470018\t120001\t战略规划 - 12/10/2025\t2025-12-10 08:11:18\n",
+  "stderr": "",
+  "execution_time_ms": 1671
+}

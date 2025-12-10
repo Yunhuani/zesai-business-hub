@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, conversationId, role, LEFT(content, 100) as content_preview, created_at \nFROM messages \nWHERE conversationId >= 1870001\nORDER BY conversationId DESC, created_at ASC \nLIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, conversationId, role, LEFT(content, 100) as content_preview, created_at \nFROM messages \nWHERE conversationId >= 1870001\nORDER BY conversationId DESC, created_at ASC \nLIMIT 20;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'created_at' in 'field list'"
+  ]
+}
