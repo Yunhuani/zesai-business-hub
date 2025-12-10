@@ -521,4 +521,10 @@
 - [x] 检查字体文件实际位置
 - [x] 修复pdfGenerator.ts中的字体路径引用（使用path.join动态构建路径）
 - [x] 测试PDF导出功能（成功生成142KB PDF文件）
+- [x] 创建检查点
+
+
+## 切换大模型到Claude 3.5 Sonnet
+- [x] 修改server/_core/llm.ts中的model配置（gemini-2.5-flash → claude-3.5-sonnet）
+- [x] 测试对话功能（响应专业、逻辑清晰）
 - [ ] 创建检查点

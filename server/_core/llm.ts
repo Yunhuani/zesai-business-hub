@@ -280,7 +280,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   } = params;
 
   const payload: Record<string, unknown> = {
-    model: "gemini-2.5-flash",
+    model: "claude-3.5-sonnet",
     messages: messages.map(normalizeMessage),
   };
 
@@ -349,7 +349,7 @@ export async function invokeLLMStream(params: InvokeParams): Promise<ReadableStr
   } = params;
 
   const payload: Record<string, unknown> = {
-    model: "gemini-2.5-flash",
+    model: "claude-3.5-sonnet",
     messages: messages.map(normalizeMessage),
     stream: true, // Enable streaming
   };
