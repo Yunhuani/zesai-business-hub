@@ -132,37 +132,6 @@ export default function Pricing() {
       </header>
 
       <div className="container py-16">
-        {/* Current Status */}
-        {subscriptionData && (
-          <Card className="mb-8 max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle>当前订阅状态</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-lg font-semibold">
-                    {currentPlan === "free" ? "免费版" : plans.find(p => p.id === currentPlan)?.name}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    本月积分：{subscriptionData.credits.subscription}/{subscriptionData.credits.planLimit}
-                  </p>
-                  {subscriptionData.credits.purchased > 0 && (
-                    <p className="text-sm text-muted-foreground">
-                      购买积分：{subscriptionData.credits.purchased}
-                    </p>
-                  )}
-                </div>
-                {currentPlan !== "free" && subscriptionData.subscription && (
-                  <p className="text-sm text-muted-foreground">
-                    到期时间: {new Date(subscriptionData.subscription.endDate).toLocaleDateString()}
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {plans.map((plan) => {
