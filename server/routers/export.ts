@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { generatePPT } from "../pptGenerator";
 import { generatePDF } from "../pdfGenerator";
+import { messages } from "../../drizzle/schema";
 
 export const exportRouter = router({
   /**
@@ -204,6 +205,74 @@ export const exportRouter = router({
       return {
         slides: [{ title: 'Placeholder', content: 'Use generateSlideContent instead' }],
         filename: `presentation_${input.conversationId}_${Date.now()}.json`,
+      };
+    }),
+
+  /**
+   * Export single message as PDF
+   */
+  exportMessagePDF: protectedProcedure
+    .input(
+      z.object({
+        messageId: z.number(),
+        title: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "数据库连接失败",
+        });
+      }
+
+      // Get message and verify ownership through conversation
+      const message = await db
+        .select({
+          id: messages.id,
+          content: messages.content,
+          role: messages.role,
+          conversationId: messages.conversationId,
+        })
+        .from(messages)
+        .where(eq(messages.id, input.messageId))
+        .limit(1);
+
+      if (!message || message.length === 0) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "消息不存在",
+        });
+      }
+
+      // Verify user owns the conversation
+      const conversation = await db
+        .select()
+        .from(conversations)
+        .where(eq(conversations.id, message[0].conversationId))
+        .limit(1);
+
+      if (!conversation || conversation.length === 0 || conversation[0].userId !== ctx.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "无权导出此消息",
+        });
+      }
+
+      // Generate PDF from single message
+      const pdfBuffer = await generatePDF(
+        [{ role: message[0].role, content: message[0].content }],
+        input.title || '商业咨询方案'
+      );
+      
+      // Convert buffer to base64 for transmission
+      const base64Data = pdfBuffer.toString('base64');
+      
+      return {
+        data: base64Data,
+        filename: `${input.title || 'report'}_${Date.now()}.pdf`,
+        mimeType: 'application/pdf',
       };
     }),
 });

@@ -527,4 +527,19 @@
 ## 切换大模型到Claude 3.5 Sonnet
 - [x] 修改server/_core/llm.ts中的model配置（gemini-2.5-flash → claude-3.5-sonnet）
 - [x] 测试对话功能（响应专业、逻辑清晰）
+- [x] 创建检查点
+
+
+## PDF/PPT导出功能重构
+- [x] 移除顶部Header的PPT/PDF导出按钮
+- [x] 创建文件类型检测函数（识别（PDF）、（PPT）、（Excel）标注）
+- [x] 在AgentChat中为每条assistant消息添加下载按钮组
+- [x] 创建单条消息PDF导出的tRPC接口（exportMessagePDF）
+- [x] pdfGenerator已支持单条消息生成
+- [x] PPT功能暂时禁用（显示“PPT导出功能开发中，敬请期待”）
+- [x] 测试PDF导出功能（成功生成162KB、共3页的PDF文件）
 - [ ] 创建检查点
+
+## 客服系统功能（待开发）
+- [ ] 右下角浮动客服按钮 + 平台助手顾问
+- [ ] 管理员客服工作台页面（咨询统计、对话列表、搜索筛选、快捷回复）

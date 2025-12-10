@@ -8,6 +8,7 @@ import * as Icons from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { Link, useParams, useLocation } from "wouter";
 import { EnhancedMessage } from "@/components/EnhancedMessage";
+import { MessageDownloadButtons } from "@/components/MessageDownloadButtons";
 import { toast } from "sonner";
 import { InsufficientCreditsDialog } from "@/components/InsufficientCreditsDialog";
 
@@ -464,36 +465,7 @@ export default function AgentChat() {
                 开始新对话
               </Button>
             )}
-            {conversationId && messages && messages.length > 0 && (
-              <>
-                <Button
-                  variant="ghost"
-                  className="gap-2"
-                  onClick={handleExportPDF}
-                  disabled={exportPDF.isPending}
-                >
-                  {exportPDF.isPending ? (
-                    <Icons.Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Icons.FileText className="w-4 h-4" />
-                  )}
-                  导出PDF
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="gap-2"
-                  onClick={handleExportPPT}
-                  disabled={generatePPTMutation.isPending}
-                >
-                  {generatePPTMutation.isPending ? (
-                    <Icons.Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Icons.FileText className="w-4 h-4" />
-                  )}
-                  导出PPT
-                </Button>
-              </>
-            )}
+            {/* PDF/PPT导出按钮已移至消息内容下方 */}
           </div>
         </div>
       </header>
@@ -524,7 +496,14 @@ export default function AgentChat() {
                       }`}
                     >
                       {msg.role === "assistant" ? (
-                        <EnhancedMessage content={msg.content} />
+                        <>
+                          <EnhancedMessage content={msg.content} />
+                          <MessageDownloadButtons 
+                            messageId={msg.id}
+                            content={msg.content}
+                            conversationTitle={agent?.name || '商业咨询报告'}
+                          />
+                        </>
                       ) : (
                         <p className="whitespace-pre-wrap">{msg.content}</p>
                       )}
