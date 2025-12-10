@@ -1,4 +1,5 @@
 import PDFDocument from 'pdfkit';
+import fs from 'fs';
 import { Readable } from 'stream';
 
 interface Message {
@@ -39,15 +40,19 @@ export async function generatePDF(
       .rect(0, 0, doc.page.width, 300)
       .fill(primaryColor);
 
+        // Register fonts
+    doc.registerFont('SourceHanSans-Normal', '/home/ubuntu/zesai-business-hub/assets/fonts/SourceHanSansSC-Normal.otf');
+    doc.registerFont('SourceHanSans-Bold', '/home/ubuntu/zesai-business-hub/assets/fonts/SourceHanSansSC-Bold.otf');
+
     doc
       .fillColor('#FFFFFF')
       .fontSize(32)
-      .font('Helvetica-Bold')
+      .font('SourceHanSans-Bold')
       .text(title, 50, 150, { width: doc.page.width - 100 });
 
-    doc
+        doc
       .fontSize(16)
-      .font('Helvetica')
+      .font('SourceHanSans-Normal')
       .text('泽思AI商业智库 | Zenith.ai', 50, 200);
 
     doc
@@ -73,7 +78,7 @@ export async function generatePDF(
         doc
           .fillColor(primaryColor)
           .fontSize(14)
-          .font('Helvetica-Bold')
+          .font('SourceHanSans-Bold')
           .text('用户问题:', 50, doc.y + 5);
 
         doc.moveDown(0.5);
@@ -83,7 +88,8 @@ export async function generatePDF(
         doc
           .fillColor(textColor)
           .fontSize(12)
-          .font('Helvetica')
+          .font('SourceHanSans-Normal')
+          .lineGap(4) // Add line gap for better readability
           .text(cleanContent, 50, doc.y, {
             width: doc.page.width - 100,
             align: 'left',
@@ -101,7 +107,7 @@ export async function generatePDF(
         doc
           .fillColor(primaryColor)
           .fontSize(14)
-          .font('Helvetica-Bold')
+          .font('SourceHanSans-Bold')
           .text('AI 顾问回复:', 50, doc.y + 5);
 
         doc.moveDown(0.5);
@@ -111,7 +117,8 @@ export async function generatePDF(
         doc
           .fillColor(textColor)
           .fontSize(11)
-          .font('Helvetica')
+          .font('SourceHanSans-Normal')
+          .lineGap(4) // Add line gap for better readability
           .text(cleanContent, 50, doc.y, {
             width: doc.page.width - 100,
             align: 'left',
@@ -128,7 +135,7 @@ export async function generatePDF(
       doc
         .fillColor('#999999')
         .fontSize(10)
-        .font('Helvetica')
+        .font('SourceHanSans-Normal')
         .text(
           `泽思AI商业智库 | 第 ${i + 1} 页`,
           50,
