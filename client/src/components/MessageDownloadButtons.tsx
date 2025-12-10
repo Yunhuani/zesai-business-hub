@@ -84,8 +84,43 @@ export function MessageDownloadButtons({ messageId, content, conversationTitle }
     toast.info("PPT导出功能开发中，敬请期待");
   };
 
+  const exportExcel = trpc.export.exportMessageExcel.useMutation({
+    onSuccess: async (data) => {
+      try {
+        // Convert base64 to blob
+        const binaryString = atob(data.data);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        
+        // Download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = data.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        toast.success("Excel下载成功!");
+      } catch (error) {
+        console.error('Excel download error:', error);
+        toast.error("Excel下载失败");
+      }
+    },
+    onError: (error) => {
+      toast.error("生成Excel失败: " + error.message);
+    },
+  });
+
   const handleDownloadExcel = () => {
-    toast.info("Excel导出功能开发中，敬请期待");
+    exportExcel.mutate({ 
+      messageId,
+      title: conversationTitle 
+    });
   };
 
   return (
@@ -125,8 +160,13 @@ export function MessageDownloadButtons({ messageId, content, conversationTitle }
           size="sm"
           className="gap-2"
           onClick={handleDownloadExcel}
+          disabled={exportExcel.isPending}
         >
-          <Icons.Download className="w-4 h-4" />
+          {exportExcel.isPending ? (
+            <Icons.Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Icons.Download className="w-4 h-4" />
+          )}
           下载Excel
         </Button>
       )}
