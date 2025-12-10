@@ -497,4 +497,13 @@
 - [x] 修改`pdfGenerator.ts`以加载并使用新字体。
 - [x] 调整PDF样式（字体大小、行距）以优化排版。
 - [x] 生成测试PDF并验证中文显示效果。
-- [ ] 创建修复后的checkpoint。
+- [x] 创建修复后的checkpoint。
+
+
+## 运营与管理模块Agent调整
+- [x] 查询数据库中运营与管理模块的所有Agent
+- [x] 更新Agent名称：股权架构师、薪酬绩效专家、OKR目标管理教练
+- [x] 更新Home.tsx配置
+- [x] 修复OKR目标管理教练的描述和systemPrompt
+- [x] 测试首页显示
+- [ ] 创建checkpoint

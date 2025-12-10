@@ -52,8 +52,8 @@ const AGENT_CATEGORIES = [
     id: "operation",
     name: "运营与管理",
     icon: "Users",
-    description: "股权架构、绩效管理、用户需求洞察",
-    agentNames: ["股权架构设计", "绩效管理与激励", "用户需求洞察"],
+    description: "股权架构、薪酬绩效、OKR目标管理",
+    agentNames: ["股权架构师", "薪酬绩效专家", "OKR目标管理教练"],
     defaultOpen: false,
     colors: {
       gradient: "from-blue-600 to-cyan-500",

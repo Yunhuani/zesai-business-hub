@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, name, description FROM agents WHERE name LIKE '%运营%' OR name LIKE '%管理%' OR name LIKE '%股权%' OR name LIKE '%薪酬%' OR name LIKE '%OKR%' OR name LIKE '%人力%' OR name LIKE '%团队%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, name, description FROM agents WHERE name LIKE '%运营%' OR name LIKE '%管理%' OR name LIKE '%股权%' OR name LIKE '%薪酬%' OR name LIKE '%OKR%' OR name LIKE '%人力%' OR name LIKE '%团队%';",
+  "rows": [
+    {
+      "id": "120010",
+      "name": "股权架构师",
+      "description": "设计创始团队股权分配，规划期权激励，优化股权架构和退出机制"
+    },
+    {
+      "id": "120011",
+      "name": "绩效管理与激励",
+      "description": "设计绩效考核体系，制定薪酬激励方案，提升团队效能"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tdescription\n120010\t股权架构师\t设计创始团队股权分配，规划期权激励，优化股权架构和退出机制\n120011\t绩效管理与激励\t设计绩效考核体系，制定薪酬激励方案，提升团队效能\n",
+  "stderr": "",
+  "execution_time_ms": 1555
+}
