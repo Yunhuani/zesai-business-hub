@@ -31,6 +31,9 @@ export async function getUserCredits(userId: number): Promise<{
   purchased: number;
   subscription: number;
   total: number;
+  free: number;
+  resetDate: Date;
+  nextResetIn: number; // seconds until next reset
 }> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -38,10 +41,21 @@ export async function getUserCredits(userId: number): Promise<{
   const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   if (!user) throw new Error("User not found");
 
+  // Calculate time until next reset
+  const now = new Date();
+  const resetDate = new Date(user.creditsResetDate);
+  const nextResetIn = Math.max(0, Math.floor((resetDate.getTime() - now.getTime()) / 1000));
+
+  // Free credits are always 0 for now (can be extended later)
+  const freeCredits = 0;
+
   return {
     purchased: user.creditsPurchased,
     subscription: user.creditsSubscription,
-    total: user.creditsPurchased + user.creditsSubscription,
+    total: user.creditsPurchased + user.creditsSubscription + freeCredits,
+    free: freeCredits,
+    resetDate: user.creditsResetDate,
+    nextResetIn,
   };
 }
 
@@ -228,15 +242,19 @@ async function recordTransaction(transaction: InsertCreditsTransaction): Promise
  */
 export async function getTransactionHistory(
   userId: number,
-  limit: number = 50
+  options: { limit?: number; offset?: number } = {}
 ): Promise<typeof creditsTransactions.$inferSelect[]> {
+  const { desc } = await import("drizzle-orm");
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+
+  const { limit = 50, offset = 0 } = options;
 
   return await db
     .select()
     .from(creditsTransactions)
     .where(eq(creditsTransactions.userId, userId))
-    .orderBy(creditsTransactions.createdAt)
-    .limit(limit);
+    .orderBy(desc(creditsTransactions.createdAt))
+    .limit(limit)
+    .offset(offset);
 }

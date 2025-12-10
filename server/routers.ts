@@ -548,9 +548,26 @@ export const appRouter = router({
       const { getUserCredits } = await import("./creditsManager");
       return await getUserCredits(ctx.user.id);
     }),
-    history: protectedProcedure.query(async ({ ctx }) => {
-      const { getTransactionHistory } = await import("./creditsManager");
-      return await getTransactionHistory(ctx.user.id);
+    history: protectedProcedure
+      .input(z.object({ limit: z.number().optional(), offset: z.number().optional() }).optional())
+      .query(async ({ ctx, input }) => {
+        const { getTransactionHistory } = await import("./creditsManager");
+        return await getTransactionHistory(ctx.user.id, input || {});
+      }),
+    subscription: protectedProcedure.query(async ({ ctx }) => {
+      const { subscriptions } = await import("../drizzle/schema");
+      const { eq, desc } = await import("drizzle-orm");
+      const db = await (await import("./db")).getDb();
+      if (!db) return null;
+      
+      const [subscription] = await db
+        .select()
+        .from(subscriptions)
+        .where(eq(subscriptions.userId, ctx.user.id))
+        .orderBy(desc(subscriptions.createdAt))
+        .limit(1);
+      
+      return subscription || null;
     }),
   }),
   

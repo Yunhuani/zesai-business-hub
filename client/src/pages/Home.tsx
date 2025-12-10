@@ -15,6 +15,7 @@ import { trpc } from "@/lib/trpc";
 import * as Icons from "lucide-react";
 import { useState } from "react";
 import { ExpertConsultationDialog } from "@/components/ExpertConsultationDialog";
+import { CreditsDisplay } from "@/components/CreditsDisplay";
 import { Link } from "wouter";
 
 // Agent分类配置
@@ -113,6 +114,7 @@ export default function Home() {
           <div className="flex items-center gap-4">
             {isAuthenticated && (
               <>
+                <CreditsDisplay />
                 {user?.role === "admin" && (
                   <Link href="/admin">
                     <Button variant="outline" className="gap-2">
