@@ -34,12 +34,20 @@ export const adminRouter = router({
     .input(
       z.object({
         userId: z.number(),
-        amount: z.number(),
-        reason: z.string(),
+        amount: z.number().min(-10000, "单次最多扣附10000积分").max(10000, "单次最多增加10000积分"),
+        reason: z.string().min(1, "请填写操作备注"),
       })
     )
     .mutation(async ({ input }) => {
       const { userId, amount, reason } = input;
+
+      // Validate amount is not zero
+      if (amount === 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "调整积分数量不能为0",
+        });
+      }
 
       if (amount > 0) {
         // Add purchased credits

@@ -1,0 +1,122 @@
+{
+  "query": "SELECT id, name, email, openId, role FROM users;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, name, email, openId, role FROM users;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Zenith",
+      "email": "yunhua.ni@gmail.com",
+      "openId": "email_yunhua.ni@gmail.com",
+      "role": "admin"
+    },
+    {
+      "id": "2580008",
+      "name": "Ryan",
+      "email": "16289209@qq.com",
+      "openId": "NULL",
+      "role": "user"
+    },
+    {
+      "id": "3990008",
+      "name": "Test Credits User",
+      "email": "test_credits_1764301720214@example.com",
+      "openId": "test_credits_1764301720214",
+      "role": "user"
+    },
+    {
+      "id": "4440010",
+      "name": "Test User",
+      "email": "NULL",
+      "openId": "username_testuser_1764563413734",
+      "role": "user"
+    },
+    {
+      "id": "4440012",
+      "name": "测试用户",
+      "email": "NULL",
+      "openId": "username_testuser123",
+      "role": "user"
+    },
+    {
+      "id": "4440027",
+      "name": "Test User",
+      "email": "test1764563955512@example.com",
+      "openId": "email_test1764563955512@example.com",
+      "role": "user"
+    },
+    {
+      "id": "4440031",
+      "name": "邮箱测试用户",
+      "email": "test@example.com",
+      "openId": "email_test@example.com",
+      "role": "user"
+    },
+    {
+      "id": "4620003",
+      "name": "guanli118",
+      "email": "guanli118@gmail.com",
+      "openId": "email_guanli118@gmail.com",
+      "role": "user"
+    },
+    {
+      "id": "4650040",
+      "name": "测试用户",
+      "email": "NULL",
+      "openId": "test-stream-1764572175744",
+      "role": "user"
+    },
+    {
+      "id": "6360001",
+      "name": "18601389681",
+      "email": "18601389681@163.com",
+      "openId": "email_18601389681@163.com",
+      "role": "user"
+    },
+    {
+      "id": "6810001",
+      "name": "yqf85",
+      "email": "lingmoyuan@sina.com",
+      "openId": "email_lingmoyuan@sina.com",
+      "role": "user"
+    },
+    {
+      "id": "6930017",
+      "name": "赵玉琳",
+      "email": "15010497770@sina.cn",
+      "openId": "email_15010497770@sina.cn",
+      "role": "user"
+    },
+    {
+      "id": "6990001",
+      "name": "hehe ren",
+      "email": "bbo268@gmail.com",
+      "openId": "eCEqhshYSKWp28eTRbucvf",
+      "role": "user"
+    },
+    {
+      "id": "7230001",
+      "name": "edison wang",
+      "email": "max2013edison@gmail.com",
+      "openId": "d8ybBLNnDUxNGpsTVzsXzy",
+      "role": "user"
+    },
+    {
+      "id": "7350017",
+      "name": "小段",
+      "email": "1558328644@qq.com",
+      "openId": "email_1558328644@qq.com",
+      "role": "user"
+    },
+    {
+      "id": "7470018",
+      "name": "测试用户",
+      "email": "test@zesiai.com",
+      "openId": "email_test@zesiai.com",
+      "role": "user"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\topenId\trole\n1\tZenith\tyunhua.ni@gmail.com\temail_yunhua.ni@gmail.com\tadmin\n2580008\tRyan\t16289209@qq.com\tNULL\tuser\n3990008\tTest Credits User\ttest_credits_1764301720214@example.com\ttest_credits_1764301720214\tuser\n4440010\tTest User\tNULL\tusername_testuser_1764563413734\tuser\n4440012\t测试用户\tNULL\tusername_testuser123\tuser\n4440027\tTest User\ttest1764563955512@example.com\temail_test1764563955512@example.com\tuser\n4440031\t邮箱测试用户\ttest@example.com\temail_test@example.com\tuser\n4620003\tguanli118\tguanli118@gmail.com\temail_guanli118@gmail.com\tuser\n4650040\t测试用户\tNULL\ttest-stream-1764572175744\tuser\n6360001\t18601389681\t18601389681@163.com\temail_18601389681@163.com\tuser\n6810001\tyqf85\tlingmoyuan@sina.com\temail_lingmoyuan@sina.com\tuser\n6930017\t赵玉琳\t15010497770@sina.cn\temail_15010497770@sina.cn\tuser\n6990001\thehe ren\tbbo268@gmail.com\teCEqhshYSKWp28eTRbucvf\tuser\n7230001\tedison wang\tmax2013edison@gmail.com\td8ybBLNnDUxNGpsTVzsXzy\tuser\n7350017\t小段\t1558328644@qq.com\temail_1558328644@qq.com\tuser\n7470018\t测试用户\ttest@zesiai.com\temail_test@zesiai.com\tuser\n",
+  "stderr": "",
+  "execution_time_ms": 1641
+}
