@@ -141,6 +141,20 @@ export async function getUserConversations(userId: number) {
     .orderBy(conversations.updatedAt);
 }
 
+export async function getLatestConversationByAgent(userId: number, agentId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const { conversations } = await import("../drizzle/schema");
+  const { desc, and } = await import("drizzle-orm");
+  const result = await db
+    .select()
+    .from(conversations)
+    .where(and(eq(conversations.userId, userId), eq(conversations.agentId, agentId)))
+    .orderBy(desc(conversations.updatedAt))
+    .limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
 export async function getConversationById(id: number) {
   const db = await getDb();
   if (!db) return undefined;

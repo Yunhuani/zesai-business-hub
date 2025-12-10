@@ -29,6 +29,13 @@ export default function AgentChat() {
     { id: effectiveAgentId },
     { enabled: !!effectiveAgentId }
   );
+  
+  // Get latest conversation for this agent
+  const { data: latestConversation } = trpc.conversation.getLatestByAgent.useQuery(
+    { agentId: effectiveAgentId },
+    { enabled: !!effectiveAgentId && isAuthenticated && !urlConversationId }
+  );
+  
   const { data: subscriptionData } = trpc.subscription.get.useQuery(undefined, { enabled: isAuthenticated });
   const [conversationId, setConversationId] = useState<number | null>(null);
   const [message, setMessage] = useState("");
@@ -60,15 +67,30 @@ export default function AgentChat() {
     }
   }, [urlConversationId, isAuthenticated]);
 
-  // 自动创建对话并发送欢迎消息
+  // Load latest conversation or create new one
   useEffect(() => {
     if (agent && isAuthenticated && !conversationId && !urlConversationId) {
-      createConversation.mutate({
-        agentId: agent.id,
-        title: `${agent.name} - ${new Date().toLocaleDateString()}`,
-      });
+      if (latestConversation) {
+        // Load existing conversation
+        setConversationId(latestConversation.id);
+        // Send welcome message if conversation has no messages
+        setTimeout(() => {
+          if (!messages || messages.length === 0) {
+            sendWelcomeMessage.mutate({
+              conversationId: latestConversation.id,
+              agentId: agent.id,
+            });
+          }
+        }, 500);
+      } else {
+        // Create new conversation
+        createConversation.mutate({
+          agentId: agent.id,
+          title: `${agent.name} - ${new Date().toLocaleDateString()}`,
+        });
+      }
     }
-  }, [agent, isAuthenticated, urlConversationId]);
+  }, [agent, isAuthenticated, urlConversationId, latestConversation]);
 
   const createConversation = trpc.conversation.create.useMutation({
     onSuccess: (data) => {
@@ -427,6 +449,21 @@ export default function AgentChat() {
                 历史记录
               </Button>
             </Link>
+            {latestConversation && conversationId === latestConversation.id && (
+              <Button
+                variant="ghost"
+                className="gap-2"
+                onClick={() => {
+                  createConversation.mutate({
+                    agentId: agent.id,
+                    title: `${agent.name} - ${new Date().toLocaleDateString()}`,
+                  });
+                }}
+              >
+                <Icons.Plus className="w-4 h-4" />
+                开始新对话
+              </Button>
+            )}
             {conversationId && messages && messages.length > 0 && (
               <>
                 <Button
