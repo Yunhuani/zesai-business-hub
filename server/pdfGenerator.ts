@@ -1,6 +1,7 @@
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import { Readable } from 'stream';
+import path from 'path';
 
 interface Message {
   role: string;
@@ -40,9 +41,21 @@ export async function generatePDF(
       .rect(0, 0, doc.page.width, 300)
       .fill(primaryColor);
 
-        // Register fonts
-    doc.registerFont('SourceHanSans-Normal', '/home/ubuntu/zesai-business-hub/assets/fonts/SourceHanSansSC-Normal.otf');
-    doc.registerFont('SourceHanSans-Bold', '/home/ubuntu/zesai-business-hub/assets/fonts/SourceHanSansSC-Bold.otf');
+    // Register fonts using dynamic path resolution
+    const fontsDir = path.join(process.cwd(), 'assets', 'fonts');
+    const normalFontPath = path.join(fontsDir, 'SourceHanSansSC-Normal.otf');
+    const boldFontPath = path.join(fontsDir, 'SourceHanSansSC-Bold.otf');
+    
+    // Check if font files exist
+    if (!fs.existsSync(normalFontPath)) {
+      throw new Error(`Font file not found: ${normalFontPath}`);
+    }
+    if (!fs.existsSync(boldFontPath)) {
+      throw new Error(`Font file not found: ${boldFontPath}`);
+    }
+    
+    doc.registerFont('SourceHanSans-Normal', normalFontPath);
+    doc.registerFont('SourceHanSans-Bold', boldFontPath);
 
     doc
       .fillColor('#FFFFFF')
