@@ -145,10 +145,13 @@ export default function Pricing() {
                     {currentPlan === "free" ? "免费版" : plans.find(p => p.id === currentPlan)?.name}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {subscriptionData.usage.limit === 0
-                      ? "无限次咨询"
-                      : `本月剩余: ${subscriptionData.usage.remaining}/${subscriptionData.usage.limit} 次`}
+                    本月积分：{subscriptionData.credits.subscription}/{subscriptionData.credits.planLimit}
                   </p>
+                  {subscriptionData.credits.purchased > 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      购买积分：{subscriptionData.credits.purchased}
+                    </p>
+                  )}
                 </div>
                 {currentPlan !== "free" && subscriptionData.subscription && (
                   <p className="text-sm text-muted-foreground">

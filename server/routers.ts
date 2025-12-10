@@ -377,10 +377,26 @@ export const appRouter = router({
   // Subscription routes
   subscription: router({
     get: protectedProcedure.query(async ({ ctx }) => {
-      const { getUserSubscription, checkUsageLimit } = await import("./db");
+      const { getUserSubscription } = await import("./db");
+      const { getUserCredits, PLAN_CREDITS } = await import("./creditsManager");
       const subscription = await getUserSubscription(ctx.user.id);
-      const usage = await checkUsageLimit(ctx.user.id);
-      return { subscription, usage };
+      const credits = await getUserCredits(ctx.user.id);
+      
+      // Get plan credits limit
+      const plan = subscription?.plan || "free";
+      const planCreditsLimit = PLAN_CREDITS[plan as keyof typeof PLAN_CREDITS] || PLAN_CREDITS.free;
+      
+      return { 
+        subscription, 
+        credits: {
+          purchased: credits.purchased,
+          subscription: credits.subscription,
+          total: credits.total,
+          planLimit: planCreditsLimit,
+          resetDate: credits.resetDate,
+          nextResetIn: credits.nextResetIn,
+        }
+      };
     }),
     upgrade: protectedProcedure.input((val: unknown) => {
       if (typeof val === "object" && val !== null && "plan" in val && typeof val.plan === "string") {
