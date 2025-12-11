@@ -6,7 +6,7 @@ import { documentManager, type DocumentType, type FileFormat } from "../document
 import { generateWordDocument } from "../wordGenerator";
 import { generatePDF } from "../pdfGenerator";
 import { invokeLLM } from "../_core/llm";
-import { getMessageById } from "../db";
+import { getMessageById, getConversationMessages } from "../db";
 
 /**
  * 文档上传和解析路由
@@ -166,18 +166,18 @@ export const documentRouter = router({
         // 5. 更新状态为生成中
         await documentManager.updateDocumentGenerating(documentId);
 
-        // 6. 获取原始消息内容
-        const message = await getMessageById(input.messageId);
-        if (!message) {
+        // 6. 获取完整对话历史
+        const conversationMessages = await getConversationMessages(input.conversationId);
+        if (!conversationMessages || conversationMessages.length === 0) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "消息不存在",
+            message: "对话记录不存在",
           });
         }
 
-        // 7. 使用LLM扩展和完善文档内容
+        // 7. 使用LLM基于完整对话历史生成文档内容
         const enhancedContent = await enhanceDocumentContent(
-          message.content,
+          conversationMessages,
           input.fileName,
           input.documentType
         );
@@ -247,51 +247,60 @@ export const documentRouter = router({
 });
 
 /**
- * 使用LLM扩展和完善文档内容
+ * 使用LLM基于完整对话历史生成文档内容
  */
 async function enhanceDocumentContent(
-  originalContent: string,
+  conversationMessages: Array<{ role: string; content: string; createdAt: Date }>,
   fileName: string,
   documentType: DocumentType
 ): Promise<string> {
+  // 将对话历史转换为文本
+  const conversationText = conversationMessages
+    .map((msg) => `${msg.role === "user" ? "用户" : "AI顾问"}：${msg.content}`)
+    .join("\n\n");
+
   try {
+
     // 根据文档类型设定不同的扩展策略
     let enhancementPrompt = "";
 
     if (documentType === "heavy") {
-      enhancementPrompt = `你是一位专业的商业顾问。请将以下内容扩展成一份完整的《${fileName}》文档。
+      enhancementPrompt = `你是一位专业的商业顾问。请基于以下完整的咨询对话，生成一份专业的《${fileName}》文档。
 
 要求：
-1. 保持原有核心内容和逻辑结构
-2. 扩展每个章节，添加更多细节和实例
-3. 使用专业的商业语言和术语
-4. 确保文档结构完整，包含引言、正文、总结
-5. 使用Markdown格式，包含标题、列表、加粗等
+1. 整合对话中的所有关键信息和分析结果
+2. 扩展每个章节，添加更多细节、实例和数据支撑
+3. 使用专业的商业语言和McKinsey风格的术语
+4. 确保文档结构完整，包含执行摘要、详细分析、行动建议、附录
+5. 使用Markdown格式，包含标题（# ## ###）、列表、加粗、表格等
+6. 文档应该是自成一体的完整方案，而不是对话摘要
 
-原始内容：
-${originalContent}`;
+完整对话记录：
+${conversationText}`;
     } else if (documentType === "medium") {
-      enhancementPrompt = `你是一位专业的商业分析师。请将以下内容整理成一份结构化的《${fileName}》文档。
+      enhancementPrompt = `你是一位专业的商业分析师。请基于以下咨询对话，生成一份结构化的《${fileName}》文档。
 
 要求：
-1. 保持原有内容的完整性
-2. 优化文档结构，使其更易读
-3. 添加适当的分段和标题
-4. 使用Markdown格式
+1. 整合对话中的核心观点和分析结果
+2. 优化文档结构，使其逻辑清晰、易读
+3. 添加适当的章节标题和分段
+4. 使用Markdown格式，包含标题、列表、加粗等
+5. 确保文档内容完整，不是简单的对话摘要
 
-原始内容：
-${originalContent}`;
+完整对话记录：
+${conversationText}`;
     } else {
       // light
-      enhancementPrompt = `请将以下内容整理成一份清晰的《${fileName}》文档。
+      enhancementPrompt = `请基于以下咨询对话，生成一份清晰的《${fileName}》文档。
 
 要求：
-1. 保持原有内容
-2. 优化格式，使其更易读
+1. 提取对话中的关键信息和建议
+2. 优化格式，使其易读
 3. 使用Markdown格式
+4. 确保文档内容完整
 
-原始内容：
-${originalContent}`;
+完整对话记录：
+${conversationText}`;
     }
 
     const response = await invokeLLM({
@@ -306,19 +315,19 @@ ${originalContent}`;
     const content = response.choices[0].message.content;
     // content可能是string或数组，需要处理
     if (typeof content === "string") {
-      return content || originalContent;
+      return content || conversationText;
     } else if (Array.isArray(content)) {
       // 如果是数组，提取所有text内容
       return content
         .filter((item) => item.type === "text")
         .map((item) => item.text)
-        .join("\n") || originalContent;
+        .join("\n") || conversationText;
     }
-    return originalContent;
+    return conversationText;
   } catch (error) {
     console.error("Content enhancement error:", error);
-    // 如果LLM失败，返回原始内容
-    return originalContent;
+    // 如果LLM失败，返回对话文本
+    return conversationText;
   }
 }
 
