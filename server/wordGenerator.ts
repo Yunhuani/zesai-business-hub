@@ -6,11 +6,17 @@ import {
   HeadingLevel,
   AlignmentType,
   convertInchesToTwip,
+  TableOfContents,
+  Header,
+  Footer,
+  PageNumber,
+  NumberFormat,
+  BorderStyle,
 } from "docx";
 
 /**
- * Word文档生成器
- * 将Markdown格式的内容转换为专业的Word文档
+ * Word文档生成器（McKinsey风格）
+ * 支持三种文档类型的专业排版：重度、中度、轻度
  */
 
 export interface WordGeneratorOptions {
@@ -18,6 +24,8 @@ export interface WordGeneratorOptions {
   content: string;
   author?: string;
   company?: string;
+  documentType?: "heavy" | "medium" | "light";
+  subtitle?: string;
 }
 
 /**
@@ -26,10 +34,40 @@ export interface WordGeneratorOptions {
 export async function generateWordDocument(
   options: WordGeneratorOptions
 ): Promise<Buffer> {
-  const { title, content, author = "泽思 Zenith AI", company = "泽思 Zenith AI" } = options;
+  const {
+    title,
+    content,
+    author = "泽思 Zenith AI",
+    company = "泽思 Zenith AI",
+    documentType = "medium",
+    subtitle,
+  } = options;
 
   // 解析Markdown内容为段落
-  const paragraphs = parseMarkdownToParagraphs(content);
+  const contentParagraphs = parseMarkdownToParagraphs(content);
+
+  // 根据文档类型生成不同的封面
+  const coverPage = generateCoverPage(title, subtitle, company, documentType);
+
+  // 根据文档类型决定是否添加目录
+  const tocSection = shouldIncludeTOC(documentType)
+    ? [
+        new Paragraph({
+          text: "目录",
+          heading: HeadingLevel.HEADING_1,
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 400 },
+        }),
+        new TableOfContents("目录", {
+          hyperlink: true,
+          headingStyleRange: "1-3",
+        }),
+        new Paragraph({
+          text: "",
+          pageBreakBefore: true,
+        }),
+      ]
+    : [];
 
   // 创建文档
   const doc = new Document({
@@ -47,37 +85,9 @@ export async function generateWordDocument(
             },
           },
         },
-        children: [
-          // 标题页
-          new Paragraph({
-            text: title,
-            heading: HeadingLevel.TITLE,
-            alignment: AlignmentType.CENTER,
-            spacing: {
-              after: 400,
-            },
-          }),
-          new Paragraph({
-            text: `由 ${company} 生成`,
-            alignment: AlignmentType.CENTER,
-            spacing: {
-              after: 400,
-            },
-          }),
-          new Paragraph({
-            text: new Date().toLocaleDateString("zh-CN", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            }),
-            alignment: AlignmentType.CENTER,
-            spacing: {
-              after: 800,
-            },
-          }),
-          // 内容段落
-          ...paragraphs,
-        ],
+        headers: generateHeaders(title, documentType),
+        footers: generateFooters(documentType),
+        children: [...coverPage, ...tocSection, ...contentParagraphs],
       },
     ],
   });
@@ -85,6 +95,315 @@ export async function generateWordDocument(
   // 生成Buffer
   const buffer = await Packer.toBuffer(doc);
   return buffer;
+}
+
+/**
+ * 生成封面页
+ */
+function generateCoverPage(
+  title: string,
+  subtitle: string | undefined,
+  company: string,
+  documentType: "heavy" | "medium" | "light"
+): Paragraph[] {
+  const currentDate = new Date().toLocaleDateString("zh-CN", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  if (documentType === "heavy") {
+    // McKinsey风格封面（重度文档）
+    return [
+      // 顶部装饰线
+      new Paragraph({
+        border: {
+          top: {
+            color: "2E5090",
+            space: 1,
+            style: BorderStyle.SINGLE,
+            size: 24,
+          },
+        },
+        spacing: { after: 800 },
+      }),
+      // 主标题
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: title,
+            bold: true,
+            size: 56,
+            color: "1F3864",
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 400 },
+      }),
+      // 副标题（如果有）
+      ...(subtitle
+        ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: subtitle,
+                  size: 32,
+                  color: "5B7FA8",
+                  italics: true,
+                }),
+              ],
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 600 },
+            }),
+          ]
+        : [
+            new Paragraph({
+              text: "",
+              spacing: { after: 600 },
+            }),
+          ]),
+      // 中间空白
+      new Paragraph({
+        text: "",
+        spacing: { after: 1200 },
+      }),
+      // 公司名称
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: company,
+            size: 28,
+            color: "2E5090",
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 200 },
+      }),
+      // 日期
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: currentDate,
+            size: 24,
+            color: "666666",
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 400 },
+      }),
+      // 底部装饰线
+      new Paragraph({
+        border: {
+          bottom: {
+            color: "2E5090",
+            space: 1,
+            style: BorderStyle.SINGLE,
+            size: 24,
+          },
+        },
+        spacing: { after: 400 },
+      }),
+      // 分页
+      new Paragraph({
+        text: "",
+        pageBreakBefore: true,
+      }),
+    ];
+  } else if (documentType === "medium") {
+    // 简洁专业封面（中度文档）
+    return [
+      new Paragraph({
+        text: "",
+        spacing: { after: 1600 },
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: title,
+            bold: true,
+            size: 48,
+            color: "1F3864",
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 800 },
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: company,
+            size: 24,
+            color: "666666",
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 200 },
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: currentDate,
+            size: 20,
+            color: "999999",
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 400 },
+      }),
+      new Paragraph({
+        text: "",
+        pageBreakBefore: true,
+      }),
+    ];
+  } else {
+    // 极简封面（轻度文档）
+    return [
+      new Paragraph({
+        text: "",
+        spacing: { after: 800 },
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: title,
+            bold: true,
+            size: 40,
+            color: "333333",
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 400 },
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: currentDate,
+            size: 20,
+            color: "999999",
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 400 },
+      }),
+      new Paragraph({
+        text: "",
+        pageBreakBefore: true,
+      }),
+    ];
+  }
+}
+
+/**
+ * 判断是否需要目录
+ */
+function shouldIncludeTOC(documentType: "heavy" | "medium" | "light"): boolean {
+  return documentType === "heavy" || documentType === "medium";
+}
+
+/**
+ * 生成页眉
+ */
+function generateHeaders(
+  title: string,
+  documentType: "heavy" | "medium" | "light"
+): { default: Header } {
+  if (documentType === "heavy") {
+    // 重度文档：显示章节标题（这里简化为文档标题）
+    return {
+      default: new Header({
+        children: [
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: title,
+                size: 18,
+                color: "666666",
+              }),
+            ],
+            alignment: AlignmentType.LEFT,
+            border: {
+              bottom: {
+                color: "CCCCCC",
+                space: 1,
+                style: BorderStyle.SINGLE,
+                size: 6,
+              },
+            },
+          }),
+        ],
+      }),
+    };
+  } else if (documentType === "medium") {
+    // 中度文档：显示文档标题
+    return {
+      default: new Header({
+        children: [
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: title,
+                size: 16,
+                color: "999999",
+              }),
+            ],
+            alignment: AlignmentType.CENTER,
+          }),
+        ],
+      }),
+    };
+  } else {
+    // 轻度文档：无页眉
+    return {
+      default: new Header({
+        children: [new Paragraph({ text: "" })],
+      }),
+    };
+  }
+}
+
+/**
+ * 生成页脚
+ */
+function generateFooters(
+  documentType: "heavy" | "medium" | "light"
+): { default: Footer } {
+  if (documentType === "heavy" || documentType === "medium") {
+    // 重度和中度文档：页码居中
+    return {
+      default: new Footer({
+        children: [
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                children: ["第 ", PageNumber.CURRENT, " 页"],
+                size: 18,
+                color: "666666",
+              }),
+            ],
+          }),
+        ],
+      }),
+    };
+  } else {
+    // 轻度文档：简单页码
+    return {
+      default: new Footer({
+        children: [
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new TextRun({
+                children: [PageNumber.CURRENT],
+                size: 16,
+                color: "999999",
+              }),
+            ],
+          }),
+        ],
+      }),
+    };
+  }
 }
 
 /**

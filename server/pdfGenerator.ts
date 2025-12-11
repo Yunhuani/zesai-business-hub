@@ -13,7 +13,8 @@ interface Message {
  */
 export async function generatePDF(
   messages: Message[],
-  title: string
+  title: string,
+  documentType: "heavy" | "medium" | "light" = "medium"
 ): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({
@@ -36,11 +37,6 @@ export async function generatePDF(
     const textColor = '#1F2937';
     const lightGray = '#F3F4F6';
 
-    // Title page
-    doc
-      .rect(0, 0, doc.page.width, 300)
-      .fill(primaryColor);
-
     // Register fonts using dynamic path resolution
     const fontsDir = path.join(process.cwd(), 'assets', 'fonts');
     const normalFontPath = path.join(fontsDir, 'SourceHanSansSC-Normal.otf');
@@ -56,6 +52,9 @@ export async function generatePDF(
     
     doc.registerFont('SourceHanSans-Normal', normalFontPath);
     doc.registerFont('SourceHanSans-Bold', boldFontPath);
+
+    // 根据文档类型生成不同的封面
+    generatePDFCoverPage(doc, title, documentType, primaryColor);
 
     doc
       .fillColor('#FFFFFF')
@@ -159,6 +158,95 @@ export async function generatePDF(
 
     doc.end();
   });
+}
+
+/**
+ * 生成PDF封面页
+ */
+function generatePDFCoverPage(
+  doc: PDFKit.PDFDocument,
+  title: string,
+  documentType: "heavy" | "medium" | "light",
+  primaryColor: string
+): void {
+  const currentDate = new Date().toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  if (documentType === "heavy") {
+    // McKinsey风格封面（重度文档）
+    // 顶部装饰栏
+    doc
+      .rect(0, 0, doc.page.width, 300)
+      .fill(primaryColor);
+
+    // 主标题
+    doc
+      .fillColor('#FFFFFF')
+      .fontSize(36)
+      .font('SourceHanSans-Bold')
+      .text(title, 50, 120, { width: doc.page.width - 100, align: 'center' });
+
+    // 公司名称
+    doc
+      .fontSize(18)
+      .font('SourceHanSans-Normal')
+      .text('泽思AI商业智库 | Zenith.ai', 50, 200, { width: doc.page.width - 100, align: 'center' });
+
+    // 日期
+    doc
+      .fontSize(14)
+      .text(currentDate, 50, 240, { width: doc.page.width - 100, align: 'center' });
+
+    // 底部装饰线
+    doc
+      .moveTo(50, 280)
+      .lineTo(doc.page.width - 50, 280)
+      .strokeColor('#FFFFFF')
+      .lineWidth(2)
+      .stroke();
+
+  } else if (documentType === "medium") {
+    // 简洁专业封面（中度文档）
+    doc
+      .rect(0, 0, doc.page.width, 200)
+      .fill(primaryColor);
+
+    doc
+      .fillColor('#FFFFFF')
+      .fontSize(32)
+      .font('SourceHanSans-Bold')
+      .text(title, 50, 80, { width: doc.page.width - 100, align: 'center' });
+
+    doc
+      .fontSize(14)
+      .font('SourceHanSans-Normal')
+      .text('泽思AI商业智库', 50, 140, { width: doc.page.width - 100, align: 'center' });
+
+    doc
+      .fontSize(12)
+      .text(currentDate, 50, 165, { width: doc.page.width - 100, align: 'center' });
+
+  } else {
+    // 极简封面（轻度文档）
+    doc
+      .rect(0, 0, doc.page.width, 150)
+      .fill('#F3F4F6');
+
+    doc
+      .fillColor('#1F2937')
+      .fontSize(28)
+      .font('SourceHanSans-Bold')
+      .text(title, 50, 60, { width: doc.page.width - 100, align: 'center' });
+
+    doc
+      .fontSize(12)
+      .font('SourceHanSans-Normal')
+      .fillColor('#6B7280')
+      .text(currentDate, 50, 110, { width: doc.page.width - 100, align: 'center' });
+  }
 }
 
 /**

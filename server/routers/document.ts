@@ -190,6 +190,8 @@ export const documentRouter = router({
           fileBuffer = await generateWordDocument({
             title: input.fileName,
             content: enhancedContent,
+            documentType: input.documentType,
+            company: "泽思 Zenith AI",
           });
           mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
         } else {
@@ -201,7 +203,8 @@ export const documentRouter = router({
                 content: enhancedContent,
               },
             ],
-            input.fileName
+            input.fileName,
+            input.documentType
           );
           mimeType = "application/pdf";
         }
