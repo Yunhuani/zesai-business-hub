@@ -10,6 +10,7 @@ import { paymentRouter } from "./routers/payment";
 import { exportRouter } from "./routers/export";
 import { documentRouter } from "./routers/document";
 import { adminRouter } from "./routers/admin";
+import { supportRouter } from "./routers/support";
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
@@ -436,6 +437,9 @@ export const appRouter = router({
   
   // Document routes
   document: documentRouter,
+
+  // Support routes
+  support: supportRouter,
 
   // Message routes
   message: router({

@@ -21,6 +21,7 @@ import Credits from "./pages/Credits";
 import CreditUsage from "./pages/CreditUsage";
 import UserManagement from "./pages/UserManagement";
 import OrderManagement from "./pages/OrderManagement";
+import CustomerSupportButton from "./components/CustomerSupportButton";
 
 function Router() {
   return (
@@ -65,6 +66,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          <CustomerSupportButton />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

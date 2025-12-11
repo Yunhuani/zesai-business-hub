@@ -178,3 +178,22 @@ export const generatedDocuments = mysqlTable("generatedDocuments", {
 
 export type GeneratedDocument = typeof generatedDocuments.$inferSelect;
 export type InsertGeneratedDocument = typeof generatedDocuments.$inferInsert;
+
+/**
+ * Support tickets table - stores customer service requests
+ */
+export const supportTickets = mysqlTable("supportTickets", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  conversationId: int("conversationId").notNull(), // Link to conversations table
+  status: mysqlEnum("status", ["pending", "in_progress", "resolved"]).default("pending").notNull(),
+  priority: mysqlEnum("priority", ["normal", "urgent"]).default("normal").notNull(),
+  category: varchar("category", { length: 50 }), // e.g., "payment", "technical", "feature"
+  internalNotes: text("internalNotes"), // Admin-only notes
+  resolvedAt: timestamp("resolvedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SupportTicket = typeof supportTickets.$inferSelect;
+export type InsertSupportTicket = typeof supportTickets.$inferInsert;

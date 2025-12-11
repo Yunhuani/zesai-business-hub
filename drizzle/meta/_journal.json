@@ -71,6 +71,13 @@
       "when": 1765425722431,
       "tag": "0009_productive_dagger",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1765436973576,
+      "tag": "0010_messy_speedball",
+      "breakpoints": true
     }
   ]
 }
