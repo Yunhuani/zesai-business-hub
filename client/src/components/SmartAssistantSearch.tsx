@@ -27,9 +27,9 @@ export function SmartAssistantSearch({ smartAssistantId }: SmartAssistantSearchP
 
   return (
     <div className="w-full max-w-4xl mx-auto mb-12">
-      <div className="text-center mb-4">
-        <p className="text-lg text-muted-foreground">
-          不知道选哪个？试试<span className="font-semibold text-purple-600">【智能AI助手】</span>
+      <div className="text-center mb-3">
+        <p className="text-sm text-muted-foreground">
+          不知道选哪个专家？试试<span className="font-semibold text-purple-600">【智能AI助手】</span>
         </p>
       </div>
       

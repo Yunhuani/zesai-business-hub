@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -179,16 +180,9 @@ export default function Home() {
         <h2 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
           您的AI商业顾问
         </h2>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           麦肯锡级别的专业咨询服务,随时为您的企业提供战略规划、商业模式设计、市场洞察等全方位支持
         </p>
-        
-        {/* Smart Assistant Search */}
-        {!agentsLoading && agents && (
-          <SmartAssistantSearch 
-            smartAssistantId={agents.find(a => a.name === '智能AI助手')?.id || 0}
-          />
-        )}
       </section>
 
       {/* Agents by Category */}
@@ -199,12 +193,13 @@ export default function Home() {
           </div>
         ) : (
           <div className="space-y-8 max-w-6xl mx-auto">
-            {AGENT_CATEGORIES.map((category) => {
+            {AGENT_CATEGORIES.map((category, index) => {
               const CategoryIcon = (Icons as any)[category.icon] || Icons.Folder;
               const categoryAgents = getAgentsByCategory(category.agentNames);
               const isOpen = openCategories[category.id];
 
               return (
+                <>
                 <Collapsible
                   key={category.id}
                   open={isOpen}
@@ -282,7 +277,16 @@ export default function Home() {
                     </CollapsibleContent>
                   </Card>
                 </Collapsible>
-              );
+                {/* 在第一个分类（战略与规划）后插入智能搜索框 */}
+                {index === 0 && !agentsLoading && agents && (
+                  <div className="py-8">
+                    <SmartAssistantSearch 
+                      smartAssistantId={agents.find(a => a.name === '智能AI助手')?.id || 0}
+                    />
+                  </div>
+                )}
+              </>
+            );
             })}
           </div>
         )}
