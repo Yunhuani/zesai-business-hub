@@ -766,3 +766,5 @@
 - [x] 修改App.tsx，添加/support路由
 - [x] 修改systemRouter.ts，专家顾问咨询邮箱改为16289209@qq.com
 - [x] 在Home.tsx的footer添加"联系客服"链接
+
+- [x] 恢复右下角客服浮动按钮（用户反馈看不到入口）

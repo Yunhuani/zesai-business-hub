@@ -22,6 +22,7 @@ import CreditUsage from "./pages/CreditUsage";
 import UserManagement from "./pages/UserManagement";
 import OrderManagement from "./pages/OrderManagement";
 import SupportForm from "./pages/SupportForm";
+import SupportFloatingButton from "./components/SupportFloatingButton";
 
 function Router() {
   return (
@@ -67,6 +68,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          <SupportFloatingButton />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
