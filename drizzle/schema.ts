@@ -180,15 +180,17 @@ export type GeneratedDocument = typeof generatedDocuments.$inferSelect;
 export type InsertGeneratedDocument = typeof generatedDocuments.$inferInsert;
 
 /**
- * Support tickets table - stores customer service requests
+ * Support tickets table - stores customer service requests (form submission)
  */
 export const supportTickets = mysqlTable("supportTickets", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  conversationId: int("conversationId").notNull(), // Link to conversations table
-  status: mysqlEnum("status", ["pending", "in_progress", "resolved"]).default("pending").notNull(),
-  priority: mysqlEnum("priority", ["normal", "urgent"]).default("normal").notNull(),
-  category: varchar("category", { length: 50 }), // e.g., "payment", "technical", "feature"
+  userId: int("userId"), // Optional, for logged-in users
+  userName: varchar("userName", { length: 100 }).notNull(),
+  userEmail: varchar("userEmail", { length: 320 }).notNull(),
+  issueType: mysqlEnum("issueType", ["technical", "account", "payment", "feature", "other"]).notNull(),
+  description: text("description").notNull(),
+  attachmentUrl: text("attachmentUrl"), // Optional screenshot/file
+  status: mysqlEnum("status", ["pending", "resolved"]).default("pending").notNull(),
   internalNotes: text("internalNotes"), // Admin-only notes
   resolvedAt: timestamp("resolvedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

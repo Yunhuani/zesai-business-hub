@@ -21,7 +21,7 @@ import Credits from "./pages/Credits";
 import CreditUsage from "./pages/CreditUsage";
 import UserManagement from "./pages/UserManagement";
 import OrderManagement from "./pages/OrderManagement";
-import CustomerSupportButton from "./components/CustomerSupportButton";
+import SupportForm from "./pages/SupportForm";
 
 function Router() {
   return (
@@ -45,6 +45,7 @@ function Router() {
       <Route path="/credit-usage" component={CreditUsage} />
       <Route path="/admin/user-management" component={UserManagement} />
       <Route path="/admin/orders" component={OrderManagement} />
+      <Route path="/support" component={SupportForm} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
@@ -66,7 +67,6 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
-          <CustomerSupportButton />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

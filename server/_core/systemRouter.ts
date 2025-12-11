@@ -1,6 +1,9 @@
 import { z } from "zod";
-import { notifyOwner } from "./notification";
 import { adminProcedure, publicProcedure, router } from "./trpc";
+import { notifyOwner } from "./notification";
+import { sendEmail } from "./email";
+
+const EXPERT_CONSULTATION_EMAIL = "16289209@qq.com";
 
 export const systemRouter = router({
   health: publicProcedure
@@ -36,14 +39,35 @@ export const systemRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      // Notify owner about the expert consultation request
-      const delivered = await notifyOwner({
-        title: "专家顾问咨询请求",
-        content: `姓名：${input.name}\n联系方式：${input.contact}\n咨询需求：${input.requirement}`,
-      });
-      
-      return {
-        success: delivered,
-      } as const;
+      try {
+        // Send email to expert consultation email
+        await sendEmail({
+          to: EXPERT_CONSULTATION_EMAIL,
+          subject: "【泽思AI】专家顾问咨询请求",
+          html: `
+            <h2>专家顾问咨询请求</h2>
+            <p><strong>提交时间:</strong> ${new Date().toLocaleString("zh-CN")}</p>
+            <p><strong>姓名:</strong> ${input.name}</p>
+            <p><strong>联系方式:</strong> ${input.contact}</p>
+            <p><strong>咨询需求:</strong></p>
+            <p>${input.requirement.replace(/\n/g, "<br>")}</p>
+          `,
+        });
+
+        // Also notify owner via platform notification
+        await notifyOwner({
+          title: "专家顾问咨询请求",
+          content: `姓名：${input.name}\n联系方式：${input.contact}\n咨询需求：${input.requirement}`,
+        });
+
+        return {
+          success: true,
+        } as const;
+      } catch (error) {
+        console.error("[Expert Consultation] Failed to send notification:", error);
+        return {
+          success: false,
+        } as const;
+      }
     }),
 });

@@ -1,22 +1,26 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { protectedProcedure, router } from "../_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { supportTickets } from "../../drizzle/schema";
 import { eq, desc, and, sql } from "drizzle-orm";
-import { notifyOwner } from "../_core/notification";
+import { sendEmail } from "../_core/email";
+
+const SUPPORT_EMAIL = "16289209@qq.com";
 
 export const supportRouter = router({
   /**
-   * Create a new support ticket
-   * Called when user requests human support
+   * Submit a support ticket (form submission)
+   * Can be used by both logged-in and anonymous users
    */
-  createTicket: protectedProcedure
+  submitTicket: publicProcedure
     .input(
       z.object({
-        conversationId: z.number(),
-        category: z.string().optional(),
-        priority: z.enum(["normal", "urgent"]).optional(),
+        userName: z.string().min(1, "请输入姓名"),
+        userEmail: z.string().email("请输入有效的邮箱地址"),
+        issueType: z.enum(["technical", "account", "payment", "feature", "other"]),
+        description: z.string().min(10, "问题描述至少10个字符"),
+        attachmentUrl: z.string().url().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -26,17 +30,38 @@ export const supportRouter = router({
       try {
         // Create support ticket
         const [ticket] = await db.insert(supportTickets).values({
-          userId: ctx.user.id,
-          conversationId: input.conversationId,
-          category: input.category || "general",
-          priority: input.priority || "normal",
+          userId: ctx.user?.id, // Optional, for logged-in users
+          userName: input.userName,
+          userEmail: input.userEmail,
+          issueType: input.issueType,
+          description: input.description,
+          attachmentUrl: input.attachmentUrl,
           status: "pending",
         });
 
-        // Notify owner
-        await notifyOwner({
-          title: "新的客服工单",
-          content: `用户 ${ctx.user.name || ctx.user.email} 创建了新的客服工单（工单ID: ${ticket.insertId}）。请及时处理。`,
+        // Send email notification to admin
+        const issueTypeMap = {
+          technical: "技术问题",
+          account: "账户问题",
+          payment: "支付问题",
+          feature: "功能建议",
+          other: "其他问题",
+        };
+
+        await sendEmail({
+          to: SUPPORT_EMAIL,
+          subject: `【泽思AI】新的客服工单 - ${issueTypeMap[input.issueType]}`,
+          html: `
+            <h2>新的客服工单</h2>
+            <p><strong>工单ID:</strong> ${ticket.insertId}</p>
+            <p><strong>提交时间:</strong> ${new Date().toLocaleString("zh-CN")}</p>
+            <p><strong>用户姓名:</strong> ${input.userName}</p>
+            <p><strong>联系邮箱:</strong> ${input.userEmail}</p>
+            <p><strong>问题类型:</strong> ${issueTypeMap[input.issueType]}</p>
+            <p><strong>问题描述:</strong></p>
+            <p>${input.description.replace(/\n/g, "<br>")}</p>
+            ${input.attachmentUrl ? `<p><strong>附件:</strong> <a href="${input.attachmentUrl}">${input.attachmentUrl}</a></p>` : ""}
+          `,
         });
 
         return {
@@ -44,10 +69,10 @@ export const supportRouter = router({
           ticketId: ticket.insertId,
         };
       } catch (error) {
-        console.error("[Support] Failed to create ticket:", error);
+        console.error("[Support] Failed to submit ticket:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create support ticket",
+          message: "提交失败，请稍后重试",
         });
       }
     }),
@@ -58,7 +83,7 @@ export const supportRouter = router({
   listTickets: protectedProcedure
     .input(
       z.object({
-        status: z.enum(["pending", "in_progress", "resolved"]).optional(),
+        status: z.enum(["pending", "resolved"]).optional(),
         limit: z.number().min(1).max(100).default(50),
         offset: z.number().min(0).default(0),
       })
@@ -147,7 +172,7 @@ export const supportRouter = router({
     .input(
       z.object({
         ticketId: z.number(),
-        status: z.enum(["pending", "in_progress", "resolved"]),
+        status: z.enum(["pending", "resolved"]),
         internalNotes: z.string().optional(),
       })
     )
@@ -219,11 +244,6 @@ export const supportRouter = router({
         .from(supportTickets)
         .where(eq(supportTickets.status, "pending"));
 
-      const [inProgressCount] = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(supportTickets)
-        .where(eq(supportTickets.status, "in_progress"));
-
       const [resolvedCount] = await db
         .select({ count: sql<number>`count(*)` })
         .from(supportTickets)
@@ -242,7 +262,6 @@ export const supportRouter = router({
 
       return {
         pending: Number(pendingCount.count) || 0,
-        inProgress: Number(inProgressCount.count) || 0,
         resolved: Number(resolvedCount.count) || 0,
         today: Number(todayCount.count) || 0,
       };

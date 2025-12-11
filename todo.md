@@ -741,3 +741,28 @@
 - [x] 统一所有文档积分为200积分
 - [x] 测试编译通过
 - [x] 创建检查点
+
+
+## 客服系统改造（表单提交方式）
+- [ ] 创建support_tickets数据库表（存储客服工单）
+- [ ] 创建后端接口：提交客服工单
+- [ ] 创建后端接口：发送邮件通知管理员
+- [ ] 创建客服表单页面（SupportForm.tsx）
+- [ ] 实现表单字段（姓名、邮箱、问题类型、描述、附件）
+- [ ] 移除实时客服聊天组件
+- [ ] 修改专家顾问咨询邮箱为16289209@qq.com
+- [ ] 在footer添加"联系客服"链接
+- [ ] 在个人中心添加"帮助与反馈"入口
+- [ ] 测试表单提交和邮件发送
+- [ ] 创建检查点
+
+
+## 客服系统改造（表单提交方式）
+- [x] 创建supportTickets数据库表（表单字段）
+- [x] 创建server/routers/support.ts接口（submitTicket）
+- [x] 创建server/_core/email.ts模块（发送邮件）
+- [x] 创建client/src/pages/SupportForm.tsx页面
+- [x] 删除CustomerSupportButton和CustomerSupportDialog组件
+- [x] 修改App.tsx，添加/support路由
+- [x] 修改systemRouter.ts，专家顾问咨询邮箱改为16289209@qq.com
+- [x] 在Home.tsx的footer添加"联系客服"链接
