@@ -154,3 +154,27 @@ export const creditsTransactions = mysqlTable("creditsTransactions", {
 
 export type CreditsTransaction = typeof creditsTransactions.$inferSelect;
 export type InsertCreditsTransaction = typeof creditsTransactions.$inferInsert;
+
+/**
+ * Generated documents table - stores AI-generated documents (PDF/Word/PPT)
+ */
+export const generatedDocuments = mysqlTable("generatedDocuments", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  conversationId: int("conversationId").notNull(),
+  agentId: int("agentId").notNull(),
+  fileId: varchar("fileId", { length: 100 }).notNull(), // e.g., "business_plan", "pitch_framework"
+  fileName: varchar("fileName", { length: 255 }).notNull(), // e.g., "商业计划书（完整版）"
+  fileType: mysqlEnum("fileType", ["heavy", "medium", "light"]).notNull(), // Determines credit cost
+  format: mysqlEnum("format", ["pdf", "word"]).notNull(),
+  fileUrl: text("fileUrl"), // S3 URL
+  fileSize: int("fileSize"), // File size in bytes
+  status: mysqlEnum("status", ["pending", "generating", "completed", "failed"]).default("pending").notNull(),
+  creditsDeducted: int("creditsDeducted").notNull(), // 200/140/100
+  expiresAt: timestamp("expiresAt").notNull(), // 7 days from creation
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type GeneratedDocument = typeof generatedDocuments.$inferSelect;
+export type InsertGeneratedDocument = typeof generatedDocuments.$inferInsert;
