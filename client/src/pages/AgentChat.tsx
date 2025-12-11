@@ -9,6 +9,7 @@ import { useEffect, useState, useRef } from "react";
 import { Link, useParams, useLocation } from "wouter";
 import { EnhancedMessage } from "@/components/EnhancedMessage";
 import { MessageDownloadButtons } from "@/components/MessageDownloadButtons";
+import { DocumentDownloadButtons } from "@/components/chat/DocumentDownloadButtons";
 import { toast } from "sonner";
 import { InsufficientCreditsDialog } from "@/components/InsufficientCreditsDialog";
 
@@ -496,6 +497,14 @@ export default function AgentChat() {
                             content={msg.content}
                             conversationTitle={agent?.name || '商业咨询报告'}
                           />
+                          {conversationId && (
+                            <DocumentDownloadButtons
+                              messageId={msg.id}
+                              conversationId={conversationId}
+                              agentId={agent?.id || 0}
+                              content={msg.content}
+                            />
+                          )}
                         </>
                       ) : (
                         <p className="whitespace-pre-wrap">{msg.content}</p>

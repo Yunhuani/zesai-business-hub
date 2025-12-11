@@ -2,6 +2,11 @@ import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { storagePut } from "../storage";
 import { TRPCError } from "@trpc/server";
+import { documentManager, type DocumentType, type FileFormat } from "../documentManager";
+import { generateWordDocument } from "../wordGenerator";
+import { generatePDF } from "../pdfGenerator";
+import { invokeLLM } from "../_core/llm";
+import { getMessageById } from "../db";
 
 /**
  * 文档上传和解析路由
@@ -88,7 +93,231 @@ export const documentRouter = router({
         });
       }
     }),
+
+  /**
+   * 生成文档（Word/PDF）
+   */
+  generate: protectedProcedure
+    .input(
+      z.object({
+        conversationId: z.number(),
+        messageId: z.number(),
+        agentId: z.number(),
+        fileId: z.string(), // e.g., "business_plan", "strategy_report"
+        fileName: z.string(), // e.g., "商业计划书（完整版）"
+        format: z.enum(["word", "pdf"]),
+        documentType: z.enum(["heavy", "medium", "light"]),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      try {
+        const userId = ctx.user.id;
+
+        // 1. 检查是否已存在未过期的文档（避免重复扣费）
+        const existing = await documentManager.findExistingDocument(
+          userId,
+          input.conversationId,
+          input.fileId,
+          input.format
+        );
+
+        if (existing) {
+          return {
+            success: true,
+            documentId: existing.id,
+            downloadUrl: existing.fileUrl,
+            fileName: existing.fileName,
+            cached: true,
+          };
+        }
+
+        // 2. 检查积分是否足够
+        const creditsCheck = await documentManager.checkDocumentCredits(
+          userId,
+          input.documentType
+        );
+
+        if (!creditsCheck.sufficient) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `积分不足。当前积分：${creditsCheck.current}，需要：${creditsCheck.required}`,
+          });
+        }
+
+        // 3. 创建文档生成记录
+        const documentId = await documentManager.createDocumentRecord({
+          userId,
+          conversationId: input.conversationId,
+          agentId: input.agentId,
+          fileId: input.fileId,
+          fileName: input.fileName,
+          format: input.format,
+          fileType: input.documentType,
+        });
+
+        // 4. 扣除积分
+        await documentManager.deductDocumentCredits(
+          userId,
+          input.documentType,
+          documentId,
+          input.fileName
+        );
+
+        // 5. 更新状态为生成中
+        await documentManager.updateDocumentGenerating(documentId);
+
+        // 6. 获取原始消息内容
+        const message = await getMessageById(input.messageId);
+        if (!message) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "消息不存在",
+          });
+        }
+
+        // 7. 使用LLM扩展和完善文档内容
+        const enhancedContent = await enhanceDocumentContent(
+          message.content,
+          input.fileName,
+          input.documentType
+        );
+
+        // 8. 生成文档文件
+        let fileBuffer: Buffer;
+        let mimeType: string;
+
+        if (input.format === "word") {
+          fileBuffer = await generateWordDocument({
+            title: input.fileName,
+            content: enhancedContent,
+          });
+          mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        } else {
+          // PDF生成器需要Message[]格式
+          fileBuffer = await generatePDF(
+            [
+              {
+                role: "assistant",
+                content: enhancedContent,
+              },
+            ],
+            input.fileName
+          );
+          mimeType = "application/pdf";
+        }
+
+        // 9. 上传到S3
+        const timestamp = Date.now();
+        const randomSuffix = Math.random().toString(36).substring(7);
+        const fileExtension = input.format === "word" ? "docx" : "pdf";
+        const fileKey = `${userId}-generated-docs/${timestamp}-${randomSuffix}.${fileExtension}`;
+
+        const { url: downloadUrl } = await storagePut(fileKey, fileBuffer, mimeType);
+
+        // 10. 更新文档记录为完成
+        await documentManager.updateDocumentCompleted(
+          documentId,
+          downloadUrl,
+          fileBuffer.length
+        );
+
+        return {
+          success: true,
+          documentId,
+          downloadUrl,
+          fileName: input.fileName,
+          cached: false,
+        };
+      } catch (error) {
+        console.error("Document generation error:", error);
+
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "文档生成失败，请稍后重试",
+        });
+      }
+    }),
 });
+
+/**
+ * 使用LLM扩展和完善文档内容
+ */
+async function enhanceDocumentContent(
+  originalContent: string,
+  fileName: string,
+  documentType: DocumentType
+): Promise<string> {
+  try {
+    // 根据文档类型设定不同的扩展策略
+    let enhancementPrompt = "";
+
+    if (documentType === "heavy") {
+      enhancementPrompt = `你是一位专业的商业顾问。请将以下内容扩展成一份完整的《${fileName}》文档。
+
+要求：
+1. 保持原有核心内容和逻辑结构
+2. 扩展每个章节，添加更多细节和实例
+3. 使用专业的商业语言和术语
+4. 确保文档结构完整，包含引言、正文、总结
+5. 使用Markdown格式，包含标题、列表、加粗等
+
+原始内容：
+${originalContent}`;
+    } else if (documentType === "medium") {
+      enhancementPrompt = `你是一位专业的商业分析师。请将以下内容整理成一份结构化的《${fileName}》文档。
+
+要求：
+1. 保持原有内容的完整性
+2. 优化文档结构，使其更易读
+3. 添加适当的分段和标题
+4. 使用Markdown格式
+
+原始内容：
+${originalContent}`;
+    } else {
+      // light
+      enhancementPrompt = `请将以下内容整理成一份清晰的《${fileName}》文档。
+
+要求：
+1. 保持原有内容
+2. 优化格式，使其更易读
+3. 使用Markdown格式
+
+原始内容：
+${originalContent}`;
+    }
+
+    const response = await invokeLLM({
+      messages: [
+        {
+          role: "user",
+          content: enhancementPrompt,
+        },
+      ],
+    });
+
+    const content = response.choices[0].message.content;
+    // content可能是string或数组，需要处理
+    if (typeof content === "string") {
+      return content || originalContent;
+    } else if (Array.isArray(content)) {
+      // 如果是数组，提取所有text内容
+      return content
+        .filter((item) => item.type === "text")
+        .map((item) => item.text)
+        .join("\n") || originalContent;
+    }
+    return originalContent;
+  } catch (error) {
+    console.error("Content enhancement error:", error);
+    // 如果LLM失败，返回原始内容
+    return originalContent;
+  }
+}
 
 /**
  * 从文档URL提取文本内容
