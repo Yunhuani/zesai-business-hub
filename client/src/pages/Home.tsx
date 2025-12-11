@@ -16,6 +16,7 @@ import * as Icons from "lucide-react";
 import { useState } from "react";
 import { ExpertConsultationDialog } from "@/components/ExpertConsultationDialog";
 import { CreditsDisplay } from "@/components/CreditsDisplay";
+import { SmartAssistantSearch } from "@/components/SmartAssistantSearch";
 import { Link } from "wouter";
 
 // Agent分类配置
@@ -181,6 +182,13 @@ export default function Home() {
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
           麦肯锡级别的专业咨询服务,随时为您的企业提供战略规划、商业模式设计、市场洞察等全方位支持
         </p>
+        
+        {/* Smart Assistant Search */}
+        {!agentsLoading && agents && (
+          <SmartAssistantSearch 
+            smartAssistantId={agents.find(a => a.name === '智能AI助手')?.id || 0}
+          />
+        )}
       </section>
 
       {/* Agents by Category */}

@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, name, description, icon FROM agents LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, name, description, icon FROM agents LIMIT 5;",
+  "rows": [
+    {
+      "id": "120001",
+      "name": "战略规划",
+      "description": "制定企业战略方向和执行路径，分析市场机会和竞争态势",
+      "icon": "Target"
+    },
+    {
+      "id": "120002",
+      "name": "融资BP与路演",
+      "description": "撰写专业商业计划书，设计融资路演方案，提供投资人沟通策略",
+      "icon": "FileText"
+    },
+    {
+      "id": "120003",
+      "name": "竞品分析专家",
+      "description": "深度分析竞争对手，识别差异化优势，制定竞争策略",
+      "icon": "Target"
+    },
+    {
+      "id": "120004",
+      "name": "商业模式设计",
+      "description": "帮助企业理清商业逻辑、设计最优的商业模式方案，为企业的融资、增长和战略决策提供有力的支撑。",
+      "icon": "Layers"
+    },
+    {
+      "id": "120005",
+      "name": "一人公司顾问",
+      "description": "为个人创业者设计轻量化商业模式，实现一人也能盈利的可持续发展",
+      "icon": "User"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tdescription\ticon\n120001\t战略规划\t制定企业战略方向和执行路径，分析市场机会和竞争态势\tTarget\n120002\t融资BP与路演\t撰写专业商业计划书，设计融资路演方案，提供投资人沟通策略\tFileText\n120003\t竞品分析专家\t深度分析竞争对手，识别差异化优势，制定竞争策略\tTarget\n120004\t商业模式设计\t帮助企业理清商业逻辑、设计最优的商业模式方案，为企业的融资、增长和战略决策提供有力的支撑。\tLayers\n120005\t一人公司顾问\t为个人创业者设计轻量化商业模式，实现一人也能盈利的可持续发展\tUser\n",
+  "stderr": "",
+  "execution_time_ms": 1517
+}

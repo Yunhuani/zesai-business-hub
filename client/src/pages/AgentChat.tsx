@@ -19,6 +19,10 @@ export default function AgentChat() {
   const urlConversationId = location.startsWith('/conversation/') ? parseInt(params.id || "0") : null;
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   
+  // Get initial message from URL query parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialMessage = urlParams.get('initial');
+  
   // Get conversation data if loading from URL
   const { data: conversationData } = trpc.conversation.getById.useQuery(
     { id: urlConversationId! },
@@ -41,7 +45,8 @@ export default function AgentChat() {
   const [conversationId, setConversationId] = useState<number | null>(null);
   const [message, setMessage] = useState("");
   const [isFirstMessage, setIsFirstMessage] = useState(true);
-  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  const [pendingMessage, setPendingMessage] = useState<string | null>(initialMessage);
+  const [hasProcessedInitialMessage, setHasProcessedInitialMessage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showInsufficientCreditsDialog, setShowInsufficientCreditsDialog] = useState(false);

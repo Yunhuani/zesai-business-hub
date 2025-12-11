@@ -1,0 +1,14 @@
+{
+  "query": "SELECT id, name FROM agents WHERE name = '智能AI助手';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, name FROM agents WHERE name = '智能AI助手';",
+  "rows": [
+    {
+      "id": "180001",
+      "name": "智能AI助手"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n180001\t智能AI助手\n",
+  "stderr": "",
+  "execution_time_ms": 1543
+}
