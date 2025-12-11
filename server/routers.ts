@@ -419,7 +419,7 @@ export const appRouter = router({
       await createOrUpdateSubscription({
         userId: ctx.user.id,
         plan: input.plan,
-        monthlyLimit: plan.limit,
+        // monthlyLimit removed - using credits system
         price: plan.price,
         endDate,
       });

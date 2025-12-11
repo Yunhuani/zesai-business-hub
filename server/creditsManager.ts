@@ -19,9 +19,9 @@ export const CREDITS_COST = {
 // Credits included in each plan per month
 export const PLAN_CREDITS = {
   free: 100,
-  basic: 1000,
-  professional: 3500,
-  enterprise: 15000,
+  basic: 750,
+  professional: 2600,
+  enterprise: 11000,
 } as const;
 
 /**

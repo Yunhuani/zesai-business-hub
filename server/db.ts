@@ -211,7 +211,6 @@ export async function getUserSubscription(userId: number) {
 export async function createOrUpdateSubscription(data: {
   userId: number;
   plan: "free" | "basic" | "professional" | "enterprise";
-  monthlyLimit: number;
   price: number;
   endDate: Date;
 }) {
@@ -225,7 +224,6 @@ export async function createOrUpdateSubscription(data: {
       .update(subscriptions)
       .set({
         plan: data.plan,
-        monthlyLimit: data.monthlyLimit,
         price: data.price,
         status: "active",
         startDate: new Date(),
@@ -236,7 +234,6 @@ export async function createOrUpdateSubscription(data: {
     await db.insert(subscriptions).values({
       userId: data.userId,
       plan: data.plan,
-      monthlyLimit: data.monthlyLimit,
       price: data.price,
       status: "active",
       startDate: new Date(),
@@ -245,92 +242,15 @@ export async function createOrUpdateSubscription(data: {
   }
 }
 
-// Usage record queries
-export async function getOrCreateUsageRecord(userId: number, month: string) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  const { usageRecords } = await import("../drizzle/schema");
-  const { and } = await import("drizzle-orm");
-  
-  const result = await db
-    .select()
-    .from(usageRecords)
-    .where(and(eq(usageRecords.userId, userId), eq(usageRecords.month, month)))
-    .limit(1);
-  
-  if (result.length > 0) {
-    return result[0];
-  }
-  
-  await db.insert(usageRecords).values({
-    userId,
-    month,
-    usageCount: 0,
-  });
-  
-  const newRecord = await db
-    .select()
-    .from(usageRecords)
-    .where(and(eq(usageRecords.userId, userId), eq(usageRecords.month, month)))
-    .limit(1);
-  
-  return newRecord[0];
-}
+// Usage record queries - DEPRECATED
+// These functions are no longer used. The system now uses credits instead of usage counts.
+// Keeping them temporarily for reference during migration.
 
-export async function incrementUsage(userId: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  const { usageRecords } = await import("../drizzle/schema");
-  
-  const now = new Date();
-  const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  
-  const record = await getOrCreateUsageRecord(userId, month);
-  
-  await db
-    .update(usageRecords)
-    .set({ usageCount: record.usageCount + 1 })
-    .where(eq(usageRecords.id, record.id));
-}
-
-export async function checkUsageLimit(userId: number): Promise<{ allowed: boolean; remaining: number; limit: number }> {
-  const subscription = await getUserSubscription(userId);
-  
-  // Default free plan: 3 times per month
-  if (!subscription || subscription.plan === "free") {
-    const now = new Date();
-    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const usage = await getOrCreateUsageRecord(userId, month);
-    const freeLimit = 3;
-    const remaining = freeLimit - usage.usageCount;
-    return {
-      allowed: remaining > 0,
-      remaining: Math.max(0, remaining),
-      limit: freeLimit,
-    };
-  }
-  
-  // Check if subscription is active
-  if (subscription.status !== "active" || new Date(subscription.endDate) < new Date()) {
-    return { allowed: false, remaining: 0, limit: subscription.monthlyLimit };
-  }
-  
-  // Unlimited plan
-  if (subscription.monthlyLimit === 0) {
-    return { allowed: true, remaining: -1, limit: 0 };
-  }
-  
-  const now = new Date();
-  const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  const usage = await getOrCreateUsageRecord(userId, month);
-  
-  const remaining = subscription.monthlyLimit - usage.usageCount;
-  return {
-    allowed: remaining > 0,
-    remaining: Math.max(0, remaining),
-    limit: subscription.monthlyLimit,
-  };
-}
+/*
+export async function getOrCreateUsageRecord(userId: number, month: string) { ... }
+export async function incrementUsage(userId: number) { ... }
+export async function checkUsageLimit(userId: number) { ... }
+*/
 
 // Order queries
 export async function createOrder(data: {

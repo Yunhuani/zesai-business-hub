@@ -8,22 +8,28 @@ import { TRPCError } from "@trpc/server";
  * 套餐配置
  */
 const PLAN_CONFIG = {
+  free: {
+    name: "免费版",
+    price: 0,
+    monthlyCredits: 100,
+    duration: 30,
+  },
   basic: {
     name: "基础版",
     price: 9900, // 99元,单位:分
-    monthlyLimit: 20,
+    monthlyCredits: 750, // 每月750积分
     duration: 30, // 天
   },
   professional: {
     name: "专业版",
     price: 29900, // 299元
-    monthlyLimit: 100,
+    monthlyCredits: 2600, // 每月2600积分
     duration: 30,
   },
   enterprise: {
     name: "企业版",
     price: 99900, // 999元
-    monthlyLimit: 0, // 无限
+    monthlyCredits: 11000, // 每月11000积分
     duration: 30,
   },
 } as const;
@@ -33,9 +39,9 @@ const PLAN_CONFIG = {
  */
 const CREDIT_PACK_CONFIG: Record<string, { name: string; credits: number; price: number }> = {
   pack_500: { name: "入门包", credits: 500, price: 4900 },
-  pack_1200: { name: "超值包", credits: 1200, price: 9900 },
-  pack_3000: { name: "专业包", credits: 3000, price: 19900 },
-  pack_8000: { name: "企业包", credits: 8000, price: 39900 },
+  pack_1000: { name: "超值包", credits: 1000, price: 9900 },
+  pack_2200: { name: "专业包", credits: 2200, price: 19900 },
+  pack_5500: { name: "企业包", credits: 5500, price: 39900 },
 };
 
 export const paymentRouter = router({
@@ -65,8 +71,8 @@ export const paymentRouter = router({
         if (!config) {
           throw new TRPCError({ code: "BAD_REQUEST", message: "无效的套餐类型" });
         }
-        subject = `哲思AI商业智库 - ${config.name}`;
-        body = `订阅${config.name},${config.monthlyLimit === 0 ? "无限次" : `${config.monthlyLimit}次/月`}咨询服务`;
+        subject = `泽思AI商业智库 - ${config.name}`;
+        body = `订阅${config.name},每月${config.monthlyCredits}积分`;
       } else if (type === "credits") {
         const config = CREDIT_PACK_CONFIG[planId];
         if (!config) {
@@ -152,8 +158,8 @@ export const paymentRouter = router({
         const paymentForm = await createAlipayPagePayment({
           outTradeNo,
           totalAmount: (config.price / 100).toFixed(2), // 转换为元
-          subject: `哲思AI商业智库 - ${config.name}`,
-          body: `订阅${config.name},${config.monthlyLimit === 0 ? "无限次" : `${config.monthlyLimit}次/月`}咨询服务`,
+          subject: `泽思AI商业智库 - ${config.name}`,
+          body: `订阅${config.name},每月${config.monthlyCredits}积分`,
           returnUrl,
           notifyUrl,
         });
@@ -231,7 +237,7 @@ export const paymentRouter = router({
             await createOrUpdateSubscription({
               userId: order.userId,
               plan: order.plan as any,
-              monthlyLimit: subscriptionConfig.monthlyLimit,
+              // monthlyLimit removed - using credits system now
               price: subscriptionConfig.price,
               endDate,
             });
@@ -328,7 +334,7 @@ export const paymentRouter = router({
           await createOrUpdateSubscription({
             userId: order.userId,
             plan: order.plan as any,
-            monthlyLimit: subscriptionConfig.monthlyLimit,
+            // monthlyLimit removed - using credits system now
             price: subscriptionConfig.price,
             endDate,
           });

@@ -82,9 +82,10 @@ async function startServer() {
         
         // Update user subscription
         const PLAN_CONFIG = {
-          basic: { monthlyLimit: 20, price: 9900, duration: 30 },
-          professional: { monthlyLimit: 100, price: 29900, duration: 30 },
-          enterprise: { monthlyLimit: 0, price: 99900, duration: 30 },
+          free: { monthlyCredits: 100, price: 0, duration: 30 },
+          basic: { monthlyCredits: 750, price: 9900, duration: 30 },
+          professional: { monthlyCredits: 2600, price: 29900, duration: 30 },
+          enterprise: { monthlyCredits: 11000, price: 99900, duration: 30 },
         };
         
         const config = PLAN_CONFIG[order.plan as keyof typeof PLAN_CONFIG];
@@ -95,7 +96,7 @@ async function startServer() {
           await createOrUpdateSubscription({
             userId: order.userId,
             plan: order.plan as any,
-            monthlyLimit: config.monthlyLimit,
+            // monthlyLimit removed - using credits system
             price: config.price,
             endDate,
           });

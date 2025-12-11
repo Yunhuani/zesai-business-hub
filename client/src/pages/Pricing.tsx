@@ -14,7 +14,7 @@ const plans = [
     id: "free",
     name: "免费版",
     price: 0,
-    limit: 3,
+    monthlyCredits: 100,
     features: [
       "专业AI模型咨询",
       "访问核心知识模型",
@@ -29,7 +29,7 @@ const plans = [
     id: "basic",
     name: "基础版",
     price: 99,
-    limit: 20,
+    monthlyCredits: 750,
     features: [
       "专业AI模型咨询",
       "访问核心知识模型",
@@ -44,7 +44,7 @@ const plans = [
     id: "professional",
     name: "专业版",
     price: 299,
-    limit: 100,
+    monthlyCredits: 2600,
     features: [
       "专业AI模型咨询",
       "访问核心知识模型",
@@ -60,7 +60,7 @@ const plans = [
     id: "enterprise",
     name: "企业版",
     price: 999,
-    limit: 0,
+    monthlyCredits: 11000,
     features: [
       "专业AI模型咨询",
       "访问核心知识模型",
@@ -162,8 +162,13 @@ export default function Pricing() {
                   </div>
                   <CardTitle className="text-2xl">{plan.name}</CardTitle>
                   <CardDescription>
-                    <span className="text-4xl font-bold text-foreground">¥{plan.price}</span>
-                    <span className="text-muted-foreground">/月</span>
+                    <div>
+                      <span className="text-4xl font-bold text-foreground">¥{plan.price}</span>
+                      <span className="text-muted-foreground">/月</span>
+                    </div>
+                    <div className="mt-2 text-sm text-muted-foreground">
+                      每月{plan.monthlyCredits}积分
+                    </div>
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">

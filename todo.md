@@ -647,3 +647,22 @@
 - [x] 缩小文字大小（text-lg改为text-sm）
 - [x] 测试页面显示效果
 - [ ] 创建检查点
+
+
+## 计费体系统一（删除次数限制，统一为积分制）- 确保300%利润率
+- [x] 修改server/routers/payment.ts - 更新PLAN_CONFIG为monthlyCredits（新积分数）
+- [x] 修改server/routers/payment.ts - 更新CREDIT_PACK_CONFIG为新积分数
+- [x] 修改server/creditsManager.ts - 更新PLAN_CREDITS配置
+- [x] 修改server/db.ts - 删除checkUsageLimit函数
+- [x] 修改server/db.ts - 删除getOrCreateUsageRecord函数
+- [x] 修改server/db.ts - 删除incrementUsageCount函数
+- [x] 修改server/db.ts - 修改createOrUpdateSubscription删除monthlyLimit参数
+- [x] 修改server/routers.ts - 删除subscription相关的monthlyLimit逻辑
+- [x] 修改server/_core/index.ts - 统一PLAN_CONFIG配置
+- [ ] 修改drizzle/schema.ts - 标记monthlyLimit字段为deprecated
+- [ ] 修改drizzle/schema.ts - 标记usageRecords表为deprecated
+- [x] 修改client/src/pages/Pricing.tsx - 改为显示积分而非次数
+- [ ] 更新所有测试文件中的monthlyLimit断言
+- [ ] 创建数据库迁移脚本
+- [x] 运行完整测试验证（所有7项测试通过）
+- [ ] 创建检查点
