@@ -6,7 +6,8 @@ import { documentManager, type DocumentType, type FileFormat } from "../document
 import { generateWordDocument } from "../wordGenerator";
 import { generatePDF } from "../pdfGenerator";
 import { invokeLLM } from "../_core/llm";
-import { getMessageById } from "../db";
+import { getMessageById, getConversationMessages } from "../db";
+import { getDocumentStructure } from "../documentStructures";
 
 /**
  * 文档上传和解析路由
@@ -166,20 +167,19 @@ export const documentRouter = router({
         // 5. 更新状态为生成中
         await documentManager.updateDocumentGenerating(documentId);
 
-        // 6. 获取原始消息内容
-        const message = await getMessageById(input.messageId);
-        if (!message) {
+        // 6. 获取完整对话历史
+        const conversationMessages = await getConversationMessages(input.conversationId);
+        if (!conversationMessages || conversationMessages.length === 0) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "消息不存在",
+            message: "对话记录不存在",
           });
         }
 
-        // 7. 使用LLM扩展和完善文档内容
+        // 7. 使用LLM基于完整对话历史生成文档内容（统一最高质量标准）
         const enhancedContent = await enhanceDocumentContent(
-          message.content,
-          input.fileName,
-          input.documentType
+          conversationMessages,
+          input.fileName
         );
 
         // 8. 生成文档文件
@@ -247,53 +247,24 @@ export const documentRouter = router({
 });
 
 /**
- * 使用LLM扩展和完善文档内容
+ * 使用LLM基于完整对话历史生成文档内容（V2方案）
  */
 async function enhanceDocumentContent(
-  originalContent: string,
-  fileName: string,
-  documentType: DocumentType
+  conversationMessages: Array<{ role: string; content: string; createdAt: Date }>,
+  fileName: string
 ): Promise<string> {
+  // 将对话历史转换为文本
+  const conversationText = conversationMessages
+    .map((msg) => `${msg.role === "user" ? "用户" : "顾问"}：${msg.content}`)
+    .join("\n\n");
+
+  // 根据文件名获取对应的文档结构模板
+  const documentStructure = getDocumentStructure(fileName);
+
+  // 构建增强提示词
+  const enhancementPrompt = buildEnhancementPrompt(fileName, documentStructure, conversationText);
+
   try {
-    // 根据文档类型设定不同的扩展策略
-    let enhancementPrompt = "";
-
-    if (documentType === "heavy") {
-      enhancementPrompt = `你是一位专业的商业顾问。请将以下内容扩展成一份完整的《${fileName}》文档。
-
-要求：
-1. 保持原有核心内容和逻辑结构
-2. 扩展每个章节，添加更多细节和实例
-3. 使用专业的商业语言和术语
-4. 确保文档结构完整，包含引言、正文、总结
-5. 使用Markdown格式，包含标题、列表、加粗等
-
-原始内容：
-${originalContent}`;
-    } else if (documentType === "medium") {
-      enhancementPrompt = `你是一位专业的商业分析师。请将以下内容整理成一份结构化的《${fileName}》文档。
-
-要求：
-1. 保持原有内容的完整性
-2. 优化文档结构，使其更易读
-3. 添加适当的分段和标题
-4. 使用Markdown格式
-
-原始内容：
-${originalContent}`;
-    } else {
-      // light
-      enhancementPrompt = `请将以下内容整理成一份清晰的《${fileName}》文档。
-
-要求：
-1. 保持原有内容
-2. 优化格式，使其更易读
-3. 使用Markdown格式
-
-原始内容：
-${originalContent}`;
-    }
-
     const response = await invokeLLM({
       messages: [
         {
@@ -304,22 +275,86 @@ ${originalContent}`;
     });
 
     const content = response.choices[0].message.content;
-    // content可能是string或数组，需要处理
     if (typeof content === "string") {
-      return content || originalContent;
+      return content || generateFallbackDocument(conversationMessages, fileName);
     } else if (Array.isArray(content)) {
-      // 如果是数组，提取所有text内容
-      return content
+      const textContent = content
         .filter((item) => item.type === "text")
         .map((item) => item.text)
-        .join("\n") || originalContent;
+        .join("\n");
+      return textContent || generateFallbackDocument(conversationMessages, fileName);
     }
-    return originalContent;
+    return generateFallbackDocument(conversationMessages, fileName);
   } catch (error) {
-    console.error("Content enhancement error:", error);
-    // 如果LLM失败，返回原始内容
-    return originalContent;
+    console.error("LLM文档生成失败，使用fallback方案:", error);
+    return generateFallbackDocument(conversationMessages, fileName);
   }
+}
+
+/**
+ * 构建文档增强提示词（V2方案 - 简化版）
+ */
+function buildEnhancementPrompt(
+  fileName: string,
+  documentStructure: string,
+  conversationText: string
+): string {
+  return `你是一位曾在麦肯锡、BCG等顶级咨询公司工作多年的资深商业顾问。
+
+任务：基于以下咨询对话，生成一份专业的《${fileName}》文档。
+
+核心要求：
+1. 彻底过滤对话痕迹：移除所有问候、确认、引导语、emoji、角色标记
+2. 专业排版：使用Markdown格式，层级清晰，表格规范，段落适中
+3. 内容组织：按照以下结构组织内容
+
+文档结构：
+${documentStructure}
+
+对话记录：
+${conversationText}
+
+请生成一份可直接交付给客户的专业商业文档。`;
+}
+
+/**
+ * 生成fallback文档（当LLM失败时）
+ */
+function generateFallbackDocument(
+  conversationMessages: Array<{ role: string; content: string; createdAt: Date }>,
+  fileName: string
+): string {
+  const assistantMessages = conversationMessages
+    .filter((msg) => msg.role === "assistant")
+    .map((msg) => msg.content);
+
+  const cleanedContent = assistantMessages
+    .map((content) => {
+      return content
+        .replace(/^(好的|明白了|没问题|非常好)[,。!]?\s*/gm, "")
+        .replace(/^(让我|我来|接下来)[^。]*。\s*/gm, "")
+        .replace(/^(您好|欢迎)[^。]*。\s*/gm, "")
+        .replace(/[\uD800-\uDFFF]|[\u2600-\u26FF]|[\u2700-\u27BF]/g, "")
+        .replace(/(AI顾问|用户|客户)[:：]/g, "")
+        .replace(/【[^】]+】/g, "")
+        .replace(/阶段[一二三四五六七八九十\d]+[:：]/g, "")
+        .trim();
+    })
+    .filter((content) => content.length > 0)
+    .join("\n\n---\n\n");
+
+  return `# ${fileName}
+
+> **注意：** 本文档为自动整理版本，建议进一步编辑完善。
+
+---
+
+${cleanedContent}
+
+---
+
+*文档生成时间：${new Date().toLocaleString("zh-CN")}*
+`;
 }
 
 /**

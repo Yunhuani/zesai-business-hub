@@ -13,7 +13,6 @@ interface DocumentItem {
   fileId: string;
   fileName: string;
   format: "word" | "pdf";
-  documentType: "heavy" | "medium" | "light";
 }
 
 interface DocumentDownloadButtonsProps {
@@ -27,33 +26,25 @@ interface DocumentDownloadButtonsProps {
  * 从消息内容中识别文件清单
  * 格式示例：
  * 【可下载文件】
- * - 商业计划书（完整版）.docx (重度)
- * - 融资路演PPT大纲.pdf (中度)
+ * - 商业计划书（完整版）.docx
+ * - 融资路演PPT大纳.pdf
  */
 function parseDocumentList(content: string): DocumentItem[] {
   const documents: DocumentItem[] = [];
 
   // 查找【可下载文件】标记
-  const fileListMatch = content.match(/【可下载文件】\s*\n([\s\S]*?)(?=\n\n|$)/);
+  const fileListMatch = content.match(/【可下载文件】\s*([\s\S]*?)(?=\n\n|$)/);
   if (!fileListMatch) return documents;
 
   const fileListContent = fileListMatch[1];
   const lines = fileListContent.split("\n");
 
   for (const line of lines) {
-    // 匹配格式：- 文件名.扩展名 (类型)
-    const match = line.match(/^-\s*(.+?)\.(docx|pdf)\s*\((.+?)\)/);
+    // 匹配格式：- 文件名.扩展名（无类型标记）
+    const match = line.match(/^-\s*(.+?)\.(docx|pdf)\s*$/);
     if (!match) continue;
 
-    const [, fileName, format, typeStr] = match;
-
-    // 解析文档类型
-    let documentType: "heavy" | "medium" | "light" = "medium";
-    if (typeStr.includes("重度") || typeStr.includes("heavy")) {
-      documentType = "heavy";
-    } else if (typeStr.includes("轻度") || typeStr.includes("light")) {
-      documentType = "light";
-    }
+    const [, fileName, format] = match;
 
     // 生成fileId（用于去重和缓存）
     const fileId = fileName
@@ -65,7 +56,6 @@ function parseDocumentList(content: string): DocumentItem[] {
       fileId,
       fileName: `${fileName}.${format}`,
       format: format as "word" | "pdf",
-      documentType,
     });
   }
 
@@ -107,7 +97,7 @@ export function DocumentDownloadButtons({
       fileId: doc.fileId,
       fileName: doc.fileName,
       format: doc.format,
-      documentType: doc.documentType,
+      documentType: "heavy", // 统一使用最高质量标准
     });
   };
 
@@ -125,12 +115,7 @@ export function DocumentDownloadButtons({
       <div className="flex flex-wrap gap-2">
         {documents.map((doc) => {
           const isLoading = loadingFileId === doc.fileId;
-          const credits =
-            doc.documentType === "heavy"
-              ? 200
-              : doc.documentType === "medium"
-              ? 140
-              : 100;
+          const credits = 200; // 统一使用最高质量标准，200积分
 
           return (
             <Button

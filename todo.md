@@ -703,3 +703,41 @@
 - [ ] 工单优先级：自动识别紧急问题并标记优先级
 - [ ] 内部备注：管理员可以添加用户不可见的内部备注
 - [ ] 工单导出：支持导出工单数据为Excel报表
+
+
+## 文档下载功能紧急修复（客户投诉-高优先级）
+### 问题现象
+- [ ] 问题1：对话刚开始就出现"下载PDF"按钮（误识别）
+- [ ] 问题2：只生成1份文件，应该生成2份
+- [ ] 问题3：PDF内容不是真正的方案内容
+- [ ] 问题4：文件名显示不友好，缺少页数、大小等信息
+
+### 排查任务
+- [ ] 检查所有Agent的systemPrompt，确认文件清单输出格式
+- [ ] 检查DocumentDownloadButtons.tsx的识别正则表达式
+- [ ] 检查document.generate接口的messageId参数传递
+- [ ] 检查documentRouter中的LLM调用逻辑
+- [ ] 检查wordGenerator和pdfGenerator的内容来源
+- [ ] 查看实际生成的PDF文件内容
+
+### 修复任务
+- [ ] 修改所有Agent的systemPrompt，添加明确的【可下载文件】输出格式
+- [ ] 修改DocumentDownloadButtons识别逻辑，只识别特定格式
+- [ ] 修改document.generate接口，支持生成多个文件
+- [ ] 修改LLM文档内容生成逻辑，确保生成完整方案
+- [ ] 优化下载按钮UI，显示文件名、页数、大小
+- [ ] 全面测试所有16个Agent的文档生成功能
+- [ ] 创建检查点
+
+
+## 文档下载功能V2方案实施（后端提示词优化）
+- [x] 创建`server/documentStructures.ts`文件，定义所有16个Agent的文档结构模板
+- [x] 修改`server/routers/document.ts`，实施V2方案的`enhanceDocumentContent`函数
+- [x] 添加`buildEnhancementPrompt`函数，根据文件名自动选择文档结构
+- [x] 添加`generateFallbackDocument`函数，当LLM失败时提供基础文档
+- [x] 删除`documentType`参数，统一使用最高质量标准
+- [x] 修改`client/src/components/chat/DocumentDownloadButtons.tsx`，删除文档类型解析
+- [x] 修改`shared/promptRules.ts`，删除文档类型标记，简化输出格式
+- [x] 统一所有文档积分为200积分
+- [x] 测试编译通过
+- [x] 创建检查点
