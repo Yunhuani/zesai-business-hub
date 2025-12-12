@@ -1,0 +1,65 @@
+{
+  "query": "SELECT * FROM creditsTransactions \nWHERE userId = (SELECT userId FROM orders WHERE outTradeNo = 'ZS17655044997127350017') \nORDER BY createdAt DESC \nLIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT * FROM creditsTransactions \nWHERE userId = (SELECT userId FROM orders WHERE outTradeNo = 'ZS17655044997127350017') \nORDER BY createdAt DESC \nLIMIT 5;",
+  "rows": [
+    {
+      "id": "1290013",
+      "userId": "7350017",
+      "type": "subscription_grant",
+      "amount": "2600",
+      "balancePurchased": "0",
+      "balanceSubscription": "2600",
+      "description": "订阅积分重置: professional 套餐",
+      "relatedOrderId": "NULL",
+      "createdAt": "2025-12-12 02:11:58"
+    },
+    {
+      "id": "1290012",
+      "userId": "7350017",
+      "type": "subscription_grant",
+      "amount": "750",
+      "balancePurchased": "0",
+      "balanceSubscription": "750",
+      "description": "订阅积分重置: basic 套餐",
+      "relatedOrderId": "NULL",
+      "createdAt": "2025-12-12 02:11:57"
+    },
+    {
+      "id": "1290007",
+      "userId": "7350017",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "0",
+      "description": "基础对话 - Conversation #1530001",
+      "relatedOrderId": "NULL",
+      "createdAt": "2025-12-12 01:48:41"
+    },
+    {
+      "id": "1290006",
+      "userId": "7350017",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "10",
+      "balanceSubscription": "0",
+      "description": "基础对话 - Conversation #1530001",
+      "relatedOrderId": "NULL",
+      "createdAt": "2025-12-12 01:48:12"
+    },
+    {
+      "id": "1290005",
+      "userId": "7350017",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "20",
+      "balanceSubscription": "0",
+      "description": "基础对话 - Conversation #1530001",
+      "relatedOrderId": "NULL",
+      "createdAt": "2025-12-12 01:46:55"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserId\ttype\tamount\tbalancePurchased\tbalanceSubscription\tdescription\trelatedOrderId\tcreatedAt\n1290013\t7350017\tsubscription_grant\t2600\t0\t2600\t订阅积分重置: professional 套餐\tNULL\t2025-12-12 02:11:58\n1290012\t7350017\tsubscription_grant\t750\t0\t750\t订阅积分重置: basic 套餐\tNULL\t2025-12-12 02:11:57\n1290007\t7350017\tconsume\t-10\t0\t0\t基础对话 - Conversation #1530001\tNULL\t2025-12-12 01:48:41\n1290006\t7350017\tconsume\t-10\t10\t0\t基础对话 - Conversation #1530001\tNULL\t2025-12-12 01:48:12\n1290005\t7350017\tconsume\t-10\t20\t0\t基础对话 - Conversation #1530001\tNULL\t2025-12-12 01:46:55\n",
+  "stderr": "",
+  "execution_time_ms": 1511
+}

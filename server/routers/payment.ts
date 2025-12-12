@@ -338,6 +338,10 @@ export const paymentRouter = router({
             price: subscriptionConfig.price,
             endDate,
           });
+          
+          // Initialize subscription credits
+          const { resetSubscriptionCredits } = await import("../creditsManager");
+          await resetSubscriptionCredits(order.userId, order.plan);
         } else if (creditPackConfig) {
           // Handle credit pack order
           const { addPurchasedCredits } = await import("../creditsManager");

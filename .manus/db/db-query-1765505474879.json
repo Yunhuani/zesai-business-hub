@@ -1,0 +1,76 @@
+{
+  "query": "SELECT o.id, o.userId, o.outTradeNo, o.plan, o.amount, o.paidAt, u.email, u.name, u.creditsSubscription \nFROM orders o \nLEFT JOIN users u ON o.userId = u.id \nWHERE o.status = 'paid' \nAND o.plan IN ('basic', 'professional', 'enterprise') \nORDER BY o.paidAt DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT o.id, o.userId, o.outTradeNo, o.plan, o.amount, o.paidAt, u.email, u.name, u.creditsSubscription \nFROM orders o \nLEFT JOIN users u ON o.userId = u.id \nWHERE o.status = 'paid' \nAND o.plan IN ('basic', 'professional', 'enterprise') \nORDER BY o.paidAt DESC;",
+  "rows": [
+    {
+      "id": "600001",
+      "userId": "7350017",
+      "outTradeNo": "ZS17655044997127350017",
+      "plan": "professional",
+      "amount": "29900",
+      "paidAt": "2025-12-12 01:55:23",
+      "email": "1558328644@qq.com",
+      "name": "小段",
+      "creditsSubscription": "0"
+    },
+    {
+      "id": "540003",
+      "userId": "7350017",
+      "outTradeNo": "ZS17652520914027350017",
+      "plan": "basic",
+      "amount": "9900",
+      "paidAt": "2025-12-09 03:51:59",
+      "email": "1558328644@qq.com",
+      "name": "小段",
+      "creditsSubscription": "0"
+    },
+    {
+      "id": "540001",
+      "userId": "4620003",
+      "outTradeNo": "ZS17652513921614620003",
+      "plan": "professional",
+      "amount": "29900",
+      "paidAt": "2025-12-09 03:36:48",
+      "email": "guanli118@gmail.com",
+      "name": "guanli118",
+      "creditsSubscription": "180"
+    },
+    {
+      "id": "450001",
+      "userId": "6930017",
+      "outTradeNo": "ZS17651719637086930017",
+      "plan": "basic",
+      "amount": "9900",
+      "paidAt": "2025-12-08 22:49:36",
+      "email": "15010497770@sina.cn",
+      "name": "赵玉琳",
+      "creditsSubscription": "0"
+    },
+    {
+      "id": "270002",
+      "userId": "1",
+      "outTradeNo": "TEST1763961142729",
+      "plan": "professional",
+      "amount": "29900",
+      "paidAt": "2025-11-24 05:12:23",
+      "email": "yunhua.ni@gmail.com",
+      "name": "Zenith",
+      "creditsSubscription": "80"
+    },
+    {
+      "id": "390001",
+      "userId": "4620003",
+      "outTradeNo": "ZS17646567340484620003",
+      "plan": "basic",
+      "amount": "9900",
+      "paidAt": "NULL",
+      "email": "guanli118@gmail.com",
+      "name": "guanli118",
+      "creditsSubscription": "180"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserId\toutTradeNo\tplan\tamount\tpaidAt\temail\tname\tcreditsSubscription\n600001\t7350017\tZS17655044997127350017\tprofessional\t29900\t2025-12-12 01:55:23\t1558328644@qq.com\t小段\t0\n540003\t7350017\tZS17652520914027350017\tbasic\t9900\t2025-12-09 03:51:59\t1558328644@qq.com\t小段\t0\n540001\t4620003\tZS17652513921614620003\tprofessional\t29900\t2025-12-09 03:36:48\tguanli118@gmail.com\tguanli118\t180\n450001\t6930017\tZS17651719637086930017\tbasic\t9900\t2025-12-08 22:49:36\t15010497770@sina.cn\t赵玉琳\t0\n270002\t1\tTEST1763961142729\tprofessional\t29900\t2025-11-24 05:12:23\tyunhua.ni@gmail.com\tZenith\t80\n390001\t4620003\tZS17646567340484620003\tbasic\t9900\tNULL\tguanli118@gmail.com\tguanli118\t180\n",
+  "stderr": "",
+  "execution_time_ms": 1595
+}

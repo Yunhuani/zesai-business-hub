@@ -1,0 +1,23 @@
+{
+  "query": "SELECT * FROM orders WHERE outTradeNo = 'ZS17655044997127350017';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT * FROM orders WHERE outTradeNo = 'ZS17655044997127350017';",
+  "rows": [
+    {
+      "id": "600001",
+      "userId": "7350017",
+      "outTradeNo": "ZS17655044997127350017",
+      "tradeNo": "2025121222001400891407712092",
+      "plan": "professional",
+      "amount": "29900",
+      "status": "paid",
+      "paymentMethod": "alipay",
+      "paidAt": "2025-12-12 01:55:23",
+      "createdAt": "2025-12-12 01:54:59",
+      "updatedAt": "2025-12-12 01:55:23"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserId\toutTradeNo\ttradeNo\tplan\tamount\tstatus\tpaymentMethod\tpaidAt\tcreatedAt\tupdatedAt\n600001\t7350017\tZS17655044997127350017\t2025121222001400891407712092\tprofessional\t29900\tpaid\talipay\t2025-12-12 01:55:23\t2025-12-12 01:54:59\t2025-12-12 01:55:23\n",
+  "stderr": "",
+  "execution_time_ms": 1518
+}

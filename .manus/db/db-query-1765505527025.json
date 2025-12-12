@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, email, name, creditsPurchased, creditsSubscription, creditsResetDate \nFROM users \nWHERE email = '155832864@qq.com' OR id = (SELECT userId FROM orders WHERE outTradeNo = 'ZS17655044997127350017');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, email, name, creditsPurchased, creditsSubscription, creditsResetDate \nFROM users \nWHERE email = '155832864@qq.com' OR id = (SELECT userId FROM orders WHERE outTradeNo = 'ZS17655044997127350017');",
+  "rows": [
+    {
+      "id": "7350017",
+      "email": "1558328644@qq.com",
+      "name": "小段",
+      "creditsPurchased": "0",
+      "creditsSubscription": "2600",
+      "creditsResetDate": "2026-01-12 02:11:58"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tname\tcreditsPurchased\tcreditsSubscription\tcreditsResetDate\n7350017\t1558328644@qq.com\t小段\t0\t2600\t2026-01-12 02:11:58\n",
+  "stderr": "",
+  "execution_time_ms": 1544
+}
