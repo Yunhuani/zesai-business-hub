@@ -68,6 +68,10 @@ export function DocumentDownloadButtons({
   agentId,
   content,
 }: DocumentDownloadButtonsProps) {
+  // 暂时隐藏文档下载功能，等技术成熟后再开放
+  return null;
+  
+  /* 以下代码保留用于将来恢复
   const [loadingFileId, setLoadingFileId] = useState<string | null>(null);
   const documents = parseDocumentList(content);
 
@@ -144,4 +148,5 @@ export function DocumentDownloadButtons({
       </p>
     </div>
   );
+  */
 }

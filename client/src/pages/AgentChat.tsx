@@ -280,15 +280,16 @@ export default function AgentChat() {
 
   const IconComponent = (Icons as any)[agent.icon] || Icons.Sparkles;
 
-  const handleExportPDF = () => {
-    if (!conversationId) return;
-    exportPDF.mutate({ conversationId });
-  };
+  // 暂时隐藏文档导出功能
+  // const handleExportPDF = () => {
+  //   if (!conversationId) return;
+  //   exportPDF.mutate({ conversationId });
+  // };
 
-  const handleExportPPT = () => {
-    if (!conversationId) return;
-    generatePPTMutation.mutate({ conversationId });
-  };
+  // const handleExportPPT = () => {
+  //   if (!conversationId) return;
+  //   generatePPTMutation.mutate({ conversationId });
+  // };
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;

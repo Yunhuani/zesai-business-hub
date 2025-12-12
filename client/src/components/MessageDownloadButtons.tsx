@@ -33,7 +33,18 @@ function detectFileTypes(content: string): string[] {
   return types;
 }
 
+/**
+ * 消息下载按钮组件
+ * 
+ * 注意：文档下载功能已暂时隐藏，等技术成熟后再开放
+ * 如需恢复，将下面的 return null 改为原来的实现代码
+ */
 export function MessageDownloadButtons({ messageId, content, conversationTitle }: MessageDownloadButtonsProps) {
+  // 暂时隐藏文档下载功能，等技术成熟后再开放
+  return null;
+  
+  // ===== 以下代码已注释，保留用于将来恢复功能 =====
+  /*
   const fileTypes = detectFileTypes(content);
   
   // 如果没有检测到任何文件类型标注，不显示下载按钮
@@ -172,4 +183,5 @@ export function MessageDownloadButtons({ messageId, content, conversationTitle }
       )}
     </div>
   );
+  */
 }
