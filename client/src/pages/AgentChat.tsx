@@ -12,6 +12,7 @@ import { MessageDownloadButtons } from "@/components/MessageDownloadButtons";
 import { DocumentDownloadButtons } from "@/components/chat/DocumentDownloadButtons";
 import { toast } from "sonner";
 import { InsufficientCreditsDialog } from "@/components/InsufficientCreditsDialog";
+import { LoginMethodDialog } from "@/components/LoginMethodDialog";
 
 export default function AgentChat() {
   const params = useParams();
@@ -51,6 +52,7 @@ export default function AgentChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showInsufficientCreditsDialog, setShowInsufficientCreditsDialog] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
 
@@ -251,11 +253,12 @@ export default function AgentChat() {
     },
   });
 
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      window.location.href = getLoginUrl();
-    }
-  }, [authLoading, isAuthenticated]);
+  // 允许未登录用户访问agent页面，只在发送消息时才提示登录
+  // useEffect(() => {
+  //   if (!authLoading && !isAuthenticated) {
+  //     window.location.href = getLoginUrl();
+  //   }
+  // }, [authLoading, isAuthenticated]);
 
   if (authLoading || agentLoading) {
     return (
@@ -293,6 +296,12 @@ export default function AgentChat() {
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
+    
+    // 检查登录状态，未登录则显示登录选择对话框
+    if (!isAuthenticated) {
+      setShowLoginDialog(true);
+      return;
+    }
     
     if (!conversationId) {
       // Conversation还未创建，将消息加入待发送队列
@@ -469,7 +478,25 @@ export default function AgentChat() {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="space-y-4">
-            {!messages || messages.length === 0 ? (
+            {!isAuthenticated ? (
+              <div className="flex items-center justify-center h-[400px]">
+                <div className="text-center max-w-md">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <IconComponent className="w-10 h-10 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold mb-3">欢迎使用 {agent?.name}</h2>
+                  <p className="text-muted-foreground mb-6">{agent?.description}</p>
+                  <Button
+                    onClick={() => setShowLoginDialog(true)}
+                    className="gap-2"
+                    size="lg"
+                  >
+                    <Icons.LogIn className="w-4 h-4" />
+                    登录开始咨询
+                  </Button>
+                </div>
+              </div>
+            ) : !messages || messages.length === 0 ? (
               <div className="flex items-center justify-center h-[400px]">
                 <div className="text-center text-muted-foreground">
                   <Icons.Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
@@ -565,16 +592,16 @@ export default function AgentChat() {
                   <Icons.Paperclip className="w-4 h-4" />
                 </Button>
                 <Input
-                  placeholder="输入您的问题或信息..."
+                  placeholder={!isAuthenticated ? "请先登录后开始咨询..." : "输入您的问题或信息..."}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  disabled={sendMessage.isPending || !conversationId}
+                  disabled={!isAuthenticated || sendMessage.isPending || !conversationId}
                   className="flex-1"
                 />
                 <Button
                   onClick={handleSendMessage}
-                  disabled={!message.trim() || sendMessage.isPending || !conversationId}
+                  disabled={!isAuthenticated || !message.trim() || sendMessage.isPending || !conversationId}
                   className="gap-2"
                 >
                   {sendMessage.isPending ? (
@@ -594,6 +621,12 @@ export default function AgentChat() {
       <InsufficientCreditsDialog
         open={showInsufficientCreditsDialog}
         onOpenChange={setShowInsufficientCreditsDialog}
+      />
+      
+      {/* Login Method Dialog */}
+      <LoginMethodDialog
+        open={showLoginDialog}
+        onOpenChange={setShowLoginDialog}
       />
     </div>
   );
