@@ -567,14 +567,7 @@ export default function AgentChat() {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <Card className="p-4 bg-white shadow-none border-0">
             <div className="space-y-3">
-              {isFirstMessage && (
-                <div className="flex items-start gap-2 text-sm text-muted-foreground bg-blue-50 p-3 rounded-lg">
-                  <Icons.Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <p>
-                    💡 <strong>提示:</strong> 您提供的信息越详细,生成的方案质量就越高。您可以通过对话或上传文档(PDF/Word/Excel)的方式提供信息。
-                  </p>
-                </div>
-              )}
+
               <div className="flex gap-2">
                 <input
                   ref={fileInputRef}
