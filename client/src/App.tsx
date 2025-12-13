@@ -10,7 +10,7 @@ import History from "./pages/History";
 import Pricing from "./pages/Pricing";
 import Admin from "./pages/Admin";
 import AdminAgents from "./pages/AdminAgents";
-import AdminUsers from "./pages/AdminUsers";
+
 import WechatLogin from "./pages/WechatLogin";
 import Payment from "./pages/Payment";
 import PaymentResult from "./pages/PaymentResult";
@@ -34,7 +34,7 @@ function Router() {
       <Route path="/pricing" component={Pricing} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin/agents" component={AdminAgents} />
-      <Route path="/admin/users" component={AdminUsers} />
+
       <Route path="/wechat-login" component={WechatLogin} />
       <Route path="/wechat-callback" component={WechatLogin} />
       <Route path="/email-login" component={EmailLogin} />

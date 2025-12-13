@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, userName, userEmail, issueType, description, createdAt FROM supportTickets WHERE id = 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, userName, userEmail, issueType, description, createdAt FROM supportTickets WHERE id = 1;",
+  "rows": [
+    {
+      "id": "1",
+      "userName": "凌墨缘-13366242015",
+      "userEmail": "lingmoyuan@sina.com",
+      "issueType": "technical",
+      "description": "付完款，还是显示积分不足，不能用",
+      "createdAt": "2025-12-12 09:38:07"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserName\tuserEmail\tissueType\tdescription\tcreatedAt\n1\t凌墨缘-13366242015\tlingmoyuan@sina.com\ttechnical\t付完款，还是显示积分不足，不能用\t2025-12-12 09:38:07\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}

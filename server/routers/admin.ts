@@ -2,7 +2,8 @@ import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
-import { users } from "../../drizzle/schema";
+import { users, subscriptions } from "../../drizzle/schema";
+import { eq } from "drizzle-orm";
 import { addPurchasedCredits, deductCredits } from "../creditsManager";
 
 // Admin-only middleware
@@ -26,8 +27,22 @@ export const adminRouter = router({
       });
     }
 
+    // Get all users
     const allUsers = await db.select().from(users);
-    return allUsers;
+    
+    // Get all active subscriptions
+    const allSubscriptions = await db.select().from(subscriptions).where(eq(subscriptions.status, "active"));
+    
+    // Merge user data with subscription data
+    const usersWithSubscriptions = allUsers.map(user => {
+      const userSubscription = allSubscriptions.find(sub => sub.userId === user.id);
+      return {
+        ...user,
+        subscription: userSubscription || null,
+      };
+    });
+    
+    return usersWithSubscriptions;
   }),
 
   adjustUserCredits: adminProcedure

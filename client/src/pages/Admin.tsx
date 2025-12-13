@@ -105,7 +105,7 @@ export default function Admin() {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setLocation("/admin/users")}>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setLocation("/admin/user-management")}>
             <CardHeader>
               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-4">
                 <Icons.Users className="w-6 h-6 text-white" />

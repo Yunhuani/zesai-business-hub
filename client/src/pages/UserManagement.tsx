@@ -124,9 +124,12 @@ export default function UserManagement() {
                       <TableHead>姓名</TableHead>
                       <TableHead>邮箱</TableHead>
                       <TableHead>角色</TableHead>
+                      <TableHead>订阅套餐</TableHead>
                       <TableHead className="text-right">总积分</TableHead>
                       <TableHead className="text-right">订阅积分</TableHead>
                       <TableHead className="text-right">购买积分</TableHead>
+                      <TableHead>注册时间</TableHead>
+                      <TableHead>最后登录</TableHead>
                       <TableHead className="text-center">操作</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -148,6 +151,22 @@ export default function UserManagement() {
                                 {u.role === "admin" ? "管理员" : "用户"}
                               </span>
                             </TableCell>
+                            <TableCell>
+                              {u.subscription ? (
+                                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                  u.subscription.plan === "enterprise" ? "bg-orange-100 text-orange-700" :
+                                  u.subscription.plan === "professional" ? "bg-purple-100 text-purple-700" :
+                                  u.subscription.plan === "basic" ? "bg-blue-100 text-blue-700" :
+                                  "bg-gray-100 text-gray-700"
+                                }`}>
+                                  {u.subscription.plan === "enterprise" ? "企业版" :
+                                   u.subscription.plan === "professional" ? "专业版" :
+                                   u.subscription.plan === "basic" ? "基础版" : "免费版"}
+                                </span>
+                              ) : (
+                                <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700">免费版</span>
+                              )}
+                            </TableCell>
                             <TableCell className="text-right font-semibold">
                               {totalCredits}
                             </TableCell>
@@ -156,6 +175,12 @@ export default function UserManagement() {
                             </TableCell>
                             <TableCell className="text-right text-muted-foreground">
                               {u.creditsPurchased || 0}
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {new Date(u.createdAt).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {new Date(u.lastSignedIn).toLocaleDateString()}
                             </TableCell>
                             <TableCell className="text-center">
                               <Button
@@ -173,7 +198,7 @@ export default function UserManagement() {
                       })
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                        <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
                           {searchEmail ? "未找到匹配的用户" : "暂无用户数据"}
                         </TableCell>
                       </TableRow>
