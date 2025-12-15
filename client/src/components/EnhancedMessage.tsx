@@ -32,7 +32,14 @@ export function EnhancedMessage({ content }: EnhancedMessageProps) {
         }
         
         // Regular markdown content
-        return <Streamdown key={index}>{part.content}</Streamdown>;
+        return (
+          <Streamdown 
+            key={index}
+            controls={{ table: false, code: true, mermaid: true }}
+          >
+            {part.content}
+          </Streamdown>
+        );
       })}
     </div>
   );
@@ -44,6 +51,9 @@ interface ContentPart {
 }
 
 function parseContent(content: string): ContentPart[] {
+  // 移除文件下载列表部分
+  content = content.replace(/【可下载文件】[\s\S]*?(?=\n\n|$)/g, '').trim();
+  
   const parts: ContentPart[] = [];
   let currentIndex = 0;
 

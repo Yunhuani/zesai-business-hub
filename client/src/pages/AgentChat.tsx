@@ -564,11 +564,8 @@ export default function AgentChat() {
 
       {/* Input area - fixed at bottom */}
       <div className="border-t bg-white flex-shrink-0">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <Card className="p-4 bg-white shadow-none border-0">
-            <div className="space-y-3">
-
-              <div className="flex gap-2">
+        <div className="max-w-4xl mx-auto px-4 py-3">
+          <div className="flex gap-2">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -604,9 +601,7 @@ export default function AgentChat() {
                   )}
                   发送
                 </Button>
-              </div>
-            </div>
-          </Card>
+          </div>
         </div>
       </div>
 
