@@ -55,6 +55,7 @@ export default function AgentChat() {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+  const typewriterIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const { data: messages, refetch: refetchMessages } = trpc.message.list.useQuery(
     { conversationId: conversationId! },
@@ -68,6 +69,22 @@ export default function AgentChat() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+  
+  // Auto-scroll during streaming
+  useEffect(() => {
+    if (isStreaming) {
+      scrollToBottom();
+    }
+  }, [streamingMessage, isStreaming]);
+  
+  // Cleanup typewriter interval on unmount
+  useEffect(() => {
+    return () => {
+      if (typewriterIntervalRef.current) {
+        clearInterval(typewriterIntervalRef.current);
+      }
+    };
+  }, []);
 
   // Load conversation from URL if present
   useEffect(() => {
@@ -122,14 +139,65 @@ export default function AgentChat() {
   });
 
   const sendWelcomeMessage = trpc.message.sendWelcome.useMutation({
-    onSuccess: () => {
-      refetchMessages();
+    onSuccess: (data) => {
+      if (!data.content) {
+        refetchMessages();
+        return;
+      }
+      
+      // Start typewriter effect for welcome message
+      setIsStreaming(true);
+      setStreamingMessage("");
+      
+      const fullText = data.content;
+      let currentIndex = 0;
+      
+      // Clear any existing interval
+      if (typewriterIntervalRef.current) {
+        clearInterval(typewriterIntervalRef.current);
+      }
+      
+      typewriterIntervalRef.current = setInterval(() => {
+        if (currentIndex < fullText.length) {
+          const chunkSize = Math.min(2, fullText.length - currentIndex);
+          setStreamingMessage(prev => prev + fullText.slice(currentIndex, currentIndex + chunkSize));
+          currentIndex += chunkSize;
+        } else {
+          if (typewriterIntervalRef.current) {
+            clearInterval(typewriterIntervalRef.current);
+            typewriterIntervalRef.current = null;
+          }
+          setIsStreaming(false);
+          setStreamingMessage("");
+          refetchMessages();
+        }
+      }, 30);
     },
   });
 
   const sendMessage = trpc.message.send.useMutation({
-    onSuccess: () => {
-      refetchMessages();
+    onSuccess: (data) => {
+      // Start typewriter effect
+      setIsStreaming(true);
+      setStreamingMessage("");
+      
+      const fullText = data.content;
+      let currentIndex = 0;
+      
+      const typewriterInterval = setInterval(() => {
+        if (currentIndex < fullText.length) {
+          // Add characters in chunks for smoother effect
+          const chunkSize = Math.min(2, fullText.length - currentIndex);
+          setStreamingMessage(prev => prev + fullText.slice(currentIndex, currentIndex + chunkSize));
+          currentIndex += chunkSize;
+        } else {
+          clearInterval(typewriterInterval);
+          setIsStreaming(false);
+          setStreamingMessage("");
+          refetchMessages();
+        }
+      }, 30); // 30ms per chunk for smooth typing effect
+      
       setMessage("");
       setIsFirstMessage(false);
     },
@@ -436,7 +504,7 @@ export default function AgentChat() {
     <div className="flex flex-col h-screen bg-white">
       {/* Header */}
       <header className="border-b bg-white sticky top-0 z-10 flex-shrink-0">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
               <Link href="/">
@@ -476,7 +544,7 @@ export default function AgentChat() {
 
       {/* Messages area - scrollable */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-4 py-6">
+        <div className="max-w-3xl mx-auto px-4 py-6">
           <div className="space-y-4">
             {!isAuthenticated ? (
               <div className="flex items-center justify-center h-[400px]">
@@ -511,7 +579,7 @@ export default function AgentChat() {
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[85%] rounded-lg p-3 text-sm ${
+                      className={`max-w-[90%] rounded-lg p-4 text-sm ${
                         msg.role === "user"
                           ? "bg-gradient-to-br from-blue-600 to-purple-600 text-white"
                           : "bg-gray-50 border"
@@ -537,13 +605,13 @@ export default function AgentChat() {
                       ) : (
                         <p className="whitespace-pre-wrap">{msg.content}</p>
                       )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
               {/* Streaming message */}
               {isStreaming && streamingMessage && (
                 <div className="flex justify-start">
-                  <div className="max-w-[85%] bg-gray-50 border rounded-lg p-3 text-sm">
+                  <div className="max-w-[90%] bg-gray-50 border rounded-lg p-4 text-sm">
                     <EnhancedMessage content={streamingMessage} />
                   </div>
                 </div>
@@ -564,7 +632,7 @@ export default function AgentChat() {
 
       {/* Input area - fixed at bottom */}
       <div className="border-t bg-white flex-shrink-0">
-        <div className="max-w-4xl mx-auto px-4 py-3">
+        <div className="max-w-3xl mx-auto px-4 py-3">
           <div className="flex gap-2">
                 <input
                   ref={fileInputRef}
