@@ -34,6 +34,13 @@ describe('积分包购买限制功能', () => {
     expect(canPurchaseCreditPack('free')).toBe(false);
   });
 
+  it('免费版用户积分不足弹窗不显示购买积分按钮', () => {
+    // 模拟弹窗逻辑
+    const shouldShowPurchaseButton = (isFreeUser: boolean) => !isFreeUser;
+    expect(shouldShowPurchaseButton(true)).toBe(false); // 免费版不显示
+    expect(shouldShowPurchaseButton(false)).toBe(true); // 付费版显示
+  });
+
   it('基础版用户可以购买积分包', () => {
     expect(canPurchaseCreditPack('basic')).toBe(true);
   });

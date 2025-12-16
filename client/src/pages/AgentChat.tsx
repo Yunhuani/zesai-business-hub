@@ -685,6 +685,7 @@ export default function AgentChat() {
       <InsufficientCreditsDialog
         open={showInsufficientCreditsDialog}
         onOpenChange={setShowInsufficientCreditsDialog}
+        isFreeUser={!subscriptionData?.subscription?.plan || subscriptionData?.subscription?.plan === 'free'}
       />
       
       {/* Login Method Dialog */}
