@@ -5,7 +5,7 @@ import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import * as Icons from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
 
 const CREDIT_PACKS = [
@@ -48,11 +48,20 @@ const CREDIT_PACKS = [
 
 export default function Credits() {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const [, navigate] = useLocation();
   const { data: creditsData, isLoading: creditsLoading } = trpc.credits.get.useQuery(
     undefined,
     { enabled: isAuthenticated }
   );
+  const { data: subscriptionData, isLoading: subscriptionLoading } = trpc.subscription.get.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
   const [paymentFormHtml, setPaymentFormHtml] = useState<string>("");
+  
+  // 检查用户是否为免费版
+  const userPlan = subscriptionData?.subscription?.plan || "free";
+  const isFreeUser = userPlan === "free";
 
   const createOrder = trpc.payment.createOrder.useMutation({
     onSuccess: (data: { orderId: string; paymentForm: string }) => {
@@ -83,7 +92,7 @@ export default function Credits() {
     }
   }, [authLoading, isAuthenticated]);
 
-  if (authLoading || creditsLoading) {
+  if (authLoading || creditsLoading || subscriptionLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -92,6 +101,11 @@ export default function Credits() {
   }
 
   const handlePurchase = (packId: string, price: number, credits: number) => {
+    // 免费版用户不能购买积分包
+    if (isFreeUser) {
+      toast.error("免费版用户请先升级套餐后再购买积分包");
+      return;
+    }
     createOrder.mutate({
       type: "credits" as const,
       planId: packId,
@@ -151,6 +165,29 @@ export default function Credits() {
           </p>
         </div>
 
+        {/* 免费版用户提示 */}
+        {isFreeUser && (
+          <Card className="mb-8 p-6 bg-amber-50 border-amber-200">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Icons.AlertCircle className="w-5 h-5 text-amber-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-amber-800 mb-2">免费版用户暂不支持购买积分包</h3>
+                <p className="text-sm text-amber-700 mb-4">
+                  积分包仅对付费订阅用户开放。请先升级到基础版、专业版或企业版套餐，即可购买积分包补充积分。
+                </p>
+                <Link href="/pricing">
+                  <Button className="bg-amber-600 hover:bg-amber-700">
+                    <Icons.ArrowRight className="w-4 h-4 mr-2" />
+                    立即升级套餐
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Credit Packs Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {CREDIT_PACKS.map((pack) => (
@@ -187,15 +224,19 @@ export default function Credits() {
               </div>
               <Button
                 onClick={() => handlePurchase(pack.id, pack.price, pack.credits)}
-                disabled={createOrder.isPending}
+                disabled={createOrder.isPending || isFreeUser}
                 className={`w-full ${
-                  pack.popular
+                  isFreeUser
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : pack.popular
                     ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                     : ""
                 }`}
               >
                 {createOrder.isPending ? (
                   <Icons.Loader2 className="w-4 h-4 animate-spin" />
+                ) : isFreeUser ? (
+                  "请先升级套餐"
                 ) : (
                   "立即购买"
                 )}
