@@ -621,7 +621,15 @@ export default function AgentChat() {
             {sendMessage.isPending && !isStreaming && (
               <div className="flex justify-start">
                 <div className="bg-gray-50 border rounded-lg p-4">
-                  <Icons.Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <span className="font-medium">Zenith AI</span>
+                    <span>正在思考</span>
+                    <span className="inline-flex">
+                      <span className="animate-[bounce_1s_ease-in-out_infinite]" style={{ animationDelay: '0ms' }}>·</span>
+                      <span className="animate-[bounce_1s_ease-in-out_infinite]" style={{ animationDelay: '200ms' }}>·</span>
+                      <span className="animate-[bounce_1s_ease-in-out_infinite]" style={{ animationDelay: '400ms' }}>·</span>
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
