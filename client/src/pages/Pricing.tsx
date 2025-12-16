@@ -14,12 +14,10 @@ const plans = [
     id: "free",
     name: "免费版",
     price: 0,
-    monthlyCredits: 100,
     features: [
       "专业AI模型咨询",
       "访问核心知识模型",
-      "历史记录仅7天",
-      "无法导出报告",
+      "对话历史保留7天",
     ],
     icon: Icons.Gift,
     color: "from-gray-400 to-gray-500",
@@ -29,12 +27,12 @@ const plans = [
     id: "basic",
     name: "基础版",
     price: 99,
-    monthlyCredits: 750,
     features: [
       "专业AI模型咨询",
       "访问核心知识模型",
-      "对话历史永久保存",
-      "可导出 PDF/PPT 报告",
+      "对话历史保留3个月",
+      "标准对话时长",
+      "多轮深度对话",
       "优先响应速度",
     ],
     icon: Icons.Zap,
@@ -44,13 +42,13 @@ const plans = [
     id: "professional",
     name: "专业版",
     price: 299,
-    monthlyCredits: 2600,
     features: [
       "专业AI模型咨询",
       "访问核心知识模型",
-      "对话历史永久保存",
+      "对话历史保留1年",
+      "更长对话时长",
+      "更优生成效果",
       "优先响应速度",
-      "可导出 PDF/PPT 报告",
     ],
     icon: Icons.Rocket,
     color: "from-purple-500 to-pink-500",
@@ -60,13 +58,13 @@ const plans = [
     id: "enterprise",
     name: "企业版",
     price: 999,
-    monthlyCredits: 11000,
     features: [
       "专业AI模型咨询",
       "访问核心知识模型",
       "对话历史永久保存",
+      "更长对话时长",
+      "更优生成效果",
       "最高优先级响应",
-      "可导出 PDF/PPT 报告",
       "专属客户支持",
     ],
     icon: Icons.Crown,
@@ -165,9 +163,6 @@ export default function Pricing() {
                     <div>
                       <span className="text-4xl font-bold text-foreground">¥{plan.price}</span>
                       <span className="text-muted-foreground">/月</span>
-                    </div>
-                    <div className="mt-2 text-sm text-muted-foreground">
-                      每月{plan.monthlyCredits}积分
                     </div>
                   </CardDescription>
                 </CardHeader>
