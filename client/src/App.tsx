@@ -40,7 +40,7 @@ function Router() {
       <Route path="/wechat-login" component={WechatLogin} />
       <Route path="/wechat-callback" component={WechatLogin} />
       <Route path="/email-login" component={EmailLogin} />
-      <Route path="/login" component={PasswordLogin} />
+      {/* <Route path="/login" component={PasswordLogin} /> */}
       <Route path="/payment/:plan" component={Payment} />
       <Route path="/payment/result" component={PaymentResult} />
       <Route path="/case-example" component={CaseExample} />

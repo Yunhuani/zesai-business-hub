@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Loader2, LogIn, UserPlus } from "lucide-react";
+import { Link } from "wouter";
 import { APP_LOGO, APP_TITLE } from "@/const";
 
 export default function EmailLogin() {
@@ -114,7 +115,12 @@ export default function EmailLogin() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="login-password">密码</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="login-password">密码</Label>
+                      <Link href="/forgot-password" className="text-xs text-blue-600 hover:underline">
+                        忘记密码？
+                      </Link>
+                    </div>
                     <Input
                       id="login-password"
                       type="password"
@@ -148,16 +154,6 @@ export default function EmailLogin() {
                       onClick={() => setActiveTab("register")}
                     >
                       立即注册
-                    </button>
-                  </div>
-                  <div className="text-center text-sm text-gray-600">
-                    或者
-                    <button
-                      type="button"
-                      className="text-purple-600 hover:underline ml-1"
-                      onClick={() => setLocation("/login")}
-                    >
-                      使用用户名登录
                     </button>
                   </div>
                 </CardFooter>
