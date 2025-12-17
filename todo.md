@@ -906,4 +906,4 @@
 - [x] 修改ForgotPassword页面的返回登录链接从/login改为/email-login
 - [x] 修改ResetPassword页面的返回登录链接从/login改为/email-login
 - [x] 测试忘记密码流程（页面渲染正常）
-- [ ] 创建检查点
+- [x] 创建检查点 (version: dc634c69)
