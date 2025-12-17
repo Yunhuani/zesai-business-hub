@@ -899,4 +899,11 @@
 - [x] 添加"忘记密码？"链接到密码输入框旁边
 - [x] 禁用或删除/login页面路由（已注释）
 - [x] 测试登录流程（页面渲染正常）
+- [x] 创建检查点 (version: 2ae4efd2)
+
+
+## 修复忘记密码页面返回登录链接
+- [x] 修改ForgotPassword页面的返回登录链接从/login改为/email-login
+- [x] 修改ResetPassword页面的返回登录链接从/login改为/email-login
+- [x] 测试忘记密码流程（页面渲染正常）
 - [ ] 创建检查点

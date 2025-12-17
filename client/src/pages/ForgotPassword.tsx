@@ -72,7 +72,7 @@ export default function ForgotPassword() {
             </Button>
 
             <div className="text-center text-sm">
-              <Link href="/login" className="text-blue-600 hover:underline">
+              <Link href="/email-login" className="text-blue-600 hover:underline">
                 返回登录
               </Link>
             </div>
@@ -104,7 +104,7 @@ export default function ForgotPassword() {
               >
                 重新发送
               </Button>
-              <Link href="/login">
+              <Link href="/email-login">
                 <Button variant="ghost" className="w-full">
                   返回登录
                 </Button>

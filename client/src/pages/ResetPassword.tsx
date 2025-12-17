@@ -23,7 +23,7 @@ export default function ResetPassword() {
       setToken(tokenParam);
     } else {
       toast.error("缺少重置令牌");
-      navigate("/login");
+      navigate("/email-login");
     }
   }, [navigate]);
 
@@ -48,7 +48,7 @@ export default function ResetPassword() {
     onSuccess: (data) => {
       toast.success(data.message);
       setResetSuccess(true);
-      setTimeout(() => navigate("/login"), 3000);
+      setTimeout(() => navigate("/email-login"), 3000);
     },
     onError: (error) => {
       toast.error(error.message);
@@ -140,7 +140,7 @@ export default function ResetPassword() {
             </Button>
 
             <div className="text-center text-sm">
-              <Link href="/login" className="text-blue-600 hover:underline">
+              <Link href="/email-login" className="text-blue-600 hover:underline">
                 返回登录
               </Link>
             </div>
@@ -156,7 +156,7 @@ export default function ResetPassword() {
                 您的密码已成功重置，即将跳转到登录页面...
               </p>
             </div>
-            <Link href="/login">
+            <Link href="/email-login">
               <Button className="w-full">
                 立即登录
               </Button>
