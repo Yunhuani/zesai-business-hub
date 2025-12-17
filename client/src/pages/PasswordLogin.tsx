@@ -15,16 +15,16 @@ export default function PasswordLogin() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
 
   // Login form state
-  const [loginUsername, setLoginUsername] = useState("");
+  const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
 
   // Register form state
-  const [registerUsername, setRegisterUsername] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerConfirmPassword, setRegisterConfirmPassword] = useState("");
   const [registerName, setRegisterName] = useState("");
 
-  const loginMutation = trpc.auth.login.useMutation({
+  const loginMutation = trpc.auth.loginWithEmail.useMutation({
     onSuccess: () => {
       toast.success("登录成功");
       setLocation("/");
@@ -34,7 +34,7 @@ export default function PasswordLogin() {
     },
   });
 
-  const registerMutation = trpc.auth.register.useMutation({
+  const registerMutation = trpc.auth.registerWithEmail.useMutation({
     onSuccess: () => {
       toast.success("注册成功，已自动登录");
       setLocation("/");
@@ -46,17 +46,17 @@ export default function PasswordLogin() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!loginUsername || !loginPassword) {
-      toast.error("请输入用户名和密码");
+    if (!loginEmail || !loginPassword) {
+      toast.error("请输入邮箱和密码");
       return;
     }
-    loginMutation.mutate({ username: loginUsername, password: loginPassword });
+    loginMutation.mutate({ email: loginEmail, password: loginPassword });
   };
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!registerUsername || !registerPassword) {
-      toast.error("请输入用户名和密码");
+    if (!registerEmail || !registerPassword) {
+      toast.error("请输入邮箱和密码");
       return;
     }
     if (registerPassword.length < 6) {
@@ -68,9 +68,9 @@ export default function PasswordLogin() {
       return;
     }
     registerMutation.mutate({
-      username: registerUsername,
+      email: registerEmail,
       password: registerPassword,
-      name: registerName || registerUsername,
+      name: registerName,
     });
   };
 
@@ -97,20 +97,20 @@ export default function PasswordLogin() {
             <Card>
               <CardHeader>
                 <CardTitle>账号登录</CardTitle>
-                <CardDescription>使用用户名和密码登录</CardDescription>
+                <CardDescription>使用邮箱和密码登录</CardDescription>
               </CardHeader>
               <form onSubmit={handleLogin}>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-username">用户名</Label>
+                    <Label htmlFor="login-email">邮箱</Label>
                     <Input
-                      id="login-username"
-                      type="text"
-                      placeholder="请输入用户名"
-                      value={loginUsername}
-                      onChange={(e) => setLoginUsername(e.target.value)}
+                      id="login-email"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
                       disabled={loginMutation.isPending}
-                      autoComplete="username"
+                      autoComplete="email"
                     />
                   </div>
                   <div className="space-y-2">
@@ -155,16 +155,6 @@ export default function PasswordLogin() {
                       立即注册
                     </button>
                   </div>
-                  <div className="text-center text-sm text-gray-600">
-                    或者
-                    <button
-                      type="button"
-                      className="text-purple-600 hover:underline ml-1"
-                      onClick={() => setLocation("/email-login")}
-                    >
-                      使用邮箱登录
-                    </button>
-                  </div>
                 </CardFooter>
               </form>
             </Card>
@@ -180,15 +170,27 @@ export default function PasswordLogin() {
               <form onSubmit={handleRegister}>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="register-username">用户名</Label>
+                    <Label htmlFor="register-email">邮箱</Label>
                     <Input
-                      id="register-username"
-                      type="text"
-                      placeholder="3-20位字母、数字或下划线"
-                      value={registerUsername}
-                      onChange={(e) => setRegisterUsername(e.target.value)}
+                      id="register-email"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={registerEmail}
+                      onChange={(e) => setRegisterEmail(e.target.value)}
                       disabled={registerMutation.isPending}
-                      autoComplete="username"
+                      autoComplete="email"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="register-name">姓名（可选）</Label>
+                    <Input
+                      id="register-name"
+                      type="text"
+                      placeholder="请输入您的姓名"
+                      value={registerName}
+                      onChange={(e) => setRegisterName(e.target.value)}
+                      disabled={registerMutation.isPending}
+                      autoComplete="name"
                     />
                   </div>
                   <div className="space-y-2">
@@ -196,7 +198,7 @@ export default function PasswordLogin() {
                     <Input
                       id="register-password"
                       type="password"
-                      placeholder="至少6位密码"
+                      placeholder="至少6位"
                       value={registerPassword}
                       onChange={(e) => setRegisterPassword(e.target.value)}
                       disabled={registerMutation.isPending}
@@ -213,18 +215,6 @@ export default function PasswordLogin() {
                       onChange={(e) => setRegisterConfirmPassword(e.target.value)}
                       disabled={registerMutation.isPending}
                       autoComplete="new-password"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="register-name">昵称（可选）</Label>
-                    <Input
-                      id="register-name"
-                      type="text"
-                      placeholder="显示名称"
-                      value={registerName}
-                      onChange={(e) => setRegisterName(e.target.value)}
-                      disabled={registerMutation.isPending}
-                      autoComplete="name"
                     />
                   </div>
                 </CardContent>
@@ -257,6 +247,32 @@ export default function PasswordLogin() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Other login methods */}
+        <div className="mt-6">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 px-2 text-muted-foreground">
+                或使用其他方式登录
+              </span>
+            </div>
+          </div>
+          <div className="mt-4 flex gap-2">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setLocation("/wechat-login")}
+            >
+              <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89c-.135-.01-.27-.027-.407-.03zm-2.53 3.274c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982z" />
+              </svg>
+              微信登录
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
