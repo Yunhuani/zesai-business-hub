@@ -11,6 +11,7 @@ import { exportRouter } from "./routers/export";
 import { documentRouter } from "./routers/document";
 import { adminRouter } from "./routers/admin";
 import { supportRouter } from "./routers/support";
+import { passwordResetRouter } from "./routers/passwordReset";
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
@@ -630,6 +631,9 @@ export const appRouter = router({
       return result;
     }),
   }),
+  
+  // Password reset routes
+  passwordReset: passwordResetRouter,
 });
 
 export type AppRouter = typeof appRouter;

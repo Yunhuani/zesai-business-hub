@@ -23,6 +23,8 @@ import UserManagement from "./pages/UserManagement";
 import OrderManagement from "./pages/OrderManagement";
 import SupportForm from "./pages/SupportForm";
 import SupportFloatingButton from "./components/SupportFloatingButton";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 function Router() {
   return (
@@ -47,6 +49,8 @@ function Router() {
       <Route path="/admin/user-management" component={UserManagement} />
       <Route path="/admin/orders" component={OrderManagement} />
       <Route path="/support" component={SupportForm} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

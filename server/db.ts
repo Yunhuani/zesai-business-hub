@@ -299,3 +299,57 @@ export async function getUserOrders(userId: number) {
   const { orders } = await import("../drizzle/schema");
   return db.select().from(orders).where(eq(orders.userId, userId)).orderBy(orders.createdAt);
 }
+
+// Password reset token queries
+export async function createPasswordResetToken(data: {
+  userId: number;
+  token: string;
+  expiresAt: Date;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const { passwordResetTokens } = await import("../drizzle/schema");
+  await db.insert(passwordResetTokens).values(data);
+}
+
+export async function getPasswordResetToken(token: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const { passwordResetTokens } = await import("../drizzle/schema");
+  const result = await db
+    .select()
+    .from(passwordResetTokens)
+    .where(eq(passwordResetTokens.token, token))
+    .limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function markTokenAsUsed(token: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const { passwordResetTokens } = await import("../drizzle/schema");
+  await db
+    .update(passwordResetTokens)
+    .set({ used: 1 })
+    .where(eq(passwordResetTokens.token, token));
+}
+
+export async function updateUserPassword(userId: number, passwordHash: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(users)
+    .set({ password: passwordHash })
+    .where(eq(users.id, userId));
+}
+
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}

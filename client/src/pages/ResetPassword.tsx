@@ -1,0 +1,169 @@
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { APP_LOGO, APP_TITLE } from "@/const";
+import { trpc } from "@/lib/trpc";
+import { Link, useLocation } from "wouter";
+import { toast } from "sonner";
+import * as Icons from "lucide-react";
+
+export default function ResetPassword() {
+  const [, navigate] = useLocation();
+  const [token, setToken] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [resetSuccess, setResetSuccess] = useState(false);
+
+  // 从URL获取token
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tokenParam = params.get("token");
+    if (tokenParam) {
+      setToken(tokenParam);
+    } else {
+      toast.error("缺少重置令牌");
+      navigate("/login");
+    }
+  }, [navigate]);
+
+  // 验证token
+  const { data: tokenValid, isLoading: verifying, error: verifyError } = trpc.passwordReset.verifyToken.useQuery(
+    { token },
+    { 
+      enabled: !!token,
+      retry: false,
+    }
+  );
+  
+  // 处理验证错误
+  useEffect(() => {
+    if (verifyError) {
+      toast.error(verifyError.message);
+      setTimeout(() => navigate("/forgot-password"), 2000);
+    }
+  }, [verifyError, navigate]);
+
+  const resetPassword = trpc.passwordReset.resetPassword.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      setResetSuccess(true);
+      setTimeout(() => navigate("/login"), 3000);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!password || !confirmPassword) {
+      toast.error("请填写所有字段");
+      return;
+    }
+    
+    if (password.length < 6) {
+      toast.error("密码至少6位");
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      toast.error("两次输入的密码不一致");
+      return;
+    }
+    
+    resetPassword.mutate({ token, password });
+  };
+
+  if (verifying) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="text-center">
+          <Icons.Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-muted-foreground">验证重置链接...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
+      <Card className="w-full max-w-md p-8">
+        <div className="flex flex-col items-center mb-8">
+          <img src={APP_LOGO} alt={APP_TITLE} className="h-12 mb-4" />
+          <h1 className="text-2xl font-bold">重置密码</h1>
+          <p className="text-sm text-muted-foreground mt-2 text-center">
+            请输入您的新密码
+          </p>
+        </div>
+
+        {!resetSuccess ? (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">新密码</label>
+              <Input
+                type="password"
+                placeholder="至少6位"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={resetPassword.isPending}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">确认密码</label>
+              <Input
+                type="password"
+                placeholder="再次输入新密码"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={resetPassword.isPending}
+                required
+              />
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={resetPassword.isPending}
+            >
+              {resetPassword.isPending ? (
+                <>
+                  <Icons.Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  重置中...
+                </>
+              ) : (
+                "重置密码"
+              )}
+            </Button>
+
+            <div className="text-center text-sm">
+              <Link href="/login" className="text-blue-600 hover:underline">
+                返回登录
+              </Link>
+            </div>
+          </form>
+        ) : (
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+              <Icons.Check className="w-8 h-8 text-green-600" />
+            </div>
+            <div>
+              <h3 className="font-bold mb-2">密码重置成功</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                您的密码已成功重置，即将跳转到登录页面...
+              </p>
+            </div>
+            <Link href="/login">
+              <Button className="w-full">
+                立即登录
+              </Button>
+            </Link>
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}

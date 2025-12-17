@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -114,7 +114,12 @@ export default function PasswordLogin() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="login-password">密码</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="login-password">密码</Label>
+                      <Link href="/forgot-password" className="text-xs text-blue-600 hover:underline">
+                        忘记密码？
+                      </Link>
+                    </div>
                     <Input
                       id="login-password"
                       type="password"
