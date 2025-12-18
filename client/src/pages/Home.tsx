@@ -292,37 +292,11 @@ export default function Home() {
         )}
       </section>
 
-      {/* Expert Consultation CTA */}
-      <section className="container pb-16">
-        <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50 max-w-3xl mx-auto">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
-              <Icons.Users className="w-8 h-8 text-white" />
-            </div>
-            <CardTitle className="text-2xl">需要人工专家指导？</CardTitle>
-            <CardDescription className="text-base mt-2">
-              我们的专家顾问团队随时为您提供一对一的专业咨询服务
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <Button 
-              size="lg" 
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-              onClick={() => setExpertDialogOpen(true)}
-            >
-              <Icons.MessageCircle className="w-5 h-5 mr-2" />
-              联系专家顾问
-            </Button>
-          </CardContent>
-        </Card>
-      </section>
-
       {/* Customer Cases Section */}
       <section className="py-16 bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">客户案例</h2>
-            <p className="text-muted-foreground">用真实数据证明平台价值</p>
+            <h2 className="text-3xl font-bold">客户案例</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Case 1 - 融资场景 */}
@@ -446,6 +420,31 @@ export default function Home() {
             </Card>
           </div>
         </div>
+      </section>
+
+      {/* Expert Consultation Section */}
+      <section className="container pb-16">
+        <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50 max-w-3xl mx-auto">
+          <CardHeader className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
+              <Icons.Users className="w-8 h-8 text-white" />
+            </div>
+            <CardTitle className="text-2xl">需要人工专家指导？</CardTitle>
+            <CardDescription className="text-base mt-2">
+              我们的专家顾问团队随时为您提供一对一的专业咨询服务
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Button 
+              size="lg" 
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              onClick={() => setExpertDialogOpen(true)}
+            >
+              <Icons.MessageCircle className="w-5 h-5 mr-2" />
+              联系专家顾问
+            </Button>
+          </CardContent>
+        </Card>
       </section>
 
       {/* Footer */}
