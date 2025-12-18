@@ -317,6 +317,137 @@ export default function Home() {
         </Card>
       </section>
 
+      {/* Customer Cases Section */}
+      <section className="py-16 bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="container">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">客户案例</h2>
+            <p className="text-muted-foreground">用真实数据证明平台价值</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Case 1 - 融资场景 */}
+            <Card className="hover:shadow-lg transition-shadow border-purple-200">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center mb-3">
+                  <Icons.TrendingUp className="w-6 h-6 text-white" />
+                </div>
+                <CardTitle className="text-lg">融资场景</CardTitle>
+                <CardDescription className="text-xs">科技创业公司</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">使用场景</p>
+                  <p className="text-sm">融资前商业梳理与 BP 构建</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">解决问题</p>
+                  <p className="text-sm">商业逻辑不清晰，投资人反馈分散，BP 反复修改</p>
+                </div>
+                <div className="pt-3 border-t">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">关键结果</p>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-1">60%+</div>
+                  <p className="text-xs text-muted-foreground">融资成功率提升</p>
+                  <ul className="text-xs text-muted-foreground mt-2 space-y-1">
+                    <li>• BP 结构清晰度显著提升</li>
+                    <li>• 投资沟通效率明显提高</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Case 2 - 战略决策 */}
+            <Card className="hover:shadow-lg transition-shadow border-blue-200">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center mb-3">
+                  <Icons.Target className="w-6 h-6 text-white" />
+                </div>
+                <CardTitle className="text-lg">战略决策</CardTitle>
+                <CardDescription className="text-xs">制造业企业（年营收数亿元）</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">使用场景</p>
+                  <p className="text-sm">中长期战略方向与业务取舍</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">解决问题</p>
+                  <p className="text-sm">多业务线并行，资源分散，战略判断难以统一</p>
+                </div>
+                <div className="pt-3 border-t">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">关键结果</p>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-1">50%+</div>
+                  <p className="text-xs text-muted-foreground">决策周期缩短</p>
+                  <ul className="text-xs text-muted-foreground mt-2 space-y-1">
+                    <li>• 明确核心战略方向</li>
+                    <li>• 识别低效业务与优先级</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Case 3 - 增长与市场 */}
+            <Card className="hover:shadow-lg transition-shadow border-green-200">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center mb-3">
+                  <Icons.BarChart className="w-6 h-6 text-white" />
+                </div>
+                <CardTitle className="text-lg">增长与市场</CardTitle>
+                <CardDescription className="text-xs">新消费品牌</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">使用场景</p>
+                  <p className="text-sm">市场进入与增长策略制定</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">解决问题</p>
+                  <p className="text-sm">市场判断依赖经验，增长路径不清晰</p>
+                </div>
+                <div className="pt-3 border-t">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">关键结果</p>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-1">45%+</div>
+                  <p className="text-xs text-muted-foreground">试错成本降低</p>
+                  <ul className="text-xs text-muted-foreground mt-2 space-y-1">
+                    <li>• 明确目标市场与核心用户</li>
+                    <li>• 形成可执行的增长路径</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Case 4 - 一人公司 */}
+            <Card className="hover:shadow-lg transition-shadow border-orange-200">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-orange-600 to-amber-600 flex items-center justify-center mb-3">
+                  <Icons.User className="w-6 h-6 text-white" />
+                </div>
+                <CardTitle className="text-lg">一人公司</CardTitle>
+                <CardDescription className="text-xs">自由职业创业者</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">使用场景</p>
+                  <p className="text-sm">商业模式与个人业务设计</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">解决问题</p>
+                  <p className="text-sm">缺乏系统商业视角，决策高度受限</p>
+                </div>
+                <div className="pt-3 border-t">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">关键结果</p>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent mb-1">300%</div>
+                  <p className="text-xs text-muted-foreground">年度收入提升</p>
+                  <ul className="text-xs text-muted-foreground mt-2 space-y-1">
+                    <li>• 商业模式更清晰</li>
+                    <li>• 决策信心明显提升</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="border-t py-8 bg-white/50">
         <div className="container text-center text-sm text-muted-foreground space-y-3">
