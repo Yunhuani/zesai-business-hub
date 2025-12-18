@@ -227,7 +227,27 @@ export default function Pricing() {
 
       {/* Footer */}
       <footer className="border-t py-8 bg-white/50 mt-16">
-        <div className="container text-center text-sm text-muted-foreground space-y-2">
+        <div className="container text-center text-sm text-muted-foreground space-y-3">
+          <div className="flex justify-center gap-6">
+            <a 
+              href="/about" 
+              className="hover:text-foreground transition-colors"
+            >
+              关于我们
+            </a>
+            <a 
+              href="/support" 
+              className="hover:text-foreground transition-colors"
+            >
+              联系客服
+            </a>
+            <a 
+              href="/pricing" 
+              className="hover:text-foreground transition-colors"
+            >
+              价格套餐
+            </a>
+          </div>
           <div>© 2025 泽思 Zenith AI - 专业AI商业咨询平台</div>
           <div>
             <a 

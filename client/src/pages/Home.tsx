@@ -322,6 +322,12 @@ export default function Home() {
         <div className="container text-center text-sm text-muted-foreground space-y-3">
           <div className="flex justify-center gap-6">
             <a 
+              href="/about" 
+              className="hover:text-foreground transition-colors"
+            >
+              关于我们
+            </a>
+            <a 
               href="/support" 
               className="hover:text-foreground transition-colors"
             >
