@@ -29,7 +29,7 @@ export function SmartAssistantSearch({ smartAssistantId }: SmartAssistantSearchP
     <div className="w-full max-w-4xl mx-auto">
       <div className="text-center mb-4">
         <p className="text-sm text-muted-foreground">
-          不知道选哪个专家？试试<span className="font-semibold text-purple-600">【智能AI助手】</span>
+          不知道选哪个AI顾问，可以在下方框内输入你想解决的问题
         </p>
       </div>
       
@@ -45,7 +45,7 @@ export function SmartAssistantSearch({ smartAssistantId }: SmartAssistantSearchP
         <Button
           onClick={handleSearch}
           disabled={!query.trim()}
-          className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white px-8 py-6 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-6 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
         >
           <Sparkles className="w-5 h-5 mr-2" />
           开始咨询
