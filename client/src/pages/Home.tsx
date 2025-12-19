@@ -184,7 +184,7 @@ export default function Home() {
             您的AI商业顾问
           </h2>
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
-            将全球顶级咨询公司的方法论，与前沿AI大模型相结合。提供麦肯锡级别的战略规划、品牌营销、增长策略、融资规划等全流程解决方案。AI赋能，智慧平权。
+            将全球顶级咨询公司的方法论，与前沿AI大模型相结合。提供麦肯锡级别的战略规划、品牌营销、增长策略、融资规划等全流程解决方案。
           </p>
           
           {/* 智能搜索框 - 移至Hero区域 */}
