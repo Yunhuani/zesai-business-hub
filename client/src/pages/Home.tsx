@@ -184,8 +184,11 @@ export default function Home() {
           <h2 className="text-6xl md:text-7xl font-extrabold mb-8 bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent leading-tight">
             您的AI商业顾问
           </h2>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed">
-            将全球顶级咨询公司的方法论，与前沿AI大模型相关结合，提供麦肯锡级别的战略规划、品牌营销、增长策略、融资规划等全流程解决方案。智慧平权，触手可及。
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-6 leading-relaxed">
+            将全球顶级咨询公司的方法论,与前沿AI大模型相结合。提供麦肯锡级别的战略规划、品牌营销、增长策略、融资规划等全流程解决方案。
+          </p>
+          <p className="text-2xl md:text-3xl font-semibold bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent max-w-3xl mx-auto">
+            智慧平权,触手可及
           </p>
         </div>
       </section>
