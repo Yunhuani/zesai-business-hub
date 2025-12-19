@@ -176,8 +176,7 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative container py-20 text-center overflow-hidden">
-        {/* Animated background gradient */}
+      <section className="container py-20 text-center relative overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 animate-gradient" />
         
         <div className="animate-fade-in-up">
@@ -187,9 +186,18 @@ export default function Home() {
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-6 leading-relaxed">
             将全球顶级咨询公司的方法论,与前沿AI大模型相结合。提供麦肯锡级别的战略规划、品牌营销、增长策略、融资规划等全流程解决方案。
           </p>
-          <p className="text-2xl md:text-3xl font-semibold bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent max-w-3xl mx-auto">
+          <p className="text-2xl md:text-3xl font-semibold bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent max-w-3xl mx-auto mb-12">
             智慧平权,触手可及
           </p>
+          
+          {/* 智能搜索框 - 移至Hero区域 */}
+          {!agentsLoading && agents && (
+            <div className="max-w-2xl mx-auto">
+              <SmartAssistantSearch 
+                smartAssistantId={agents.find(a => a.name === '智能AI助手')?.id || 0}
+              />
+            </div>
+          )}
         </div>
       </section>
 
@@ -218,7 +226,7 @@ export default function Home() {
                       <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4">
-                            <div className={`w-12 h-12 rounded-lg ${category.colors.iconBg} flex items-center justify-center`}>
+                            <div className={`w-14 h-14 rounded-xl ${category.colors.iconBg} flex items-center justify-center shadow-lg`}>
                               <CategoryIcon className="w-6 h-6 text-white" />
                             </div>
                             <div className="text-left">
@@ -252,12 +260,12 @@ export default function Home() {
                             return (
                               <Card
                                 key={agent.id}
-                                className={`group card-hover-lift cursor-pointer border-2 ${category.colors.cardBorder} shadow-soft hover:shadow-soft-lg`}
+                                className={`group card-hover-enhanced cursor-pointer border-2 ${category.colors.cardBorder} bg-white/50 backdrop-blur-sm hover:bg-white/80 dark:bg-slate-900/50 dark:hover:bg-slate-900/80`}
                               >
                                 <Link href={`/agent/${agent.id}`}>
                                   <CardHeader>
                                     <div className="flex items-start gap-3">
-                                      <div className={`w-12 h-12 rounded-lg ${category.colors.iconBg} flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:glow-purple transition-all duration-300`}>
+                                      <div className={`w-12 h-12 rounded-xl ${category.colors.iconBg} flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-md`}>
                                         <IconComponent className="w-6 h-6 text-white" />
                                       </div>
                                       <div className="flex-1 min-w-0">
@@ -285,14 +293,6 @@ export default function Home() {
                     </CollapsibleContent>
                   </Card>
                 </Collapsible>
-                {/* 在第一个分类（战略与规划）后插入智能搜索框 */}
-                {index === 0 && !agentsLoading && agents && (
-                  <div className="py-8">
-                    <SmartAssistantSearch 
-                      smartAssistantId={agents.find(a => a.name === '智能AI助手')?.id || 0}
-                    />
-                  </div>
-                )}
               </>
             );
             })}
