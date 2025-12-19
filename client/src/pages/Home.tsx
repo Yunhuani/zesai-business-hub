@@ -185,7 +185,7 @@ export default function Home() {
             您的AI商业顾问
           </h2>
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed">
-            麦肯锡级别的专业咨询服务,随时为您的企业提供战略规划、商业模式设计、市场洞察等全方位支持
+            将全球顶级咨询公司的方法论，与前沿AI大模型相关结合，提供麦肯锡级别的战略规划、品牌营销、增长策略、融资规划等全流程解决方案。智慧平权，触手可及。
           </p>
         </div>
       </section>

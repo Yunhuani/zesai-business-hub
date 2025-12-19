@@ -907,3 +907,7 @@
 - [x] 修改ResetPassword页面的返回登录链接从/login改为/email-login
 - [x] 测试忘记密码流程（页面渲染正常）
 - [x] 创建检查点 (version: dc634c69)
+
+
+## Hero区域文案更新
+- [x] 修改首页Hero区域描述文案
