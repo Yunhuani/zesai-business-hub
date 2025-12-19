@@ -178,7 +178,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative container py-20 text-center overflow-hidden">
         {/* Animated background gradient */}
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 animate-gradient" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-purple-950/30 via-blue-950/30 to-pink-950/30 animate-gradient" />
         
         <div className="animate-fade-in-up">
           <h2 className="text-6xl md:text-7xl font-extrabold mb-8 bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent leading-tight">
@@ -298,7 +298,7 @@ export default function Home() {
       </section>
 
       {/* Customer Cases Section */}
-      <section className="py-16 bg-gradient-to-br from-slate-50 to-blue-50">
+      <section className="py-16 bg-gradient-to-br from-slate-950/20 to-blue-950/20">
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold">客户案例</h2>
@@ -429,7 +429,7 @@ export default function Home() {
 
       {/* Expert Consultation Section */}
       <section className="container pb-16">
-        <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50 max-w-3xl mx-auto">
+        <Card className="border-2 border-purple-500/30 bg-gradient-to-br from-purple-950/40 to-blue-950/40 max-w-3xl mx-auto">
           <CardHeader className="text-center">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
               <Icons.Users className="w-8 h-8 text-white" />
@@ -453,7 +453,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-8 bg-white/50">
+      <footer className="border-t py-8 bg-black/20">
         <div className="container text-center text-sm text-muted-foreground space-y-3">
           <div className="flex justify-center gap-6">
             <a 
