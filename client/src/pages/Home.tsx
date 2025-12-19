@@ -176,13 +176,18 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="container py-16 text-center">
-        <h2 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-          您的AI商业顾问
-        </h2>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          麦肯锡级别的专业咨询服务,随时为您的企业提供战略规划、商业模式设计、市场洞察等全方位支持
-        </p>
+      <section className="relative container py-20 text-center overflow-hidden">
+        {/* Animated background gradient */}
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 animate-gradient" />
+        
+        <div className="animate-fade-in-up">
+          <h2 className="text-6xl md:text-7xl font-extrabold mb-8 bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent leading-tight">
+            您的AI商业顾问
+          </h2>
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed">
+            麦肯锡级别的专业咨询服务,随时为您的企业提供战略规划、商业模式设计、市场洞察等全方位支持
+          </p>
+        </div>
       </section>
 
       {/* Agents by Category */}
@@ -244,12 +249,12 @@ export default function Home() {
                             return (
                               <Card
                                 key={agent.id}
-                                className={`group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer border ${category.colors.cardBorder}`}
+                                className={`group card-hover-lift cursor-pointer border-2 ${category.colors.cardBorder} shadow-soft hover:shadow-soft-lg`}
                               >
                                 <Link href={`/agent/${agent.id}`}>
                                   <CardHeader>
                                     <div className="flex items-start gap-3">
-                                      <div className={`w-12 h-12 rounded-lg ${category.colors.iconBg} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                                      <div className={`w-12 h-12 rounded-lg ${category.colors.iconBg} flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:glow-purple transition-all duration-300`}>
                                         <IconComponent className="w-6 h-6 text-white" />
                                       </div>
                                       <div className="flex-1 min-w-0">
