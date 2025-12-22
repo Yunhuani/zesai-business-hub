@@ -1,0 +1,22 @@
+{
+  "query": "SELECT * FROM subscriptions WHERE userId = 7350017;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT * FROM subscriptions WHERE userId = 7350017;",
+  "rows": [
+    {
+      "id": "90001",
+      "userId": "7350017",
+      "plan": "enterprise",
+      "monthlyLimit": "20",
+      "price": "99900",
+      "status": "active",
+      "startDate": "2025-12-22 09:07:24",
+      "endDate": "2026-01-21 09:07:24",
+      "createdAt": "2025-12-09 03:51:58",
+      "updatedAt": "2025-12-22 09:07:24"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserId\tplan\tmonthlyLimit\tprice\tstatus\tstartDate\tendDate\tcreatedAt\tupdatedAt\n90001\t7350017\tenterprise\t20\t99900\tactive\t2025-12-22 09:07:24\t2026-01-21 09:07:24\t2025-12-09 03:51:58\t2025-12-22 09:07:24\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

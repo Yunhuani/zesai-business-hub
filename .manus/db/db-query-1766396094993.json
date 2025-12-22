@@ -1,0 +1,30 @@
+{
+  "query": "SELECT \n  u.id as userId,\n  u.email,\n  u.name,\n  u.creditsSubscription as currentCredits,\n  s.plan,\n  s.status as subscriptionStatus,\n  s.startDate,\n  s.endDate\nFROM users u\nINNER JOIN subscriptions s ON u.id = s.userId\nWHERE s.status = 'active' \n  AND s.plan IN ('basic', 'professional', 'enterprise')\n  AND u.creditsSubscription = 0\nORDER BY s.startDate DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT \n  u.id as userId,\n  u.email,\n  u.name,\n  u.creditsSubscription as currentCredits,\n  s.plan,\n  s.status as subscriptionStatus,\n  s.startDate,\n  s.endDate\nFROM users u\nINNER JOIN subscriptions s ON u.id = s.userId\nWHERE s.status = 'active' \n  AND s.plan IN ('basic', 'professional', 'enterprise')\n  AND u.creditsSubscription = 0\nORDER BY s.startDate DESC;",
+  "rows": [
+    {
+      "userId": "7350017",
+      "email": "1558328644@qq.com",
+      "name": "小段",
+      "currentCredits": "0",
+      "plan": "enterprise",
+      "subscriptionStatus": "active",
+      "startDate": "2025-12-22 09:07:24",
+      "endDate": "2026-01-21 09:07:24"
+    },
+    {
+      "userId": "6810001",
+      "email": "lingmoyuan@sina.com",
+      "name": "lingmoyuan",
+      "currentCredits": "0",
+      "plan": "basic",
+      "subscriptionStatus": "active",
+      "startDate": "2025-12-12 09:24:41",
+      "endDate": "2026-01-11 09:24:41"
+    }
+  ],
+  "messages": [],
+  "stdout": "userId\temail\tname\tcurrentCredits\tplan\tsubscriptionStatus\tstartDate\tendDate\n7350017\t1558328644@qq.com\t小段\t0\tenterprise\tactive\t2025-12-22 09:07:24\t2026-01-21 09:07:24\n6810001\tlingmoyuan@sina.com\tlingmoyuan\t0\tbasic\tactive\t2025-12-12 09:24:41\t2026-01-11 09:24:41\n",
+  "stderr": "",
+  "execution_time_ms": 64
+}

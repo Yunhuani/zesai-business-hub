@@ -945,3 +945,13 @@
 - [x] 删除描述文案末尾的“AI赋能，智慧平权。”
 - [x] 确保文案显示为2行
 - [ ] 保存checkpoint
+
+
+## 支付积分系统修复（Critical Bug Fix）
+- [x] 检查所有已支付订单的积分发放情况
+- [x] 检查支付回调代码逻辑
+- [x] 生成详细诊断报告
+- [x] 修复支付回调代码（添加resetSubscriptionCredits调用）
+- [x] 补发受影响用户的积分（2个用户：lingmoyuan@sina.com 750积分，1558328644@qq.com 11000积分）
+- [x] 验证修复效果
+- [ ] 保存checkpoint

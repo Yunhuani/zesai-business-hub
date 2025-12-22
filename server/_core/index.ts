@@ -46,6 +46,7 @@ async function startServer() {
     try {
       const { verifyAlipayCallback } = await import("./alipay");
       const { getOrderByOutTradeNo, updateOrderStatus, createOrUpdateSubscription } = await import("../db");
+      const { resetSubscriptionCredits } = await import("../creditsManager");
       
       console.log("[Payment] Alipay notify received:", req.body);
       
@@ -100,6 +101,10 @@ async function startServer() {
             price: config.price,
             endDate,
           });
+          
+          // Grant subscription credits
+          await resetSubscriptionCredits(order.userId, order.plan);
+          console.log("[Payment] Subscription credits granted:", config.monthlyCredits);
         }
         
         console.log("[Payment] Payment success:", outTradeNo);

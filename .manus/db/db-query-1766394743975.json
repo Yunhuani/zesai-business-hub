@@ -1,0 +1,26 @@
+{
+  "query": "SELECT * FROM users WHERE email = '1558328644@qq.com';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT * FROM users WHERE email = '1558328644@qq.com';",
+  "rows": [
+    {
+      "id": "7350017",
+      "openId": "email_1558328644@qq.com",
+      "name": "小段",
+      "email": "1558328644@qq.com",
+      "loginMethod": "password",
+      "role": "user",
+      "createdAt": "2025-12-09 03:43:10",
+      "updatedAt": "2025-12-22 08:17:45",
+      "lastSignedIn": "2025-12-19 09:25:20",
+      "creditsPurchased": "0",
+      "creditsSubscription": "0",
+      "creditsResetDate": "2026-01-12 02:11:58",
+      "username": "NULL",
+      "password": "$2b$10$/JqJ3W8onsBB9G81qtId2e8B1ulBQ8PBCZG9ME.eGEV8Ok1bH93KC"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\topenId\tname\temail\tloginMethod\trole\tcreatedAt\tupdatedAt\tlastSignedIn\tcreditsPurchased\tcreditsSubscription\tcreditsResetDate\tusername\tpassword\n7350017\temail_1558328644@qq.com\t小段\t1558328644@qq.com\tpassword\tuser\t2025-12-09 03:43:10\t2025-12-22 08:17:45\t2025-12-19 09:25:20\t0\t0\t2026-01-12 02:11:58\tNULL\t$2b$10$/JqJ3W8onsBB9G81qtId2e8B1ulBQ8PBCZG9ME.eGEV8Ok1bH93KC\n",
+  "stderr": "",
+  "execution_time_ms": 1506
+}
