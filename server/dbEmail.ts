@@ -48,6 +48,7 @@ export async function upsertEmailUser(email: string, name?: string) {
     } else {
       // 创建新用户
       const insertData: InsertUser = {
+        openId: `email_${email}`, // 设置openId以便Session认证
         email,
         name: name || email.split("@")[0], // 如果没有提供名字，使用邮箱前缀
         loginMethod: "email",

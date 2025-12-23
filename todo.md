@@ -993,3 +993,20 @@
 - [ ] 配置环境变量(WECHAT_PAY_MCHID, WECHAT_PAY_API_V3_KEY)
 - [ ] 测试微信支付流程(等待环境变量配置和10分钟生效期)
 - [x] 保存checkpoint
+
+
+## 登录状态无法保持问题彻查（Critical Bug）
+- [x] 检查Cookie配置（SameSite、Secure、Domain、Path、HttpOnly）
+- [x] 检查Session创建和验证逻辑
+- [x] 检查认证中间件（context.ts）
+- [x] 检查前端Cookie读取逻辑
+- [x] 检查跨域请求配置（CORS）
+- [x] 检查微信端特殊配置需求
+- [x] 分析服务器日志查找Session丢失原因
+- [x] 修复Cookie配置问题（启用domain设置）
+- [x] 修复Session验证逻辑（修夏dbEmail.ts设置openId）
+- [x] 修复已有用户数据（批量设置openId）
+- [x] 编写测试用例验证登录持久性（10/10项通过）
+- [ ] PC端测试登录保持（等待用户反馈）
+- [ ] 微信端测试登录保持（等待用户反馈）
+- [x] 创建检查点
