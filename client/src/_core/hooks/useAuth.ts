@@ -25,6 +25,10 @@ export function useAuth(options?: UseAuthOptions) {
   });
 
   const logout = useCallback(async () => {
+    // Clear auth token from localStorage FIRST
+    localStorage.removeItem('auth_token');
+    utils.auth.me.setData(undefined, null);
+    
     try {
       await logoutMutation.mutateAsync();
     } catch (error: unknown) {
@@ -36,7 +40,6 @@ export function useAuth(options?: UseAuthOptions) {
       }
       throw error;
     } finally {
-      utils.auth.me.setData(undefined, null);
       await utils.auth.me.invalidate();
     }
   }, [logoutMutation, utils]);

@@ -81,9 +81,8 @@ const AGENT_CATEGORIES = [
 ];
 
 export default function Home() {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, loading, isAuthenticated, logout } = useAuth();
   const { data: agents, isLoading: agentsLoading } = trpc.agent.list.useQuery();
-  const logoutMutation = trpc.auth.logout.useMutation();
   
   // 控制每个分类的展开/折叠状态
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>(
@@ -153,12 +152,9 @@ export default function Home() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="text-red-600 focus:text-red-600"
-                    onClick={() => {
-                      logoutMutation.mutate(undefined, {
-                        onSuccess: () => {
-                          window.location.href = '/email-login';
-                        },
-                      });
+                    onClick={async () => {
+                      await logout();
+                      window.location.href = '/email-login';
                     }}
                   >
                     <Icons.LogOut className="w-4 h-4 mr-2" />
