@@ -94,26 +94,17 @@ export const appRouter = router({
         
         try {
           // Register user with email and password
-          const user = await registerUserWithEmail(input.email, input.password, input.name);
+          const result = await registerUserWithEmail(input.email, input.password, input.name);
           
-          if (!user) {
+          if (!result || !result.user) {
             throw new TRPCError({
               code: "INTERNAL_SERVER_ERROR",
               message: "注册失败",
             });
           }
           
-          // Create session token
-          const sessionToken = await sdk.createSessionToken(`email_${input.email}`, {
-            name: user.name || "",
-            expiresInMs: ONE_YEAR_MS,
-          });
-          
-          // Set cookie
-          const cookieOptions = getSessionCookieOptions(ctx.req);
-          ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-          
-          return { success: true, user };
+          // Return token instead of setting cookie
+          return { success: true, user: result.user, token: result.token };
         } catch (error) {
           if (error instanceof Error) {
             throw new TRPCError({
@@ -138,26 +129,17 @@ export const appRouter = router({
         
         try {
           // Login user with email and password
-          const user = await loginUserWithEmail(input.email, input.password);
+          const result = await loginUserWithEmail(input.email, input.password);
           
-          if (!user) {
+          if (!result || !result.user) {
             throw new TRPCError({
               code: "UNAUTHORIZED",
               message: "邮箱或密码错误",
             });
           }
           
-          // Create session token
-          const sessionToken = await sdk.createSessionToken(`email_${input.email}`, {
-            name: user.name || "",
-            expiresInMs: ONE_YEAR_MS,
-          });
-          
-          // Set cookie
-          const cookieOptions = getSessionCookieOptions(ctx.req);
-          ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-          
-          return { success: true, user };
+          // Return token instead of setting cookie
+          return { success: true, user: result.user, token: result.token };
         } catch (error) {
           if (error instanceof Error) {
             throw new TRPCError({
@@ -183,26 +165,17 @@ export const appRouter = router({
         
         try {
           // Register user
-          const user = await registerUser(input.username, input.password, input.name);
+          const result = await registerUser(input.username, input.password, input.name);
           
-          if (!user) {
+          if (!result || !result.user) {
             throw new TRPCError({
               code: "INTERNAL_SERVER_ERROR",
               message: "注册失败",
             });
           }
           
-          // Create session token
-          const sessionToken = await sdk.createSessionToken(`username_${input.username}`, {
-            name: user.name || "",
-            expiresInMs: ONE_YEAR_MS,
-          });
-          
-          // Set cookie
-          const cookieOptions = getSessionCookieOptions(ctx.req);
-          ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-          
-          return { success: true, user };
+          // Return token instead of setting cookie
+          return { success: true, user: result.user, token: result.token };
         } catch (error) {
           if (error instanceof Error) {
             throw new TRPCError({
@@ -227,26 +200,17 @@ export const appRouter = router({
         
         try {
           // Login user
-          const user = await loginUser(input.username, input.password);
+          const result = await loginUser(input.username, input.password);
           
-          if (!user) {
+          if (!result || !result.user) {
             throw new TRPCError({
               code: "UNAUTHORIZED",
               message: "用户名或密码错误",
             });
           }
           
-          // Create session token
-          const sessionToken = await sdk.createSessionToken(`username_${input.username}`, {
-            name: user.name || "",
-            expiresInMs: ONE_YEAR_MS,
-          });
-          
-          // Set cookie
-          const cookieOptions = getSessionCookieOptions(ctx.req);
-          ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-          
-          return { success: true, user };
+          // Return token instead of setting cookie
+          return { success: true, user: result.user, token: result.token };
         } catch (error) {
           if (error instanceof Error) {
             throw new TRPCError({

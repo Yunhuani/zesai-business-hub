@@ -26,7 +26,11 @@ export default function EmailLogin() {
   const [registerName, setRegisterName] = useState("");
 
   const loginMutation = trpc.auth.loginWithEmail.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Save token to localStorage
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
+      }
       toast.success("登录成功");
       setLocation("/");
     },
@@ -36,7 +40,11 @@ export default function EmailLogin() {
   });
 
   const registerMutation = trpc.auth.registerWithEmail.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Save token to localStorage
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
+      }
       toast.success("注册成功，已自动登录");
       setLocation("/");
     },

@@ -1032,3 +1032,15 @@
 - [x] 编写测试验证Cookie配置（5/5项通过）
 - [ ] 生产环境测试验证（需要用户在www.zesiai.com测试）
 - [x] 创建检查点
+
+
+## 邮箱登录Token改造（解决Cookie无法保持问题）
+- [x] 修改 server/passwordAuth.ts - 登录/注册返回JWT token
+- [x] 修改 server/_core/context.ts - 从Authorization header读取token
+- [x] 修改 client/src/lib/trpc.ts - 请求时自动添加token到header
+- [x] 修改 client/src/pages/EmailLogin.tsx - 保存token到localStorage
+- [x] 测试注册流程
+- [x] 测试登录流程
+- [x] 测试登录状态保持
+- [ ] 测试退出登录
+- [ ] 创建检查点

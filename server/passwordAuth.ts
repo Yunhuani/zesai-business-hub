@@ -1,7 +1,9 @@
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import { getDb } from "./db";
 import { users } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
+import { ENV } from "./_core/env";
 
 const SALT_ROUNDS = 10;
 
@@ -17,6 +19,17 @@ export async function hashPassword(password: string): Promise<string> {
  */
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
   return bcrypt.compare(password, hash);
+}
+
+/**
+ * Generate JWT token for a user
+ */
+function generateToken(userId: number, openId: string): string {
+  return jwt.sign(
+    { userId, openId },
+    ENV.jwtSecret,
+    { expiresIn: "30d" }
+  );
 }
 
 /**
@@ -61,7 +74,10 @@ export async function registerUser(username: string, password: string, name?: st
     .where(eq(users.username, username))
     .limit(1);
 
-  return user;
+  // Generate JWT token
+  const token = generateToken(user.id, user.openId || '');
+
+  return { user, token };
 }
 
 /**
@@ -100,7 +116,10 @@ export async function loginUser(username: string, password: string) {
     .set({ lastSignedIn: new Date() })
     .where(eq(users.id, user.id));
 
-  return user;
+  // Generate JWT token
+  const token = generateToken(user.id, user.openId || '');
+
+  return { user, token };
 }
 
 /**
@@ -145,7 +164,10 @@ export async function registerUserWithEmail(email: string, password: string, nam
     .where(eq(users.email, email))
     .limit(1);
 
-  return user;
+  // Generate JWT token
+  const token = generateToken(user.id, user.openId || '');
+
+  return { user, token };
 }
 
 /**
@@ -184,5 +206,8 @@ export async function loginUserWithEmail(email: string, password: string) {
     .set({ lastSignedIn: new Date() })
     .where(eq(users.id, user.id));
 
-  return user;
+  // Generate JWT token
+  const token = generateToken(user.id, user.openId || '');
+
+  return { user, token };
 }
