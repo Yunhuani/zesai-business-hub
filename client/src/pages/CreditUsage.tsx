@@ -1,14 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
 import { APP_LOGO, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import * as Icons from "lucide-react";
@@ -29,10 +22,7 @@ export default function CreditUsage() {
     undefined,
     { enabled: isAuthenticated }
   );
-  const { data: transactions, isLoading: transactionsLoading } = trpc.credits.history.useQuery(
-    { limit: 100 },
-    { enabled: isAuthenticated }
-  );
+
   const [timeUntilReset, setTimeUntilReset] = useState<string>("");
 
   // Update countdown timer
@@ -204,49 +194,7 @@ export default function CreditUsage() {
           </Card>
         )}
 
-        {/* Transaction History */}
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">积分使用明细</h2>
-          {transactionsLoading ? (
-            <div className="flex justify-center py-8">
-              <Icons.Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : transactions && transactions.length > 0 ? (
-            <div className="border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>详情</TableHead>
-                    <TableHead>日期</TableHead>
-                    <TableHead className="text-right">积分变更</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {transactions.map((transaction) => (
-                    <TableRow key={transaction.id}>
-                      <TableCell className="font-medium">
-                        {transaction.description}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {formatDate(transaction.createdAt)}
-                      </TableCell>
-                      <TableCell className={`text-right font-medium ${
-                        transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {transaction.amount > 0 ? '+' : ''}{transaction.amount.toLocaleString()}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <Icons.FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
-              <p>暂无使用记录</p>
-            </div>
-          )}
-        </Card>
+
       </div>
     </div>
   );

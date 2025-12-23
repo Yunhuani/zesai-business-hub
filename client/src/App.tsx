@@ -47,6 +47,7 @@ function Router() {
       <Route path="/case-example" component={CaseExample} />
       <Route path="/credits" component={Credits} />
       <Route path="/credit-usage" component={CreditUsage} />
+      <Route path="/usage" component={CreditUsage} />
       <Route path="/admin/user-management" component={UserManagement} />
       <Route path="/admin/orders" component={OrderManagement} />
       <Route path="/support" component={SupportForm} />
