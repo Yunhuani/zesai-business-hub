@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { createAlipayPagePayment, queryAlipayOrder, verifyAlipayCallback } from "../_core/alipay";
+import { createWechatH5Payment, queryWechatPayment } from "../wechatPay";
 import { createOrder, getOrderByOutTradeNo, updateOrderStatus, createOrUpdateSubscription } from "../db";
 import { TRPCError } from "@trpc/server";
 
@@ -55,10 +56,11 @@ export const paymentRouter = router({
         planId: z.string(),
         amount: z.number(),
         credits: z.number().optional(),
+        paymentMethod: z.enum(["alipay", "wechat"]).default("alipay"),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { type, planId, amount, credits } = input;
+      const { type, planId, amount, credits, paymentMethod } = input;
       
       // 生成商户订单号
       const outTradeNo = `ZS${Date.now()}${ctx.user.id}`;
@@ -88,27 +90,45 @@ export const paymentRouter = router({
         outTradeNo,
         plan: planId,
         amount: amount * 100, // 转换为分
-        paymentMethod: "alipay",
+        paymentMethod,
       });
       
-      // 创建支付宝支付订单
-      const returnUrl = "https://www.zesiai.com/payment/result";
-      const notifyUrl = "https://www.zesiai.com/api/payment/alipay/notify";
-      
       try {
-        const paymentForm = await createAlipayPagePayment({
-          outTradeNo,
-          totalAmount: amount.toFixed(2),
-          subject,
-          body,
-          returnUrl,
-          notifyUrl,
-        });
-        
-        return {
-          orderId: outTradeNo,
-          paymentForm,
-        };
+        if (paymentMethod === "wechat") {
+          // 创建微信H5支付订单
+          const clientIp = ctx.req.ip || ctx.req.headers['x-forwarded-for'] as string || '127.0.0.1';
+          const { h5Url } = await createWechatH5Payment({
+            outTradeNo,
+            amount: Math.round(amount * 100), // 转换为分
+            description: subject,
+            clientIp,
+          });
+          
+          return {
+            orderId: outTradeNo,
+            paymentUrl: h5Url,
+            paymentMethod: "wechat",
+          };
+        } else {
+          // 创建支付宝支付订单
+          const returnUrl = "https://www.zesiai.com/payment/result";
+          const notifyUrl = "https://www.zesiai.com/api/payment/alipay/notify";
+          
+          const paymentForm = await createAlipayPagePayment({
+            outTradeNo,
+            totalAmount: amount.toFixed(2),
+            subject,
+            body,
+            returnUrl,
+            notifyUrl,
+          });
+          
+          return {
+            orderId: outTradeNo,
+            paymentForm,
+            paymentMethod: "alipay",
+          };
+        }
       } catch (error) {
         console.error("[Payment] Create payment error:", error);
         throw new TRPCError({
@@ -213,15 +233,30 @@ export const paymentRouter = router({
         };
       }
       
-      // 查询支付宝订单状态
+      // 查询支付订单状态
       try {
-        const result = await queryAlipayOrder(input.outTradeNo);
+        let tradeStatus = "";
+        let tradeNo = "";
+        
+        if (order.paymentMethod === "wechat") {
+          // 查询微信支付订单
+          const result = await queryWechatPayment(input.outTradeNo);
+          if (result.trade_state === "SUCCESS") {
+            tradeStatus = "TRADE_SUCCESS";
+            tradeNo = result.transaction_id;
+          }
+        } else {
+          // 查询支付宝订单
+          const result = await queryAlipayOrder(input.outTradeNo);
+          tradeStatus = result.tradeStatus;
+          tradeNo = result.tradeNo;
+        }
         
         // 如果支付成功,更新订单状态
-        if (result.tradeStatus === "TRADE_SUCCESS") {
+        if (tradeStatus === "TRADE_SUCCESS") {
           await updateOrderStatus(input.outTradeNo, {
             status: "paid",
-            tradeNo: result.tradeNo,
+            tradeNo,
             paidAt: new Date(),
           });
           

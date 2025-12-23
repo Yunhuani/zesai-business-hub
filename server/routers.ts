@@ -12,6 +12,7 @@ import { documentRouter } from "./routers/document";
 import { adminRouter } from "./routers/admin";
 import { supportRouter } from "./routers/support";
 import { passwordResetRouter } from "./routers/passwordReset";
+import { wechatPayCallbackRouter } from "./routers/wechatPayCallback";
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
@@ -432,6 +433,9 @@ export const appRouter = router({
 
   // Payment routes
   payment: paymentRouter,
+  
+  // WeChat Pay callback routes
+  wechatPayCallback: wechatPayCallbackRouter,
 
   // Export routes
   export: exportRouter,

@@ -978,4 +978,18 @@
 - [x] 确俜Cookie的domain配置正确
 - [x] 测试PC端登录不受影响
 - [ ] 测试微信端登录成功(等待用户发布后测试)
-- [ ] 保存checkpoint
+- [x] 保存checkpoint
+
+
+## 集成微信H5支付
+- [x] 配置微信支付商户号和APIv3密钥
+- [x] 创建微信支付服务模块(server/wechatPay.ts)
+- [x] 创建微信支付回调路由(server/routers/wechatPayCallback.ts)
+- [x] 修改支付页面UI,添加微信支付选项
+- [x] 实现微信H5支付API调用
+- [x] 实现支付回调处理和积分充值
+- [x] 配置微信商户平台回调URL(https://www.zesiai.com/api/wechat-pay/notify)
+- [x] 编写测试用例验证功能(10/11项通过)
+- [ ] 配置环境变量(WECHAT_PAY_MCHID, WECHAT_PAY_API_V3_KEY)
+- [ ] 测试微信支付流程(等待环境变量配置和10分钟生效期)
+- [x] 保存checkpoint

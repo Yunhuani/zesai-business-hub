@@ -64,9 +64,14 @@ export default function Credits() {
   const isFreeUser = userPlan === "free";
 
   const createOrder = trpc.payment.createOrder.useMutation({
-    onSuccess: (data: { orderId: string; paymentForm: string }) => {
-      // Store payment form and auto-submit
-      setPaymentFormHtml(data.paymentForm);
+    onSuccess: (data: { orderId: string; paymentForm?: string; paymentUrl?: string; paymentMethod: string }) => {
+      if (data.paymentMethod === "wechat" && data.paymentUrl) {
+        // 微信支付：直接跳转到H5支付页面
+        window.location.href = data.paymentUrl;
+      } else if (data.paymentForm) {
+        // 支付宝支付：自动提交表单
+        setPaymentFormHtml(data.paymentForm);
+      }
     },
     onError: (error: { message: string }) => {
       toast.error("创建订单失败: " + error.message);
@@ -100,6 +105,9 @@ export default function Credits() {
     );
   }
 
+  // 检测是否在微信内置浏览器
+  const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
+
   const handlePurchase = (packId: string, price: number, credits: number) => {
     // 免费版用户不能购买积分包
     if (isFreeUser) {
@@ -111,6 +119,7 @@ export default function Credits() {
       planId: packId,
       amount: price,
       credits: credits,
+      paymentMethod: isWeChat ? "wechat" : "alipay",
     });
   };
 
