@@ -33,13 +33,16 @@ export function getSessionCookieOptions(
     hostname !== "::1";
 
   // Set domain for production to support subdomains
-  // For localhost/IP, leave domain undefined
-  const domain =
-    shouldSetDomain && !hostname.startsWith(".")
-      ? `.${hostname}`
-      : shouldSetDomain
-        ? hostname
-        : undefined;
+  // Extract root domain from hostname (e.g., www.zesiai.com -> zesiai.com)
+  let domain: string | undefined = undefined;
+  if (shouldSetDomain) {
+    const parts = hostname.split('.');
+    if (parts.length >= 2) {
+      // Get the last two parts (e.g., zesiai.com)
+      const rootDomain = parts.slice(-2).join('.');
+      domain = `.${rootDomain}`;
+    }
+  }
 
   return {
     domain,

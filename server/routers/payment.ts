@@ -80,7 +80,7 @@ export const paymentRouter = router({
         if (!config) {
           throw new TRPCError({ code: "BAD_REQUEST", message: "无效的积分包类型" });
         }
-        subject = `哲思AI商业智库 - ${config.name}`;
+        subject = `泽思AI商业智库 - ${config.name}`;
         body = `购买${config.credits}积分`;
       }
       
@@ -89,7 +89,7 @@ export const paymentRouter = router({
         userId: ctx.user.id,
         outTradeNo,
         plan: planId,
-        amount: amount * 100, // 转换为分
+        amount: Math.round(amount * 100), // 转换为分
         paymentMethod,
       });
       
@@ -99,7 +99,7 @@ export const paymentRouter = router({
           const clientIp = ctx.req.ip || ctx.req.headers['x-forwarded-for'] as string || '127.0.0.1';
           const { h5Url } = await createWechatH5Payment({
             outTradeNo,
-            amount: Math.round(amount * 100), // 转换为分
+            amount: Math.round(amount * 100), // 金额已经是元，需要转换为分
             description: subject,
             clientIp,
           });
