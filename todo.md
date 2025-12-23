@@ -961,4 +961,12 @@
 - [x] 修改/usage页面，删除积分使用明细表格
 - [x] 保留订阅信息展示卡片
 - [x] 测试页面显示效果
+- [x] 保存checkpoint
+
+
+## 首页SEO优化
+- [x] 设置页面标题为30-60字符(包含核心关键词)
+- [x] 添加meta description描述标签
+- [x] 添加meta keywords关键词标签
+- [x] 测试SEO效果
 - [ ] 保存checkpoint
