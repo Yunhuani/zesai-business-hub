@@ -970,3 +970,12 @@
 - [x] 添加meta keywords关键词标签
 - [x] 测试SEO效果
 - [ ] 保存checkpoint
+
+
+## 修复微信端登录问题
+- [x] 检查当前Cookie配置代码
+- [x] 调整Cookie的SameSite属性为lax
+- [x] 确俜Cookie的domain配置正确
+- [x] 测试PC端登录不受影响
+- [ ] 测试微信端登录成功(等待用户发布后测试)
+- [ ] 保存checkpoint
