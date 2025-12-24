@@ -4,6 +4,7 @@ import { createAlipayPagePayment, queryAlipayOrder, verifyAlipayCallback } from 
 import { createWechatH5Payment, createWechatJsapiPayment, queryWechatPayment } from "../wechatPay";
 import { createOrder, getOrderByOutTradeNo, updateOrderStatus, createOrUpdateSubscription } from "../db";
 import { TRPCError } from "@trpc/server";
+import { ENV } from "../_core/env";
 
 /**
  * 套餐配置
@@ -95,6 +96,14 @@ export const paymentRouter = router({
       
       try {
         if (paymentMethod === "wechat") {
+          // 检查微信支付是否开启
+          if (!ENV.wechatPayEnabled) {
+            throw new TRPCError({ 
+              code: "BAD_REQUEST", 
+              message: "微信支付正在审核中，请使用支付宝支付" 
+            });
+          }
+          
           // 使用H5支付（订阅号不支持JSAPI）
           const clientIp = ctx.req.ip || ctx.req.headers['x-forwarded-for'] as string || '127.0.0.1';
           const { h5Url } = await createWechatH5Payment({
@@ -388,4 +397,14 @@ export const paymentRouter = router({
       
       return { success: true };
     }),
+
+  /**
+   * 获取支付配置（检查微信支付是否可用）
+   */
+  getPaymentConfig: publicProcedure.query(() => {
+    return {
+      wechatPayEnabled: ENV.wechatPayEnabled,
+      alipayEnabled: true, // 支付宝始终可用
+    };
+  }),
 });

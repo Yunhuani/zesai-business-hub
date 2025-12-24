@@ -13,4 +13,6 @@ export const ENV = {
   alipayPublicKey: process.env.ALIPAY_PUBLIC_KEY ?? "",
   wechatAppId: process.env.WECHAT_APP_ID ?? "",
   wechatAppSecret: process.env.WECHAT_APP_SECRET ?? "",
+  // 微信支付开关（H5支付审核期间设置为false）
+  wechatPayEnabled: process.env.WECHAT_PAY_ENABLED === "true",
 };

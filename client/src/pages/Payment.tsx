@@ -39,6 +39,10 @@ export default function Payment() {
   const [paymentForm, setPaymentForm] = useState<string>("");
   const formContainerRef = useRef<HTMLDivElement>(null);
 
+  // 获取支付配置
+  const { data: paymentConfig } = trpc.payment.getPaymentConfig.useQuery();
+  const wechatPayEnabled = paymentConfig?.wechatPayEnabled ?? false;
+
   const createOrder = trpc.payment.createOrder.useMutation();
 
   // Auto-submit payment form when it's ready (for Alipay)
@@ -157,9 +161,9 @@ export default function Payment() {
                         </div>
                       </Label>
                     </div>
-                    <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent" onClick={() => setPaymentMethod("wechat")}>
-                      <RadioGroupItem value="wechat" id="wechat" />
-                      <Label htmlFor="wechat" className="flex-1 cursor-pointer">
+                    <div className={`flex items-center space-x-3 border rounded-lg p-4 ${wechatPayEnabled ? 'cursor-pointer hover:bg-accent' : 'cursor-not-allowed opacity-50 bg-muted'}`} onClick={() => wechatPayEnabled && setPaymentMethod("wechat")}>
+                      <RadioGroupItem value="wechat" id="wechat" disabled={!wechatPayEnabled} />
+                      <Label htmlFor="wechat" className={`flex-1 ${wechatPayEnabled ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
                         <div className="flex items-center gap-3">
                           <div className="w-12 h-12 bg-green-50 rounded flex items-center justify-center">
                             <svg className="w-8 h-8" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
@@ -169,7 +173,9 @@ export default function Payment() {
                           </div>
                           <div>
                             <div className="font-semibold">微信支付</div>
-                            <div className="text-sm text-muted-foreground">支持H5支付</div>
+                            <div className="text-sm text-muted-foreground">
+                              {wechatPayEnabled ? '支持H5支付' : '审核中，暂不可用'}
+                            </div>
                           </div>
                         </div>
                       </Label>

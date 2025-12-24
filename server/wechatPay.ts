@@ -6,8 +6,18 @@ const WECHAT_PAY_MCHID = process.env.WECHAT_PAY_MCHID || '';
 const WECHAT_PAY_API_V3_KEY = process.env.WECHAT_PAY_API_V3_KEY || '';
 const WECHAT_APP_ID = process.env.WECHAT_APP_ID || '';
 
+console.log('[WechatPay] Configuration:', {
+  hasAppId: !!WECHAT_APP_ID,
+  hasMchid: !!WECHAT_PAY_MCHID,
+  hasApiKey: !!WECHAT_PAY_API_V3_KEY,
+  appId: WECHAT_APP_ID ? `${WECHAT_APP_ID.substring(0, 8)}...` : 'missing',
+  mchid: WECHAT_PAY_MCHID || 'missing',
+});
+
 if (!WECHAT_PAY_MCHID || !WECHAT_PAY_API_V3_KEY) {
-  console.warn('[WechatPay] Missing required environment variables');
+  console.error('[WechatPay] Missing required environment variables');
+  console.error('[WechatPay] WECHAT_PAY_MCHID:', WECHAT_PAY_MCHID ? 'present' : 'MISSING');
+  console.error('[WechatPay] WECHAT_PAY_API_V3_KEY:', WECHAT_PAY_API_V3_KEY ? 'present' : 'MISSING');
 }
 
 // 初始化微信支付实例
@@ -15,17 +25,26 @@ let wechatPayInstance: Wechatpay | null = null;
 
 function getWechatPayInstance(): Wechatpay {
   if (!wechatPayInstance && WECHAT_PAY_MCHID && WECHAT_PAY_API_V3_KEY) {
-    wechatPayInstance = new Wechatpay({
-      appid: WECHAT_APP_ID || WECHAT_PAY_MCHID, // 如果没有AppID，使用商户号
-      mchid: WECHAT_PAY_MCHID,
-      publicKey: Buffer.from(''), // H5支付不需要证书
-      privateKey: Buffer.from(''), // H5支付不需要证书
-      key: WECHAT_PAY_API_V3_KEY,
-    });
+    console.log('[WechatPay] Initializing instance...');
+    try {
+      wechatPayInstance = new Wechatpay({
+        appid: WECHAT_APP_ID || WECHAT_PAY_MCHID,
+        mchid: WECHAT_PAY_MCHID,
+        publicKey: Buffer.from(''),
+        privateKey: Buffer.from(''),
+        key: WECHAT_PAY_API_V3_KEY,
+      });
+      console.log('[WechatPay] Instance initialized successfully');
+    } catch (error) {
+      console.error('[WechatPay] Failed to initialize:', error);
+      throw error;
+    }
   }
   
   if (!wechatPayInstance) {
-    throw new Error('WechatPay instance not initialized');
+    const error = new Error('WechatPay instance not initialized - missing configuration');
+    console.error('[WechatPay]', error.message);
+    throw error;
   }
   
   return wechatPayInstance;
@@ -78,10 +97,17 @@ export async function createWechatH5Payment(params: {
   description: string; // 商品描述
   clientIp: string; // 用户IP
 }): Promise<{ h5Url: string }> {
+  console.log('[WechatPay] Creating H5 payment with params:', {
+    outTradeNo: params.outTradeNo,
+    amount: params.amount,
+    description: params.description,
+    clientIp: params.clientIp,
+  });
+  
   try {
     const pay = getWechatPayInstance();
     
-    const result = await pay.transactions_h5({
+    const paymentParams = {
       appid: WECHAT_APP_ID || WECHAT_PAY_MCHID,
       mchid: WECHAT_PAY_MCHID,
       description: params.description,
@@ -98,15 +124,31 @@ export async function createWechatH5Payment(params: {
           app_name: '泽思AI商业智库',
         },
       },
+    };
+    
+    console.log('[WechatPay] Calling transactions_h5 with:', JSON.stringify(paymentParams, null, 2));
+    
+    const result = await pay.transactions_h5(paymentParams);
+    
+    console.log('[WechatPay] API response:', {
+      status: result.status,
+      hasH5Url: !!result.data?.h5_url,
+      data: result.data,
     });
     
     if (result.status === 200 && result.data.h5_url) {
+      console.log('[WechatPay] H5 payment created successfully');
       return { h5Url: result.data.h5_url };
     }
     
-    throw new Error('Failed to create wechat payment');
-  } catch (error) {
-    console.error('[WechatPay] Create payment error:', error);
+    console.error('[WechatPay] Invalid response from WeChat API:', result);
+    throw new Error('Failed to create wechat payment - invalid response');
+  } catch (error: any) {
+    console.error('[WechatPay] Create H5 payment error:', {
+      message: error.message,
+      response: error.response?.data,
+      stack: error.stack,
+    });
     throw error;
   }
 }
