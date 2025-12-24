@@ -2,7 +2,8 @@ import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { verifyWechatPayNotify, decryptWechatPayNotify } from "../wechatPay";
-import { getOrderByOutTradeNo, updateOrderStatus, createOrUpdateSubscription } from "../db";
+import { getOrderByOutTradeNo, updateOrderStatus, createOrUpdateSubscription, getUserById } from "../db";
+import { notifyAdminNewOrder } from "../orderNotification";
 
 /**
  * 套餐配置
@@ -143,10 +144,38 @@ export const wechatPayCallbackRouter = router({
             // Initialize subscription credits
             const { resetSubscriptionCredits } = await import("../creditsManager");
             await resetSubscriptionCredits(order.userId, order.plan);
+            
+            // Send email notification to admin
+            const user = await getUserById(order.userId);
+            if (user) {
+              await notifyAdminNewOrder({
+                orderNo: outTradeNo,
+                userName: user.name || "",
+                userEmail: user.email || "",
+                productName: `${subscriptionConfig.name}套餐`,
+                amount: order.amount,
+                paymentMethod: "wechat",
+                paidAt: new Date(),
+              });
+            }
           } else if (creditPackConfig) {
             // Handle credit pack order
             const { addPurchasedCredits } = await import("../creditsManager");
             await addPurchasedCredits(order.userId, creditPackConfig.credits, order.id);
+            
+            // Send email notification to admin
+            const user = await getUserById(order.userId);
+            if (user) {
+              await notifyAdminNewOrder({
+                orderNo: outTradeNo,
+                userName: user.name || "",
+                userEmail: user.email || "",
+                productName: `${creditPackConfig.name}（${creditPackConfig.credits}积分）`,
+                amount: order.amount,
+                paymentMethod: "wechat",
+                paidAt: new Date(),
+              });
+            }
           }
           
           console.log("[WechatPay] Payment success:", outTradeNo);
