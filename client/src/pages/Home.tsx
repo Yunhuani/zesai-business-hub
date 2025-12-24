@@ -179,11 +179,7 @@ export default function Home() {
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 animate-gradient" />
         
         {/* WeChat Browser Guide */}
-        {isInWeChatBrowser && (
-          <div className="mb-8 max-w-3xl mx-auto">
-            <WeChatBrowserGuide showFullGuide={false} />
-          </div>
-        )}
+        {isInWeChatBrowser && <WeChatBrowserGuide />}
         
         <div className="animate-fade-in-up">
           <h2 className="text-6xl md:text-7xl font-extrabold mb-8 bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent leading-tight">
