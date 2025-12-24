@@ -13,6 +13,8 @@ import { DocumentDownloadButtons } from "@/components/chat/DocumentDownloadButto
 import { toast } from "sonner";
 import { InsufficientCreditsDialog } from "@/components/InsufficientCreditsDialog";
 import { LoginMethodDialog } from "@/components/LoginMethodDialog";
+import { WeChatBrowserGuide } from "@/components/WeChatBrowserGuide";
+import { isWeChatBrowser } from "@/utils/wechatDetector";
 
 export default function AgentChat() {
   const params = useParams();
@@ -53,6 +55,7 @@ export default function AgentChat() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showInsufficientCreditsDialog, setShowInsufficientCreditsDialog] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [isInWeChatBrowser] = useState(isWeChatBrowser());
   const [streamingMessage, setStreamingMessage] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const typewriterIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -545,6 +548,13 @@ export default function AgentChat() {
       {/* Messages area - scrollable */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-3xl mx-auto px-4 py-6">
+          {/* WeChat Browser Guide */}
+          {isInWeChatBrowser && (
+            <div className="mb-6">
+              <WeChatBrowserGuide />
+            </div>
+          )}
+          
           <div className="space-y-4">
             {!isAuthenticated ? (
               <div className="flex items-center justify-center h-[400px]">

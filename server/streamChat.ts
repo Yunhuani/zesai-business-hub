@@ -1,5 +1,8 @@
-import { Request, Response } from "express";
+import { Response, Request } from "express";
 import { sdk } from "./_core/sdk";
+import jwt from "jsonwebtoken";
+import { ENV } from "./_core/env";
+import { getUserByOpenId } from "./db";
 
 /**
  * Stream chat endpoint for real-time streaming responses
@@ -7,8 +10,32 @@ import { sdk } from "./_core/sdk";
  */
 export async function handleStreamChat(req: Request, res: Response) {
   try {
-    // Verify authentication
-    const user = await sdk.authenticateRequest(req);
+    // Verify authentication - support both JWT token and Manus OAuth
+    let user = null;
+    
+    // First try JWT token from Authorization header (for email/password login)
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      try {
+        const decoded = jwt.verify(token, ENV.jwtSecret) as { userId: number; openId: string };
+        user = await getUserByOpenId(decoded.openId) || null;
+      } catch (jwtError) {
+        console.error('[StreamChat] JWT verification failed:', jwtError);
+        user = null;
+      }
+    }
+    
+    // Fallback to Manus OAuth (for OAuth login)
+    if (!user) {
+      try {
+        user = await sdk.authenticateRequest(req);
+      } catch (error) {
+        console.error('[StreamChat] OAuth authentication failed:', error);
+        user = null;
+      }
+    }
+    
     if (!user) {
       res.status(401).json({ error: "Unauthorized" });
       return;

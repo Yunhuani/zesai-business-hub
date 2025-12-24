@@ -19,6 +19,8 @@ import { ExpertConsultationDialog } from "@/components/ExpertConsultationDialog"
 import { CreditsDisplay } from "@/components/CreditsDisplay";
 import { SmartAssistantSearch } from "@/components/SmartAssistantSearch";
 import { Link } from "wouter";
+import { WeChatBrowserGuide } from "@/components/WeChatBrowserGuide";
+import { isWeChatBrowser } from "@/utils/wechatDetector";
 
 // Agent分类配置
 const AGENT_CATEGORIES = [
@@ -82,6 +84,7 @@ const AGENT_CATEGORIES = [
 
 export default function Home() {
   const { user, loading, isAuthenticated, logout } = useAuth();
+  const [isInWeChatBrowser] = useState(isWeChatBrowser());
   const { data: agents, isLoading: agentsLoading } = trpc.agent.list.useQuery();
   
   // 控制每个分类的展开/折叠状态
@@ -174,6 +177,13 @@ export default function Home() {
       {/* Hero Section */}
       <section className="container py-20 text-center relative overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 animate-gradient" />
+        
+        {/* WeChat Browser Guide */}
+        {isInWeChatBrowser && (
+          <div className="mb-8 max-w-3xl mx-auto">
+            <WeChatBrowserGuide showFullGuide={false} />
+          </div>
+        )}
         
         <div className="animate-fade-in-up">
           <h2 className="text-6xl md:text-7xl font-extrabold mb-8 bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent leading-tight">

@@ -1,0 +1,26 @@
+{
+  "query": "SELECT * FROM users WHERE openId = 'email_chattest@example.com' LIMIT 1",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT * FROM users WHERE openId = 'email_chattest@example.com' LIMIT 1",
+  "rows": [
+    {
+      "id": "11160018",
+      "openId": "email_chattest@example.com",
+      "name": "聊天测试",
+      "email": "chattest@example.com",
+      "loginMethod": "password",
+      "role": "user",
+      "createdAt": "2025-12-24 03:19:59",
+      "updatedAt": "2025-12-24 03:19:59",
+      "lastSignedIn": "2025-12-24 03:20:00",
+      "creditsPurchased": "0",
+      "creditsSubscription": "100",
+      "creditsResetDate": "2025-12-24 03:19:59",
+      "username": "NULL",
+      "password": "$2b$10$zJwizaoFLqESYYOhMzBaBuaTz1yJLVS.BVUi6CG3.g9.kW1qKN4Iu"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\topenId\tname\temail\tloginMethod\trole\tcreatedAt\tupdatedAt\tlastSignedIn\tcreditsPurchased\tcreditsSubscription\tcreditsResetDate\tusername\tpassword\n11160018\temail_chattest@example.com\t聊天测试\tchattest@example.com\tpassword\tuser\t2025-12-24 03:19:59\t2025-12-24 03:19:59\t2025-12-24 03:20:00\t0\t100\t2025-12-24 03:19:59\tNULL\t$2b$10$zJwizaoFLqESYYOhMzBaBuaTz1yJLVS.BVUi6CG3.g9.kW1qKN4Iu\n",
+  "stderr": "",
+  "execution_time_ms": 1515
+}

@@ -23,7 +23,10 @@ export async function createContext(
       const token = authHeader.substring(7);
       try {
         const decoded = jwt.verify(token, ENV.jwtSecret) as { userId: number; openId: string };
-        user = await getUserByOpenId(decoded.openId) || null;
+        console.log('[Auth] JWT decoded:', decoded);
+        const fetchedUser = await getUserByOpenId(decoded.openId);
+        console.log('[Auth] getUserByOpenId result:', fetchedUser);
+        user = fetchedUser || null;
       } catch (jwtError) {
         console.error('[Auth] JWT verification failed:', jwtError);
         user = null;

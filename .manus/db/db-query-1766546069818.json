@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, email, name, openId, loginMethod, createdAt FROM users WHERE email = 'test@example.com' LIMIT 1",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, email, name, openId, loginMethod, createdAt FROM users WHERE email = 'test@example.com' LIMIT 1",
+  "rows": [
+    {
+      "id": "4440031",
+      "email": "test@example.com",
+      "name": "邮箱测试用户",
+      "openId": "email_test@example.com",
+      "loginMethod": "password",
+      "createdAt": "2025-12-01 04:39:58"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tname\topenId\tloginMethod\tcreatedAt\n4440031\ttest@example.com\t邮箱测试用户\temail_test@example.com\tpassword\t2025-12-01 04:39:58\n",
+  "stderr": "",
+  "execution_time_ms": 1780
+}
