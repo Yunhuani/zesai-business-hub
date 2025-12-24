@@ -32,7 +32,45 @@ function getWechatPayInstance(): Wechatpay {
 }
 
 /**
- * 创建微信H5支付订单
+ * 创建微信JSAPI支付订单（微信内）
+ */
+export async function createWechatJsapiPayment(params: {
+  outTradeNo: string; // 商户订单号
+  amount: number; // 金额（分）
+  description: string; // 商品描述
+  openid: string; // 用户openid
+}): Promise<{ prepayId: string }> {
+  try {
+    const pay = getWechatPayInstance();
+    
+    const result = await pay.transactions_jsapi({
+      appid: WECHAT_APP_ID || WECHAT_PAY_MCHID,
+      mchid: WECHAT_PAY_MCHID,
+      description: params.description,
+      out_trade_no: params.outTradeNo,
+      notify_url: `https://www.zesiai.com/api/wechat-pay/notify`,
+      amount: {
+        total: params.amount,
+        currency: 'CNY',
+      },
+      payer: {
+        openid: params.openid,
+      },
+    });
+    
+    if (result.status === 200 && result.data.prepay_id) {
+      return { prepayId: result.data.prepay_id };
+    }
+    
+    throw new Error('Failed to create wechat jsapi payment');
+  } catch (error) {
+    console.error('[WechatPay] Create JSAPI payment error:', error);
+    throw error;
+  }
+}
+
+/**
+ * 创建微信H5支付订单（外部浏览器）
  */
 export async function createWechatH5Payment(params: {
   outTradeNo: string; // 商户订单号

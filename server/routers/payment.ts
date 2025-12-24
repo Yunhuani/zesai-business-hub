@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { createAlipayPagePayment, queryAlipayOrder, verifyAlipayCallback } from "../_core/alipay";
-import { createWechatH5Payment, queryWechatPayment } from "../wechatPay";
+import { createWechatH5Payment, createWechatJsapiPayment, queryWechatPayment } from "../wechatPay";
 import { createOrder, getOrderByOutTradeNo, updateOrderStatus, createOrUpdateSubscription } from "../db";
 import { TRPCError } from "@trpc/server";
 
@@ -95,11 +95,11 @@ export const paymentRouter = router({
       
       try {
         if (paymentMethod === "wechat") {
-          // 创建微信H5支付订单
+          // 使用H5支付（订阅号不支持JSAPI）
           const clientIp = ctx.req.ip || ctx.req.headers['x-forwarded-for'] as string || '127.0.0.1';
           const { h5Url } = await createWechatH5Payment({
             outTradeNo,
-            amount: Math.round(amount * 100), // 金额已经是元，需要转换为分
+            amount: Math.round(amount * 100),
             description: subject,
             clientIp,
           });
