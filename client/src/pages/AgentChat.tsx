@@ -405,6 +405,9 @@ export default function AgentChat() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(localStorage.getItem('auth_token') ? {
+            Authorization: `Bearer ${localStorage.getItem('auth_token')}`
+          } : {}),
         },
         credentials: "include",
         body: JSON.stringify({

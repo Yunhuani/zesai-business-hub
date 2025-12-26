@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, openId, email, name, loginMethod, role, createdAt, lastSignedIn FROM users WHERE email = '37593301@qq.com'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, openId, email, name, loginMethod, role, createdAt, lastSignedIn FROM users WHERE email = '37593301@qq.com'",
+  "returncode": 1,
+  "logs": [
+    "ERROR 2013 (HY000): Lost connection to MySQL server at 'reading initial communication packet', system error: 0"
+  ]
+}
