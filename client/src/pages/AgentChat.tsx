@@ -531,7 +531,7 @@ export default function AgentChat() {
     <div className="flex flex-col h-screen bg-white">
       {/* Header */}
       <header className="border-b bg-white sticky top-0 z-10 flex-shrink-0">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
               <Link href="/">
@@ -571,7 +571,7 @@ export default function AgentChat() {
 
       {/* Messages area - scrollable */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto px-4 py-6">
           {/* WeChat Browser Guide */}
           {isInWeChatBrowser && (
             <div className="mb-6">
@@ -709,7 +709,7 @@ export default function AgentChat() {
 
       {/* Input area - fixed at bottom */}
       <div className="border-t bg-white flex-shrink-0">
-        <div className="max-w-3xl mx-auto px-4 py-3">
+        <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex gap-2">
                 <input
                   ref={fileInputRef}
