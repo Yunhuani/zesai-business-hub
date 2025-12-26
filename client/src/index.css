@@ -79,38 +79,62 @@
 }
 
 .dark {
-  --primary: var(--color-blue-700);
+  /* 顶级科技公司风格深色主题 - 参考OpenAI/Anthropic/Linear */
+  --primary: var(--color-blue-500);
   --primary-foreground: var(--color-blue-50);
   --sidebar-primary: var(--color-blue-500);
   --sidebar-primary-foreground: var(--color-blue-50);
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.85 0.005 65);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.85 0.005 65);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.85 0.005 65);
-  --secondary: oklch(0.24 0.006 286.033);
-  --secondary-foreground: oklch(0.7 0.005 65);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground:  oklch(0.92 0.005 65);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.488 0.243 264.376);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.85 0.005 65);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground:  oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.488 0.243 264.376);
+  
+  /* 深邃黑底 (#0A0A0A) - 比纯黑柔和，减少眼疲劳 */
+  --background: oklch(0.06 0 0);
+  /* 高对比度纯白文字 (#FAFAFA) */
+  --foreground: oklch(0.98 0 0);
+  
+  /* 卡片背景 - 微妙的灰色层次 (#141414) */
+  --card: oklch(0.12 0 0);
+  --card-foreground: oklch(0.95 0 0);
+  
+  /* 弹出层 - 稍亮一些 (#1A1A1A) */
+  --popover: oklch(0.15 0 0);
+  --popover-foreground: oklch(0.95 0 0);
+  
+  /* 次要元素 - 中灰色 (#262626) */
+  --secondary: oklch(0.2 0 0);
+  --secondary-foreground: oklch(0.85 0 0);
+  
+  /* 弱化元素 - 深灰背景 (#1F1F1F) */
+  --muted: oklch(0.17 0 0);
+  --muted-foreground: oklch(0.65 0 0);
+  
+  /* 强调色 - 紫蓝渐变基调 (#2D2D3D) */
+  --accent: oklch(0.22 0.03 270);
+  --accent-foreground: oklch(0.95 0 0);
+  
+  /* 错误色 */
+  --destructive: oklch(0.6 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  
+  /* 边框 - 半透明白色，营造玻璃拟态效果 */
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 12%);
+  
+  /* 焦点环 - 紫色 */
+  --ring: oklch(0.65 0.25 270);
+  
+  /* 图表色 - 紫蓝渐变系列 */
+  --chart-1: oklch(0.7 0.2 270);
+  --chart-2: oklch(0.65 0.22 260);
+  --chart-3: oklch(0.6 0.24 250);
+  --chart-4: oklch(0.55 0.26 240);
+  --chart-5: oklch(0.5 0.28 230);
+  
+  /* 侧边栏 */
+  --sidebar: oklch(0.1 0 0);
+  --sidebar-foreground: oklch(0.9 0 0);
+  --sidebar-accent: oklch(0.2 0.03 270);
+  --sidebar-accent-foreground: oklch(0.95 0 0);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(0.65 0.25 270);
 }
 
 @layer base {
@@ -218,8 +242,11 @@
 }
 
 .dark .glass-effect {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 /* 弥散阴影效果 */
@@ -228,7 +255,7 @@
 }
 
 .dark .shadow-diffuse {
-  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2), 0 4px 16px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3), 0 4px 16px rgba(59, 130, 246, 0.2), 0 0 80px rgba(139, 92, 246, 0.1);
 }
 
 /* 卡片悬停增强效果 */
@@ -242,5 +269,6 @@
 }
 
 .dark .card-hover-enhanced:hover {
-  box-shadow: 0 20px 40px rgba(139, 92, 246, 0.25), 0 10px 20px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 20px 40px rgba(139, 92, 246, 0.35), 0 10px 20px rgba(59, 130, 246, 0.25), 0 0 100px rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.3);
 }

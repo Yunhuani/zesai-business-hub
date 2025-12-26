@@ -21,6 +21,7 @@ import { SmartAssistantSearch } from "@/components/SmartAssistantSearch";
 import { Link } from "wouter";
 import { WeChatBrowserGuide } from "@/components/WeChatBrowserGuide";
 import { isWeChatBrowser } from "@/utils/wechatDetector";
+import { ThemeToggleButton } from "@/components/ThemeToggleButton";
 
 // Agent分类配置
 const AGENT_CATEGORIES = [
@@ -116,6 +117,9 @@ export default function Home() {
             <h1 className="text-2xl font-bold">泽思 Zenith AI</h1>
           </div>
           <div className="flex items-center gap-4">
+            {/* 主题切换按钮 */}
+            <ThemeToggleButton />
+            
             {isAuthenticated && (
               <>
                 <CreditsDisplay />
