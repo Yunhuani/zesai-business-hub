@@ -71,7 +71,7 @@ const AGENT_CATEGORIES = [
     name: "投资与机会",
     icon: "Lightbulb",
     description: "资产配置、职业规划、高考志愿、创业商机",
-    agentNames: ["大类资产投资顾问", "职业路径规划师", "高考专业规划师", "创业商机雷达"],
+    agentNames: ["大类资产投资顾问", "职业路径规划师", "高考专业规划师", "创业商机顾问"],
     defaultOpen: false,
     colors: {
       gradient: "from-orange-600 to-amber-500",
@@ -253,7 +253,7 @@ export default function Home() {
 
                     <CollapsibleContent>
                       <CardContent className="pt-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${category.id === 'investment' ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
                           {categoryAgents.map((agent) => {
                             const IconComponent = (Icons as any)[agent.icon] || Icons.Sparkles;
                             return (

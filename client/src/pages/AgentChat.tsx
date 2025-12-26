@@ -59,6 +59,10 @@ export default function AgentChat() {
   const [streamingMessage, setStreamingMessage] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const typewriterIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [tempWelcomeMessage, setTempWelcomeMessage] = useState<string | null>(null);
+  const [hasShownWelcome, setHasShownWelcome] = useState(false);
+  const [tempUserMessage, setTempUserMessage] = useState<string | null>(null);
+  const [isThinking, setIsThinking] = useState(false);
 
   const { data: messages, refetch: refetchMessages } = trpc.message.list.useQuery(
     { conversationId: conversationId! },
@@ -102,15 +106,16 @@ export default function AgentChat() {
       if (latestConversation) {
         // Load existing conversation
         setConversationId(latestConversation.id);
-      } else {
-        // Create new conversation
+      } else if (latestConversation === null) {
+        // Only create when we confirmed there's no existing conversation
         createConversation.mutate({
           agentId: agent.id,
           title: `${agent.name} - ${new Date().toLocaleDateString()}`,
         });
       }
+      // If latestConversation is undefined, it means query is still loading, wait
     }
-  }, [agent, isAuthenticated, urlConversationId, latestConversation]);
+  }, [agent, isAuthenticated, conversationId, urlConversationId, latestConversation]);
 
   // Welcome message is sent automatically when creating a new conversation
   // No need to send it again when loading existing conversations
@@ -119,21 +124,52 @@ export default function AgentChat() {
     onSuccess: (data) => {
       const newConversationId = data.insertId as number;
       setConversationId(newConversationId);
-      // 自动发送欢迎消息
-      setTimeout(() => {
-        sendWelcomeMessage.mutate({
-          conversationId: newConversationId,
-          agentId: agentId,
-        });
-        // 如果有待发送的消息，现在发送
-        if (pendingMessage) {
-          sendMessage.mutate({
-            conversationId: newConversationId,
-            content: pendingMessage,
-          });
-          setPendingMessage(null);
+      
+      // 如果有欢迎语，立即在前端显示（不等待数据库）
+      if (agent?.welcomeMessage && !hasShownWelcome) {
+        setTempWelcomeMessage(agent.welcomeMessage);
+        setHasShownWelcome(true);
+        // 启动打字机效果
+        setIsStreaming(true);
+        setStreamingMessage("");
+        
+        const fullText = agent.welcomeMessage;
+        let currentIndex = 0;
+        
+        if (typewriterIntervalRef.current) {
+          clearInterval(typewriterIntervalRef.current);
         }
-      }, 500);
+        
+        typewriterIntervalRef.current = setInterval(() => {
+          if (currentIndex < fullText.length) {
+            const chunkSize = Math.min(2, fullText.length - currentIndex);
+            setStreamingMessage(prev => prev + fullText.slice(currentIndex, currentIndex + chunkSize));
+            currentIndex += chunkSize;
+          } else {
+            if (typewriterIntervalRef.current) {
+              clearInterval(typewriterIntervalRef.current);
+              typewriterIntervalRef.current = null;
+            }
+            setIsStreaming(false);
+            setStreamingMessage("");
+          }
+        }, 30);
+      }
+      
+      // 后台异步保存欢迎消息到数据库
+      sendWelcomeMessage.mutate({
+        conversationId: newConversationId,
+        agentId: agentId,
+      });
+      
+      // 如果有待发送的消息，现在发送
+      if (pendingMessage) {
+        sendMessage.mutate({
+          conversationId: newConversationId,
+          content: pendingMessage,
+        });
+        setPendingMessage(null);
+      }
     },
     onError: (error) => {
       toast.error("创建对话失败: " + error.message);
@@ -143,38 +179,10 @@ export default function AgentChat() {
 
   const sendWelcomeMessage = trpc.message.sendWelcome.useMutation({
     onSuccess: (data) => {
-      if (!data.content) {
-        refetchMessages();
-        return;
-      }
-      
-      // Start typewriter effect for welcome message
-      setIsStreaming(true);
-      setStreamingMessage("");
-      
-      const fullText = data.content;
-      let currentIndex = 0;
-      
-      // Clear any existing interval
-      if (typewriterIntervalRef.current) {
-        clearInterval(typewriterIntervalRef.current);
-      }
-      
-      typewriterIntervalRef.current = setInterval(() => {
-        if (currentIndex < fullText.length) {
-          const chunkSize = Math.min(2, fullText.length - currentIndex);
-          setStreamingMessage(prev => prev + fullText.slice(currentIndex, currentIndex + chunkSize));
-          currentIndex += chunkSize;
-        } else {
-          if (typewriterIntervalRef.current) {
-            clearInterval(typewriterIntervalRef.current);
-            typewriterIntervalRef.current = null;
-          }
-          setIsStreaming(false);
-          setStreamingMessage("");
-          refetchMessages();
-        }
-      }, 30);
+      // 欢迎消息已在前端显示，这里只需要刷新messages列表
+      refetchMessages();
+      // 清除临时欢迎消息，使用数据库中的消息
+      setTempWelcomeMessage(null);
     },
   });
 
@@ -384,7 +392,12 @@ export default function AgentChat() {
     
     const userMessage = message;
     setMessage("");
-    setIsStreaming(true);
+    
+    // 立即显示用户消息
+    setTempUserMessage(userMessage);
+    // 显示“正在思考...”
+    setIsThinking(true);
+    setIsStreaming(false);
     setStreamingMessage("");
     
     try {
@@ -430,6 +443,11 @@ export default function AgentChat() {
             try {
               const parsed = JSON.parse(data);
               if (parsed.delta) {
+                // 第一次收到内容时，关闭思考状态，开启流式显示
+                if (isThinking) {
+                  setIsThinking(false);
+                  setIsStreaming(true);
+                }
                 fullContent += parsed.delta;
                 setStreamingMessage(fullContent);
               }
@@ -444,11 +462,14 @@ export default function AgentChat() {
       await refetchMessages();
       setIsStreaming(false);
       setStreamingMessage("");
+      setTempUserMessage(null); // 清除临时用户消息
     } catch (error: any) {
       console.error("Stream error:", error);
       toast.error("发送消息失败: " + error.message);
       setIsStreaming(false);
       setStreamingMessage("");
+      setIsThinking(false);
+      setTempUserMessage(null);
       setMessage(userMessage); // Restore message on error
     }
   };
@@ -574,7 +595,7 @@ export default function AgentChat() {
                   </Button>
                 </div>
               </div>
-            ) : !messages || messages.length === 0 ? (
+            ) : !conversationId ? (
               <div className="flex items-center justify-center h-[400px]">
                 <div className="text-center text-muted-foreground">
                   <Icons.Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
@@ -583,7 +604,15 @@ export default function AgentChat() {
               </div>
             ) : (
               <>
-                {messages.map((msg) => (
+                {/* 临时欢迎消息（在数据库保存完成前显示） */}
+                {tempWelcomeMessage && (
+                  <div className="flex justify-start">
+                    <div className="max-w-[90%] bg-gray-50 border rounded-lg p-4 text-sm">
+                      <EnhancedMessage content={tempWelcomeMessage} />
+                    </div>
+                  </div>
+                )}
+                {messages?.map((msg) => (
                   <div
                     key={msg.id}
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
@@ -618,6 +647,33 @@ export default function AgentChat() {
                     </div>
                   </div>
                 ))}
+                
+              {/* 临时用户消息（立即显示） */}
+              {tempUserMessage && (
+                <div className="flex justify-end">
+                  <div className="max-w-[90%] rounded-lg p-4 text-sm bg-gradient-to-br from-blue-600 to-purple-600 text-white">
+                    <p className="whitespace-pre-wrap">{tempUserMessage}</p>
+                  </div>
+                </div>
+              )}
+              
+              {/* 思考中提示 */}
+              {isThinking && (
+                <div className="flex justify-start">
+                  <div className="bg-gray-50 border rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <span className="font-medium">泽思AI</span>
+                      <span>正在思考</span>
+                      <span className="inline-flex">
+                        <span className="animate-[bounce_1s_ease-in-out_infinite]" style={{ animationDelay: '0ms' }}>·</span>
+                        <span className="animate-[bounce_1s_ease-in-out_infinite]" style={{ animationDelay: '200ms' }}>·</span>
+                        <span className="animate-[bounce_1s_ease-in-out_infinite]" style={{ animationDelay: '400ms' }}>·</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               {/* Streaming message */}
               {isStreaming && streamingMessage && (
                 <div className="flex justify-start">

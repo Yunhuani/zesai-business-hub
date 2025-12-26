@@ -1,0 +1,14 @@
+{
+  "query": "SELECT id, name FROM agents WHERE name LIKE '%创业%' OR name LIKE '%商机%'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, name FROM agents WHERE name LIKE '%创业%' OR name LIKE '%商机%'",
+  "rows": [
+    {
+      "id": "120016",
+      "name": "创业商机顾问"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n120016\t创业商机顾问\n",
+  "stderr": "",
+  "execution_time_ms": 3109
+}
