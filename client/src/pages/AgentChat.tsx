@@ -62,7 +62,6 @@ export default function AgentChat() {
   const [tempWelcomeMessage, setTempWelcomeMessage] = useState<string | null>(null);
   const [hasShownWelcome, setHasShownWelcome] = useState(false);
   const [tempUserMessage, setTempUserMessage] = useState<string | null>(null);
-  const [isThinking, setIsThinking] = useState(false);
 
   const { data: messages, refetch: refetchMessages } = trpc.message.list.useQuery(
     { conversationId: conversationId! },
@@ -395,8 +394,6 @@ export default function AgentChat() {
     
     // 立即显示用户消息
     setTempUserMessage(userMessage);
-    // 显示“正在思考...”
-    setIsThinking(true);
     setIsStreaming(false);
     setStreamingMessage("");
     
@@ -446,9 +443,8 @@ export default function AgentChat() {
             try {
               const parsed = JSON.parse(data);
               if (parsed.delta) {
-                // 第一次收到内容时，关闭思考状态，开启流式显示
-                if (isThinking) {
-                  setIsThinking(false);
+                // 第一次收到内容时，开启流式显示
+                if (!isStreaming) {
                   setIsStreaming(true);
                 }
                 fullContent += parsed.delta;
@@ -471,7 +467,6 @@ export default function AgentChat() {
       toast.error("发送消息失败: " + error.message);
       setIsStreaming(false);
       setStreamingMessage("");
-      setIsThinking(false);
       setTempUserMessage(null);
       setMessage(userMessage); // Restore message on error
     }
@@ -659,23 +654,7 @@ export default function AgentChat() {
                   </div>
                 </div>
               )}
-              
-              {/* 思考中提示 */}
-              {isThinking && (
-                <div className="flex justify-start">
-                  <div className="bg-gray-50 border rounded-lg p-4">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <span className="font-medium">泽思AI</span>
-                      <span>正在思考</span>
-                      <span className="inline-flex">
-                        <span className="animate-[bounce_1s_ease-in-out_infinite]" style={{ animationDelay: '0ms' }}>·</span>
-                        <span className="animate-[bounce_1s_ease-in-out_infinite]" style={{ animationDelay: '200ms' }}>·</span>
-                        <span className="animate-[bounce_1s_ease-in-out_infinite]" style={{ animationDelay: '400ms' }}>·</span>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
+
               
               {/* Streaming message */}
               {isStreaming && streamingMessage && (
