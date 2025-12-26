@@ -18,6 +18,7 @@ export const supportRouter = router({
       z.object({
         userName: z.string().min(1, "请输入姓名"),
         userEmail: z.string().email("请输入有效的邮箱地址"),
+        wechat: z.string().min(1, "请输入微信号"),
         issueType: z.enum(["technical", "account", "payment", "feature", "other"]),
         description: z.string().min(10, "问题描述至少10个字符"),
         attachmentUrl: z.string().url().optional(),
@@ -33,6 +34,7 @@ export const supportRouter = router({
           userId: ctx.user?.id, // Optional, for logged-in users
           userName: input.userName,
           userEmail: input.userEmail,
+          wechat: input.wechat,
           issueType: input.issueType,
           description: input.description,
           attachmentUrl: input.attachmentUrl,
@@ -57,6 +59,7 @@ export const supportRouter = router({
             <p><strong>提交时间:</strong> ${new Date().toLocaleString("zh-CN")}</p>
             <p><strong>用户姓名:</strong> ${input.userName}</p>
             <p><strong>联系邮箱:</strong> ${input.userEmail}</p>
+            <p><strong>微信号:</strong> ${input.wechat}</p>
             <p><strong>问题类型:</strong> ${issueTypeMap[input.issueType]}</p>
             <p><strong>问题描述:</strong></p>
             <p>${input.description.replace(/\n/g, "<br>")}</p>

@@ -187,6 +187,7 @@ export const supportTickets = mysqlTable("supportTickets", {
   userId: int("userId"), // Optional, for logged-in users
   userName: varchar("userName", { length: 100 }).notNull(),
   userEmail: varchar("userEmail", { length: 320 }).notNull(),
+  wechat: varchar("wechat", { length: 100 }).notNull(),
   issueType: mysqlEnum("issueType", ["technical", "account", "payment", "feature", "other"]).notNull(),
   description: text("description").notNull(),
   attachmentUrl: text("attachmentUrl"), // Optional screenshot/file

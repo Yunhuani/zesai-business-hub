@@ -28,6 +28,7 @@ export default function SupportForm() {
   const { user } = useAuth();
   const [userName, setUserName] = useState(user?.name || "");
   const [userEmail, setUserEmail] = useState(user?.email || "");
+  const [wechat, setWechat] = useState("");
   const [issueType, setIssueType] = useState<keyof typeof issueTypeMap>("technical");
   const [description, setDescription] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -55,6 +56,11 @@ export default function SupportForm() {
       return;
     }
 
+    if (!wechat.trim()) {
+      toast.error("请输入微信号");
+      return;
+    }
+
     if (description.trim().length < 10) {
       toast.error("问题描述至少10个字符");
       return;
@@ -63,6 +69,7 @@ export default function SupportForm() {
     submitTicket.mutate({
       userName: userName.trim(),
       userEmail: userEmail.trim(),
+      wechat: wechat.trim(),
       issueType,
       description: description.trim(),
     });
@@ -128,7 +135,18 @@ export default function SupportForm() {
                   placeholder="请输入您的邮箱地址"
                   required
                 />
-                <p className="text-sm text-muted-foreground">我们会通过此邮箱回复您</p>
+              </div>
+
+              {/* 微信号 */}
+              <div className="space-y-2">
+                <Label htmlFor="wechat">微信号 *</Label>
+                <Input
+                  id="wechat"
+                  value={wechat}
+                  onChange={(e) => setWechat(e.target.value)}
+                  placeholder="请输入您的微信号"
+                  required
+                />
               </div>
 
               {/* 问题类型 */}
