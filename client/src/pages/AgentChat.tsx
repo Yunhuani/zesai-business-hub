@@ -732,7 +732,7 @@ export default function AgentChat() {
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   disabled={!isAuthenticated || sendMessage.isPending || !conversationId}
-                  className="flex-1"
+                  className="flex-1 h-12"
                 />
                 <Button
                   onClick={handleSendMessage}
@@ -747,6 +747,7 @@ export default function AgentChat() {
                   发送
                 </Button>
           </div>
+          <p className="text-xs text-gray-500 text-center mt-2">AI 也可能会犯错，请核查重要信息。</p>
         </div>
       </div>
 
