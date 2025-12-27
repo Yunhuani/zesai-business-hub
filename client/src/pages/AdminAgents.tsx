@@ -41,7 +41,7 @@ export default function AdminAgents() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      window.location.href = getLoginUrl();
+      setTimeout(() => window.location.href = getLoginUrl(), 0);
     } else if (!authLoading && isAuthenticated && user?.role !== "admin") {
       setLocation("/");
     }

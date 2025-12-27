@@ -51,7 +51,7 @@ export default function CreditUsage() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      window.location.href = getLoginUrl();
+      setTimeout(() => window.location.href = getLoginUrl(), 0);
     }
   }, [authLoading, isAuthenticated]);
 

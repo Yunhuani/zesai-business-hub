@@ -39,7 +39,9 @@ export default function UserManagement() {
   // 检查权限
   useEffect(() => {
     if (!authLoading && (!isAuthenticated || user?.role !== "admin")) {
-      setLocation("/");
+      setTimeout(() => {
+        setLocation("/");
+      }, 0);
     }
   }, [authLoading, isAuthenticated, user, setLocation]);
 
