@@ -78,7 +78,9 @@ export default function Payment() {
           if (data.paymentMethod === "wechat") {
             // For WeChat Pay, redirect to H5 URL
             setPaymentStatus("redirecting");
-            window.location.href = data.paymentUrl || "";
+            setTimeout(() => {
+              window.location.href = data.paymentUrl || "";
+            }, 0);
           } else {
             // For Alipay, set payment form for auto-submit
             setPaymentForm(data.paymentForm || "");

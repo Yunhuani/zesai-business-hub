@@ -91,7 +91,7 @@ export default function SupportForm() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center">
-            <Button onClick={() => (window.location.href = "/")} variant="outline">
+            <Button onClick={() => setTimeout(() => window.location.href = "/", 0)} variant="outline">
               返回首页
             </Button>
           </CardContent>
@@ -204,7 +204,7 @@ export default function SupportForm() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => (window.location.href = "/")}
+                  onClick={() => setTimeout(() => window.location.href = "/", 0)}
                 >
                   取消
                 </Button>

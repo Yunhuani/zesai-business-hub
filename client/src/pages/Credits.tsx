@@ -67,7 +67,9 @@ export default function Credits() {
     onSuccess: (data: { orderId: string; paymentForm?: string; paymentUrl?: string; paymentMethod: string }) => {
       if (data.paymentMethod === "wechat" && data.paymentUrl) {
         // 微信支付：直接跳转到H5支付页面
-        window.location.href = data.paymentUrl;
+        setTimeout(() => {
+          window.location.href = data.paymentUrl!;
+        }, 0);
       } else if (data.paymentForm) {
         // 支付宝支付：自动提交表单
         setPaymentFormHtml(data.paymentForm);

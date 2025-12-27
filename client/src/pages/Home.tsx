@@ -157,7 +157,9 @@ export default function Home() {
                     className="text-red-600 focus:text-red-600"
                     onClick={async () => {
                       await logout();
-                      window.location.href = '/email-login';
+                      setTimeout(() => {
+                        window.location.href = '/email-login';
+                      }, 0);
                     }}
                   >
                     <Icons.LogOut className="w-4 h-4 mr-2" />
