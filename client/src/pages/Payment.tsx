@@ -112,7 +112,7 @@ export default function Payment() {
                        "支付";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-background">
       <div className="container max-w-4xl py-12">
         <Button
           variant="ghost"
@@ -148,7 +148,7 @@ export default function Payment() {
                       <RadioGroupItem value="alipay" id="alipay" />
                       <Label htmlFor="alipay" className="flex-1 cursor-pointer">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-blue-50 rounded flex items-center justify-center">
+                          <div className="w-12 h-12 bg-blue-900/20 rounded flex items-center justify-center">
                             <svg className="w-8 h-8" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
                               <path fill="#1677FF" d="M1024 701.9v203.8c0 65.1-52.8 117.9-117.9 117.9H117.9C52.8 1023.6 0 970.8 0 905.7V118.3C0 53.2 52.8.4 117.9.4h788.2c65.1 0 117.9 52.8 117.9 117.9v583.6z"/>
                               <path fill="#FFF" d="M785.4 443.8c-12.3-5.1-24.9-9.4-37.7-13.1 3.8-15.3 6.5-31.1 8.1-47.3h62.1v-31.9H679.1v-49.7h-43.5v49.7H496.8v31.9h62.1c1.6 16.2 4.3 32 8.1 47.3-12.8 3.7-25.4 8-37.7 13.1-59.7 24.7-104.1 69.7-104.1 115.5 0 69.7 89.5 126.2 200 126.2s200-56.5 200-126.2c0-45.8-44.4-90.8-104.1-115.5z"/>

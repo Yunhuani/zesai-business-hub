@@ -136,9 +136,9 @@ export default function Credits() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+      <header className="border-b glass-effect sticky top-0 z-10">
         <div className="container py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <img src={APP_LOGO} alt={APP_TITLE} className="h-8" />
@@ -342,7 +342,7 @@ export default function Credits() {
 
         {/* CTA Section */}
         <div className="mt-16 text-center">
-          <Card className="p-8 bg-gradient-to-br from-blue-50 to-purple-50">
+          <Card className="p-8 glass-effect">
             <h2 className="text-2xl font-bold mb-4">还在犹豫？</h2>
             <p className="text-muted-foreground mb-6">
               升级订阅套餐，享受更多积分和专属功能

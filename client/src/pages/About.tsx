@@ -3,12 +3,12 @@ import { ArrowLeft } from "lucide-react";
 
 export default function About() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b glass-effect sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <Link href="/">
-            <a className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
+            <a className="inline-flex items-center gap-2 text-gray-400 hover:text-gray-100 transition-colors">
               <ArrowLeft className="w-4 h-4" />
               返回首页
             </a>
@@ -26,9 +26,9 @@ export default function About() {
         </div>
 
         {/* Content Sections */}
-        <div className="space-y-8 text-gray-700 leading-relaxed">
+        <div className="space-y-8 text-gray-300 leading-relaxed">
           {/* Section 1 */}
-          <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
+          <div className="glass-effect rounded-2xl p-8 shadow-sm hover:shadow-diffuse transition-smooth">
             <p className="text-lg">
               泽思 AI（Zenith AI）不是通用 AI 工具，而是一个 <strong className="text-purple-600">AI 驱动的商业咨询交付平台</strong>。
             </p>
@@ -38,7 +38,7 @@ export default function About() {
           </div>
 
           {/* Section 2 */}
-          <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
+          <div className="glass-effect rounded-2xl p-8 shadow-sm hover:shadow-diffuse transition-smooth">
             <p className="text-lg">
               在商业世界中，真正稀缺的从来不是信息，而是<strong className="text-purple-600">高质量的判断</strong>。
             </p>
@@ -48,7 +48,7 @@ export default function About() {
           </div>
 
           {/* Section 3 */}
-          <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
+          <div className="glass-effect rounded-2xl p-8 shadow-sm hover:shadow-diffuse transition-smooth">
             <p className="text-lg">
               泽思 AI 关注的不是"生成内容"，而是<strong className="text-purple-600">交付结果</strong>。
             </p>
@@ -58,7 +58,7 @@ export default function About() {
           </div>
 
           {/* Section 4 */}
-          <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
+          <div className="glass-effect rounded-2xl p-8 shadow-sm hover:shadow-diffuse transition-smooth">
             <p className="text-lg">
               泽思 AI 不只是帮助用户更快完成工作，而是帮助他们<strong className="text-purple-600">做出更好的商业决策</strong>。
             </p>
@@ -89,8 +89,8 @@ export default function About() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t bg-white/80 backdrop-blur-sm mt-16 py-8">
-        <div className="container mx-auto px-4 text-center text-sm text-gray-600">
+      <footer className="border-t glass-effect mt-16 py-8">
+        <div className="container mx-auto px-4 text-center text-sm text-gray-400">
           <p>© 2025 泽思 Zenith AI - 专业AI商业咨询平台</p>
           <a
             href="https://beian.miit.gov.cn/"

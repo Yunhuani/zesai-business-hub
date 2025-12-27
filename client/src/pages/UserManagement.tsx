@@ -73,8 +73,8 @@ export default function UserManagement() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+    <div className="min-h-screen bg-background">
+      <header className="border-b glass-effect sticky top-0 z-10">
         <div className="container py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             用户管理
@@ -146,7 +146,7 @@ export default function UserManagement() {
                               <span className={`px-2 py-1 rounded text-xs font-medium ${
                                 u.role === "admin" 
                                   ? "bg-purple-100 text-purple-700" 
-                                  : "bg-gray-100 text-gray-700"
+                                  : "bg-gray-800 text-gray-300"
                               }`}>
                                 {u.role === "admin" ? "管理员" : "用户"}
                               </span>
@@ -157,14 +157,14 @@ export default function UserManagement() {
                                   u.subscription.plan === "enterprise" ? "bg-orange-100 text-orange-700" :
                                   u.subscription.plan === "professional" ? "bg-purple-100 text-purple-700" :
                                   u.subscription.plan === "basic" ? "bg-blue-100 text-blue-700" :
-                                  "bg-gray-100 text-gray-700"
+                                  "bg-gray-800 text-gray-300"
                                 }`}>
                                   {u.subscription.plan === "enterprise" ? "企业版" :
                                    u.subscription.plan === "professional" ? "专业版" :
                                    u.subscription.plan === "basic" ? "基础版" : "免费版"}
                                 </span>
                               ) : (
-                                <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700">免费版</span>
+                                <span className="px-2 py-1 rounded text-xs font-medium bg-gray-800 text-gray-300">免费版</span>
                               )}
                             </TableCell>
                             <TableCell className="text-right font-semibold">

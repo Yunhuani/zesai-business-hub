@@ -107,9 +107,9 @@ export default function Pricing() {
   const currentPlan = subscriptionData?.subscription?.plan || "free";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+      <header className="border-b glass-effect sticky top-0 z-10">
         <div className="container py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
@@ -201,7 +201,7 @@ export default function Pricing() {
 
         {/* Expert Consultation */}
         <div className="mt-16 max-w-3xl mx-auto">
-          <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50">
+          <Card className="border-2 border-purple-500/30 glass-effect">
             <CardHeader className="text-center">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
                 <Icons.Users className="w-8 h-8 text-white" />
@@ -226,7 +226,7 @@ export default function Pricing() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t py-8 bg-white/50 mt-16">
+      <footer className="border-t py-8 glass-effect mt-16">
         <div className="container text-center text-sm text-muted-foreground space-y-3">
           <div className="flex justify-center gap-6">
             <a 

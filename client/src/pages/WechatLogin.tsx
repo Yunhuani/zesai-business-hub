@@ -59,7 +59,7 @@ export default function WechatLogin() {
 
   if (isLoading || wechatCallbackMutation.isPending) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6">
             <div className="flex flex-col items-center gap-4">
@@ -73,7 +73,7 @@ export default function WechatLogin() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
@@ -87,7 +87,7 @@ export default function WechatLogin() {
         <CardContent className="space-y-6">
           {qrCodeUrl ? (
             <div className="flex flex-col items-center gap-4">
-              <div className="w-full aspect-square max-w-xs bg-white rounded-lg border-2 border-gray-200 overflow-hidden">
+              <div className="w-full aspect-square max-w-xs bg-white rounded-lg border-2 border-gray-700 overflow-hidden">
                 <iframe
                   src={qrCodeUrl}
                   className="w-full h-full"

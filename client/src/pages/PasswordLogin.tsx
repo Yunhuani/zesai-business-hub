@@ -75,7 +75,7 @@ export default function PasswordLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         {/* Logo and Title */}
         <div className="text-center mb-8">
@@ -83,7 +83,7 @@ export default function PasswordLogin() {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
             {APP_TITLE}
           </h1>
-          <p className="text-gray-600 mt-2">专业的AI商业咨询平台</p>
+          <p className="text-gray-400 mt-2">专业的AI商业咨询平台</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "register")}>
@@ -145,7 +145,7 @@ export default function PasswordLogin() {
                       </>
                     )}
                   </Button>
-                  <div className="text-center text-sm text-gray-600">
+                  <div className="text-center text-sm text-gray-400">
                     还没有账号？
                     <button
                       type="button"
@@ -232,7 +232,7 @@ export default function PasswordLogin() {
                       </>
                     )}
                   </Button>
-                  <div className="text-center text-sm text-gray-600">
+                  <div className="text-center text-sm text-gray-400">
                     已有账号？
                     <button
                       type="button"

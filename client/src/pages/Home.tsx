@@ -107,9 +107,9 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+      <header className="border-b glass-effect sticky top-0 z-10">
         <div className="container py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/zenith-icon-only.png" alt="泽思AI" className="w-10 h-10 rounded-lg" />
@@ -176,7 +176,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="container py-20 text-center relative overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 animate-gradient" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-pink-900/20 animate-gradient" />
         
         {/* WeChat Browser Guide */}
         {isInWeChatBrowser && <WeChatBrowserGuide />}
@@ -259,7 +259,7 @@ export default function Home() {
                             return (
                               <Card
                                 key={agent.id}
-                                className={`group card-hover-enhanced cursor-pointer border-2 ${category.colors.cardBorder} bg-white/50 backdrop-blur-sm hover:bg-white/80 dark:bg-slate-900/50 dark:hover:bg-slate-900/80`}
+                                className={`group card-hover-enhanced cursor-pointer border-2 ${category.colors.cardBorder} glass-effect hover:glow-border`}
                               >
                                 <Link href={`/agent/${agent.id}`}>
                                   <CardHeader>
@@ -300,14 +300,14 @@ export default function Home() {
       </section>
 
       {/* Customer Cases Section */}
-      <section className="py-16 bg-gradient-to-br from-slate-50 to-blue-50">
+      <section className="py-16 bg-gradient-to-br from-slate-900/30 to-blue-900/30">
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold">客户案例</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Case 1 - 融资场景 */}
-            <Card className="hover:shadow-lg transition-shadow border-purple-200">
+            <Card className="glass-effect hover:shadow-diffuse transition-smooth border-purple-500/30">
               <CardHeader>
                 <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center mb-3">
                   <Icons.TrendingUp className="w-6 h-6 text-white" />
@@ -337,7 +337,7 @@ export default function Home() {
             </Card>
 
             {/* Case 2 - 战略决策 */}
-            <Card className="hover:shadow-lg transition-shadow border-blue-200">
+            <Card className="glass-effect hover:shadow-diffuse transition-smooth border-blue-500/30">
               <CardHeader>
                 <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center mb-3">
                   <Icons.Target className="w-6 h-6 text-white" />
@@ -367,7 +367,7 @@ export default function Home() {
             </Card>
 
             {/* Case 3 - 增长与市场 */}
-            <Card className="hover:shadow-lg transition-shadow border-green-200">
+            <Card className="glass-effect hover:shadow-diffuse transition-smooth border-green-500/30">
               <CardHeader>
                 <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center mb-3">
                   <Icons.BarChart className="w-6 h-6 text-white" />
@@ -397,7 +397,7 @@ export default function Home() {
             </Card>
 
             {/* Case 4 - 一人公司 */}
-            <Card className="hover:shadow-lg transition-shadow border-orange-200">
+            <Card className="glass-effect hover:shadow-diffuse transition-smooth border-orange-500/30">
               <CardHeader>
                 <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-orange-600 to-amber-600 flex items-center justify-center mb-3">
                   <Icons.User className="w-6 h-6 text-white" />
@@ -431,7 +431,7 @@ export default function Home() {
 
       {/* Expert Consultation Section */}
       <section className="container pb-16">
-        <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50 max-w-3xl mx-auto">
+        <Card className="border-2 border-purple-500/30 glass-effect max-w-3xl mx-auto">
           <CardHeader className="text-center">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
               <Icons.Users className="w-8 h-8 text-white" />
@@ -455,7 +455,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-8 bg-white/50">
+      <footer className="border-t py-8 glass-effect">
         <div className="container text-center text-sm text-muted-foreground space-y-3">
           <div className="flex justify-center gap-6">
             <a 

@@ -186,9 +186,9 @@ graph TD
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
+    <div className="min-h-screen bg-background">
       {/* 顶部导航 */}
-      <div className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+      <div className="border-b glass-effect sticky top-0 z-10">
         <div className="container py-4">
           <Button
             variant="ghost"
@@ -264,7 +264,7 @@ graph TD
                         <FileText className="w-4 h-4 text-blue-600" />
                         <span>AI顾问输出</span>
                       </div>
-                      <Card className="bg-white">
+                      <Card className="glass-effect">
                         <CardContent className="p-6">
                           <div className="prose prose-sm max-w-none">
                             <Streamdown>{caseItem.outputPreview}</Streamdown>

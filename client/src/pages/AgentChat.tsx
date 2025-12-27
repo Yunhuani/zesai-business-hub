@@ -523,9 +523,9 @@ export default function AgentChat() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white">
+    <div className="flex flex-col h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-white sticky top-0 z-10 flex-shrink-0">
+      <header className="border-b glass-effect sticky top-0 z-10 flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
@@ -538,8 +538,8 @@ export default function AgentChat() {
                 <IconComponent className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold">{agent.name}</h1>
-                <p className="text-sm text-muted-foreground">{agent.description}</p>
+                <h1 className="text-lg md:text-xl font-bold">{agent.name}</h1>
+                <p className="text-sm text-muted-foreground hidden md:block">{agent.description}</p>
               </div>
             </div>
           </div>
@@ -556,7 +556,7 @@ export default function AgentChat() {
                 }}
               >
                 <Icons.Plus className="w-4 h-4" />
-                开始新对话
+                <span className="hidden sm:inline">开始新对话</span>
               </Button>
             )}
             {/* PDF/PPT导出按钮已移至消息内容下方 */}
@@ -605,7 +605,7 @@ export default function AgentChat() {
                 {/* 临时欢迎消息（在数据库保存完成前显示） */}
                 {tempWelcomeMessage && (
                   <div className="flex justify-start">
-                    <div className="max-w-[90%] bg-gray-50 border rounded-lg p-4 text-sm">
+                    <div className="max-w-[90%] glass-effect rounded-lg p-3 md:p-4 text-sm md:text-base">
                       <EnhancedMessage content={tempWelcomeMessage} />
                     </div>
                   </div>
@@ -616,10 +616,10 @@ export default function AgentChat() {
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[90%] rounded-lg p-4 text-sm ${
+                      className={`max-w-[90%] rounded-lg p-3 md:p-4 text-sm md:text-base ${
                         msg.role === "user"
                           ? "bg-gradient-to-br from-blue-600 to-purple-600 text-white"
-                          : "bg-gray-50 border"
+                          : "glass-effect"
                       }`}
                     >
                       {msg.role === "assistant" ? (
@@ -649,7 +649,7 @@ export default function AgentChat() {
               {/* 临时用户消息（立即显示） */}
               {tempUserMessage && (
                 <div className="flex justify-end">
-                  <div className="max-w-[90%] rounded-lg p-4 text-sm bg-gradient-to-br from-blue-600 to-purple-600 text-white">
+                  <div className="max-w-[90%] rounded-lg p-3 md:p-4 text-sm md:text-base bg-gradient-to-br from-blue-600 to-purple-600 text-white">
                     <p className="whitespace-pre-wrap">{tempUserMessage}</p>
                   </div>
                 </div>
@@ -659,7 +659,7 @@ export default function AgentChat() {
               {/* Streaming message */}
               {isStreaming && streamingMessage && (
                 <div className="flex justify-start">
-                  <div className="max-w-[90%] bg-gray-50 border rounded-lg p-4 text-sm">
+                  <div className="max-w-[90%] glass-effect rounded-lg p-3 md:p-4 text-sm md:text-base">
                     <EnhancedMessage content={streamingMessage} />
                   </div>
                 </div>
@@ -668,8 +668,8 @@ export default function AgentChat() {
             )}
             {sendMessage.isPending && !isStreaming && (
               <div className="flex justify-start">
-                <div className="bg-gray-50 border rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className="glass-effect rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-gray-400">
                     <span className="font-medium">Zenith AI</span>
                     <span>正在思考</span>
                     <span className="inline-flex">
@@ -687,9 +687,9 @@ export default function AgentChat() {
       </div>
 
       {/* Input area - fixed at bottom */}
-      <div className="border-t bg-white flex-shrink-0">
+      <div className="border-t glass-effect flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex gap-2">
+          <div className="flex gap-1.5 sm:gap-2">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -702,6 +702,7 @@ export default function AgentChat() {
                   size="icon"
                   onClick={handleFileUpload}
                   title="上传文档"
+                  className="h-10 sm:h-12 w-10 sm:w-12"
                 >
                   <Icons.Paperclip className="w-4 h-4" />
                 </Button>
@@ -711,19 +712,19 @@ export default function AgentChat() {
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   disabled={!isAuthenticated || sendMessage.isPending || !conversationId}
-                  className="flex-1 h-12"
+                  className="flex-1 h-10 sm:h-12 text-sm sm:text-base"
                 />
                 <Button
                   onClick={handleSendMessage}
                   disabled={!isAuthenticated || !message.trim() || sendMessage.isPending || !conversationId}
-                  className="gap-2"
+                  className="gap-2 h-10 sm:h-12 px-3 sm:px-4"
                 >
                   {sendMessage.isPending ? (
                     <Icons.Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <Icons.Send className="w-4 h-4" />
                   )}
-                  发送
+                  <span className="hidden sm:inline">发送</span>
                 </Button>
           </div>
           <p className="text-xs text-gray-500 text-center mt-2">AI 也可能会犯错，请核查重要信息。</p>
