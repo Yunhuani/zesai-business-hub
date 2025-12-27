@@ -59,6 +59,9 @@ export default function Credits() {
   );
   const [paymentFormHtml, setPaymentFormHtml] = useState<string>("");
   
+  // 获取支付配置 - 必须在所有条件判断之前调用
+  const { data: paymentConfig } = trpc.payment.getPaymentConfig.useQuery();
+  
   // 检查用户是否为免费版
   const userPlan = subscriptionData?.subscription?.plan || "free";
   const isFreeUser = userPlan === "free";
@@ -109,9 +112,6 @@ export default function Credits() {
 
   // 检测是否在微信内置浏览器
   const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
-  
-  // 获取支付配置
-  const { data: paymentConfig } = trpc.payment.getPaymentConfig.useQuery();
   const wechatPayEnabled = paymentConfig?.wechatPayEnabled ?? false;
 
   const handlePurchase = (packId: string, price: number, credits: number) => {
