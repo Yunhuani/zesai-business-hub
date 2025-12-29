@@ -5,6 +5,8 @@ import { createWechatH5Payment, createWechatJsapiPayment, queryWechatPayment } f
 import { createOrder, getOrderByOutTradeNo, updateOrderStatus, createOrUpdateSubscription } from "../db";
 import { TRPCError } from "@trpc/server";
 import { ENV } from "../_core/env";
+import { createStripeCheckoutSession } from "../_core/stripe";
+import { STRIPE_SUBSCRIPTION_PLANS, STRIPE_CREDIT_PACKS, getStripeProductMetadata } from "../stripeProducts";
 
 /**
  * 套餐配置
@@ -57,7 +59,7 @@ export const paymentRouter = router({
         planId: z.string(),
         amount: z.number(),
         credits: z.number().optional(),
-        paymentMethod: z.enum(["alipay", "wechat"]).default("alipay"),
+        paymentMethod: z.enum(["alipay", "wechat", "stripe"]).default("alipay"),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -95,7 +97,55 @@ export const paymentRouter = router({
       });
       
       try {
-        if (paymentMethod === "wechat") {
+        if (paymentMethod === "stripe") {
+          // Stripe支付（国际用户）
+          let stripeAmount: number;
+          let productName: string;
+          let productDescription: string;
+          
+          if (type === "subscription") {
+            const stripePlan = STRIPE_SUBSCRIPTION_PLANS[planId as keyof typeof STRIPE_SUBSCRIPTION_PLANS];
+            if (!stripePlan) {
+              throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid subscription plan" });
+            }
+            stripeAmount = stripePlan.price;
+            productName = `Zenith AI - ${stripePlan.name}`;
+            productDescription = stripePlan.description;
+          } else {
+            const stripePack = STRIPE_CREDIT_PACKS[planId as keyof typeof STRIPE_CREDIT_PACKS];
+            if (!stripePack) {
+              throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid credit pack" });
+            }
+            stripeAmount = stripePack.price;
+            productName = `Zenith AI - ${stripePack.name}`;
+            productDescription = stripePack.description;
+          }
+          
+          const origin = ctx.req.headers.origin || "https://www.zesiai.com";
+          const { checkoutUrl } = await createStripeCheckoutSession({
+            userId: ctx.user.id,
+            userEmail: ctx.user.email || "",
+            userName: ctx.user.name || "",
+            type,
+            planId,
+            amount: stripeAmount,
+            currency: "usd",
+            productName,
+            productDescription,
+            metadata: {
+              ...getStripeProductMetadata(type, planId),
+              out_trade_no: outTradeNo,
+            },
+            successUrl: `${origin}/payment/result?session_id={CHECKOUT_SESSION_ID}`,
+            cancelUrl: `${origin}/pricing`,
+          });
+          
+          return {
+            orderId: outTradeNo,
+            paymentUrl: checkoutUrl,
+            paymentMethod: "stripe",
+          };
+        } else if (paymentMethod === "wechat") {
           // 检查微信支付是否开启
           if (!ENV.wechatPayEnabled) {
             throw new TRPCError({ 

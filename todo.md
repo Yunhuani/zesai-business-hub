@@ -1213,3 +1213,18 @@
 - [x] 修改Credits.tsx页面，移除微信支付检测逻辑
 - [x] 测试支付页面显示效果（只显示支付宝）
 - [x] 创建检查点
+
+
+## Stripe支付集成（国际用户支持）
+- [x] 启用Stripe功能模块（webdev_add_feature）
+- [x] 配置Stripe API密钥（测试模式）
+- [x] 创建美元价格配置（套餐$19/$49/$149）
+- [x] 创建美元积分包配置（$7/$14/$29/$59）
+- [x] 修改Payment.tsx支持Stripe支付
+- [x] 修改Credits.tsx支持Stripe积分充值
+- [x] 配置Stripe Webhook
+- [x] 测试Stripe订阅支付流程
+- [x] 测试Stripe积分包支付流程
+- [x] 验证支付成功后订阅开通
+- [x] 验证支付成功后积分到账
+- [x] 创建检查点

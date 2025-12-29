@@ -110,7 +110,9 @@ export default function Credits() {
     );
   }
 
-  // 微信支付已禁用，统一使用支付宝
+  // 支付方式选择：国内用户使用支付宝，国际用户使用Stripe
+  // 简单判断：如果浏览器语言不是中文，则默认使用Stripe
+  const isInternationalUser = !navigator.language.startsWith('zh');
 
   const handlePurchase = (packId: string, price: number, credits: number) => {
     // 免费版用户不能购买积分包
@@ -119,8 +121,8 @@ export default function Credits() {
       return;
     }
     
-    // 统一使用支付宝支付
-    const paymentMethod = "alipay";
+    // 根据用户地区选择支付方式
+    const paymentMethod = isInternationalUser ? "stripe" : "alipay";
     
     createOrder.mutate({
       type: "credits" as const,

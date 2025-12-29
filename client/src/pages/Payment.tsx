@@ -34,7 +34,7 @@ export default function Payment() {
   const urlParams = new URLSearchParams(location.split('?')[1] || '');
   const orderId = urlParams.get('orderId');
 
-  const [paymentMethod, setPaymentMethod] = useState<"alipay" | "wechat">("alipay");
+  const [paymentMethod, setPaymentMethod] = useState<"alipay" | "wechat" | "stripe">("alipay");
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "creating" | "redirecting" | "failed">("idle");
   const [paymentForm, setPaymentForm] = useState<string>("");
   const formContainerRef = useRef<HTMLDivElement>(null);
@@ -75,7 +75,11 @@ export default function Payment() {
       },
       {
         onSuccess: (data) => {
-          if (data.paymentMethod === "wechat") {
+          if (data.paymentMethod === "stripe") {
+            // For Stripe, open checkout in new tab
+            setPaymentStatus("redirecting");
+            window.open(data.paymentUrl || "", "_blank");
+          } else if (data.paymentMethod === "wechat") {
             // For WeChat Pay, redirect to H5 URL
             setPaymentStatus("redirecting");
             setTimeout(() => {
@@ -145,7 +149,7 @@ export default function Payment() {
               <div className="w-full max-w-md space-y-6">
                 <div className="space-y-4">
                   <Label className="text-base font-semibold">选择支付方式</Label>
-                  <RadioGroup value={paymentMethod} onValueChange={(value: string) => setPaymentMethod(value as "alipay" | "wechat")}>
+                  <RadioGroup value={paymentMethod} onValueChange={(value: string) => setPaymentMethod(value as "alipay" | "wechat" | "stripe")}>
                     <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent" onClick={() => setPaymentMethod("alipay")}>
                       <RadioGroupItem value="alipay" id="alipay" />
                       <Label htmlFor="alipay" className="flex-1 cursor-pointer">
@@ -164,6 +168,22 @@ export default function Payment() {
                       </Label>
                     </div>
                     {/* 微信支付选项已隐藏 - 微信不支持当前业务类型开通H5支付 */}
+                    <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent" onClick={() => setPaymentMethod("stripe")}>
+                      <RadioGroupItem value="stripe" id="stripe" />
+                      <Label htmlFor="stripe" className="flex-1 cursor-pointer">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-purple-50 rounded flex items-center justify-center">
+                            <svg className="w-8 h-8" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+                              <path fill="#635BFF" d="M13.3 11.2c0-.69.57-1 1.49-1a9.84 9.84 0 0 1 4.37 1.13V7.24a11.6 11.6 0 0 0-4.37-.8c-3.56 0-5.94 1.86-5.94 4.97 0 4.85 6.68 4.07 6.68 6.17 0 .81-.71 1.07-1.68 1.07-1.46 0-3.32-.6-4.8-1.4v4.17c1.94.85 3.89 1.22 5.8 1.22 3.65 0 6.17-1.8 6.17-4.96 0-5.22-6.72-4.31-6.72-6.46z"/>
+                            </svg>
+                          </div>
+                          <div>
+                            <div className="font-semibold">Stripe</div>
+                            <div className="text-sm text-muted-foreground">International payment</div>
+                          </div>
+                        </div>
+                      </Label>
+                    </div>
                   </RadioGroup>
                 </div>
 
