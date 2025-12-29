@@ -110,9 +110,7 @@ export default function Credits() {
     );
   }
 
-  // 检测是否在微信内置浏览器
-  const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
-  const wechatPayEnabled = paymentConfig?.wechatPayEnabled ?? false;
+  // 微信支付已禁用，统一使用支付宝
 
   const handlePurchase = (packId: string, price: number, credits: number) => {
     // 免费版用户不能购买积分包
@@ -121,12 +119,8 @@ export default function Credits() {
       return;
     }
     
-    // 如果是微信浏览器但微信支付未开启，使用支付宝
-    const paymentMethod = (isWeChat && wechatPayEnabled) ? "wechat" : "alipay";
-    
-    if (isWeChat && !wechatPayEnabled) {
-      toast.info("微信支付审核中，将使用支付宝支付");
-    }
+    // 统一使用支付宝支付
+    const paymentMethod = "alipay";
     
     createOrder.mutate({
       type: "credits" as const,

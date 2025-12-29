@@ -163,25 +163,7 @@ export default function Payment() {
                         </div>
                       </Label>
                     </div>
-                    <div className={`flex items-center space-x-3 border rounded-lg p-4 ${wechatPayEnabled ? 'cursor-pointer hover:bg-accent' : 'cursor-not-allowed opacity-50 bg-muted'}`} onClick={() => wechatPayEnabled && setPaymentMethod("wechat")}>
-                      <RadioGroupItem value="wechat" id="wechat" disabled={!wechatPayEnabled} />
-                      <Label htmlFor="wechat" className={`flex-1 ${wechatPayEnabled ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-green-50 rounded flex items-center justify-center">
-                            <svg className="w-8 h-8" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-                              <path fill="#07C160" d="M1024 512c0 282.8-229.2 512-512 512S0 794.8 0 512 229.2 0 512 0s512 229.2 512 512z"/>
-                              <path fill="#FFF" d="M690.1 377.4c5.9 0 11.8.2 17.6.5-24.4-113.4-151.5-199.4-297.2-199.4-162.1 0-293.6 107.2-293.6 239.4 0 75.4 41.1 136.9 109.5 184.9l-27.4 82.3 95.8-47.9c34.4 6.8 62 13.6 95.8 13.6 9.2 0 18.4-.4 27.4-1.2-5.7-19.4-9-39.7-9-60.8.1-126.2 109.4-228.5 253.5-228.5l27.6 17.1zm-180.5-90.6c20.5 0 34.4 13.6 34.4 34.2 0 20.5-13.9 34.2-34.4 34.2-20.5 0-41.1-13.6-41.1-34.2 0-20.5 20.5-34.2 41.1-34.2zm-191.3 68.4c-20.5 0-41.1-13.6-41.1-34.2 0-20.5 20.5-34.2 41.1-34.2s34.4 13.6 34.4 34.2c0 20.5-13.9 34.2-34.4 34.2zm534.5 211.2c0-102.1-102.1-184.9-218.5-184.9-122.6 0-218.5 82.8-218.5 184.9s95.8 184.9 218.5 184.9c27.4 0 54.8-6.8 82.3-13.6l75.4 41.1-20.5-68.4c54.7-41.2 81.3-88.6 81.3-143.9v-.1zm-287.7-34.2c-13.6 0-27.4-13.6-27.4-27.4 0-13.6 13.6-27.4 27.4-27.4 20.5 0 34.4 13.6 34.4 27.4-.1 13.6-13.9 27.4-34.4 27.4zm150.6 0c-13.6 0-27.4-13.6-27.4-27.4 0-13.6 13.6-27.4 27.4-27.4 20.5 0 34.4 13.6 34.4 27.4 0 13.6-13.9 27.4-34.4 27.4z"/>
-                            </svg>
-                          </div>
-                          <div>
-                            <div className="font-semibold">微信支付</div>
-                            <div className="text-sm text-muted-foreground">
-                              {wechatPayEnabled ? '支持H5支付' : '审核中，暂不可用'}
-                            </div>
-                          </div>
-                        </div>
-                      </Label>
-                    </div>
+                    {/* 微信支付选项已隐藏 - 微信不支持当前业务类型开通H5支付 */}
                   </RadioGroup>
                 </div>
 
