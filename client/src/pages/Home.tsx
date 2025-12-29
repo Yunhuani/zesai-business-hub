@@ -216,7 +216,6 @@ export default function Home() {
               const isOpen = openCategories[category.id];
 
               return (
-                <>
                 <Collapsible
                   key={category.id}
                   open={isOpen}
@@ -294,8 +293,7 @@ export default function Home() {
                     </CollapsibleContent>
                   </Card>
                 </Collapsible>
-              </>
-            );
+              );
             })}
           </div>
         )}
