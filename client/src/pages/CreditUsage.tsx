@@ -90,7 +90,7 @@ export default function CreditUsage() {
       <header className="border-b glass-effect sticky top-0 z-10">
         <div className="container py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <img src={APP_LOGO} alt="泽思AI" className="h-8" />
+            <img src={APP_LOGO} alt="泽思AI" className="h-8 rounded-lg" />
           </Link>
           <div className="flex items-center gap-4">
             {user && (
