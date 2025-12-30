@@ -43,7 +43,7 @@ const AGENT_CATEGORIES = [
     name: "营销与增长",
     icon: "TrendingUp",
     description: "品牌营销、获客增长、营收增长、流量运营",
-    agentNames: ["品牌营销策划师", "流量增长获客专家", "业务增长专家", "抖音爆款操盘手", "小红书种草专家", "视频号私域增长专家"],
+    agentNames: ["品牌营销策划师", "流量增长获客专家", "业务营收增长专家", "抖音爆款操盘手", "小红书种草专家", "视频号私域增长专家"],
     defaultOpen: false,
     colors: {
       gradient: "from-green-600 to-emerald-500",

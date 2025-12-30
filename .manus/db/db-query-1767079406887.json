@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, name, description FROM agents WHERE name LIKE '%业务增长%' OR name LIKE '%业务营收%'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, name, description FROM agents WHERE name LIKE '%业务增长%' OR name LIKE '%业务营收%'",
+  "rows": [
+    {
+      "id": "120008",
+      "name": "业务营收增长专家",
+      "description": "系统化诊断企业增长问题，发现增长瓶颈，设计有效的增长方案，制定执行计划。"
+    },
+    {
+      "id": "150005",
+      "name": "业务增长专家",
+      "description": "专注企业业务增长战略、收入增长模型、商业模式优化和规模化扩张"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tdescription\n120008\t业务营收增长专家\t系统化诊断企业增长问题，发现增长瓶颈，设计有效的增长方案，制定执行计划。\n150005\t业务增长专家\t专注企业业务增长战略、收入增长模型、商业模式优化和规模化扩张\n",
+  "stderr": "",
+  "execution_time_ms": 789
+}
