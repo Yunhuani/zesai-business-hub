@@ -1243,7 +1243,15 @@
 - [x] 创建检查点
 
 ## Checkpoint发布按钮显示问题
-- [ ] 做小改动触发新checkpoint
-- [ ] 创建checkpoint
-- [ ] 确认管理界面显示发布按钮
+- [x] 做小改动触发新checkpoint
+- [x] 创建checkpoint
+- [x] 确认管理界面显示发布按钮
 - [ ] 用户点击发布
+
+## 隐藏Stripe前端支付选项
+- [x] 查找Pricing页面中的Stripe支付入口
+- [x] 查找Credits页面中的Stripe充值入口
+- [x] 隐藏或注释Stripe相关UI组件
+- [x] 保留后端Stripe代码和环境变量
+- [x] 测试套餐页面和积分页面
+- [x] 创建checkpoint

@@ -168,7 +168,8 @@ export default function Payment() {
                       </Label>
                     </div>
                     {/* 微信支付选项已隐藏 - 微信不支持当前业务类型开通H5支付 */}
-                    <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent" onClick={() => setPaymentMethod("stripe")}>
+                    {/* Stripe支付选项已隐藏 - 等待用户决定是否使用Stripe或Lemon Squeezy */}
+                    {/* <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent" onClick={() => setPaymentMethod("stripe")}>
                       <RadioGroupItem value="stripe" id="stripe" />
                       <Label htmlFor="stripe" className="flex-1 cursor-pointer">
                         <div className="flex items-center gap-3">
@@ -183,7 +184,7 @@ export default function Payment() {
                           </div>
                         </div>
                       </Label>
-                    </div>
+                    </div> */}
                   </RadioGroup>
                 </div>
 

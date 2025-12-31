@@ -110,10 +110,7 @@ export default function Credits() {
     );
   }
 
-  // 支付方式选择：国内用户使用支付宝，国际用户使用Stripe
-  // 简单判断：如果浏览器语言不是中文，则默认使用Stripe
-  const isInternationalUser = !navigator.language.startsWith('zh');
-
+  // 支付方式：目前仅支持支付宝（Stripe已隐藏）
   const handlePurchase = (packId: string, price: number, credits: number) => {
     // 免费版用户不能购买积分包
     if (isFreeUser) {
@@ -121,8 +118,8 @@ export default function Credits() {
       return;
     }
     
-    // 根据用户地区选择支付方式
-    const paymentMethod = isInternationalUser ? "stripe" : "alipay";
+    // 强制使用支付宝
+    const paymentMethod = "alipay";
     
     createOrder.mutate({
       type: "credits" as const,
