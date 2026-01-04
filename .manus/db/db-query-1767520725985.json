@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `commissions` (\n  `id` int AUTO_INCREMENT NOT NULL PRIMARY KEY,\n  `referrerId` int NOT NULL,\n  `refereeId` int NOT NULL,\n  `orderId` varchar(64) NOT NULL,\n  `orderAmount` int NOT NULL,\n  `commissionAmount` int NOT NULL,\n  `commissionRate` int NOT NULL DEFAULT 10,\n  `status` enum('pending','confirmed','paid','cancelled') NOT NULL DEFAULT 'pending',\n  `quarter` varchar(10),\n  `confirmedAt` timestamp NULL,\n  `availableAt` timestamp NULL,\n  `paidAt` timestamp NULL,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute CREATE TABLE IF NOT EXISTS `commissions` (\n  `id` int AUTO_INCREMENT NOT NULL PRIMARY KEY,\n  `referrerId` int NOT NULL,\n  `refereeId` int NOT NULL,\n  `orderId` varchar(64) NOT NULL,\n  `orderAmount` int NOT NULL,\n  `commissionAmount` int NOT NULL,\n  `commissionRate` int NOT NULL DEFAULT 10,\n  `status` enum('pending','confirmed','paid','cancelled') NOT NULL DEFAULT 'pending',\n  `quarter` varchar(10),\n  `confirmedAt` timestamp NULL,\n  `availableAt` timestamp NULL,\n  `paidAt` timestamp NULL,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 180
+}

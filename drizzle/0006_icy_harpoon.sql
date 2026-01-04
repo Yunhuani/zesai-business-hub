@@ -1,1 +1,0 @@
-ALTER TABLE `orders` MODIFY COLUMN `plan` varchar(50) NOT NULL;

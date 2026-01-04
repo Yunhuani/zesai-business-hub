@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `systemConfig` (\n  `id` int AUTO_INCREMENT NOT NULL PRIMARY KEY,\n  `key` varchar(100) NOT NULL UNIQUE,\n  `value` text NOT NULL,\n  `description` text,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute CREATE TABLE IF NOT EXISTS `systemConfig` (\n  `id` int AUTO_INCREMENT NOT NULL PRIMARY KEY,\n  `key` varchar(100) NOT NULL UNIQUE,\n  `value` text NOT NULL,\n  `description` text,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 176
+}
