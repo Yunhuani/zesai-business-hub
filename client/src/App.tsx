@@ -26,6 +26,7 @@ import SupportFloatingButton from "./components/SupportFloatingButton";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import About from "./pages/About";
+import ReferralCenter from "./pages/ReferralCenter";
 
 function Router() {
   return (
@@ -54,6 +55,7 @@ function Router() {
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/about" component={About} />
+      <Route path="/referral-center" component={ReferralCenter} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
