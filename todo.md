@@ -1255,3 +1255,51 @@
 - [x] 保留后端Stripe代码和环境变量
 - [x] 测试套餐页面和积分页面
 - [x] 创建checkpoint
+
+
+## C端推广系统（新功能）
+
+### Phase 1: 数据库和后端
+- [x] 创建referrals表（推广关系）
+- [x] 创建commissions表（佣金记录）
+- [x] 创建withdrawals表（提现记录）
+- [x] 创建system_config表（系统配置）
+- [x] users表新增referral_code和commission_balance字段
+- [x] 实现referral.getMyCode接口
+- [x] 实现referral.getMyStats接口
+- [x] 实现referral.getMyReferrals接口
+- [x] 实现referral.getCommissions接口
+- [x] 实现referral.requestWithdrawal接口
+- [x] 实现referral.getWithdrawals接口
+- [x] 修改注册流程（推荐码检测）- registerPatch.ts
+- [x] 修改对话流程（首次对话奖励）- conversationHooks.ts
+- [x] 修改支付流程（佣金记录创建）- paymentHooks.ts
+- [x] 实现定时任务（佣金确认）- scheduledTasks.ts
+- [x] 实现admin.getPendingWithdrawals接口
+- [x] 实现admin.processWithdrawal接口
+- [ ] 编写后端单元测试
+
+### Phase 2: 前端页面
+- [ ] 创### Phase 2: 前端页面
+- [x] 创建ReferralCenter.tsx（推广中心主页）
+- [x] 创建ReferralCodeCard.tsx（邀请码卡片）
+- [x] 创建ReferralStatsCard.tsx（推广数据卡片）
+- [x] 创建ReferralList.tsx（推荐用户列表）
+- [x] 创建CommissionList.tsx（佣金明细列表）
+- [x] 创建WithdrawForm.tsx（提现申请表单）
+- [x] 创建WithdrawalHistory.tsx（提现记录）
+- [ ] 添加/referral路由到App.tsx
+- [ ] 在Header用户菜单添加推广中心入口
+- [ ] 在首页底部添加推广横幅- [ ] 在首页底部添加推广横幅
+
+### Phase 3: 文案和测试
+- [x] 编写推广活动介绍文案 - REFERRAL_CAMPAIGN.md
+- [ ] 完整流程测试（注册→对话→购买→佣金→提现）
+- [ ] 防作弊测试
+- [ ] 边界情况测试
+- [ ] 管理员功能测试
+
+### Phase 4: 发布
+- [x] 创建checkpoint
+- [ ] 验证生产环境
+- [ ] 文档更新

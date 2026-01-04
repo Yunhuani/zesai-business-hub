@@ -13,6 +13,7 @@ import { adminRouter } from "./routers/admin";
 import { supportRouter } from "./routers/support";
 import { passwordResetRouter } from "./routers/passwordReset";
 import { wechatPayCallbackRouter } from "./routers/wechatPayCallback";
+import { referralRouter } from "./routers/referral";
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
@@ -602,6 +603,9 @@ export const appRouter = router({
   
   // Password reset routes
   passwordReset: passwordResetRouter,
+
+  // Referral system routes
+  referral: referralRouter,
 });
 
 export type AppRouter = typeof appRouter;

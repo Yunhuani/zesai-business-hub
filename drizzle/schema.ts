@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { decimal, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -28,6 +28,10 @@ export const users = mysqlTable("users", {
   creditsSubscription: int("creditsSubscription").default(100).notNull(), // Free plan gets 100 credits
   /** Date when subscription credits will reset */
   creditsResetDate: timestamp("creditsResetDate").defaultNow().notNull(),
+  /** User's exclusive referral code */
+  referralCode: varchar("referralCode", { length: 20 }).unique(),
+  /** Commission balance available for withdrawal */
+  commissionBalance: decimal("commissionBalance", { precision: 10, scale: 2 }).default("0.00").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -215,3 +219,91 @@ export const passwordResetTokens = mysqlTable("passwordResetTokens", {
 
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;
+
+/**
+ * System config table - stores configurable system settings
+ */
+export const systemConfig = mysqlTable("systemConfig", {
+  id: int("id").autoincrement().primaryKey(),
+  key: varchar("key", { length: 100 }).notNull().unique(), // e.g., "commission_rate"
+  value: text("value").notNull(), // JSON string
+  description: text("description"), // Description of the config
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SystemConfig = typeof systemConfig.$inferSelect;
+export type InsertSystemConfig = typeof systemConfig.$inferInsert;
+
+/**
+ * Referrals table - stores referral relationships between users
+ */
+export const referrals = mysqlTable("referrals", {
+  id: int("id").autoincrement().primaryKey(),
+  referrerId: int("referrerId").notNull(), // 推荐人ID
+  refereeId: int("refereeId").notNull().unique(), // 被推荐人ID（每个用户只能被推荐一次）
+  referralCode: varchar("referralCode", { length: 20 }).notNull(), // 邀请码
+  referrerCreditsRewarded: int("referrerCreditsRewarded").default(0).notNull(), // 推荐人已获得积分
+  refereeCreditsRewarded: int("refereeCreditsRewarded").default(0).notNull(), // 被推荐人已获得积分
+  status: mysqlEnum("status", ["pending", "completed"]).default("pending").notNull(), // pending=待完成首次对话，completed=已完成
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Referral = typeof referrals.$inferSelect;
+export type InsertReferral = typeof referrals.$inferInsert;
+
+/**
+ * Commissions table - stores referral commission records
+ */
+export const commissions = mysqlTable("commissions", {
+  id: int("id").autoincrement().primaryKey(),
+  referrerId: int("referrerId").notNull(), // 推荐人ID
+  refereeId: int("refereeId").notNull(), // 被推荐人ID
+  orderId: varchar("orderId", { length: 64 }).notNull(), // 关联订单号
+  orderAmount: decimal("orderAmount", { precision: 10, scale: 2 }).notNull(), // 订单金额
+  commissionAmount: decimal("commissionAmount", { precision: 10, scale: 2 }).notNull(), // 佣金金额
+  commissionRate: decimal("commissionRate", { precision: 3, scale: 2 }).default("0.10").notNull(), // 佣金比例（0.10=10%）
+  status: mysqlEnum("status", ["pending", "confirmed", "paid", "cancelled"]).default("pending").notNull(),
+  // pending=冻结中（7天内）
+  // confirmed=已确认（7天后，可提现）
+  // paid=已支付
+  // cancelled=已取消（用户退款）
+  quarter: varchar("quarter", { length: 10 }), // 结算季度（如"2025-Q1"）
+  confirmedAt: timestamp("confirmedAt"), // 确认时间（7天后）
+  availableAt: timestamp("availableAt"), // 可提现时间（confirmed_at + 3个月）
+  paidAt: timestamp("paidAt"), // 支付时间
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Commission = typeof commissions.$inferSelect;
+export type InsertCommission = typeof commissions.$inferInsert;
+
+/**
+ * Withdrawals table - stores user withdrawal requests
+ */
+export const withdrawals = mysqlTable("withdrawals", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(), // 用户ID
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(), // 提现金额
+  method: mysqlEnum("method", ["bank"]).default("bank").notNull(), // 提现方式（仅支持银行卡）
+  bankName: varchar("bankName", { length: 100 }).notNull(), // 银行名称
+  bankBranch: varchar("bankBranch", { length: 200 }).notNull(), // 开户行
+  bankAccount: varchar("bankAccount", { length: 50 }).notNull(), // 银行卡号
+  realName: varchar("realName", { length: 50 }).notNull(), // 真实姓名
+  idCard: varchar("idCard", { length: 18 }), // 身份证号
+  status: mysqlEnum("status", ["pending", "processing", "completed", "rejected"]).default("pending").notNull(),
+  // pending=待处理
+  // processing=处理中
+  // completed=已完成
+  // rejected=已拒绝
+  quarter: varchar("quarter", { length: 10 }), // 结算季度
+  adminNote: text("adminNote"), // 管理员备注
+  completedAt: timestamp("completedAt"), // 完成时间
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Withdrawal = typeof withdrawals.$inferSelect;
+export type InsertWithdrawal = typeof withdrawals.$inferInsert;
