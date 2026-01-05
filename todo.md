@@ -1343,3 +1343,36 @@
 ## 套餐页面文案修改
 - [x] 修改免费版套餐：“对话历史保留7天” → “少量对话时长”
 - [ ] 创建checkpoint
+
+
+## 历史记录功能修复
+- [ ] 修复AgentChat路由参数解析bug（区分/agent/:id和/conversation/:id）
+- [ ] 创建历史记录列表页面（/history）
+- [ ] 添加首页Header历史记录入口按钮
+- [ ] 添加对话页面历史对话下拉菜单
+- [ ] Preview环境测试所有功能
+- [ ] 用户验证后创建检查点
+
+
+## 历史记录功能修复
+- [x] 修复AgentChat路由参数解析bug（区分/agent/:id和/conversation/:id）
+- [x] 创建历史记录列表页面（/history）
+- [x] 添加首页Header历史记录入口按钮
+- [x] 添加对话页面历史对话下拉菜单
+- [x] Preview环境测试所有功能
+- [ ] 用户验证后创建检查点
+- [x] 全站时间格式统一为北京时间（UTC+8）
+
+- [x] 生成透明背景的logo图片
+- [x] 替换网站logo文件
+- [x] 验证logo显示效果
+
+## Logo和Favicon透明背景修复（2026-01-05）
+- [x] 生成透明背景的logo图片（使用用户提供的IMG_3874.PNG）
+- [x] 生成不同尺寸的favicon文件（16x16, 32x32, 192x192）
+- [x] 生成favicon.ico文件
+- [x] 替换首页Header logo（logo-transparent.png）
+- [x] 替换所有favicon文件
+- [x] 验证浏览器标签页图标显示效果
+- [x] 验证首页Header logo显示效果
+- [x] 创建检查点

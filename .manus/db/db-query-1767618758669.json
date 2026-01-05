@@ -1,0 +1,70 @@
+{
+  "query": "SELECT c.id, c.agentId, c.createdAt, a.name as agentName\nFROM conversations c\nLEFT JOIN agents a ON c.agentId = a.id\nORDER BY c.createdAt ASC\nLIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT c.id, c.agentId, c.createdAt, a.name as agentName\nFROM conversations c\nLEFT JOIN agents a ON c.agentId = a.id\nORDER BY c.createdAt ASC\nLIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "agentId": "1",
+      "createdAt": "2025-11-19 11:22:26",
+      "agentName": "NULL"
+    },
+    {
+      "id": "2",
+      "agentId": "1",
+      "createdAt": "2025-11-19 11:31:11",
+      "agentName": "NULL"
+    },
+    {
+      "id": "3",
+      "agentId": "1",
+      "createdAt": "2025-11-19 11:32:23",
+      "agentName": "NULL"
+    },
+    {
+      "id": "4",
+      "agentId": "1",
+      "createdAt": "2025-11-19 11:32:43",
+      "agentName": "NULL"
+    },
+    {
+      "id": "5",
+      "agentId": "5",
+      "createdAt": "2025-11-19 11:34:42",
+      "agentName": "NULL"
+    },
+    {
+      "id": "30001",
+      "agentId": "5",
+      "createdAt": "2025-11-20 02:20:47",
+      "agentName": "NULL"
+    },
+    {
+      "id": "60001",
+      "agentId": "1",
+      "createdAt": "2025-11-21 03:35:06",
+      "agentName": "NULL"
+    },
+    {
+      "id": "60002",
+      "agentId": "2",
+      "createdAt": "2025-11-21 03:35:21",
+      "agentName": "NULL"
+    },
+    {
+      "id": "90001",
+      "agentId": "1",
+      "createdAt": "2025-11-21 08:37:05",
+      "agentName": "NULL"
+    },
+    {
+      "id": "120001",
+      "agentId": "2",
+      "createdAt": "2025-11-24 12:12:55",
+      "agentName": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tagentId\tcreatedAt\tagentName\n1\t1\t2025-11-19 11:22:26\tNULL\n2\t1\t2025-11-19 11:31:11\tNULL\n3\t1\t2025-11-19 11:32:23\tNULL\n4\t1\t2025-11-19 11:32:43\tNULL\n5\t5\t2025-11-19 11:34:42\tNULL\n30001\t5\t2025-11-20 02:20:47\tNULL\n60001\t1\t2025-11-21 03:35:06\tNULL\n60002\t2\t2025-11-21 03:35:21\tNULL\n90001\t1\t2025-11-21 08:37:05\tNULL\n120001\t2\t2025-11-24 12:12:55\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 68
+}

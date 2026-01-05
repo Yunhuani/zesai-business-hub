@@ -152,6 +152,7 @@ export async function getUserConversations(userId: number) {
   const db = await getDb();
   if (!db) return [];
   const { conversations, agents } = await import("../drizzle/schema");
+  const { desc } = await import("drizzle-orm");
   return db
     .select({
       id: conversations.id,
@@ -165,7 +166,7 @@ export async function getUserConversations(userId: number) {
     .from(conversations)
     .leftJoin(agents, eq(conversations.agentId, agents.id))
     .where(eq(conversations.userId, userId))
-    .orderBy(conversations.updatedAt);
+    .orderBy(desc(conversations.updatedAt));
 }
 
 export async function getLatestConversationByAgent(userId: number, agentId: number) {

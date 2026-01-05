@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import AgentChat from "./pages/AgentChat";
 import History from "./pages/History";
+import ConversationHistory from "./pages/ConversationHistory";
 import Pricing from "./pages/Pricing";
 import Admin from "./pages/Admin";
 import AdminAgents from "./pages/AdminAgents";
@@ -35,7 +36,7 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path="/agent/:id" component={AgentChat} />
       <Route path="/conversation/:id" component={AgentChat} />
-      <Route path="/history" component={History} />
+      <Route path="/history" component={ConversationHistory} />
       <Route path="/pricing" component={Pricing} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin/agents" component={AdminAgents} />

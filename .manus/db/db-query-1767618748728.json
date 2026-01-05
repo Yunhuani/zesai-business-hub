@@ -1,0 +1,9 @@
+{
+  "query": "SELECT c.id as conversationId, c.agentId, c.createdAt, \n       a.id as actualAgentId, a.name as agentName\nFROM conversations c\nLEFT JOIN agents a ON c.agentId = a.id\nWHERE c.createdAt < '2024-12-01'\nORDER BY c.createdAt DESC\nLIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT c.id as conversationId, c.agentId, c.createdAt, \n       a.id as actualAgentId, a.name as agentName\nFROM conversations c\nLEFT JOIN agents a ON c.agentId = a.id\nWHERE c.createdAt < '2024-12-01'\nORDER BY c.createdAt DESC\nLIMIT 10;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 72
+}

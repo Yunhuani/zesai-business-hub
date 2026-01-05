@@ -79,7 +79,14 @@ export default function History() {
                           <CardDescription className="flex items-center gap-2 mt-1">
                             <span>{conv.agentName}</span>
                             <span>•</span>
-                            <span>{new Date(conv.createdAt).toLocaleDateString()}</span>
+                            <span>{new Date(conv.createdAt).toLocaleString('zh-CN', { 
+                              timeZone: 'Asia/Shanghai',
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}</span>
                           </CardDescription>
                         </div>
                         <Icons.ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />

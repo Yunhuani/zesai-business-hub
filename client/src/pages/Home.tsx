@@ -135,6 +135,12 @@ export default function Home() {
                     </Button>
                   </Link>
                 )}
+                <Link href="/history">
+                  <Button variant="outline" className="gap-2">
+                    <Icons.History className="w-4 h-4" />
+                    历史记录
+                  </Button>
+                </Link>
                 <Link href="/pricing">
                   <Button variant="outline" className="gap-2">
                     <Icons.Sparkles className="w-4 h-4" />

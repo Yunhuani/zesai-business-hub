@@ -179,10 +179,24 @@ export default function UserManagement() {
                               {u.creditsPurchased || 0}
                             </TableCell>
                             <TableCell className="text-sm text-muted-foreground">
-                              {new Date(u.createdAt).toLocaleDateString()}
+                              {new Date(u.createdAt).toLocaleString('zh-CN', {
+                                timeZone: 'Asia/Shanghai',
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
                             </TableCell>
                             <TableCell className="text-sm text-muted-foreground">
-                              {new Date(u.lastSignedIn).toLocaleDateString()}
+                              {new Date(u.lastSignedIn).toLocaleString('zh-CN', {
+                                timeZone: 'Asia/Shanghai',
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
                             </TableCell>
                             <TableCell className="text-center">
                               <Button

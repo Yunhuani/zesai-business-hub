@@ -1,6 +1,14 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
@@ -20,8 +28,11 @@ import { trackAgent, AgentEvents } from "@/lib/analytics";
 export default function AgentChat() {
   const params = useParams();
   const [location, setLocation] = useLocation();
-  const agentId = parseInt(params.id || "0");
-  const urlConversationId = location.startsWith('/conversation/') ? parseInt(params.id || "0") : null;
+  
+  // 区分两种路由：/agent/:id 和 /conversation/:id
+  const isConversationRoute = location.startsWith('/conversation/');
+  const agentId = isConversationRoute ? 0 : parseInt(params.id || "0");
+  const urlConversationId = isConversationRoute ? parseInt(params.id || "0") : null;
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   
   // Get initial message from URL query parameter
@@ -69,6 +80,12 @@ export default function AgentChat() {
   const { data: messages, refetch: refetchMessages } = trpc.message.list.useQuery(
     { conversationId: conversationId! },
     { enabled: !!conversationId }
+  );
+
+  // Get all conversations for history dropdown
+  const { data: allConversations } = trpc.conversation.list.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
   );
 
   const scrollToBottom = () => {
@@ -122,7 +139,7 @@ export default function AgentChat() {
         // Only create when we confirmed there's no existing conversation
         createConversation.mutate({
           agentId: agent.id,
-          title: `${agent.name} - ${new Date().toLocaleDateString()}`,
+          title: `${agent.name} - ${new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
         });
       }
       // If latestConversation is undefined, it means query is still loading, wait
@@ -581,21 +598,74 @@ export default function AgentChat() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            {latestConversation && conversationId === latestConversation.id && (
-              <Button
-                variant="ghost"
-                className="gap-2"
-                onClick={() => {
-                  createConversation.mutate({
-                    agentId: agent.id,
-                    title: `${agent.name} - ${new Date().toLocaleDateString()}`,
-                  });
-                }}
-              >
-                <Icons.Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">开始新对话</span>
-              </Button>
+          <div className="flex items-center gap-2">
+            {/* 历史对话下拉菜单 */}
+            {isAuthenticated && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Icons.History className="w-5 h-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
+                  <DropdownMenuLabel>历史对话</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => {
+                      createConversation.mutate({
+                        agentId: agent.id,
+                        title: `${agent.name} - ${new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
+                      });
+                    }}
+                    className="gap-2 cursor-pointer"
+                  >
+                    <Icons.Plus className="w-4 h-4" />
+                    开始新对话
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  {(() => {
+                    const filteredConvs = allConversations?.filter(
+                      (c) => c.agentId === agent.id
+                    ).slice(0, 10);
+                    
+                    if (!filteredConvs || filteredConvs.length === 0) {
+                      return (
+                        <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                          暂无历史对话
+                        </div>
+                      );
+                    }
+                    
+                    return filteredConvs.map((conv) => (
+                      <DropdownMenuItem
+                        key={conv.id}
+                        asChild
+                        className="cursor-pointer"
+                      >
+                        <Link href={`/conversation/${conv.id}`} className="flex flex-col gap-1 py-2">
+                          <div className="font-medium truncate">{conv.title}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(conv.updatedAt).toLocaleString("zh-CN", {
+                              timeZone: 'Asia/Shanghai',
+                              month: "2-digit",
+                              day: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                    ));
+                  })()}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/history" className="gap-2">
+                      <Icons.List className="w-4 h-4" />
+                      查看全部历史
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
             {/* PDF/PPT导出按钮已移至消息内容下方 */}
           </div>
