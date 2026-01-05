@@ -136,6 +136,22 @@ export default function Admin() {
               </Button>
             </CardContent>
           </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setLocation("/admin/analytics")}>
+            <CardHeader>
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center mb-4">
+                <Icons.BarChart3 className="w-6 h-6 text-white" />
+              </div>
+              <CardTitle>数据分析</CardTitle>
+              <CardDescription>支付失败监控和用户访问频次分析</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" className="w-full">
+                <Icons.TrendingUp className="w-4 h-4 mr-2" />
+                查看数据
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

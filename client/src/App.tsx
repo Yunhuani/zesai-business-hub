@@ -10,6 +10,7 @@ import History from "./pages/History";
 import Pricing from "./pages/Pricing";
 import Admin from "./pages/Admin";
 import AdminAgents from "./pages/AdminAgents";
+import AdminAnalytics from "./pages/AdminAnalytics";
 
 import WechatLogin from "./pages/WechatLogin";
 import Payment from "./pages/Payment";
@@ -38,6 +39,7 @@ function Router() {
       <Route path="/pricing" component={Pricing} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin/agents" component={AdminAgents} />
+      <Route path="/admin/analytics" component={AdminAnalytics} />
 
       <Route path="/wechat-login" component={WechatLogin} />
       <Route path="/wechat-callback" component={WechatLogin} />

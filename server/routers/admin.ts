@@ -5,6 +5,7 @@ import { getDb } from "../db";
 import { users, subscriptions } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { addPurchasedCredits, deductCredits } from "../creditsManager";
+import { getFailedOrders, getUserAccessStats } from "../db";
 
 // Admin-only middleware
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -82,4 +83,28 @@ export const adminRouter = router({
         success: true,
       };
     }),
+
+  getFailedOrders: adminProcedure.query(async () => {
+    const failedOrders = await getFailedOrders();
+    const db = await getDb();
+    if (!db) return [];
+    
+    // Enrich with user info
+    const ordersWithUsers = await Promise.all(
+      failedOrders.map(async (order) => {
+        const user = await db.select().from(users).where(eq(users.id, order.userId)).limit(1);
+        return {
+          ...order,
+          user: user[0] || null,
+        };
+      })
+    );
+    
+    return ordersWithUsers;
+  }),
+
+  getUserAccessStats: adminProcedure.query(async () => {
+    const stats = await getUserAccessStats();
+    return stats;
+  }),
 });
