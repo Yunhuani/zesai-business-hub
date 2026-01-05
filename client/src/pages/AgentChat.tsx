@@ -188,7 +188,7 @@ export default function AgentChat() {
       // 后台异步保存欢迎消息到数据库
       sendWelcomeMessage.mutate({
         conversationId: newConversationId,
-        agentId: agentId,
+        agentId: effectiveAgentId,
       });
       
       // 如果有待发送的消息，现在发送

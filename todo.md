@@ -1376,3 +1376,12 @@
 - [x] 验证浏览器标签页图标显示效果
 - [x] 验证首页Header logo显示效果
 - [x] 创建检查点
+
+## 历史记录功能bug修复（2026-01-05 第三次尝试 - 成功）
+- [x] 分析AgentChat.tsx的路由逻辑和问题根源
+- [x] 查看App.tsx中的路由配置
+- [x] 设计正确的修复方案
+- [x] 实施修复（修改第191行：agentId → effectiveAgentId）
+- [x] 测试/agent/:id路由
+- [x] 测试/conversation/:id路由（从历史记录点击对话，成功加载）
+- [x] 创建checkpoint
