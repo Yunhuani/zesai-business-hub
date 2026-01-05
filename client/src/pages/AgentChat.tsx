@@ -62,6 +62,8 @@ export default function AgentChat() {
   const [tempWelcomeMessage, setTempWelcomeMessage] = useState<string | null>(null);
   const [hasShownWelcome, setHasShownWelcome] = useState(false);
   const [tempUserMessage, setTempUserMessage] = useState<string | null>(null);
+  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
+  const waitingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { data: messages, refetch: refetchMessages } = trpc.message.list.useQuery(
     { conversationId: conversationId! },
@@ -83,11 +85,14 @@ export default function AgentChat() {
     }
   }, [streamingMessage, isStreaming]);
   
-  // Cleanup typewriter interval on unmount
+  // Cleanup typewriter interval and waiting timeout on unmount
   useEffect(() => {
     return () => {
       if (typewriterIntervalRef.current) {
         clearInterval(typewriterIntervalRef.current);
+      }
+      if (waitingTimeoutRef.current) {
+        clearTimeout(waitingTimeoutRef.current);
       }
     };
   }, []);
@@ -397,6 +402,11 @@ export default function AgentChat() {
     setIsStreaming(false);
     setStreamingMessage("");
     
+    // 设置300ms延迟，如果还没收到响应才显示"正在思考"
+    waitingTimeoutRef.current = setTimeout(() => {
+      setIsWaitingForResponse(true);
+    }, 300);
+    
     try {
       const response = await fetch("/api/chat/stream", {
         method: "POST",
@@ -443,8 +453,14 @@ export default function AgentChat() {
             try {
               const parsed = JSON.parse(data);
               if (parsed.delta) {
-                // 第一次收到内容时，开启流式显示
+                // 第一次收到内容时，清除等待状态并开启流式显示
                 if (!isStreaming) {
+                  // 清除等待提示
+                  if (waitingTimeoutRef.current) {
+                    clearTimeout(waitingTimeoutRef.current);
+                    waitingTimeoutRef.current = null;
+                  }
+                  setIsWaitingForResponse(false);
                   setIsStreaming(true);
                 }
                 fullContent += parsed.delta;
@@ -469,6 +485,13 @@ export default function AgentChat() {
       setStreamingMessage("");
       setTempUserMessage(null);
       setMessage(userMessage); // Restore message on error
+    } finally {
+      // 确保清除等待状态
+      if (waitingTimeoutRef.current) {
+        clearTimeout(waitingTimeoutRef.current);
+        waitingTimeoutRef.current = null;
+      }
+      setIsWaitingForResponse(false);
     }
   };
 
@@ -666,11 +689,12 @@ export default function AgentChat() {
               )}
             </>
             )}
-            {sendMessage.isPending && !isStreaming && (
+            {/* 正在等待响应提示 */}
+            {isWaitingForResponse && (
               <div className="flex justify-start">
-                  <div className="glass-effect rounded-lg p-4">
+                <div className="glass-effect rounded-lg p-4">
                   <div className="flex items-center gap-2 text-gray-400">
-                    <span className="font-medium">Zenith AI</span>
+                    <span className="font-medium">泽思</span>
                     <span>正在思考</span>
                     <span className="inline-flex">
                       <span className="animate-[bounce_1s_ease-in-out_infinite]" style={{ animationDelay: '0ms' }}>·</span>
