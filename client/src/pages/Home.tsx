@@ -113,7 +113,7 @@ export default function Home() {
       <header className="border-b glass-effect sticky top-0 z-10">
         <div className="container py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/zenith-icon-only.png" alt="泽思AI" className="w-10 h-10 rounded-lg" />
+            <img src="/zenith-icon-only.png" alt="泽思AI" className="w-10 h-10 rounded-xl" />
             <h1 className="text-2xl font-bold">泽思 Zenith AI</h1>
           </div>
           <div className="flex items-center gap-4">
