@@ -28,11 +28,8 @@ import { trackAgent, AgentEvents } from "@/lib/analytics";
 export default function AgentChat() {
   const params = useParams();
   const [location, setLocation] = useLocation();
-  
-  // 区分两种路由：/agent/:id 和 /conversation/:id
-  const isConversationRoute = location.startsWith('/conversation/');
-  const agentId = isConversationRoute ? 0 : parseInt(params.id || "0");
-  const urlConversationId = isConversationRoute ? parseInt(params.id || "0") : null;
+  const agentId = parseInt(params.id || "0");
+  const urlConversationId = location.startsWith('/conversation/') ? parseInt(params.id || "0") : null;
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   
   // Get initial message from URL query parameter
