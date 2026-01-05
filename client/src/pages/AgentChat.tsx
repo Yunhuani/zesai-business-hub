@@ -2,6 +2,14 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import * as Icons from "lucide-react";
@@ -582,6 +590,58 @@ export default function AgentChat() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            {isAuthenticated && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" title="历史对话">
+                    <Icons.Clock className="w-5 h-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-72">
+                  <DropdownMenuLabel>历史对话</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {(() => {
+                    const { data: agentConversations } = trpc.conversation.listByAgent.useQuery(
+                      { agentId: agent.id },
+                      { enabled: isAuthenticated }
+                    );
+                    
+                    if (!agentConversations || agentConversations.length === 0) {
+                      return (
+                        <div className="px-2 py-6 text-center text-sm text-muted-foreground">
+                          暂无历史对话
+                        </div>
+                      );
+                    }
+                    
+                    return (
+                      <>
+                        {agentConversations.slice(0, 10).map((conv) => (
+                          <DropdownMenuItem
+                            key={conv.id}
+                            asChild
+                            className={conversationId === conv.id ? "bg-accent" : ""}
+                          >
+                            <Link href={`/conversation/${conv.id}`} className="flex flex-col items-start cursor-pointer">
+                              <span className="font-medium truncate w-full">{conv.title}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(conv.updatedAt).toLocaleString()}
+                              </span>
+                            </Link>
+                          </DropdownMenuItem>
+                        ))}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link href="/history" className="cursor-pointer text-center justify-center">
+                            查看全部历史
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    );
+                  })()}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             {latestConversation && conversationId === latestConversation.id && (
               <Button
                 variant="ghost"

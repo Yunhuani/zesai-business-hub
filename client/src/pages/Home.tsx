@@ -127,6 +127,11 @@ export default function Home() {
             {isAuthenticated && (
               <>
                 <CreditsDisplay />
+                <Link href="/history">
+                  <Button variant="ghost" size="icon" title="历史记录">
+                    <Icons.History className="w-5 h-5" />
+                  </Button>
+                </Link>
                 {user?.role === "admin" && (
                   <Link href="/admin">
                     <Button variant="outline" className="gap-2">

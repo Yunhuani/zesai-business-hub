@@ -341,6 +341,15 @@ export const appRouter = router({
       const { getLatestConversationByAgent } = await import("./db");
       return getLatestConversationByAgent(ctx.user.id, input.agentId);
     }),
+    listByAgent: protectedProcedure.input((val: unknown) => {
+      if (typeof val === "object" && val !== null && "agentId" in val && typeof val.agentId === "number") {
+        return val as { agentId: number };
+      }
+      throw new Error("Invalid input: expected { agentId: number }");
+    }).query(async ({ ctx, input }) => {
+      const { getConversationsByAgent } = await import("./db");
+      return getConversationsByAgent(ctx.user.id, input.agentId);
+    }),
   }),
 
   // Subscription routes
