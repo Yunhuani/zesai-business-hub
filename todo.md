@@ -1351,3 +1351,13 @@
 - [x] 实现切换历史对话逻辑
 - [x] 代码审查确认功能完整（开发环境登录有bug，在生产环境测试）
 - [ ] 创建checkpoint
+
+
+## 紧急修复：/agent/:id路由崩溃bug
+- [x] 回滚到上一个checkpoint（1bae4c3）
+- [x] 分析问题：原始代码将params.id同时赋给agentId和urlConversationId
+- [x] 重新设计修复方案：使用!isConversationRoute条件赋值
+- [x] 实施修复
+- [x] 测试/agent/:id路由（生产环境正常）
+- [x] 代码逻辑审查确认修复正确（等待部署后测试/conversation/:id）
+- [ ] 创建checkpoint
