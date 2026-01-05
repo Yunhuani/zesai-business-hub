@@ -18,7 +18,7 @@ const plans = [
     features: [
       "专业AI模型咨询",
       "访问核心知识模型",
-      "对话历史保留7天",
+      "少量对话时长",
     ],
     icon: Icons.Gift,
     color: "from-gray-400 to-gray-500",
