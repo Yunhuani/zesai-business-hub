@@ -5,8 +5,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import * as Icons from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
+import { toast } from "sonner";
 
 export default function AdminAnalytics() {
   const [, setLocation] = useLocation();
@@ -19,6 +20,28 @@ export default function AdminAnalytics() {
   const { data: accessStats, isLoading: accessStatsLoading } = trpc.admin.getUserAccessStats.useQuery(undefined, {
     enabled: isAuthenticated && user?.role === "admin",
   });
+
+  const [testingSentry, setTestingSentry] = useState(false);
+  const testSentryMutation = trpc.sentry.testError.useMutation({
+    onSuccess: () => {
+      toast.success("Sentry测试错误已触发", {
+        description: "请前往Sentry后台查看错误报告",
+      });
+      setTestingSentry(false);
+    },
+    onError: (error) => {
+      // 预期会有错误，这是正常的
+      toast.success("Sentry测试完成", {
+        description: `测试错误已发送：${error.message}。请前往Sentry后台查看。`,
+      });
+      setTestingSentry(false);
+    },
+  });
+
+  const handleTestSentry = () => {
+    setTestingSentry(true);
+    testSentryMutation.mutate();
+  };
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -65,6 +88,24 @@ export default function AdminAnalytics() {
             </h1>
           </div>
           <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleTestSentry}
+              disabled={testingSentry}
+            >
+              {testingSentry ? (
+                <>
+                  <Icons.Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  测试中...
+                </>
+              ) : (
+                <>
+                  <Icons.Bug className="w-4 h-4 mr-2" />
+                  测试Sentry
+                </>
+              )}
+            </Button>
             <span className="text-sm text-muted-foreground">管理员: {user.name}</span>
           </div>
         </div>
