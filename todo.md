@@ -1342,7 +1342,7 @@
 
 ## 套餐页面文案修改
 - [x] 修改免费版套餐：“对话历史保留7天” → “少量对话时长”
-- [ ] 创建checkpoint
+- [x] 创建checkpoint
 
 ## 历史记录双入口功能
 - [x] 添加后端接口：conversation.listByAgent（按agentId查询对话列表）
@@ -1350,4 +1350,10 @@
 - [x] 对话页面Header添加历史对话下拉菜单
 - [x] 实现切换历史对话逻辑
 - [x] 代码审查确认功能完整（开发环境登录有bug，在生产环境测试）
+- [x] 创建checkpoint
+
+## 修复历史记录对话加载bug
+- [x] 诊断问题：/conversation/:id路由下params.id被错误当作agentId使用
+- [x] 修复AgentChat.tsx路由逻辑，正确区分agentId和conversationId
+- [x] 测试从历史记录页面点击对话能否正常加载
 - [ ] 创建checkpoint
