@@ -15,6 +15,7 @@ import { InsufficientCreditsDialog } from "@/components/InsufficientCreditsDialo
 import { LoginMethodDialog } from "@/components/LoginMethodDialog";
 import { WeChatBrowserGuide } from "@/components/WeChatBrowserGuide";
 import { isWeChatBrowser } from "@/utils/wechatDetector";
+import { trackAgent, AgentEvents } from "@/lib/analytics";
 
 export default function AgentChat() {
   const params = useParams();
@@ -96,6 +97,13 @@ export default function AgentChat() {
       }
     };
   }, []);
+
+  // 追踪进入对话页面
+  useEffect(() => {
+    if (agent && isAuthenticated) {
+      trackAgent(AgentEvents.AGENT_CONVERSATION_START, agent.id, agent.name);
+    }
+  }, [agent, isAuthenticated]);
 
   // Load conversation from URL if present
   useEffect(() => {
@@ -396,6 +404,13 @@ export default function AgentChat() {
     
     const userMessage = message;
     setMessage("");
+    
+    // 追踪发送消息事件
+    if (agent) {
+      trackAgent(AgentEvents.AGENT_MESSAGE_SEND, agent.id, agent.name, {
+        conversation_id: conversationId,
+      });
+    }
     
     // 立即显示用户消息
     setTempUserMessage(userMessage);

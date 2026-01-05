@@ -22,6 +22,8 @@ import { SmartAssistantSearch } from "@/components/SmartAssistantSearch";
 import { Link } from "wouter";
 import { WeChatBrowserGuide } from "@/components/WeChatBrowserGuide";
 import { isWeChatBrowser } from "@/utils/wechatDetector";
+import { trackConversion, ConversionEvents, trackAgent, AgentEvents } from "@/lib/analytics";
+import { useEffect } from "react";
 
 // Agent分类配置
 const AGENT_CATEGORIES = [
@@ -106,6 +108,11 @@ export default function Home() {
     if (!agents) return [];
     return agents.filter(agent => categoryAgentNames.includes(agent.name));
   };
+
+  // 追踪首页访问
+  useEffect(() => {
+    trackConversion(ConversionEvents.HOME_VISIT);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -270,7 +277,10 @@ export default function Home() {
                                 key={agent.id}
                                 className={`group card-hover-enhanced cursor-pointer border-2 ${category.colors.cardBorder} glass-effect hover:glow-border`}
                               >
-                                <Link href={`/agent/${agent.id}`}>
+                                <Link 
+                                  href={`/agent/${agent.id}`}
+                                  onClick={() => trackAgent(AgentEvents.AGENT_CLICK, agent.id, agent.name)}
+                                >
                                   <CardHeader>
                                     <div className="flex items-start gap-3">
                                       <div className={`w-12 h-12 rounded-xl ${category.colors.iconBg} flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-md`}>

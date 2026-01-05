@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
 import { ExpertConsultationDialog } from "@/components/ExpertConsultationDialog";
+import { trackConversion, ConversionEvents } from "@/lib/analytics";
 
 const plans = [
   {
@@ -96,6 +97,13 @@ export default function Pricing() {
     }
   }, [authLoading, isAuthenticated]);
 
+  // 追踪查看套餐页面
+  useEffect(() => {
+    if (isAuthenticated) {
+      trackConversion(ConversionEvents.VIEW_PRICING);
+    }
+  }, [isAuthenticated]);
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -181,6 +189,11 @@ export default function Pricing() {
                     disabled={isCurrentPlan || plan.isFree}
                     onClick={() => {
                       if (!plan.isFree && !isCurrentPlan) {
+                        trackConversion(ConversionEvents.PAYMENT_START, {
+                          plan_id: plan.id,
+                          plan_name: plan.name,
+                          plan_price: plan.price,
+                        });
                         setLocation(`/payment/${plan.id}`);
                       }
                     }}

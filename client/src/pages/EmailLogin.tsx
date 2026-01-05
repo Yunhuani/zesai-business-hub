@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Loader2, LogIn, UserPlus } from "lucide-react";
 import { Link } from "wouter";
 import { APP_LOGO, APP_TITLE } from "@/const";
+import { trackConversion, ConversionEvents } from "@/lib/analytics";
 
 export default function EmailLogin() {
   const [, setLocation] = useLocation();
@@ -31,10 +32,12 @@ export default function EmailLogin() {
       if (data.token) {
         localStorage.setItem('auth_token', data.token);
       }
+      trackConversion(ConversionEvents.LOGIN_SUCCESS);
       toast.success("登录成功");
       setLocation("/");
     },
     onError: (error) => {
+      trackConversion(ConversionEvents.LOGIN_FAIL);
       toast.error(error.message || "登录失败");
     },
   });
@@ -45,6 +48,7 @@ export default function EmailLogin() {
       if (data.token) {
         localStorage.setItem('auth_token', data.token);
       }
+      trackConversion(ConversionEvents.REGISTER_SUCCESS);
       toast.success("注册成功，已自动登录");
       setLocation("/");
     },

@@ -172,6 +172,14 @@ async function startServer() {
         }
         
         console.log("[Payment] Payment success:", outTradeNo);
+        
+        // Track payment success event (server-side logging)
+        console.log("[Analytics] Payment success:", {
+          order_id: outTradeNo,
+          user_id: order.userId,
+          plan: order.plan,
+          amount: order.amount,
+        });
       }
       
       res.send("success");
