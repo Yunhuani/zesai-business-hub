@@ -1429,5 +1429,12 @@
 - [x] 修复登录页面logo显示错误（改为zenith-icon-only.png）
 - [x] 修复ConversationHistory页面时间显示错误（改为Asia/Shanghai时区）
 - [x] 修复OrderManagement页面时间显示错误（改为Asia/Shanghai时区）
-- [ ] 测试修复后的效果
-- [ ] 创建检查点
+- [x] 测试修复后的效果
+- [x] 创建检查点
+
+## 登录页面logo白边问题修复
+- [x] 检查zenith-icon-only.png图片文件是否本身有白边（确认：白边是设计的一部分）
+- [x] 尝试使用Python裁剪白边（失败：整个画布都被使用）
+- [x] 等待用户提供新的无白边logo图片
+- [x] 替换logo文件并测试显示效果
+- [x] 创建检查点
