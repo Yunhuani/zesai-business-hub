@@ -131,35 +131,22 @@ export default function AgentChat() {
   }, [urlConversationId, isAuthenticated]);
 
   // Load latest conversation or create new one
+  // 加载最近对话（如果存在）
   useEffect(() => {
-    if (agent && isAuthenticated && !conversationId && !urlConversationId) {
-      if (latestConversation) {
-        // Load existing conversation
-        setConversationId(latestConversation.id);
-      } else if (latestConversation === null) {
-        // Only create when we confirmed there's no existing conversation
-        createConversation.mutate({
-          agentId: agent.id,
-          title: `${agent.name} - ${new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
-        });
-      }
-      // If latestConversation is undefined, it means query is still loading, wait
+    if (agent && isAuthenticated && !conversationId && !urlConversationId && latestConversation) {
+      // 只加载已存在的对话，不自动创建新对话
+      setConversationId(latestConversation.id);
     }
   }, [agent, isAuthenticated, conversationId, urlConversationId, latestConversation]);
 
-  // Welcome message is sent automatically when creating a new conversation
-  // No need to send it again when loading existing conversations
-
-  const createConversation = trpc.conversation.create.useMutation({
-    onSuccess: (data) => {
-      const newConversationId = data.insertId as number;
-      setConversationId(newConversationId);
+  // 显示欢迎语（仅前端显示，不保存到数据库）
+  useEffect(() => {
+    if (agent && !hasShownWelcome && !conversationId) {
+      setTempWelcomeMessage(agent.welcomeMessage || "");
+      setHasShownWelcome(true);
       
-      // 如果有欢迎语，立即在前端显示（不等待数据库）
-      if (agent?.welcomeMessage && !hasShownWelcome) {
-        setTempWelcomeMessage(agent.welcomeMessage);
-        setHasShownWelcome(true);
-        // 启动打字机效果
+      // 启动打字机效果
+      if (agent.welcomeMessage) {
         setIsStreaming(true);
         setStreamingMessage("");
         
@@ -185,20 +172,97 @@ export default function AgentChat() {
           }
         }, 30);
       }
+    }
+  }, [agent, hasShownWelcome, conversationId]);
+
+  const createConversation = trpc.conversation.create.useMutation({
+    onSuccess: async (data) => {
+      const newConversationId = data.insertId as number;
+      setConversationId(newConversationId);
       
-      // 后台异步保存欢迎消息到数据库
-      sendWelcomeMessage.mutate({
-        conversationId: newConversationId,
-        agentId: effectiveAgentId,
-      });
+      // 保存欢迎消息到数据库（延迟保存，只在用户发送消息后才保存）
+      if (agent?.welcomeMessage) {
+        await sendWelcomeMessage.mutateAsync({
+          conversationId: newConversationId,
+          agentId: effectiveAgentId,
+        });
+      }
       
       // 如果有待发送的消息，现在发送
       if (pendingMessage) {
-        sendMessage.mutate({
-          conversationId: newConversationId,
-          content: pendingMessage,
-        });
+        // 使用流式API发送消息
+        const userMessage = pendingMessage;
         setPendingMessage(null);
+        setTempUserMessage(userMessage);
+        
+        try {
+          const response = await fetch("/api/chat/stream", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(localStorage.getItem('auth_token') ? {
+                Authorization: `Bearer ${localStorage.getItem('auth_token')}`
+              } : {}),
+            },
+            credentials: "include",
+            body: JSON.stringify({
+              conversationId: newConversationId,
+              content: userMessage,
+            }),
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            if (errorData.error === "INSUFFICIENT_CREDITS") {
+              setShowInsufficientCreditsDialog(true);
+              return;
+            }
+            throw new Error(errorData.error || "Stream failed");
+          }
+          
+          const reader = response.body?.getReader();
+          if (!reader) throw new Error("No reader available");
+          
+          const decoder = new TextDecoder();
+          let fullContent = "";
+          setIsStreaming(true);
+          
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split("\n");
+            
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const data = line.slice(6);
+                if (data === "[DONE]") continue;
+                
+                try {
+                  const parsed = JSON.parse(data);
+                  if (parsed.delta) {
+                    fullContent += parsed.delta;
+                    setStreamingMessage(fullContent);
+                  }
+                } catch (e) {
+                  // Skip invalid JSON
+                }
+              }
+            }
+          }
+          
+          await refetchMessages();
+          setIsStreaming(false);
+          setStreamingMessage("");
+          setTempUserMessage(null);
+        } catch (error: any) {
+          console.error("Stream error:", error);
+          toast.error("发送消息失败: " + error.message);
+          setIsStreaming(false);
+          setStreamingMessage("");
+          setTempUserMessage(null);
+        }
       }
     },
     onError: (error) => {
@@ -413,10 +477,16 @@ export default function AgentChat() {
     }
     
     if (!conversationId) {
-      // Conversation还未创建，将消息加入待发送队列
+      // 第一次发送消息，创建对话
       setPendingMessage(message);
       setMessage("");
       toast.info("正在创建对话...");
+      
+      // 创建对话（会在onSuccess中发送待发送的消息）
+      createConversation.mutate({
+        agentId: agent!.id,
+        title: `${agent!.name} - ${new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
+      });
       return;
     }
     
