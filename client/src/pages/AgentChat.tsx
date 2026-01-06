@@ -45,10 +45,11 @@ export default function AgentChat() {
     { enabled: !!urlConversationId }
   );
   
-  const effectiveAgentId = urlConversationId && conversationData ? conversationData.agentId : agentId;
+  // 使用agentId作为默认值，避免闪现
+  const effectiveAgentId = urlConversationId && conversationData ? conversationData.agentId : (agentId || 0);
   const { data: agent, isLoading: agentLoading } = trpc.agent.getById.useQuery(
     { id: effectiveAgentId },
-    { enabled: !!effectiveAgentId }
+    { enabled: !!effectiveAgentId && effectiveAgentId > 0 }
   );
   
   // Get latest conversation for this agent
@@ -599,6 +600,23 @@ export default function AgentChat() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* 开始新对话按钮 */}
+            {isAuthenticated && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  createConversation.mutate({
+                    agentId: agent.id,
+                    title: `${agent.name} - ${new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
+                  });
+                }}
+                className="gap-2"
+              >
+                <Icons.Plus className="w-4 h-4" />
+                <span className="hidden md:inline">开始新对话</span>
+              </Button>
+            )}
             {/* 历史对话下拉菜单 */}
             {isAuthenticated && (
               <DropdownMenu>
@@ -609,19 +627,6 @@ export default function AgentChat() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
                   <DropdownMenuLabel>历史对话</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => {
-                      createConversation.mutate({
-                        agentId: agent.id,
-                        title: `${agent.name} - ${new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
-                      });
-                    }}
-                    className="gap-2 cursor-pointer"
-                  >
-                    <Icons.Plus className="w-4 h-4" />
-                    开始新对话
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   {(() => {
                     const filteredConvs = allConversations?.filter(
