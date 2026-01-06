@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { APP_TITLE } from "@/const";
 import { trpc } from "@/lib/trpc";
-import * as Icons from "lucide-react";
 import { Clock, MessageSquare, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 
@@ -16,7 +15,7 @@ export default function ConversationHistory() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50">
         <Card className="p-8 max-w-md text-center">
           <h2 className="text-2xl font-bold mb-4">请先登录</h2>
           <p className="text-muted-foreground mb-6">
@@ -28,9 +27,9 @@ export default function ConversationHistory() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       {/* Header */}
-      <header className="glass-effect border-b sticky top-0 z-10">
+      <header className="bg-white/80 backdrop-blur-sm border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Link href="/">
@@ -71,13 +70,8 @@ export default function ConversationHistory() {
                 <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
                   <div className="flex items-start gap-4">
                     {/* Agent Icon */}
-                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white flex-shrink-0">
-                      {/* 使用lucide-react图标 */}
-                      {(() => {
-                        const iconName = conv.agentIcon || "Sparkles";
-                        const IconComponent = (Icons as any)[iconName] || Icons.Sparkles;
-                        return <IconComponent className="w-6 h-6" />;
-                      })()}
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xl flex-shrink-0">
+                      {conv.agentIcon || "🤖"}
                     </div>
 
                     {/* Content */}
@@ -88,19 +82,13 @@ export default function ConversationHistory() {
                         </h3>
                         <span className="text-sm text-muted-foreground flex items-center gap-1 flex-shrink-0">
                           <Clock className="w-4 h-4" />
-                          {(() => {
-                            // 将UTC时间转换为北京时间（UTC+8）
-                            const utcDate = new Date(conv.updatedAt);
-                            const beijingTime = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);
-                            return beijingTime.toLocaleString('zh-CN', {
-                              year: 'numeric',
-                              month: '2-digit',
-                              day: '2-digit',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              hour12: false
-                            }).replace(/\//g, '/').replace(',', '');
-                          })()}
+                          {new Date(conv.updatedAt).toLocaleDateString("zh-CN", {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </span>
                       </div>
                       <p className="text-muted-foreground truncate">

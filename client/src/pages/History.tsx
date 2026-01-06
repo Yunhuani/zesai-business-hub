@@ -29,7 +29,7 @@ export default function History() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b glass-effect sticky top-0 z-10">
         <div className="container py-4 flex items-center justify-between">
@@ -62,9 +62,7 @@ export default function History() {
         ) : conversations && conversations.length > 0 ? (
           <div className="space-y-3">
             {conversations.map((conv) => {
-              // 确保图标组件正确加载，如果找不到则使用Sparkles
-              const iconName = conv.agentIcon || "Sparkles";
-              const IconComponent = Icons[iconName as keyof typeof Icons] as any || Icons.Sparkles;
+              const IconComponent = (Icons as any)[conv.agentIcon || "Sparkles"] || Icons.Sparkles;
               return (
                 <Link key={conv.id} href={`/conversation/${conv.id}`}>
                   <div className="glass-effect rounded-xl p-4 hover:bg-white/[0.08] transition-all cursor-pointer border border-white/[0.05] hover:border-purple-500/30">
@@ -82,19 +80,14 @@ export default function History() {
                           <span>•</span>
                           <span className="flex items-center gap-1">
                             <Icons.Clock className="w-3.5 h-3.5" />
-                            {(() => {
-                              // 将UTC时间转换为北京时间（UTC+8）
-                              const utcDate = new Date(conv.updatedAt);
-                              const beijingTime = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);
-                              return beijingTime.toLocaleString('zh-CN', {
-                                year: 'numeric',
-                                month: '2-digit',
-                                day: '2-digit',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: false
-                              }).replace(/\//g, '/').replace(',', '');
-                            })()}
+                            {new Date(conv.updatedAt).toLocaleString('zh-CN', { 
+                              timeZone: 'Asia/Shanghai',
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
                           </span>
                         </div>
                       </div>
