@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { APP_TITLE } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { Clock, MessageSquare, ArrowLeft } from "lucide-react";
+import { Clock, MessageSquare, ArrowLeft, Target, FileText, TrendingUp, Lightbulb, DollarSign, Sparkles, Briefcase, GraduationCap, Users, Award, BarChart, Megaphone, Tag, Bot } from "lucide-react";
 import { Link } from "wouter";
 
 export default function ConversationHistory() {
@@ -70,8 +70,28 @@ export default function ConversationHistory() {
                 <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
                   <div className="flex items-start gap-4">
                     {/* Agent Icon */}
-                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xl flex-shrink-0">
-                      {conv.agentIcon || "🤖"}
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white flex-shrink-0">
+                      {(() => {
+                        const iconName = conv.agentIcon;
+                        const iconProps = { className: "w-6 h-6" };
+                        switch (iconName) {
+                          case "Target": return <Target {...iconProps} />;
+                          case "FileText": return <FileText {...iconProps} />;
+                          case "TrendingUp": return <TrendingUp {...iconProps} />;
+                          case "Lightbulb": return <Lightbulb {...iconProps} />;
+                          case "DollarSign": return <DollarSign {...iconProps} />;
+                          case "Sparkles": return <Sparkles {...iconProps} />;
+                          case "Briefcase": return <Briefcase {...iconProps} />;
+                          case "GraduationCap": return <GraduationCap {...iconProps} />;
+                          case "Users": return <Users {...iconProps} />;
+                          case "Award": return <Award {...iconProps} />;
+                          case "BarChart": return <BarChart {...iconProps} />;
+                          case "Megaphone": return <Megaphone {...iconProps} />;
+                          case "Tag": return <Tag {...iconProps} />;
+                          case "Bot": return <Bot {...iconProps} />;
+                          default: return <Bot {...iconProps} />;
+                        }
+                      })()}
                     </div>
 
                     {/* Content */}
@@ -82,13 +102,19 @@ export default function ConversationHistory() {
                         </h3>
                         <span className="text-sm text-muted-foreground flex items-center gap-1 flex-shrink-0">
                           <Clock className="w-4 h-4" />
-                          {new Date(conv.updatedAt).toLocaleDateString("zh-CN", {
-                            year: "numeric",
-                            month: "2-digit",
-                            day: "2-digit",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                          {(() => {
+                            // 将UTC时间转换为北京时间（UTC+8）
+                            const utcDate = new Date(conv.updatedAt);
+                            const beijingDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);
+                            return beijingDate.toLocaleDateString("zh-CN", {
+                              year: "numeric",
+                              month: "2-digit",
+                              day: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              timeZone: "UTC"
+                            });
+                          })()}
                         </span>
                       </div>
                       <p className="text-muted-foreground truncate">
