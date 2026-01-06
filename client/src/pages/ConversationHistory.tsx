@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { APP_TITLE } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { Clock, MessageSquare, ArrowLeft } from "lucide-react";
+import { Clock, MessageSquare, ArrowLeft, Target, TrendingUp, Users, Lightbulb, DollarSign, Briefcase, LineChart, MessageCircle, FileText, PieChart, Award, Search, Sparkles, Instagram, Video, Zap } from "lucide-react";
 import { Link } from "wouter";
 
 export default function ConversationHistory() {
@@ -89,7 +89,28 @@ export default function ConversationHistory() {
                   <div className="flex items-start gap-4">
                     {/* Agent Icon */}
                     <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xl flex-shrink-0 shadow-lg">
-                      {conv.agentIcon || "🤖"}
+                      {(() => {
+                        const iconName = conv.agentIcon;
+                        const iconMap: Record<string, React.ReactNode> = {
+                          Target: <Target className="w-6 h-6" />,
+                          TrendingUp: <TrendingUp className="w-6 h-6" />,
+                          Users: <Users className="w-6 h-6" />,
+                          Lightbulb: <Lightbulb className="w-6 h-6" />,
+                          DollarSign: <DollarSign className="w-6 h-6" />,
+                          Briefcase: <Briefcase className="w-6 h-6" />,
+                          LineChart: <LineChart className="w-6 h-6" />,
+                          MessageCircle: <MessageCircle className="w-6 h-6" />,
+                          FileText: <FileText className="w-6 h-6" />,
+                          PieChart: <PieChart className="w-6 h-6" />,
+                          Award: <Award className="w-6 h-6" />,
+                          Search: <Search className="w-6 h-6" />,
+                          Sparkles: <Sparkles className="w-6 h-6" />,
+                          Instagram: <Instagram className="w-6 h-6" />,
+                          Video: <Video className="w-6 h-6" />,
+                          Zap: <Zap className="w-6 h-6" />,
+                        };
+                        return iconMap[iconName] || <MessageCircle className="w-6 h-6" />;
+                      })()}
                     </div>
 
                     {/* Content */}
