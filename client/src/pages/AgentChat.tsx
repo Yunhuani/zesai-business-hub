@@ -38,6 +38,7 @@ export default function AgentChat() {
   // Get initial message from URL query parameter
   const urlParams = new URLSearchParams(window.location.search);
   const initialMessage = urlParams.get('initial');
+  const forceNew = urlParams.get('new') === 'true'; // 强制开始新对话
   
   // Get conversation data if loading from URL
   const { data: conversationData, isLoading: conversationLoading } = trpc.conversation.getById.useQuery(
@@ -72,8 +73,6 @@ export default function AgentChat() {
   const [streamingMessage, setStreamingMessage] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const typewriterIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const [tempWelcomeMessage, setTempWelcomeMessage] = useState<string | null>(null);
-  const [hasShownWelcome, setHasShownWelcome] = useState(false);
   const [tempUserMessage, setTempUserMessage] = useState<string | null>(null);
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const waitingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -130,76 +129,27 @@ export default function AgentChat() {
     }
   }, [urlConversationId, isAuthenticated]);
 
-  // Load latest conversation or create new one
+  // Load latest conversation (do NOT auto-create)
   useEffect(() => {
     if (agent && isAuthenticated && !conversationId && !urlConversationId) {
-      if (latestConversation) {
+      // 如果是forceNew，不加载历史对话，直接显示欢迎语
+      if (!forceNew && latestConversation) {
         // Load existing conversation
         setConversationId(latestConversation.id);
-      } else if (latestConversation === null) {
-        // Only create when we confirmed there's no existing conversation
-        createConversation.mutate({
-          agentId: agent.id,
-          title: `${agent.name} - ${new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
-        });
       }
-      // If latestConversation is undefined, it means query is still loading, wait
+      // Do NOT auto-create conversation here - wait for user to send first message
     }
-  }, [agent, isAuthenticated, conversationId, urlConversationId, latestConversation]);
+  }, [agent, isAuthenticated, conversationId, urlConversationId, latestConversation, forceNew]);
 
-  // Welcome message is sent automatically when creating a new conversation
-  // No need to send it again when loading existing conversations
+  // Show welcome message in frontend only (do NOT save to database until user sends first message)
 
   const createConversation = trpc.conversation.create.useMutation({
     onSuccess: (data) => {
       const newConversationId = data.insertId as number;
       setConversationId(newConversationId);
       
-      // 如果有欢迎语，立即在前端显示（不等待数据库）
-      if (agent?.welcomeMessage && !hasShownWelcome) {
-        setTempWelcomeMessage(agent.welcomeMessage);
-        setHasShownWelcome(true);
-        // 启动打字机效果
-        setIsStreaming(true);
-        setStreamingMessage("");
-        
-        const fullText = agent.welcomeMessage;
-        let currentIndex = 0;
-        
-        if (typewriterIntervalRef.current) {
-          clearInterval(typewriterIntervalRef.current);
-        }
-        
-        typewriterIntervalRef.current = setInterval(() => {
-          if (currentIndex < fullText.length) {
-            const chunkSize = Math.min(2, fullText.length - currentIndex);
-            setStreamingMessage(prev => prev + fullText.slice(currentIndex, currentIndex + chunkSize));
-            currentIndex += chunkSize;
-          } else {
-            if (typewriterIntervalRef.current) {
-              clearInterval(typewriterIntervalRef.current);
-              typewriterIntervalRef.current = null;
-            }
-            setIsStreaming(false);
-            setStreamingMessage("");
-          }
-        }, 30);
-      }
-      
-      // 后台异步保存欢迎消息到数据库
-      sendWelcomeMessage.mutate({
-        conversationId: newConversationId,
-        agentId: effectiveAgentId,
-      });
-      
-      // 如果有待发送的消息，现在发送
-      if (pendingMessage) {
-        sendMessage.mutate({
-          conversationId: newConversationId,
-          content: pendingMessage,
-        });
-        setPendingMessage(null);
-      }
+      // 不立即保存欢迎消息，等待用户消息成功发送后再保存
+      // 这样可以避免创建空记录
     },
     onError: (error) => {
       toast.error("创建对话失败: " + error.message);
@@ -209,15 +159,14 @@ export default function AgentChat() {
 
   const sendWelcomeMessage = trpc.message.sendWelcome.useMutation({
     onSuccess: (data) => {
-      // 欢迎消息已在前端显示，这里只需要刷新messages列表
+      // 欢迎消息已保存，刷新messages列表
       refetchMessages();
-      // 清除临时欢迎消息，使用数据库中的消息
-      setTempWelcomeMessage(null);
     },
   });
 
   const sendMessage = trpc.message.send.useMutation({
     onSuccess: (data) => {
+      // 欢迎消息已在流式API成功后保存，这里不需要重复处理
       // Start typewriter effect
       setIsStreaming(true);
       setStreamingMessage("");
@@ -414,10 +363,19 @@ export default function AgentChat() {
     }
     
     if (!conversationId) {
-      // Conversation还未创建，将消息加入待发送队列
-      setPendingMessage(message);
+      // Conversation还未创建，现在创建并发送消息
+      const userMessage = message;
       setMessage("");
-      toast.info("正在创建对话...");
+      setTempUserMessage(userMessage); // 立即显示用户消息
+      
+      // 创建conversation
+      createConversation.mutate({
+        agentId: effectiveAgentId,
+        title: `${agent?.name || 'AI顾问'} - ${new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
+      });
+      
+      // 将用户消息加入待发送队列
+      setPendingMessage(userMessage);
       return;
     }
     
@@ -505,6 +463,15 @@ export default function AgentChat() {
             }
           }
         }
+      }
+      
+      // 流式响应成功完成，现在保存欢迎消息
+      if (isFirstMessage && conversationId) {
+        await sendWelcomeMessage.mutateAsync({
+          conversationId: conversationId,
+          agentId: effectiveAgentId,
+        });
+        setIsFirstMessage(false);
       }
       
       // Refresh messages after streaming completes
@@ -607,10 +574,15 @@ export default function AgentChat() {
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  createConversation.mutate({
-                    agentId: agent.id,
-                    title: `${agent.name} - ${new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
-                  });
+                  // 清空当前状态，使用React Router导航避免白屏
+                  setConversationId(null);
+                  setMessage("");
+                  setIsFirstMessage(true);
+                  setTempUserMessage(null);
+                  setStreamingMessage("");
+                  setIsStreaming(false);
+                  // 使用setLocation导航，不会整页刷新
+                  setLocation(`/agent/${agent.id}?new=true`);
                 }}
                 className="gap-2"
               >
@@ -651,13 +623,17 @@ export default function AgentChat() {
                         <Link href={`/conversation/${conv.id}`} className="flex flex-col gap-1 py-2">
                           <div className="font-medium truncate">{conv.title}</div>
                           <div className="text-xs text-muted-foreground">
-                            {new Date(conv.updatedAt).toLocaleString("zh-CN", {
-                              timeZone: 'Asia/Shanghai',
-                              month: "2-digit",
-                              day: "2-digit",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {(() => {
+                              // 将UTC时间转换为北京时间（UTC+8）
+                              const utcDate = new Date(conv.updatedAt);
+                              const beijingTime = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);
+                              return beijingTime.toLocaleString('zh-CN', {
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              });
+                            })()}
                           </div>
                         </Link>
                       </DropdownMenuItem>
@@ -707,20 +683,14 @@ export default function AgentChat() {
                   </Button>
                 </div>
               </div>
-            ) : !conversationId ? (
-              <div className="flex items-center justify-center h-[400px]">
-                <div className="text-center text-muted-foreground">
-                  <Icons.Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-                  <p>正在准备对话...</p>
-                </div>
-              </div>
             ) : (
+              // 直接显示对话界面（包括欢迎语）
               <>
-                {/* 临时欢迎消息（在数据库保存完成前显示） */}
-                {tempWelcomeMessage && (
+                {/* 欢迎消息：如果没有conversation或没有历史消息，显示欢迎语 */}
+                {agent?.welcomeMessage && (!conversationId || (messages && messages.length === 0)) && (
                   <div className="flex justify-start">
                     <div className="max-w-[90%] glass-effect rounded-lg p-3 md:p-4 text-sm md:text-base">
-                      <EnhancedMessage content={tempWelcomeMessage} />
+                      <EnhancedMessage content={agent.welcomeMessage} />
                     </div>
                   </div>
                 )}
