@@ -3,31 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { APP_TITLE } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { Clock, MessageSquare, ArrowLeft, Target, TrendingUp, Users, Lightbulb, DollarSign, Briefcase, GraduationCap, Compass } from "lucide-react";
+import { Clock, MessageSquare, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
-
-// 根据Agent名称返回对应的图标
-const getAgentIcon = (agentName: string) => {
-  const iconMap: Record<string, React.ReactNode> = {
-    "战略规划专家": <Target className="w-6 h-6" />,
-    "融资BP与路演": <TrendingUp className="w-6 h-6" />,
-    "竞品分析专家": <Users className="w-6 h-6" />,
-    "商业模式设计": <Lightbulb className="w-6 h-6" />,
-    "一人公司顾问": <Briefcase className="w-6 h-6" />,
-    "品牌营销策划师": <MessageSquare className="w-6 h-6" />,
-    "获客增长专家": <TrendingUp className="w-6 h-6" />,
-    "业务营收增长专家": <DollarSign className="w-6 h-6" />,
-    "小红书/抖音/视频号运营专家": <MessageSquare className="w-6 h-6" />,
-    "股权架构师": <Users className="w-6 h-6" />,
-    "薪酬绩效专家": <DollarSign className="w-6 h-6" />,
-    "OKR目标管理教练": <Target className="w-6 h-6" />,
-    "大类资产投资顾问": <DollarSign className="w-6 h-6" />,
-    "职业路径规划师": <GraduationCap className="w-6 h-6" />,
-    "高考专业规划师": <GraduationCap className="w-6 h-6" />,
-    "创业商机顾问": <Compass className="w-6 h-6" />,
-  };
-  return iconMap[agentName] || <Target className="w-6 h-6" />;
-};
 
 export default function ConversationHistory() {
   const { user, isAuthenticated } = useAuth();
@@ -39,14 +16,16 @@ export default function ConversationHistory() {
   // 转换为北京时间（UTC+8）
   const formatBeijingTime = (dateString: string) => {
     const date = new Date(dateString);
+    const utcTime = date.getTime();
+    const beijingTime = new Date(utcTime + (8 * 60 * 60 * 1000));
     
-    return date.toLocaleString("zh-CN", {
+    return beijingTime.toLocaleDateString("zh-CN", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
-      timeZone: "Asia/Shanghai"
+      timeZone: "UTC"
     });
   };
 
@@ -109,8 +88,8 @@ export default function ConversationHistory() {
                 <Card className="p-6 hover:shadow-xl hover:shadow-purple-500/10 transition-all cursor-pointer bg-slate-900/50 backdrop-blur-sm border-slate-800 hover:border-purple-500/50">
                   <div className="flex items-start gap-4">
                     {/* Agent Icon */}
-                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white flex-shrink-0 shadow-lg">
-                      {getAgentIcon(conv.agentName)}
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xl flex-shrink-0 shadow-lg">
+                      {conv.agentIcon || "🤖"}
                     </div>
 
                     {/* Content */}

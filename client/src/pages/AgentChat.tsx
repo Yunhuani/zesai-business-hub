@@ -433,8 +433,7 @@ export default function AgentChat() {
   //   }
   // }, [authLoading, isAuthenticated]);
 
-  // 加载中状态：包括认证加载、agent加载、或者在conversation路由下等待conversationData
-  if (authLoading || agentLoading || (urlConversationId && !conversationData && effectiveAgentId === 0)) {
+  if (authLoading || agentLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -442,8 +441,7 @@ export default function AgentChat() {
     );
   }
 
-  // 只有在确定加载完成后才显示错误
-  if (!agent && effectiveAgentId > 0) {
+  if (!agent) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -678,7 +676,7 @@ export default function AgentChat() {
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  // 清空所有相关状态，但不立即创建对话
+                  // 清空所有相关状态
                   setConversationId(null);
                   setHasShownWelcome(false);
                   setTempWelcomeMessage(null);
@@ -687,8 +685,11 @@ export default function AgentChat() {
                   setIsStreaming(false);
                   setMessage("");
                   
-                  // 不再自动创建对话，等待用户发送第一条消息时才创建
-                  toast.success("已清空当前对话，发送消息开始新对话");
+                  // 创建新对话
+                  createConversation.mutate({
+                    agentId: agent.id,
+                    title: `${agent.name} - ${new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
+                  });
                 }}
                 className="gap-2"
               >
@@ -783,6 +784,13 @@ export default function AgentChat() {
                     <Icons.LogIn className="w-4 h-4" />
                     登录开始咨询
                   </Button>
+                </div>
+              </div>
+            ) : !conversationId ? (
+              <div className="flex items-center justify-center h-[400px]">
+                <div className="text-center text-muted-foreground">
+                  <Icons.Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+                  <p>正在准备对话...</p>
                 </div>
               </div>
             ) : (
