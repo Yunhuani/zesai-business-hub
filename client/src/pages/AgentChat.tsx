@@ -569,7 +569,7 @@ export default function AgentChat() {
           </div>
           <div className="flex items-center gap-2">
             {/* 开始新对话按钮 */}
-            {isAuthenticated && (
+            {isAuthenticated && agent && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -581,8 +581,10 @@ export default function AgentChat() {
                   setTempUserMessage(null);
                   setStreamingMessage("");
                   setIsStreaming(false);
-                  // 使用setLocation导航，不会整页刷新
-                  setLocation(`/agent/${agent.id}?new=true`);
+                  setPendingMessage(null);
+                  setHasProcessedInitialMessage(false);
+                  // 使用effectiveAgentId确保使用正确的agentId
+                  setLocation(`/agent/${effectiveAgentId}?new=true`);
                 }}
                 className="gap-2"
               >
@@ -796,12 +798,12 @@ export default function AgentChat() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  disabled={!isAuthenticated || sendMessage.isPending || !conversationId}
+                  disabled={!isAuthenticated || sendMessage.isPending}
                   className="flex-1 h-10 sm:h-12 text-sm sm:text-base"
                 />
                 <Button
                   onClick={handleSendMessage}
-                  disabled={!isAuthenticated || !message.trim() || sendMessage.isPending || !conversationId}
+                  disabled={!isAuthenticated || !message.trim() || sendMessage.isPending}
                   className="gap-2 h-10 sm:h-12 px-3 sm:px-4"
                 >
                   {sendMessage.isPending ? (
