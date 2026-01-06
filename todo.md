@@ -1423,3 +1423,11 @@
 - [x] 确保与首页、对话页面的深色主题保持一致
 - [x] 测试修复效果
 - [ ] 创建检查点
+
+
+## 登录页面logo和时间显示修复
+- [x] 修复登录页面logo显示错误（改为zenith-icon-only.png）
+- [x] 修复ConversationHistory页面时间显示错误（改为Asia/Shanghai时区）
+- [x] 修复OrderManagement页面时间显示错误（改为Asia/Shanghai时区）
+- [ ] 测试修复后的效果
+- [ ] 创建检查点

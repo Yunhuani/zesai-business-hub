@@ -102,19 +102,14 @@ export default function ConversationHistory() {
                         </h3>
                         <span className="text-sm text-muted-foreground flex items-center gap-1 flex-shrink-0">
                           <Clock className="w-4 h-4" />
-                          {(() => {
-                            // 将UTC时间转换为北京时间（UTC+8）
-                            const utcDate = new Date(conv.updatedAt);
-                            const beijingDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);
-                            return beijingDate.toLocaleDateString("zh-CN", {
-                              year: "numeric",
-                              month: "2-digit",
-                              day: "2-digit",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              timeZone: "UTC"
-                            });
-                          })()}
+                          {new Date(conv.updatedAt).toLocaleString("zh-CN", {
+                            timeZone: "Asia/Shanghai",
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          })}
                         </span>
                       </div>
                       <p className="text-muted-foreground truncate">

@@ -82,16 +82,13 @@ export default function OrderManagement() {
   };
 
   const formatDate = (date: string | Date) => {
-    // Convert UTC to Beijing time (UTC+8)
-    const utcDate = new Date(date);
-    const beijingTime = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);
-    return beijingTime.toLocaleString("zh-CN", {
+    return new Date(date).toLocaleString("zh-CN", {
+      timeZone: "Asia/Shanghai",
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "Asia/Shanghai",
+      minute: "2-digit"
     });
   };
 
