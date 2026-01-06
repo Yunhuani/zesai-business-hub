@@ -599,6 +599,23 @@ export default function AgentChat() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* 开始新对话按钮 */}
+            {isAuthenticated && agent && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="gap-2"
+                onClick={() => {
+                  createConversation.mutate({
+                    agentId: agent.id,
+                    title: `${agent.name} - ${new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
+                  });
+                }}
+              >
+                <Icons.Plus className="w-4 h-4" />
+                开始新对话
+              </Button>
+            )}
             {/* 历史对话下拉菜单 */}
             {isAuthenticated && (
               <DropdownMenu>
@@ -609,19 +626,6 @@ export default function AgentChat() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
                   <DropdownMenuLabel>历史对话</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => {
-                      createConversation.mutate({
-                        agentId: agent.id,
-                        title: `${agent.name} - ${new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
-                      });
-                    }}
-                    className="gap-2 cursor-pointer"
-                  >
-                    <Icons.Plus className="w-4 h-4" />
-                    开始新对话
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   {(() => {
                     const filteredConvs = allConversations?.filter(
