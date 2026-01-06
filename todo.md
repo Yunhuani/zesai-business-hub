@@ -1392,3 +1392,10 @@
 - [x] 问题2：消除"Agent不存在"闪现 - 优化effectiveAgentId计算逻辑
 - [x] 问题3：历史记录页面整体深色主题 - 重新设计使用glass-effect和渐变样式
 - [x] 问题4：时间显示转换为北京时间 - 所有时间显示使用Asia/Shanghai时区
+
+
+## 历史记录页面Bug修复（用户报告-2026/01/06）
+- [x] 修复Agent图标显示为"Target"文字而不是图标组件（使用lucide-react的SVG图标）
+- [x] 修复时间显示问题（UTC+8转换，显示19:29北京时间）
+- [x] 修复页面背景色问题（使用bg-slate-950深色背景）
+- [x] Agent不存在闪现问题（已在AgentChat.tsx中修复，等待conversationData加载）

@@ -40,7 +40,7 @@ export default function AgentChat() {
   const initialMessage = urlParams.get('initial');
   
   // Get conversation data if loading from URL
-  const { data: conversationData } = trpc.conversation.getById.useQuery(
+  const { data: conversationData, isLoading: conversationLoading } = trpc.conversation.getById.useQuery(
     { id: urlConversationId! },
     { enabled: !!urlConversationId }
   );
@@ -369,7 +369,8 @@ export default function AgentChat() {
   //   }
   // }, [authLoading, isAuthenticated]);
 
-  if (authLoading || agentLoading) {
+  // 在conversation路由下，等待conversationData加载完成
+  if (authLoading || agentLoading || (isConversationRoute && conversationLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
