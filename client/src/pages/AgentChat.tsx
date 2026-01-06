@@ -38,6 +38,7 @@ export default function AgentChat() {
   // Get initial message from URL query parameter
   const urlParams = new URLSearchParams(window.location.search);
   const initialMessage = urlParams.get('initial');
+  const isNewConversation = urlParams.get('new') === '1';
   
   // Get conversation data if loading from URL
   const { data: conversationData, isLoading: conversationLoading } = trpc.conversation.getById.useQuery(
@@ -132,7 +133,13 @@ export default function AgentChat() {
   // Load latest conversation or create new one
   useEffect(() => {
     if (agent && isAuthenticated && !conversationId && !urlConversationId) {
-      if (latestConversation) {
+      // 如果是“开始新对话”操作，强制创建新对话
+      if (isNewConversation) {
+        createConversation.mutate({
+          agentId: agent.id,
+          title: `${agent.name} - ${new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
+        });
+      } else if (latestConversation) {
         // Load existing conversation
         setConversationId(latestConversation.id);
       } else if (latestConversation === null) {
@@ -144,7 +151,7 @@ export default function AgentChat() {
       }
       // If latestConversation is undefined, it means query is still loading, wait
     }
-  }, [agent, isAuthenticated, conversationId, urlConversationId, latestConversation]);
+  }, [agent, isAuthenticated, conversationId, urlConversationId, latestConversation, isNewConversation]);
 
   // Welcome message is sent automatically when creating a new conversation
   // No need to send it again when loading existing conversations
@@ -606,10 +613,8 @@ export default function AgentChat() {
                 size="sm" 
                 className="gap-2"
                 onClick={() => {
-                  createConversation.mutate({
-                    agentId: agent.id,
-                    title: `${agent.name} - ${new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
-                  });
+                  // 添加new=1参数，强制创建新对话
+                  window.location.href = `/agent/${effectiveAgentId}?new=1`;
                 }}
               >
                 <Icons.Plus className="w-4 h-4" />
