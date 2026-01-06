@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM messages \nWHERE id IN (\n  SELECT MIN(m.id) \n  FROM messages m \n  WHERE m.role = 'assistant' \n  GROUP BY m.conversationId\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute DELETE FROM messages \nWHERE id IN (\n  SELECT MIN(m.id) \n  FROM messages m \n  WHERE m.role = 'assistant' \n  GROUP BY m.conversationId\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 77
+}

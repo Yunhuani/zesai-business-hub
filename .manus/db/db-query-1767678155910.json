@@ -1,0 +1,40 @@
+{
+  "query": "SELECT c.id as conv_id, c.title, c.createdAt, COUNT(m.id) as message_count\nFROM conversations c\nLEFT JOIN messages m ON c.id = m.conversationId\nWHERE c.userId = (SELECT id FROM users WHERE email = 'test@example.com' LIMIT 1)\nGROUP BY c.id\nORDER BY c.createdAt DESC\nLIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT c.id as conv_id, c.title, c.createdAt, COUNT(m.id) as message_count\nFROM conversations c\nLEFT JOIN messages m ON c.id = m.conversationId\nWHERE c.userId = (SELECT id FROM users WHERE email = 'test@example.com' LIMIT 1)\nGROUP BY c.id\nORDER BY c.createdAt DESC\nLIMIT 5;",
+  "rows": [
+    {
+      "conv_id": "360002",
+      "title": "战略规划 - 12/2/2025",
+      "createdAt": "2025-12-02 02:28:20",
+      "message_count": "1"
+    },
+    {
+      "conv_id": "330011",
+      "title": "战略规划 - 12/1/2025",
+      "createdAt": "2025-12-01 06:57:28",
+      "message_count": "1"
+    },
+    {
+      "conv_id": "330009",
+      "title": "流量运营专家 - 12/1/2025",
+      "createdAt": "2025-12-01 06:55:40",
+      "message_count": "1"
+    },
+    {
+      "conv_id": "330008",
+      "title": "流量运营专家 - 12/1/2025",
+      "createdAt": "2025-12-01 06:53:07",
+      "message_count": "1"
+    },
+    {
+      "conv_id": "330007",
+      "title": "流量运营专家 - 12/1/2025",
+      "createdAt": "2025-12-01 06:52:51",
+      "message_count": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "conv_id\ttitle\tcreatedAt\tmessage_count\n360002\t战略规划 - 12/2/2025\t2025-12-02 02:28:20\t1\n330011\t战略规划 - 12/1/2025\t2025-12-01 06:57:28\t1\n330009\t流量运营专家 - 12/1/2025\t2025-12-01 06:55:40\t1\n330008\t流量运营专家 - 12/1/2025\t2025-12-01 06:53:07\t1\n330007\t流量运营专家 - 12/1/2025\t2025-12-01 06:52:51\t1\n",
+  "stderr": "",
+  "execution_time_ms": 119
+}

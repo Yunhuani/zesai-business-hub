@@ -141,52 +141,45 @@ export default function AgentChat() {
 
   // 显示欢迎语（仅前端显示，不保存到数据库）
   useEffect(() => {
-    if (agent && !hasShownWelcome && !conversationId) {
-      setTempWelcomeMessage(agent.welcomeMessage || "");
+    // 只在有conversationId且没有消息时显示欢迎语
+    if (conversationId && messages && messages.length === 0 && agent?.welcomeMessage && !hasShownWelcome) {
       setHasShownWelcome(true);
+      setTempWelcomeMessage(agent.welcomeMessage);
       
       // 启动打字机效果
-      if (agent.welcomeMessage) {
-        setIsStreaming(true);
-        setStreamingMessage("");
-        
-        const fullText = agent.welcomeMessage;
-        let currentIndex = 0;
-        
-        if (typewriterIntervalRef.current) {
-          clearInterval(typewriterIntervalRef.current);
-        }
-        
-        typewriterIntervalRef.current = setInterval(() => {
-          if (currentIndex < fullText.length) {
-            const chunkSize = Math.min(2, fullText.length - currentIndex);
-            setStreamingMessage(prev => prev + fullText.slice(currentIndex, currentIndex + chunkSize));
-            currentIndex += chunkSize;
-          } else {
-            if (typewriterIntervalRef.current) {
-              clearInterval(typewriterIntervalRef.current);
-              typewriterIntervalRef.current = null;
-            }
-            setIsStreaming(false);
-            setStreamingMessage("");
-          }
-        }, 30);
+      setIsStreaming(true);
+      setStreamingMessage("");
+      
+      const fullText = agent.welcomeMessage;
+      let currentIndex = 0;
+      
+      if (typewriterIntervalRef.current) {
+        clearInterval(typewriterIntervalRef.current);
       }
+      
+      typewriterIntervalRef.current = setInterval(() => {
+        if (currentIndex < fullText.length) {
+          const chunkSize = Math.min(2, fullText.length - currentIndex);
+          setStreamingMessage(prev => prev + fullText.slice(currentIndex, currentIndex + chunkSize));
+          currentIndex += chunkSize;
+        } else {
+          if (typewriterIntervalRef.current) {
+            clearInterval(typewriterIntervalRef.current);
+            typewriterIntervalRef.current = null;
+          }
+          setIsStreaming(false);
+          setStreamingMessage("");
+        }
+      }, 30);
     }
-  }, [agent, hasShownWelcome, conversationId]);
+  }, [conversationId, messages, agent, hasShownWelcome]);
 
   const createConversation = trpc.conversation.create.useMutation({
     onSuccess: async (data) => {
       const newConversationId = data.insertId as number;
       setConversationId(newConversationId);
       
-      // 保存欢迎消息到数据库（延迟保存，只在用户发送消息后才保存）
-      if (agent?.welcomeMessage) {
-        await sendWelcomeMessage.mutateAsync({
-          conversationId: newConversationId,
-          agentId: effectiveAgentId,
-        });
-      }
+      // 不再保存欢迎消息到数据库，只在前端显示
       
       // 如果有待发送的消息，现在发送
       if (pendingMessage) {
@@ -795,8 +788,8 @@ export default function AgentChat() {
               </div>
             ) : (
               <>
-                {/* 临时欢迎消息（在数据库保存完成前显示） */}
-                {tempWelcomeMessage && (
+                {/* 临时欢迎消息（仅在没有数据库消息且不在打字时显示） */}
+                {messages && messages.length === 0 && tempWelcomeMessage && !isStreaming && (
                   <div className="flex justify-start">
                     <div className="max-w-[90%] glass-effect rounded-lg p-3 md:p-4 text-sm md:text-base">
                       <EnhancedMessage content={tempWelcomeMessage} />
