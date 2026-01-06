@@ -152,6 +152,7 @@ export async function getUserConversations(userId: number) {
   const db = await getDb();
   if (!db) return [];
   const { conversations, agents } = await import("../drizzle/schema");
+  const { desc } = await import("drizzle-orm");
   return db
     .select({
       id: conversations.id,
@@ -165,7 +166,7 @@ export async function getUserConversations(userId: number) {
     .from(conversations)
     .leftJoin(agents, eq(conversations.agentId, agents.id))
     .where(eq(conversations.userId, userId))
-    .orderBy(conversations.updatedAt);
+    .orderBy(desc(conversations.updatedAt));
 }
 
 export async function getLatestConversationByAgent(userId: number, agentId: number) {
@@ -310,6 +311,62 @@ export async function getUserOrders(userId: number) {
   if (!db) return [];
   const { orders } = await import("../drizzle/schema");
   return db.select().from(orders).where(eq(orders.userId, userId)).orderBy(orders.createdAt);
+}
+
+export async function getUserAccessStats(timeRange?: { start: Date; end: Date }) {
+  const db = await getDb();
+  if (!db) return [];
+  const { users, conversations } = await import("../drizzle/schema");
+  const { sql, and, gte, lte, count, desc } = await import("drizzle-orm");
+  
+  // Count conversations as access indicator
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  
+  // Get user access frequency based on conversation creation
+  const result = await db
+    .select({
+      userId: users.id,
+      userName: users.name,
+      userEmail: users.email,
+      totalAccess: count(conversations.id),
+      lastAccess: sql`MAX(${conversations.createdAt})`,
+      firstAccess: sql`MIN(${conversations.createdAt})`,
+    })
+    .from(users)
+    .leftJoin(conversations, eq(users.id, conversations.userId))
+    .groupBy(users.id)
+    .orderBy(desc(count(conversations.id)));
+  
+  return result;
+}
+
+export async function getFailedOrders(timeRange?: { start: Date; end: Date }) {
+  const db = await getDb();
+  if (!db) return [];
+  const { orders } = await import("../drizzle/schema");
+  const { sql, and, gte, lte } = await import("drizzle-orm");
+  
+  // Get orders that are still pending after 30 minutes
+  const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+  
+  let query = db.select().from(orders).where(
+    and(
+      eq(orders.status, "pending"),
+      sql`${orders.createdAt} < ${thirtyMinutesAgo.toISOString()}`
+    )
+  );
+  
+  if (timeRange) {
+    query = db.select().from(orders).where(
+      and(
+        eq(orders.status, "pending"),
+        sql`${orders.createdAt} >= ${timeRange.start.toISOString()}`,
+        sql`${orders.createdAt} <= ${timeRange.end.toISOString()}`
+      )
+    );
+  }
+  
+  return query.orderBy(sql`${orders.createdAt} DESC`);
 }
 
 // Password reset token queries

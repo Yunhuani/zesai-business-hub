@@ -2,6 +2,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
 import { useLocation } from "wouter";
+import { trackCredits, CreditsEvents } from "@/lib/analytics";
+import { useEffect } from "react";
 
 interface InsufficientCreditsDialogProps {
   open: boolean;
@@ -11,6 +13,15 @@ interface InsufficientCreditsDialogProps {
 
 export function InsufficientCreditsDialog({ open, onOpenChange, isFreeUser = false }: InsufficientCreditsDialogProps) {
   const [, setLocation] = useLocation();
+
+  // 追踪积分不足事件
+  useEffect(() => {
+    if (open) {
+      trackCredits(CreditsEvents.CREDITS_INSUFFICIENT, 0, {
+        is_free_user: isFreeUser ? 1 : 0,
+      });
+    }
+  }, [open, isFreeUser]);
 
   const handleUpgrade = () => {
     onOpenChange(false);

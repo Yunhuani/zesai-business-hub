@@ -7,6 +7,7 @@ import * as Icons from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
+import { trackCredits, CreditsEvents } from "@/lib/analytics";
 
 const CREDIT_PACKS = [
   {
@@ -121,6 +122,13 @@ export default function Credits() {
     // 强制使用支付宝
     const paymentMethod = "alipay";
     
+    // 追踪积分充值事件
+    trackCredits(CreditsEvents.CREDITS_RECHARGE, credits, {
+      pack_id: packId,
+      price: price,
+      payment_method: paymentMethod,
+    });
+
     createOrder.mutate({
       type: "credits" as const,
       planId: packId,

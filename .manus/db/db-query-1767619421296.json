@@ -1,0 +1,25 @@
+{
+  "query": "SELECT id, name, icon FROM agents WHERE name IN ('战略规划', '职业路径规划师') OR icon IN ('Target', 'Briefcase');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, name, icon FROM agents WHERE name IN ('战略规划', '职业路径规划师') OR icon IN ('Target', 'Briefcase');",
+  "rows": [
+    {
+      "id": "120001",
+      "name": "战略规划",
+      "icon": "Target"
+    },
+    {
+      "id": "120003",
+      "name": "竞品分析专家",
+      "icon": "Target"
+    },
+    {
+      "id": "120014",
+      "name": "职业路径规划师",
+      "icon": "Briefcase"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\ticon\n120001\t战略规划\tTarget\n120003\t竞品分析专家\tTarget\n120014\t职业路径规划师\tBriefcase\n",
+  "stderr": "",
+  "execution_time_ms": 62
+}

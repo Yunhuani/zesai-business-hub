@@ -66,6 +66,11 @@ async function startServer() {
       const isValid = verifyAlipayCallback(req.body);
       if (!isValid) {
         console.error("[Payment] Invalid signature");
+        console.log("[Analytics] Payment callback failed:", {
+          reason: "invalid_signature",
+          out_trade_no: req.body.out_trade_no,
+          timestamp: new Date().toISOString(),
+        });
         return res.status(400).send("fail");
       }
       
@@ -77,6 +82,11 @@ async function startServer() {
       const order = await getOrderByOutTradeNo(outTradeNo);
       if (!order) {
         console.error("[Payment] Order not found:", outTradeNo);
+        console.log("[Analytics] Payment callback failed:", {
+          reason: "order_not_found",
+          out_trade_no: outTradeNo,
+          timestamp: new Date().toISOString(),
+        });
         return res.status(404).send("fail");
       }
       
@@ -172,6 +182,14 @@ async function startServer() {
         }
         
         console.log("[Payment] Payment success:", outTradeNo);
+        
+        // Track payment success event (server-side logging)
+        console.log("[Analytics] Payment success:", {
+          order_id: outTradeNo,
+          user_id: order.userId,
+          plan: order.plan,
+          amount: order.amount,
+        });
       }
       
       res.send("success");

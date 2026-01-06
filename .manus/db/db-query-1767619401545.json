@@ -1,0 +1,110 @@
+{
+  "query": "SELECT id, name, icon FROM agents ORDER BY id LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, name, icon FROM agents ORDER BY id LIMIT 20;",
+  "rows": [
+    {
+      "id": "120001",
+      "name": "战略规划",
+      "icon": "Target"
+    },
+    {
+      "id": "120002",
+      "name": "融资BP与路演",
+      "icon": "FileText"
+    },
+    {
+      "id": "120003",
+      "name": "竞品分析专家",
+      "icon": "Target"
+    },
+    {
+      "id": "120004",
+      "name": "商业模式设计",
+      "icon": "Layers"
+    },
+    {
+      "id": "120005",
+      "name": "一人公司顾问",
+      "icon": "User"
+    },
+    {
+      "id": "120006",
+      "name": "品牌营销策划师",
+      "icon": "Megaphone"
+    },
+    {
+      "id": "120007",
+      "name": "流量增长获客专家",
+      "icon": "TrendingUp"
+    },
+    {
+      "id": "120008",
+      "name": "业务营收增长专家",
+      "icon": "DollarSign"
+    },
+    {
+      "id": "120010",
+      "name": "股权架构师",
+      "icon": "Users"
+    },
+    {
+      "id": "120011",
+      "name": "薪酬绩效专家",
+      "icon": "Award"
+    },
+    {
+      "id": "120012",
+      "name": "OKR目标管理教练",
+      "icon": "Search"
+    },
+    {
+      "id": "120013",
+      "name": "大类资产投资顾问",
+      "icon": "TrendingUp"
+    },
+    {
+      "id": "120014",
+      "name": "职业路径规划师",
+      "icon": "Briefcase"
+    },
+    {
+      "id": "120015",
+      "name": "高考专业规划师",
+      "icon": "GraduationCap"
+    },
+    {
+      "id": "120016",
+      "name": "创业商机顾问",
+      "icon": "Lightbulb"
+    },
+    {
+      "id": "150001",
+      "name": "小红书种草专家",
+      "icon": "BookHeart"
+    },
+    {
+      "id": "150002",
+      "name": "抖音爆款操盘手",
+      "icon": "Video"
+    },
+    {
+      "id": "150008",
+      "name": "视频号私域增长专家",
+      "icon": "Users"
+    },
+    {
+      "id": "180001",
+      "name": "智能AI助手",
+      "icon": "🤖"
+    },
+    {
+      "id": "999999",
+      "name": "平台助手",
+      "icon": "MessageCircleQuestion"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\ticon\n120001\t战略规划\tTarget\n120002\t融资BP与路演\tFileText\n120003\t竞品分析专家\tTarget\n120004\t商业模式设计\tLayers\n120005\t一人公司顾问\tUser\n120006\t品牌营销策划师\tMegaphone\n120007\t流量增长获客专家\tTrendingUp\n120008\t业务营收增长专家\tDollarSign\n120010\t股权架构师\tUsers\n120011\t薪酬绩效专家\tAward\n120012\tOKR目标管理教练\tSearch\n120013\t大类资产投资顾问\tTrendingUp\n120014\t职业路径规划师\tBriefcase\n120015\t高考专业规划师\tGraduationCap\n120016\t创业商机顾问\tLightbulb\n150001\t小红书种草专家\tBookHeart\n150002\t抖音爆款操盘手\tVideo\n150008\t视频号私域增长专家\tUsers\n180001\t智能AI助手\t🤖\n999999\t平台助手\tMessageCircleQuestion\n",
+  "stderr": "",
+  "execution_time_ms": 503
+}

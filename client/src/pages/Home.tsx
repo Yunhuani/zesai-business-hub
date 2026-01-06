@@ -22,6 +22,8 @@ import { SmartAssistantSearch } from "@/components/SmartAssistantSearch";
 import { Link } from "wouter";
 import { WeChatBrowserGuide } from "@/components/WeChatBrowserGuide";
 import { isWeChatBrowser } from "@/utils/wechatDetector";
+import { trackConversion, ConversionEvents, trackAgent, AgentEvents } from "@/lib/analytics";
+import { useEffect } from "react";
 
 // Agent分类配置
 const AGENT_CATEGORIES = [
@@ -107,13 +109,18 @@ export default function Home() {
     return agents.filter(agent => categoryAgentNames.includes(agent.name));
   };
 
+  // 追踪首页访问
+  useEffect(() => {
+    trackConversion(ConversionEvents.HOME_VISIT);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b glass-effect sticky top-0 z-10">
         <div className="container py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/zenith-icon-only.png" alt="泽思AI" className="w-10 h-10 rounded-lg" />
+            <img src="/zenith-icon-only.png" alt="泽思AI" className="w-10 h-10 rounded-xl" />
             <h1 className="text-2xl font-bold">泽思 Zenith AI</h1>
           </div>
           <div className="flex items-center gap-4">
@@ -128,6 +135,12 @@ export default function Home() {
                     </Button>
                   </Link>
                 )}
+                <Link href="/history">
+                  <Button variant="outline" className="gap-2">
+                    <Icons.History className="w-4 h-4" />
+                    历史记录
+                  </Button>
+                </Link>
                 <Link href="/pricing">
                   <Button variant="outline" className="gap-2">
                     <Icons.Sparkles className="w-4 h-4" />
@@ -270,7 +283,10 @@ export default function Home() {
                                 key={agent.id}
                                 className={`group card-hover-enhanced cursor-pointer border-2 ${category.colors.cardBorder} glass-effect hover:glow-border`}
                               >
-                                <Link href={`/agent/${agent.id}`}>
+                                <Link 
+                                  href={`/agent/${agent.id}`}
+                                  onClick={() => trackAgent(AgentEvents.AGENT_CLICK, agent.id, agent.name)}
+                                >
                                   <CardHeader>
                                     <div className="flex items-start gap-3">
                                       <div className={`w-12 h-12 rounded-xl ${category.colors.iconBg} flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-md`}>
