@@ -785,13 +785,6 @@ export default function AgentChat() {
                   </Button>
                 </div>
               </div>
-            ) : !conversationId ? (
-              <div className="flex items-center justify-center h-[400px]">
-                <div className="text-center text-muted-foreground">
-                  <Icons.Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-                  <p>正在准备对话...</p>
-                </div>
-              </div>
             ) : (
               <>
                 {/* 临时欢迎消息（在数据库保存完成前显示） */}
