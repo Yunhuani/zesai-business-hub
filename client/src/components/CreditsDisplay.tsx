@@ -9,7 +9,6 @@ import { trpc } from "@/lib/trpc";
 import * as Icons from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { trackCredits, CreditsEvents } from "@/lib/analytics";
 
 /**
  * Credits Display Component - Manus style
@@ -61,11 +60,7 @@ export function CreditsDisplay() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button 
-          variant="ghost" 
-          className="gap-2 font-mono"
-          onClick={() => trackCredits(CreditsEvents.CREDITS_VIEW, credits?.total || 0)}
-        >
+        <Button variant="ghost" className="gap-2 font-mono">
           <Icons.Sparkles className="w-4 h-4" />
           {credits.total.toLocaleString()}
         </Button>

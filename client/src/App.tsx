@@ -7,11 +7,9 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import AgentChat from "./pages/AgentChat";
 import History from "./pages/History";
-import ConversationHistory from "./pages/ConversationHistory";
 import Pricing from "./pages/Pricing";
 import Admin from "./pages/Admin";
 import AdminAgents from "./pages/AdminAgents";
-import AdminAnalytics from "./pages/AdminAnalytics";
 
 import WechatLogin from "./pages/WechatLogin";
 import Payment from "./pages/Payment";
@@ -36,11 +34,10 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path="/agent/:id" component={AgentChat} />
       <Route path="/conversation/:id" component={AgentChat} />
-      <Route path="/history" component={ConversationHistory} />
+      <Route path="/history" component={History} />
       <Route path="/pricing" component={Pricing} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin/agents" component={AdminAgents} />
-      <Route path="/admin/analytics" component={AdminAnalytics} />
 
       <Route path="/wechat-login" component={WechatLogin} />
       <Route path="/wechat-callback" component={WechatLogin} />

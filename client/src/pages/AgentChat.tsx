@@ -1,14 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
@@ -23,16 +15,12 @@ import { InsufficientCreditsDialog } from "@/components/InsufficientCreditsDialo
 import { LoginMethodDialog } from "@/components/LoginMethodDialog";
 import { WeChatBrowserGuide } from "@/components/WeChatBrowserGuide";
 import { isWeChatBrowser } from "@/utils/wechatDetector";
-import { trackAgent, AgentEvents } from "@/lib/analytics";
 
 export default function AgentChat() {
   const params = useParams();
   const [location, setLocation] = useLocation();
-  
-  // 区分两种路由：/agent/:id 和 /conversation/:id
-  const isConversationRoute = location.startsWith('/conversation/');
-  const agentId = isConversationRoute ? 0 : parseInt(params.id || "0");
-  const urlConversationId = isConversationRoute ? parseInt(params.id || "0") : null;
+  const agentId = parseInt(params.id || "0");
+  const urlConversationId = location.startsWith('/conversation/') ? parseInt(params.id || "0") : null;
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   
   // Get initial message from URL query parameter
@@ -45,11 +33,10 @@ export default function AgentChat() {
     { enabled: !!urlConversationId }
   );
   
-  // 使用agentId作为默认值，避免闪现
-  const effectiveAgentId = urlConversationId && conversationData ? conversationData.agentId : (agentId || 0);
+  const effectiveAgentId = urlConversationId && conversationData ? conversationData.agentId : agentId;
   const { data: agent, isLoading: agentLoading } = trpc.agent.getById.useQuery(
     { id: effectiveAgentId },
-    { enabled: !!effectiveAgentId && effectiveAgentId > 0 }
+    { enabled: !!effectiveAgentId }
   );
   
   // Get latest conversation for this agent
@@ -83,12 +70,6 @@ export default function AgentChat() {
     { enabled: !!conversationId }
   );
 
-  // Get all conversations for history dropdown
-  const { data: allConversations } = trpc.conversation.list.useQuery(
-    undefined,
-    { enabled: isAuthenticated }
-  );
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -116,13 +97,6 @@ export default function AgentChat() {
     };
   }, []);
 
-  // 追踪进入对话页面
-  useEffect(() => {
-    if (agent && isAuthenticated) {
-      trackAgent(AgentEvents.AGENT_CONVERSATION_START, agent.id, agent.name);
-    }
-  }, [agent, isAuthenticated]);
-
   // Load conversation from URL if present
   useEffect(() => {
     if (urlConversationId && isAuthenticated) {
@@ -131,22 +105,35 @@ export default function AgentChat() {
   }, [urlConversationId, isAuthenticated]);
 
   // Load latest conversation or create new one
-  // 加载最近对话（如果存在）
   useEffect(() => {
-    if (agent && isAuthenticated && !conversationId && !urlConversationId && latestConversation) {
-      // 只加载已存在的对话，不自动创建新对话
-      setConversationId(latestConversation.id);
+    if (agent && isAuthenticated && !conversationId && !urlConversationId) {
+      if (latestConversation) {
+        // Load existing conversation
+        setConversationId(latestConversation.id);
+      } else if (latestConversation === null) {
+        // Only create when we confirmed there's no existing conversation
+        createConversation.mutate({
+          agentId: agent.id,
+          title: `${agent.name} - ${new Date().toLocaleDateString()}`,
+        });
+      }
+      // If latestConversation is undefined, it means query is still loading, wait
     }
   }, [agent, isAuthenticated, conversationId, urlConversationId, latestConversation]);
 
-  // 显示欢迎语（仅前端显示，不保存到数据库）
-  useEffect(() => {
-    if (agent && !hasShownWelcome && !conversationId) {
-      setTempWelcomeMessage(agent.welcomeMessage || "");
-      setHasShownWelcome(true);
+  // Welcome message is sent automatically when creating a new conversation
+  // No need to send it again when loading existing conversations
+
+  const createConversation = trpc.conversation.create.useMutation({
+    onSuccess: (data) => {
+      const newConversationId = data.insertId as number;
+      setConversationId(newConversationId);
       
-      // 启动打字机效果
-      if (agent.welcomeMessage) {
+      // 如果有欢迎语，立即在前端显示（不等待数据库）
+      if (agent?.welcomeMessage && !hasShownWelcome) {
+        setTempWelcomeMessage(agent.welcomeMessage);
+        setHasShownWelcome(true);
+        // 启动打字机效果
         setIsStreaming(true);
         setStreamingMessage("");
         
@@ -172,97 +159,20 @@ export default function AgentChat() {
           }
         }, 30);
       }
-    }
-  }, [agent, hasShownWelcome, conversationId]);
-
-  const createConversation = trpc.conversation.create.useMutation({
-    onSuccess: async (data) => {
-      const newConversationId = data.insertId as number;
-      setConversationId(newConversationId);
       
-      // 保存欢迎消息到数据库（延迟保存，只在用户发送消息后才保存）
-      if (agent?.welcomeMessage) {
-        await sendWelcomeMessage.mutateAsync({
-          conversationId: newConversationId,
-          agentId: effectiveAgentId,
-        });
-      }
+      // 后台异步保存欢迎消息到数据库
+      sendWelcomeMessage.mutate({
+        conversationId: newConversationId,
+        agentId: agentId,
+      });
       
       // 如果有待发送的消息，现在发送
       if (pendingMessage) {
-        // 使用流式API发送消息
-        const userMessage = pendingMessage;
+        sendMessage.mutate({
+          conversationId: newConversationId,
+          content: pendingMessage,
+        });
         setPendingMessage(null);
-        setTempUserMessage(userMessage);
-        
-        try {
-          const response = await fetch("/api/chat/stream", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...(localStorage.getItem('auth_token') ? {
-                Authorization: `Bearer ${localStorage.getItem('auth_token')}`
-              } : {}),
-            },
-            credentials: "include",
-            body: JSON.stringify({
-              conversationId: newConversationId,
-              content: userMessage,
-            }),
-          });
-          
-          if (!response.ok) {
-            const errorData = await response.json();
-            if (errorData.error === "INSUFFICIENT_CREDITS") {
-              setShowInsufficientCreditsDialog(true);
-              return;
-            }
-            throw new Error(errorData.error || "Stream failed");
-          }
-          
-          const reader = response.body?.getReader();
-          if (!reader) throw new Error("No reader available");
-          
-          const decoder = new TextDecoder();
-          let fullContent = "";
-          setIsStreaming(true);
-          
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split("\n");
-            
-            for (const line of lines) {
-              if (line.startsWith("data: ")) {
-                const data = line.slice(6);
-                if (data === "[DONE]") continue;
-                
-                try {
-                  const parsed = JSON.parse(data);
-                  if (parsed.delta) {
-                    fullContent += parsed.delta;
-                    setStreamingMessage(fullContent);
-                  }
-                } catch (e) {
-                  // Skip invalid JSON
-                }
-              }
-            }
-          }
-          
-          await refetchMessages();
-          setIsStreaming(false);
-          setStreamingMessage("");
-          setTempUserMessage(null);
-        } catch (error: any) {
-          console.error("Stream error:", error);
-          toast.error("发送消息失败: " + error.message);
-          setIsStreaming(false);
-          setStreamingMessage("");
-          setTempUserMessage(null);
-        }
       }
     },
     onError: (error) => {
@@ -477,28 +387,15 @@ export default function AgentChat() {
     }
     
     if (!conversationId) {
-      // 第一次发送消息，创建对话
+      // Conversation还未创建，将消息加入待发送队列
       setPendingMessage(message);
       setMessage("");
       toast.info("正在创建对话...");
-      
-      // 创建对话（会在onSuccess中发送待发送的消息）
-      createConversation.mutate({
-        agentId: agent!.id,
-        title: `${agent!.name} - ${new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
-      });
       return;
     }
     
     const userMessage = message;
     setMessage("");
-    
-    // 追踪发送消息事件
-    if (agent) {
-      trackAgent(AgentEvents.AGENT_MESSAGE_SEND, agent.id, agent.name, {
-        conversation_id: conversationId,
-      });
-    }
     
     // 立即显示用户消息
     setTempUserMessage(userMessage);
@@ -669,88 +566,21 @@ export default function AgentChat() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {/* 开始新对话按钮 */}
-            {isAuthenticated && (
+          <div className="flex items-center gap-4">
+            {latestConversation && conversationId === latestConversation.id && (
               <Button
                 variant="ghost"
-                size="sm"
+                className="gap-2"
                 onClick={() => {
-                  // 清空所有相关状态
-                  setConversationId(null);
-                  setHasShownWelcome(false);
-                  setTempWelcomeMessage(null);
-                  setTempUserMessage(null);
-                  setStreamingMessage("");
-                  setIsStreaming(false);
-                  setMessage("");
-                  
-                  // 创建新对话
                   createConversation.mutate({
                     agentId: agent.id,
-                    title: `${agent.name} - ${new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
+                    title: `${agent.name} - ${new Date().toLocaleDateString()}`,
                   });
                 }}
-                className="gap-2"
               >
                 <Icons.Plus className="w-4 h-4" />
-                <span className="hidden md:inline">开始新对话</span>
+                <span className="hidden sm:inline">开始新对话</span>
               </Button>
-            )}
-            {/* 历史对话下拉菜单 */}
-            {isAuthenticated && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Icons.History className="w-5 h-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
-                  <DropdownMenuLabel>历史对话</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {(() => {
-                    const filteredConvs = allConversations?.filter(
-                      (c) => c.agentId === agent.id
-                    ).slice(0, 10);
-                    
-                    if (!filteredConvs || filteredConvs.length === 0) {
-                      return (
-                        <div className="px-2 py-4 text-sm text-muted-foreground text-center">
-                          暂无历史对话
-                        </div>
-                      );
-                    }
-                    
-                    return filteredConvs.map((conv) => (
-                      <DropdownMenuItem
-                        key={conv.id}
-                        asChild
-                        className="cursor-pointer"
-                      >
-                        <Link href={`/conversation/${conv.id}`} className="flex flex-col gap-1 py-2">
-                          <div className="font-medium truncate">{conv.title}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {new Date(conv.updatedAt).toLocaleString("zh-CN", {
-                              timeZone: 'Asia/Shanghai',
-                              month: "2-digit",
-                              day: "2-digit",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </div>
-                        </Link>
-                      </DropdownMenuItem>
-                    ));
-                  })()}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link href="/history" className="gap-2">
-                      <Icons.List className="w-4 h-4" />
-                      查看全部历史
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             )}
             {/* PDF/PPT导出按钮已移至消息内容下方 */}
           </div>

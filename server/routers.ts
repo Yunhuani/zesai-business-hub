@@ -14,7 +14,6 @@ import { supportRouter } from "./routers/support";
 import { passwordResetRouter } from "./routers/passwordReset";
 import { wechatPayCallbackRouter } from "./routers/wechatPayCallback";
 import { referralRouter } from "./routers/referral";
-import { sentryRouter } from "./routers/sentry";
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
@@ -607,7 +606,6 @@ export const appRouter = router({
 
   // Referral system routes
   referral: referralRouter,
-  sentry: sentryRouter,
 });
 
 export type AppRouter = typeof appRouter;
