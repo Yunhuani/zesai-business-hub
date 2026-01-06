@@ -606,6 +606,16 @@ export default function AgentChat() {
                 variant="ghost"
                 size="sm"
                 onClick={() => {
+                  // 清空所有相关状态
+                  setConversationId(null);
+                  setHasShownWelcome(false);
+                  setTempWelcomeMessage(null);
+                  setTempUserMessage(null);
+                  setStreamingMessage("");
+                  setIsStreaming(false);
+                  setMessage("");
+                  
+                  // 创建新对话
                   createConversation.mutate({
                     agentId: agent.id,
                     title: `${agent.name} - ${new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
