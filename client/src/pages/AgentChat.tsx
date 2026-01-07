@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import * as Icons from "lucide-react";
@@ -534,7 +534,7 @@ export default function AgentChat() {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
@@ -824,13 +824,23 @@ export default function AgentChat() {
                 >
                   <Icons.Paperclip className="w-4 h-4" />
                 </Button>
-                <Input
+                <Textarea
                   placeholder={!isAuthenticated ? "请先登录后开始咨询..." : "输入您的问题或信息..."}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyDown}
                   disabled={!isAuthenticated || sendMessage.isPending || !conversationId}
-                  className="flex-1 h-10 sm:h-12 text-sm sm:text-base"
+                  className="flex-1 min-h-[40px] max-h-[200px] resize-none text-sm sm:text-base py-2.5 sm:py-3"
+                  rows={1}
+                  style={{
+                    height: 'auto',
+                    overflowY: message.split('\n').length > 5 ? 'auto' : 'hidden'
+                  }}
+                  onInput={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = 'auto';
+                    target.style.height = Math.min(target.scrollHeight, 200) + 'px';
+                  }}
                 />
                 <Button
                   onClick={handleSendMessage}

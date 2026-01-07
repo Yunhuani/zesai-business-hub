@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
@@ -19,8 +19,9 @@ export function SmartAssistantSearch({ smartAssistantId }: SmartAssistantSearchP
     setLocation(`/agent/${smartAssistantId}?initial=${encodeURIComponent(query)}`);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
       handleSearch();
     }
   };
@@ -34,13 +35,22 @@ export function SmartAssistantSearch({ smartAssistantId }: SmartAssistantSearchP
       </div>
       
       <div className="flex gap-3 items-center bg-background/80 backdrop-blur-sm border-2 border-purple-200/50 rounded-xl p-3 shadow-diffuse hover:shadow-lg hover:border-purple-300/70 transition-all duration-300">
-        <Input
-          type="text"
+        <Textarea
           placeholder="描述你的商业挑战或目标..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base bg-transparent"
+          className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base bg-transparent min-h-[40px] max-h-[120px] resize-none py-2"
+          rows={1}
+          style={{
+            height: 'auto',
+            overflowY: query.split('\n').length > 3 ? 'auto' : 'hidden'
+          }}
+          onInput={(e) => {
+            const target = e.target as HTMLTextAreaElement;
+            target.style.height = 'auto';
+            target.style.height = Math.min(target.scrollHeight, 120) + 'px';
+          }}
         />
         <Button
           onClick={handleSearch}
