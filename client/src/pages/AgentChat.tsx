@@ -187,7 +187,10 @@ export default function AgentChat() {
               typewriterIntervalRef.current = null;
             }
             setIsStreaming(false);
-            setStreamingMessage("");
+            // 打字机效果结束后立即清除，避免与数据库消息重复
+            setTimeout(() => {
+              setStreamingMessage("");
+            }, 100);
           }
         }, 30);
       }
@@ -217,7 +220,7 @@ export default function AgentChat() {
     onSuccess: (data) => {
       // 欢迎消息已在前端显示，这里只需要刷新messages列表
       refetchMessages();
-      // 清除临时欢迎消息，使用数据库中的消息
+      // 清除临时状态
       setTempWelcomeMessage(null);
     },
   });
@@ -719,14 +722,6 @@ export default function AgentChat() {
               </div>
             ) : (
               <>
-                {/* 临时欢迎消息（在数据库保存完成前显示） */}
-                {tempWelcomeMessage && (
-                  <div className="flex justify-start">
-                    <div className="max-w-[90%] glass-effect rounded-lg p-3 md:p-4 text-sm md:text-base">
-                      <EnhancedMessage content={tempWelcomeMessage} />
-                    </div>
-                  </div>
-                )}
                 {messages?.map((msg) => (
                   <div
                     key={msg.id}
