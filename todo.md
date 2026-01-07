@@ -1444,4 +1444,17 @@
 - [x] 检查其他页面是否有相同问题（Credits、History等）
 - [x] 批量修复所有页面（Admin、AdminAgents、AdminAnalytics、CreditUsage、Credits、History）
 - [x] 测试未登录用户访问套餐页面的跳转效果
+- [x] 创建检查点
+
+
+## 替换网站所有logo文件（消除白边）
+- [x] 从512.png生成多个尺寸的logo文件
+- [x] 替换favicon-16x16.png（使用用户提供的16x16文件）
+- [x] 替换favicon-32x32.png
+- [x] 替换favicon-192x192.png
+- [x] 替换zenith-icon-only.png（登录页和首页使用）
+- [x] 生成favicon.ico文件
+- [x] 测试浏览器标签页图标显示
+- [x] 测试登录页面logo显示
+- [x] 测试首页Header logo显示
 - [ ] 创建检查点
