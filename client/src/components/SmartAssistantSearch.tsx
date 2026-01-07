@@ -44,7 +44,10 @@ export function SmartAssistantSearch({ smartAssistantId }: SmartAssistantSearchP
           rows={1}
           style={{
             height: 'auto',
-            overflowY: query.split('\n').length > 3 ? 'auto' : 'hidden'
+            overflowY: query.split('\n').length > 3 ? 'auto' : 'hidden',
+            whiteSpace: 'pre-wrap',
+            wordWrap: 'break-word',
+            overflowWrap: 'break-word'
           }}
           onInput={(e) => {
             const target = e.target as HTMLTextAreaElement;

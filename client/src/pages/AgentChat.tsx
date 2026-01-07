@@ -834,7 +834,10 @@ export default function AgentChat() {
                   rows={1}
                   style={{
                     height: 'auto',
-                    overflowY: message.split('\n').length > 5 ? 'auto' : 'hidden'
+                    overflowY: message.split('\n').length > 5 ? 'auto' : 'hidden',
+                    whiteSpace: 'pre-wrap',
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word'
                   }}
                   onInput={(e) => {
                     const target = e.target as HTMLTextAreaElement;
