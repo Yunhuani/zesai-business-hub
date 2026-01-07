@@ -1438,3 +1438,10 @@
 - [x] 等待用户提供新的无白边logo图片
 - [x] 替换logo文件并测试显示效果
 - [x] 创建检查点
+
+## 修复未登录用户访问套餐页面跳转问题
+- [x] 修改Pricing.tsx，将getLoginUrl()改为/email-login
+- [x] 检查其他页面是否有相同问题（Credits、History等）
+- [x] 批量修复所有页面（Admin、AdminAgents、AdminAnalytics、CreditUsage、Credits、History）
+- [x] 测试未登录用户访问套餐页面的跳转效果
+- [ ] 创建检查点

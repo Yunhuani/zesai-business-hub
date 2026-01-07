@@ -93,7 +93,7 @@ export default function Pricing() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      setTimeout(() => window.location.href = getLoginUrl(), 0);
+      setTimeout(() => window.location.href = "/email-login", 0);
     }
   }, [authLoading, isAuthenticated]);
 
