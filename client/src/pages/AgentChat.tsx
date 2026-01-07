@@ -187,10 +187,7 @@ export default function AgentChat() {
               typewriterIntervalRef.current = null;
             }
             setIsStreaming(false);
-            // 打字机效果结束后立即清除，避免与数据库消息重复
-            setTimeout(() => {
-              setStreamingMessage("");
-            }, 100);
+            // 不清除streamingMessage，让它保持显示直到数据库消息加载完成
           }
         }, 30);
       }
@@ -222,6 +219,8 @@ export default function AgentChat() {
       refetchMessages();
       // 清除临时状态
       setTempWelcomeMessage(null);
+      // 数据库消息加载完成后，清除打字机效果的临时消息
+      setStreamingMessage("");
     },
   });
 
