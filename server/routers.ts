@@ -15,6 +15,7 @@ import { passwordResetRouter } from "./routers/passwordReset";
 import { wechatPayCallbackRouter } from "./routers/wechatPayCallback";
 import { referralRouter } from "./routers/referral";
 import { sentryRouter } from "./routers/sentry";
+import { agentAnalyticsRouter } from "./routers/agentAnalytics";
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
@@ -286,6 +287,8 @@ export const appRouter = router({
         });
       }),
     }),
+    // Agent analytics
+    agentAnalytics: agentAnalyticsRouter,
   }),
 
   // Agent routes

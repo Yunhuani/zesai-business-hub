@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, name, email, role FROM users WHERE email LIKE '%testuser%' OR email LIKE '%example%' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, name, email, role FROM users WHERE email LIKE '%testuser%' OR email LIKE '%example%' LIMIT 5;",
+  "rows": [
+    {
+      "id": "3990008",
+      "name": "Test Credits User",
+      "email": "test_credits_1764301720214@example.com",
+      "role": "user"
+    },
+    {
+      "id": "4440027",
+      "name": "Test User",
+      "email": "test1764563955512@example.com",
+      "role": "user"
+    },
+    {
+      "id": "4440031",
+      "name": "邮箱测试用户",
+      "email": "test@example.com",
+      "role": "user"
+    },
+    {
+      "id": "11010002",
+      "name": "Test User",
+      "email": "test_1766481875490@example.com",
+      "role": "user"
+    },
+    {
+      "id": "11010003",
+      "name": "DB Test User",
+      "email": "dbtest_1766481877671@example.com",
+      "role": "user"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\trole\n3990008\tTest Credits User\ttest_credits_1764301720214@example.com\tuser\n4440027\tTest User\ttest1764563955512@example.com\tuser\n4440031\t邮箱测试用户\ttest@example.com\tuser\n11010002\tTest User\ttest_1766481875490@example.com\tuser\n11010003\tDB Test User\tdbtest_1766481877671@example.com\tuser\n",
+  "stderr": "",
+  "execution_time_ms": 459
+}
