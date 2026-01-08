@@ -493,27 +493,12 @@ export async function cancelCommission(orderId: string) {
 
 /**
  * 为用户添加积分（用于推广奖励）
+ * 使用creditsManager.addPurchasedCredits确保交易记录被正确创建
  */
 export async function addCredits(userId: number, amount: number, reason: string) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-
-  const user = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
-
-  if (!user.length) throw new Error("User not found");
-
-  const newPurchased = user[0].creditsPurchased + amount;
-
-  await db
-    .update(users)
-    .set({
-      creditsPurchased: newPurchased,
-    })
-    .where(eq(users.id, userId));
+  const { addPurchasedCredits } = await import("./creditsManager");
+  await addPurchasedCredits(userId, amount);
+  console.log(`[推荐奖励] 用户 ${userId} 获得 ${amount} 积分，原因：${reason}`);
 }
 
 /**
@@ -554,7 +539,7 @@ export async function createReferralRelationship(
     refereeId,
     referralCode,
     referrerCreditsRewarded: 200,
-    refereeCreditsRewarded: 100,
+    refereeCreditsRewarded: 0,
     status: 'completed',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -564,9 +549,8 @@ export async function createReferralRelationship(
   await addCredits(referrerId, 200, '推荐新用户奖励');
   console.log(`推荐人 ${referrerId} 获得200积分`);
 
-  // 5. 发放新用户奖励（100积分）
-  await addCredits(refereeId, 100, '新用户注册奖励');
-  console.log(`新用户 ${refereeId} 获得100积分`);
+  // 5. 新用户不再获得推荐积分奖励
+  console.log(`新用户 ${refereeId} 注册成功（无推荐积分奖励）`);
 
   console.log(`推荐关系创建成功: 推荐人ID=${referrerId}, 新用户ID=${refereeId}`);
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,16 @@ export default function EmailLogin() {
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerConfirmPassword, setRegisterConfirmPassword] = useState("");
   const [registerName, setRegisterName] = useState("");
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+
+  // Read referral code from URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      setReferralCode(ref);
+    }
+  }, []);
 
   const loginMutation = trpc.auth.loginWithEmail.useMutation({
     onSuccess: (data) => {
@@ -84,6 +94,7 @@ export default function EmailLogin() {
       email: registerEmail,
       password: registerPassword,
       name: registerName || registerEmail.split('@')[0],
+      referralCode: referralCode || undefined,
     });
   };
 
@@ -181,7 +192,7 @@ export default function EmailLogin() {
                 <CardDescription>创建新账号开始使用</CardDescription>
                 {referralCode && (
                   <div className="mt-3 text-sm text-green-600 bg-green-50 border border-green-200 p-3 rounded-lg">
-                    ✓ 使用推荐码：<span className="font-semibold">{referralCode}</span>（注册成功后您将获得100积分奖励）
+                    ✓ 使用推荐码：<span className="font-semibold">{referralCode}</span>
                   </div>
                 )}
               </CardHeader>

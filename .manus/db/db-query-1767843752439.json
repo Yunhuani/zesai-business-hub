@@ -1,0 +1,13 @@
+{
+  "query": "SELECT id FROM users WHERE email = 'yunhua.ni@gmail.com'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id FROM users WHERE email = 'yunhua.ni@gmail.com'",
+  "rows": [
+    {
+      "id": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\n1\n",
+  "stderr": "",
+  "execution_time_ms": 390
+}

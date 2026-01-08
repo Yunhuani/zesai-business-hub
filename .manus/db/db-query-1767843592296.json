@@ -1,0 +1,23 @@
+{
+  "query": "SELECT r.*, u1.email as referrer_email, u2.email as referee_email FROM referrals r LEFT JOIN users u1 ON r.referrerId = u1.id LEFT JOIN users u2 ON r.refereeId = u2.id ORDER BY r.createdAt DESC LIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT r.*, u1.email as referrer_email, u2.email as referee_email FROM referrals r LEFT JOIN users u1 ON r.referrerId = u1.id LEFT JOIN users u2 ON r.refereeId = u2.id ORDER BY r.createdAt DESC LIMIT 10",
+  "rows": [
+    {
+      "id": "1",
+      "referrerId": "1",
+      "refereeId": "13200001",
+      "referralCode": "ZESAI-QA0SJA",
+      "referrerCreditsRewarded": "200",
+      "refereeCreditsRewarded": "100",
+      "status": "completed",
+      "createdAt": "2026-01-07 22:17:43",
+      "updatedAt": "2026-01-07 22:17:43",
+      "referrer_email": "yunhua.ni@gmail.com",
+      "referee_email": "test_referral_20260107@test.com"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\treferrerId\trefereeId\treferralCode\treferrerCreditsRewarded\trefereeCreditsRewarded\tstatus\tcreatedAt\tupdatedAt\treferrer_email\treferee_email\n1\t1\t13200001\tZESAI-QA0SJA\t200\t100\tcompleted\t2026-01-07 22:17:43\t2026-01-07 22:17:43\tyunhua.ni@gmail.com\ttest_referral_20260107@test.com\n",
+  "stderr": "",
+  "execution_time_ms": 398
+}

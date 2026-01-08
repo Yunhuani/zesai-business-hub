@@ -1,0 +1,50 @@
+{
+  "query": "SELECT u.email, u.creditsPurchased, u.creditsSubscription, ct.amount, ct.description, ct.createdAt FROM users u LEFT JOIN creditsTransactions ct ON u.id = ct.userId WHERE u.email = 'yunhua.ni@gmail.com' ORDER BY ct.createdAt DESC LIMIT 5",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT u.email, u.creditsPurchased, u.creditsSubscription, ct.amount, ct.description, ct.createdAt FROM users u LEFT JOIN creditsTransactions ct ON u.id = ct.userId WHERE u.email = 'yunhua.ni@gmail.com' ORDER BY ct.createdAt DESC LIMIT 5",
+  "rows": [
+    {
+      "email": "yunhua.ni@gmail.com",
+      "creditsPurchased": "600",
+      "creditsSubscription": "1730",
+      "amount": "200",
+      "description": "推荐新用户奖励（补发）",
+      "createdAt": "2026-01-08 03:42:57"
+    },
+    {
+      "email": "yunhua.ni@gmail.com",
+      "creditsPurchased": "600",
+      "creditsSubscription": "1730",
+      "amount": "-10",
+      "description": "基础对话 - Conversation #3270002",
+      "createdAt": "2026-01-07 05:53:25"
+    },
+    {
+      "email": "yunhua.ni@gmail.com",
+      "creditsPurchased": "600",
+      "creditsSubscription": "1730",
+      "amount": "-10",
+      "description": "基础对话 - Conversation #3390017",
+      "createdAt": "2026-01-07 05:52:51"
+    },
+    {
+      "email": "yunhua.ni@gmail.com",
+      "creditsPurchased": "600",
+      "creditsSubscription": "1730",
+      "amount": "-10",
+      "description": "基础对话 - Conversation #4410004",
+      "createdAt": "2026-01-06 13:35:51"
+    },
+    {
+      "email": "yunhua.ni@gmail.com",
+      "creditsPurchased": "600",
+      "creditsSubscription": "1730",
+      "amount": "-10",
+      "description": "基础对话 - Conversation #4410003",
+      "createdAt": "2026-01-06 13:34:13"
+    }
+  ],
+  "messages": [],
+  "stdout": "email\tcreditsPurchased\tcreditsSubscription\tamount\tdescription\tcreatedAt\nyunhua.ni@gmail.com\t600\t1730\t200\t推荐新用户奖励（补发）\t2026-01-08 03:42:57\nyunhua.ni@gmail.com\t600\t1730\t-10\t基础对话 - Conversation #3270002\t2026-01-07 05:53:25\nyunhua.ni@gmail.com\t600\t1730\t-10\t基础对话 - Conversation #3390017\t2026-01-07 05:52:51\nyunhua.ni@gmail.com\t600\t1730\t-10\t基础对话 - Conversation #4410004\t2026-01-06 13:35:51\nyunhua.ni@gmail.com\t600\t1730\t-10\t基础对话 - Conversation #4410003\t2026-01-06 13:34:13\n",
+  "stderr": "",
+  "execution_time_ms": 387
+}
