@@ -515,3 +515,58 @@ export async function addCredits(userId: number, amount: number, reason: string)
     })
     .where(eq(users.id, userId));
 }
+
+/**
+ * 创建推荐关系并发放奖励积分
+ * @param referrerId 推荐人ID
+ * @param refereeId 新用户ID
+ * @param referralCode 推荐码
+ */
+export async function createReferralRelationship(
+  referrerId: number,
+  refereeId: number,
+  referralCode: string
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // 1. 防止自己推荐自己
+  if (referrerId === refereeId) {
+    console.warn(`用户 ${referrerId} 尝试推荐自己，已阻止`);
+    return;
+  }
+
+  // 2. 检查是否已存在推荐关系（防止重复奖励）
+  const existing = await db
+    .select()
+    .from(referrals)
+    .where(eq(referrals.refereeId, refereeId))
+    .limit(1);
+
+  if (existing.length > 0) {
+    console.warn(`用户 ${refereeId} 已被推荐过，跳过奖励`);
+    return;
+  }
+
+  // 3. 创建推荐关系记录
+  await db.insert(referrals).values({
+    referrerId,
+    refereeId,
+    referralCode,
+    referrerCreditsRewarded: 200,
+    refereeCreditsRewarded: 100,
+    status: 'completed',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+
+  // 4. 发放推荐人奖励（200积分）
+  await addCredits(referrerId, 200, '推荐新用户奖励');
+  console.log(`推荐人 ${referrerId} 获得200积分`);
+
+  // 5. 发放新用户奖励（100积分）
+  await addCredits(refereeId, 100, '新用户注册奖励');
+  console.log(`新用户 ${refereeId} 获得100积分`);
+
+  console.log(`推荐关系创建成功: 推荐人ID=${referrerId}, 新用户ID=${refereeId}`);
+}

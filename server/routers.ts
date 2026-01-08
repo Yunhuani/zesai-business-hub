@@ -90,13 +90,14 @@ export const appRouter = router({
         email: z.string().email("请输入有效的邮箱地址"),
         password: z.string().min(6, "密码至少6位").max(50),
         name: z.string().optional(),
+        referralCode: z.string().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const { registerUserWithEmail } = await import("./passwordAuth");
         
         try {
           // Register user with email and password
-          const result = await registerUserWithEmail(input.email, input.password, input.name);
+          const result = await registerUserWithEmail(input.email, input.password, input.name, input.referralCode);
           
           if (!result || !result.user) {
             throw new TRPCError({

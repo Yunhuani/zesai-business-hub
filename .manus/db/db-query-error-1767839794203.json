@@ -1,0 +1,8 @@
+{
+  "query": "SELECT * FROM referrals WHERE referrerEmail = 'yunhua.ni@gmail.com' OR referredEmail = 'nyhcnn@126.com' ORDER BY createdAt DESC LIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT * FROM referrals WHERE referrerEmail = 'yunhua.ni@gmail.com' OR referredEmail = 'nyhcnn@126.com' ORDER BY createdAt DESC LIMIT 10",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'referreremail' in 'where clause'"
+  ]
+}

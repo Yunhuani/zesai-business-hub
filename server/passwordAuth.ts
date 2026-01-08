@@ -125,7 +125,12 @@ export async function loginUser(username: string, password: string) {
 /**
  * Register a new user with email and password
  */
-export async function registerUserWithEmail(email: string, password: string, name?: string) {
+export async function registerUserWithEmail(
+  email: string, 
+  password: string, 
+  name?: string,
+  referralCode?: string
+) {
   const db = await getDb();
   if (!db) {
     throw new Error("Database not available");
@@ -140,6 +145,24 @@ export async function registerUserWithEmail(email: string, password: string, nam
 
   if (existingUser.length > 0) {
     throw new Error("该邮箱已被注册");
+  }
+
+  // Validate referral code if provided
+  let referrerId: number | null = null;
+  if (referralCode) {
+    const referrer = await db
+      .select()
+      .from(users)
+      .where(eq(users.referralCode, referralCode))
+      .limit(1);
+    
+    if (referrer.length > 0) {
+      referrerId = referrer[0].id;
+      console.log(`有效的推荐码: ${referralCode}, 推荐人ID: ${referrerId}`);
+    } else {
+      console.warn(`无效的推荐码: ${referralCode}`);
+      // 不阻止注册，只是不发放奖励
+    }
   }
 
   // Hash password
@@ -158,16 +181,28 @@ export async function registerUserWithEmail(email: string, password: string, nam
   });
 
   // Get the created user
-  const [user] = await db
+  const [newUser] = await db
     .select()
     .from(users)
     .where(eq(users.email, email))
     .limit(1);
 
-  // Generate JWT token
-  const token = generateToken(user.id, user.openId || '');
+  // Handle referral rewards
+  if (referrerId && newUser) {
+    try {
+      const { createReferralRelationship } = await import("./referralDb");
+      await createReferralRelationship(referrerId, newUser.id, referralCode!);
+      console.log(`推荐关系创建成功: 推荐人ID=${referrerId}, 新用户ID=${newUser.id}`);
+    } catch (error) {
+      console.error("创建推荐关系失败:", error);
+      // 不阻止注册流程
+    }
+  }
 
-  return { user, token };
+  // Generate JWT token
+  const token = generateToken(newUser.id, newUser.openId || '');
+
+  return { user: newUser, token };
 }
 
 /**

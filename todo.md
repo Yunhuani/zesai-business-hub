@@ -1472,3 +1472,24 @@
 - [x] 修改首页标题为"泽思AI - AI驱动的商业咨询平台 | 战略规划·商业模式·融资·增长·盈利"
 - [x] 优化关键词为7个核心词：AI商业咨询, 战略规划, 商业模式, OKR绩效, 商业计划书, 增长策略, 流量增长
 - [x] 验证SEO配置效果
+
+## SEO标题未生效问题修复
+- [ ] 诊断为什么生产环境标题还是8字符（"泽思AI商业智库"）
+- [ ] 修复标题配置，确保显示39字符版本
+- [ ] 验证修复效果
+
+## 推荐有礼功能Bug修复（紧急）
+- [ ] 诊断推荐奖励未发放的根本原因
+- [ ] 检查referrals表是否正确记录推荐关系
+- [ ] 检查注册流程是否触发奖励逻辑
+- [ ] 修复积分发放代码bug
+- [ ] 补发测试用户积分（yunhua.ni@gmail.com 200积分，nyhcnn@126.com 100积分）
+- [ ] 验证修复效果
+
+## 推荐有礼功能修复完成
+- [x] 创建createReferralRelationship函数（server/referralDb.ts）
+- [x] 修改registerUserWithEmail支持推荐码参数（server/passwordAuth.ts）
+- [x] 修改registerWithEmail接口接收推荐码（server/routers.ts）
+- [x] 前端读取URL推荐码并传递（client/src/pages/EmailLogin.tsx）
+- [x] 添加推荐码提示UI
+- [ ] 测试完整推荐流程

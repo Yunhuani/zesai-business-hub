@@ -179,6 +179,11 @@ export default function EmailLogin() {
               <CardHeader>
                 <CardTitle>注册账号</CardTitle>
                 <CardDescription>创建新账号开始使用</CardDescription>
+                {referralCode && (
+                  <div className="mt-3 text-sm text-green-600 bg-green-50 border border-green-200 p-3 rounded-lg">
+                    ✓ 使用推荐码：<span className="font-semibold">{referralCode}</span>（注册成功后您将获得100积分奖励）
+                  </div>
+                )}
               </CardHeader>
               <form onSubmit={handleRegister}>
                 <CardContent className="space-y-4">
