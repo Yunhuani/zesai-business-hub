@@ -12,8 +12,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { AdjustCreditsDialog } from "@/components/AdjustCreditsDialog";
+import { UserDetailDialog } from "@/components/UserDetailDialog";
 import { trpc } from "@/lib/trpc";
-import { Loader2, Search, Coins } from "lucide-react";
+import { Loader2, Search, Coins, Eye } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 
@@ -31,6 +32,8 @@ export default function UserManagement() {
       total: number;
     };
   } | null>(null);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [detailUserId, setDetailUserId] = useState<number | null>(null);
 
   const { data: users, isLoading } = trpc.admin.listUsers.useQuery(undefined, {
     enabled: isAuthenticated && user?.role === "admin",
@@ -60,6 +63,11 @@ export default function UserManagement() {
   const filteredUsers = users?.filter((u: any) => 
     !searchEmail || u.email?.toLowerCase().includes(searchEmail.toLowerCase())
   );
+
+  const handleOpenDetailDialog = (userId: number) => {
+    setDetailUserId(userId);
+    setDetailDialogOpen(true);
+  };
 
   const handleOpenAdjustDialog = (u: any) => {
     setSelectedUser({
@@ -199,15 +207,26 @@ export default function UserManagement() {
                               })}
                             </TableCell>
                             <TableCell className="text-center">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleOpenAdjustDialog(u)}
-                                className="hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300"
-                              >
-                                <Coins className="w-4 h-4 mr-1" />
-                                调整积分
-                              </Button>
+                              <div className="flex items-center justify-center gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleOpenDetailDialog(u.id)}
+                                  className="hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300"
+                                >
+                                  <Eye className="w-4 h-4 mr-1" />
+                                  详情
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleOpenAdjustDialog(u)}
+                                  className="hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300"
+                                >
+                                  <Coins className="w-4 h-4 mr-1" />
+                                  积分
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         );
@@ -235,6 +254,15 @@ export default function UserManagement() {
           userId={selectedUser.id}
           userName={selectedUser.name}
           currentCredits={selectedUser.credits}
+        />
+      )}
+
+      {/* User Detail Dialog */}
+      {detailUserId && (
+        <UserDetailDialog
+          open={detailDialogOpen}
+          onOpenChange={setDetailDialogOpen}
+          userId={detailUserId}
         />
       )}
     </div>
