@@ -328,12 +328,7 @@ export default function Credits() {
                 订阅积分每月重置，购买的积分永久有效。使用时会优先消耗购买的积分，然后才使用订阅积分。
               </p>
             </Card>
-            <Card className="p-6">
-              <h3 className="font-bold mb-2">一次对话消耗多少积分？</h3>
-              <p className="text-sm text-muted-foreground">
-                基础对话消耗10积分，深度分析消耗20积分，文档分析消耗30积分，导出PDF消耗30积分，生成PPT消耗50积分。
-              </p>
-            </Card>
+
             <Card className="p-6">
               <h3 className="font-bold mb-2">购买后可以退款吗？</h3>
               <p className="text-sm text-muted-foreground">

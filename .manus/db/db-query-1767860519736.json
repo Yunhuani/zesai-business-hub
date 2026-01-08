@@ -1,0 +1,230 @@
+{
+  "query": "SELECT * FROM creditsTransactions WHERE userId = 13200030 ORDER BY createdAt DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT * FROM creditsTransactions WHERE userId = 13200030 ORDER BY createdAt DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "5370007",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "600",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 08:05:11"
+    },
+    {
+      "id": "5370006",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "610",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 08:04:36"
+    },
+    {
+      "id": "5340032",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "620",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 05:19:18"
+    },
+    {
+      "id": "5340029",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "630",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 05:16:57"
+    },
+    {
+      "id": "5340028",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "640",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 05:16:47"
+    },
+    {
+      "id": "5340027",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "650",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 05:15:41"
+    },
+    {
+      "id": "5340026",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "660",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 05:14:41"
+    },
+    {
+      "id": "5340025",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "670",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 05:13:27"
+    },
+    {
+      "id": "5340024",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "680",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 05:09:33"
+    },
+    {
+      "id": "5340023",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "690",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 05:07:39"
+    },
+    {
+      "id": "5340022",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "700",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 05:06:35"
+    },
+    {
+      "id": "5340021",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "710",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 04:55:00"
+    },
+    {
+      "id": "5340020",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "720",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 04:54:04"
+    },
+    {
+      "id": "5340019",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "730",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 04:52:42"
+    },
+    {
+      "id": "5340018",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "740",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 04:51:15"
+    },
+    {
+      "id": "5340017",
+      "userId": "13200030",
+      "type": "subscription_grant",
+      "amount": "750",
+      "balancePurchased": "0",
+      "balanceSubscription": "750",
+      "description": "订阅积分重置: basic 套餐",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 04:50:45"
+    },
+    {
+      "id": "5340016",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "0",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 04:30:34"
+    },
+    {
+      "id": "5340015",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "10",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 04:29:23"
+    },
+    {
+      "id": "5340014",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "20",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 04:28:51"
+    },
+    {
+      "id": "5340013",
+      "userId": "13200030",
+      "type": "consume",
+      "amount": "-10",
+      "balancePurchased": "0",
+      "balanceSubscription": "30",
+      "description": "基础对话 - Conversation #4680003",
+      "relatedOrderId": "NULL",
+      "createdAt": "2026-01-08 04:26:53"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserId\ttype\tamount\tbalancePurchased\tbalanceSubscription\tdescription\trelatedOrderId\tcreatedAt\n5370007\t13200030\tconsume\t-10\t0\t600\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 08:05:11\n5370006\t13200030\tconsume\t-10\t0\t610\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 08:04:36\n5340032\t13200030\tconsume\t-10\t0\t620\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 05:19:18\n5340029\t13200030\tconsume\t-10\t0\t630\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 05:16:57\n5340028\t13200030\tconsume\t-10\t0\t640\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 05:16:47\n5340027\t13200030\tconsume\t-10\t0\t650\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 05:15:41\n5340026\t13200030\tconsume\t-10\t0\t660\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 05:14:41\n5340025\t13200030\tconsume\t-10\t0\t670\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 05:13:27\n5340024\t13200030\tconsume\t-10\t0\t680\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 05:09:33\n5340023\t13200030\tconsume\t-10\t0\t690\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 05:07:39\n5340022\t13200030\tconsume\t-10\t0\t700\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 05:06:35\n5340021\t13200030\tconsume\t-10\t0\t710\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 04:55:00\n5340020\t13200030\tconsume\t-10\t0\t720\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 04:54:04\n5340019\t13200030\tconsume\t-10\t0\t730\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 04:52:42\n5340018\t13200030\tconsume\t-10\t0\t740\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 04:51:15\n5340017\t13200030\tsubscription_grant\t750\t0\t750\t订阅积分重置: basic 套餐\tNULL\t2026-01-08 04:50:45\n5340016\t13200030\tconsume\t-10\t0\t0\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 04:30:34\n5340015\t13200030\tconsume\t-10\t0\t10\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 04:29:23\n5340014\t13200030\tconsume\t-10\t0\t20\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 04:28:51\n5340013\t13200030\tconsume\t-10\t0\t30\t基础对话 - Conversation #4680003\tNULL\t2026-01-08 04:26:53\n",
+  "stderr": "",
+  "execution_time_ms": 464
+}
