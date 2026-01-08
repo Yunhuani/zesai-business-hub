@@ -25,16 +25,15 @@ export default function EmailLogin() {
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerConfirmPassword, setRegisterConfirmPassword] = useState("");
   const [registerName, setRegisterName] = useState("");
-  const [referralCode, setReferralCode] = useState<string | null>(null);
-
-  // Read referral code from URL
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const ref = params.get('ref');
-    if (ref) {
-      setReferralCode(ref);
-    }
-  }, []);
+  // 推荐功能暂时隐藏
+  // const [referralCode, setReferralCode] = useState<string | null>(null);
+  // useEffect(() => {
+  //   const params = new URLSearchParams(window.location.search);
+  //   const ref = params.get('ref');
+  //   if (ref) {
+  //     setReferralCode(ref);
+  //   }
+  // }, []);
 
   const loginMutation = trpc.auth.loginWithEmail.useMutation({
     onSuccess: (data) => {
@@ -94,7 +93,7 @@ export default function EmailLogin() {
       email: registerEmail,
       password: registerPassword,
       name: registerName || registerEmail.split('@')[0],
-      referralCode: referralCode || undefined,
+      // referralCode: referralCode || undefined, // 推荐功能暂时隐藏
     });
   };
 
@@ -190,11 +189,12 @@ export default function EmailLogin() {
               <CardHeader>
                 <CardTitle>注册账号</CardTitle>
                 <CardDescription>创建新账号开始使用</CardDescription>
-                {referralCode && (
+                {/* 推荐功能暂时隐藏 */}
+                {/* {referralCode && (
                   <div className="mt-3 text-sm text-green-600 bg-green-50 border border-green-200 p-3 rounded-lg">
                     ✓ 使用推荐码：<span className="font-semibold">{referralCode}</span>
                   </div>
-                )}
+                )} */}
               </CardHeader>
               <form onSubmit={handleRegister}>
                 <CardContent className="space-y-4">

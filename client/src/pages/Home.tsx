@@ -167,13 +167,14 @@ export default function Home() {
                     {user?.username && <div>用户名: {user.username}</div>}
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
+                  {/* 推荐中心功能暂时隐藏 */}
+                  {/* <DropdownMenuItem asChild>
                     <Link href="/referral-center" className="flex items-center cursor-pointer">
                       <Icons.Gift className="w-4 h-4 mr-2" />
                       推荐中心
                     </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                  </DropdownMenuItem> */}
+                  {/* <DropdownMenuSeparator /> */}
                   <DropdownMenuItem
                     className="text-red-600 focus:text-red-600"
                     onClick={async () => {
