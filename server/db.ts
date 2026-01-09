@@ -200,9 +200,32 @@ export async function createMessage(data: { conversationId: number; role: "user"
   // 插入消息
   const result = await db.insert(messages).values(data);
   
-  // 同时更新对话的updatedAt时间
+  // 准备更新数据：updatedAt时间
+  const updateData: { updatedAt: Date; title?: string } = { updatedAt: new Date() };
+  
+  // 如果是用户消息，检查是否需要更新标题
+  if (data.role === "user") {
+    // 检查是否是该对话的第一条用户消息
+    const existingUserMessages = await db
+      .select()
+      .from(messages)
+      .where(eq(messages.conversationId, data.conversationId));
+    
+    const userMessageCount = existingUserMessages.filter(m => m.role === "user").length;
+    
+    // 如果是第一条用户消息（刚插入的那条），更新标题
+    if (userMessageCount === 1) {
+      // 截取前20个字符作为标题
+      const newTitle = data.content.length > 20 
+        ? data.content.substring(0, 20) + "..." 
+        : data.content;
+      updateData.title = newTitle;
+    }
+  }
+  
+  // 更新对话
   await db.update(conversations)
-    .set({ updatedAt: new Date() })
+    .set(updateData)
     .where(eq(conversations.id, data.conversationId));
   
   return result[0];
