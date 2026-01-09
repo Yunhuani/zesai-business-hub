@@ -4,7 +4,7 @@
  */
 
 // 获取当前北京时间日期
-function getCurrentBeijingDate(): string {
+export function getCurrentBeijingDate(): string {
   const now = new Date();
   const beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
   const year = beijingTime.getUTCFullYear();
@@ -13,10 +13,8 @@ function getCurrentBeijingDate(): string {
   return `${year}年${month}月${day}日`;
 }
 
-export const GLOBAL_PROMPT_RULES = `
-## 系统信息
-【当前日期】${getCurrentBeijingDate()}
-
+// 基础规则模板（不含日期）
+const BASE_PROMPT_RULES = `
 ## 全局规则
 
 ### 输出格式要求
@@ -98,6 +96,22 @@ export const GLOBAL_PROMPT_RULES = `
 `;
 
 /**
+ * 获取带有当前日期的全局提示词规则
+ * 每次调用都会获取最新的日期
+ */
+export function getGlobalPromptRules(): string {
+  return `
+## 系统信息
+【当前日期】${getCurrentBeijingDate()}
+
+${BASE_PROMPT_RULES}`;
+}
+
+// 为了向后兼容，保留GLOBAL_PROMPT_RULES常量
+// 但建议使用getGlobalPromptRules()函数以获取实时日期
+export const GLOBAL_PROMPT_RULES = getGlobalPromptRules();
+
+/**
  * 分类规则（可选，用于不同类型顾问的特定规范）
  */
 export const CATEGORY_RULES = {
@@ -131,12 +145,12 @@ export const CATEGORY_RULES = {
 };
 
 /**
- * 获取完整的提示词规则
+ * 获取完整的提示词规则（带实时日期）
  * @param category 顾问分类（可选）
  * @returns 组装后的规则文本
  */
 export function getPromptRules(category?: keyof typeof CATEGORY_RULES): string {
-  let rules = GLOBAL_PROMPT_RULES;
+  let rules = getGlobalPromptRules();
   
   if (category && CATEGORY_RULES[category]) {
     rules += `\n${CATEGORY_RULES[category]}`;

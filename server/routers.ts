@@ -494,9 +494,9 @@ export const appRouter = router({
       }));
 
       // Build system prompt with global rules + agent-specific prompt + user inputs
-      const { GLOBAL_PROMPT_RULES } = await import("../shared/promptRules");
+      const { getGlobalPromptRules } = await import("../shared/promptRules");
       
-      let systemPrompt = `${GLOBAL_PROMPT_RULES}\n\n## 专业角色\n${agent.systemPrompt}`;
+      let systemPrompt = `${getGlobalPromptRules()}\n\n## 专业角色\n${agent.systemPrompt}`;
       
       if (input.userInputs) {
         const inputFields = JSON.parse(agent.inputFields) as Array<{ name: string; label: string }>;
