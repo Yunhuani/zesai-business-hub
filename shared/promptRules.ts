@@ -3,7 +3,20 @@
  * 所有AI顾问共享的基础规范，确保输出质量和一致性
  */
 
+// 获取当前北京时间日期
+function getCurrentBeijingDate(): string {
+  const now = new Date();
+  const beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  const year = beijingTime.getUTCFullYear();
+  const month = beijingTime.getUTCMonth() + 1;
+  const day = beijingTime.getUTCDate();
+  return `${year}年${month}月${day}日`;
+}
+
 export const GLOBAL_PROMPT_RULES = `
+## 系统信息
+【当前日期】${getCurrentBeijingDate()}
+
 ## 全局规则
 
 ### 输出格式要求

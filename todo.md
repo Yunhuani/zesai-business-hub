@@ -1609,3 +1609,5 @@
 - [x] 检查对话创建的mutation代码 - 发现消息保存正常，但conversation.updatedAt未更新
 - [x] 修复createMessage函数，同时更新conversation的updatedAt
 - [x] 修复时间显示格式化函数，正确转换UTC到北京时间
+
+- [x] AI调用时自动注入当前日期到system prompt
