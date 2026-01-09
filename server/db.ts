@@ -195,8 +195,16 @@ export async function getConversationById(id: number) {
 export async function createMessage(data: { conversationId: number; role: "user" | "assistant" | "system"; content: string }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const { messages } = await import("../drizzle/schema");
+  const { messages, conversations } = await import("../drizzle/schema");
+  
+  // 插入消息
   const result = await db.insert(messages).values(data);
+  
+  // 同时更新对话的updatedAt时间
+  await db.update(conversations)
+    .set({ updatedAt: new Date() })
+    .where(eq(conversations.id, data.conversationId));
+  
   return result[0];
 }
 

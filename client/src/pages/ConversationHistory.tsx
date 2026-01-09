@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { APP_TITLE } from "@/const";
 import { trpc } from "@/lib/trpc";
+import { formatToBeijingTime } from "@/utils/formatTime";
 import { Clock, MessageSquare, ArrowLeft, Target, FileText, TrendingUp, Lightbulb, DollarSign, Sparkles, Briefcase, GraduationCap, Users, Award, BarChart, Megaphone, Tag, Bot } from "lucide-react";
 import { Link } from "wouter";
 
@@ -102,14 +103,7 @@ export default function ConversationHistory() {
                         </h3>
                         <span className="text-sm text-muted-foreground flex items-center gap-1 flex-shrink-0">
                           <Clock className="w-4 h-4" />
-                          {new Date(conv.updatedAt).toLocaleString("zh-CN", {
-                            timeZone: "Asia/Shanghai",
-                            year: "numeric",
-                            month: "2-digit",
-                            day: "2-digit",
-                            hour: "2-digit",
-                            minute: "2-digit"
-                          })}
+                          {formatToBeijingTime(conv.updatedAt)}
                         </span>
                       </div>
                       <p className="text-muted-foreground truncate">

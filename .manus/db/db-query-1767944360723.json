@@ -1,0 +1,70 @@
+{
+  "query": "SELECT id, name, email, openId FROM users ORDER BY id DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, name, email, openId FROM users ORDER BY id DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "13350001",
+      "name": "thecissp",
+      "email": "thecissp@gmail.com",
+      "openId": "email_thecissp@gmail.com"
+    },
+    {
+      "id": "13320001",
+      "name": "tonlon924",
+      "email": "tonlon924@163.com",
+      "openId": "email_tonlon924@163.com"
+    },
+    {
+      "id": "13290001",
+      "name": "bing sun",
+      "email": "sun@topduty.com",
+      "openId": "email_sun@topduty.com"
+    },
+    {
+      "id": "13260002",
+      "name": "yifeng",
+      "email": "yifeng123a@gmail.com",
+      "openId": "email_yifeng123a@gmail.com"
+    },
+    {
+      "id": "13260001",
+      "name": "涂明",
+      "email": "275392122@qq.com",
+      "openId": "email_275392122@qq.com"
+    },
+    {
+      "id": "13230010",
+      "name": "德德",
+      "email": "598364001@qq.com",
+      "openId": "email_598364001@qq.com"
+    },
+    {
+      "id": "13200031",
+      "name": "DK",
+      "email": "dkwong01@gmail.com",
+      "openId": "email_dkwong01@gmail.com"
+    },
+    {
+      "id": "13200030",
+      "name": "jeff",
+      "email": "403230810@qq.com",
+      "openId": "email_403230810@qq.com"
+    },
+    {
+      "id": "13200009",
+      "name": "test11",
+      "email": "test11@zesiai.com",
+      "openId": "email_test11@zesiai.com"
+    },
+    {
+      "id": "13200003",
+      "name": "test_referral_new_20260108",
+      "email": "test_referral_new_20260108@test.com",
+      "openId": "email_test_referral_new_20260108@test.com"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\topenId\n13350001\tthecissp\tthecissp@gmail.com\temail_thecissp@gmail.com\n13320001\ttonlon924\ttonlon924@163.com\temail_tonlon924@163.com\n13290001\tbing sun\tsun@topduty.com\temail_sun@topduty.com\n13260002\tyifeng\tyifeng123a@gmail.com\temail_yifeng123a@gmail.com\n13260001\t涂明\t275392122@qq.com\temail_275392122@qq.com\n13230010\t德德\t598364001@qq.com\temail_598364001@qq.com\n13200031\tDK\tdkwong01@gmail.com\temail_dkwong01@gmail.com\n13200030\tjeff\t403230810@qq.com\temail_403230810@qq.com\n13200009\ttest11\ttest11@zesiai.com\temail_test11@zesiai.com\n13200003\ttest_referral_new_20260108\ttest_referral_new_20260108@test.com\temail_test_referral_new_20260108@test.com\n",
+  "stderr": "",
+  "execution_time_ms": 403
+}

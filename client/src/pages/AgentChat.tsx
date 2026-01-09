@@ -23,6 +23,7 @@ import { InsufficientCreditsDialog } from "@/components/InsufficientCreditsDialo
 import { LoginMethodDialog } from "@/components/LoginMethodDialog";
 import { WeChatBrowserGuide } from "@/components/WeChatBrowserGuide";
 import { isWeChatBrowser } from "@/utils/wechatDetector";
+import { formatToBeijingTimeShort } from "@/utils/formatTime";
 import { trackAgent, AgentEvents } from "@/lib/analytics";
 
 export default function AgentChat() {
@@ -657,13 +658,7 @@ export default function AgentChat() {
                         <Link href={`/conversation/${conv.id}`} className="flex flex-col gap-1 py-2">
                           <div className="font-medium truncate">{conv.title}</div>
                           <div className="text-xs text-muted-foreground">
-                            {new Date(conv.updatedAt).toLocaleString("zh-CN", {
-                              timeZone: 'Asia/Shanghai',
-                              month: "2-digit",
-                              day: "2-digit",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {formatToBeijingTimeShort(conv.updatedAt)}
                           </div>
                         </Link>
                       </DropdownMenuItem>
