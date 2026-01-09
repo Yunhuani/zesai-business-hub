@@ -151,8 +151,10 @@ export async function createConversation(data: { userId: number; agentId: number
 export async function getUserConversations(userId: number) {
   const db = await getDb();
   if (!db) return [];
-  const { conversations, agents } = await import("../drizzle/schema");
-  const { desc } = await import("drizzle-orm");
+  const { conversations, agents, messages } = await import("../drizzle/schema");
+  const { desc, exists, and } = await import("drizzle-orm");
+  
+  // 只返回有用户消息的对话（过滤掉只有欢迎语的空对话）
   return db
     .select({
       id: conversations.id,
@@ -165,7 +167,21 @@ export async function getUserConversations(userId: number) {
     })
     .from(conversations)
     .leftJoin(agents, eq(conversations.agentId, agents.id))
-    .where(eq(conversations.userId, userId))
+    .where(
+      and(
+        eq(conversations.userId, userId),
+        exists(
+          db.select({ id: messages.id })
+            .from(messages)
+            .where(
+              and(
+                eq(messages.conversationId, conversations.id),
+                eq(messages.role, "user")
+              )
+            )
+        )
+      )
+    )
     .orderBy(desc(conversations.updatedAt));
 }
 
