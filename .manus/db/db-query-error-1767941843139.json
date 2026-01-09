@@ -1,0 +1,13 @@
+{
+  "query": "SELECT c.id, c.title, c.\"agentId\", c.\"userId\", c.\"createdAt\", c.\"updatedAt\", u.email, a.name as agent_name\nFROM conversations c \nLEFT JOIN users u ON c.\"userId\" = u.id\nLEFT JOIN agents a ON c.\"agentId\" = a.id\nORDER BY c.\"createdAt\" DESC \nLIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT c.id, c.title, c.\"agentId\", c.\"userId\", c.\"createdAt\", c.\"updatedAt\", u.email, a.name as agent_name\nFROM conversations c \nLEFT JOIN users u ON c.\"userId\" = u.id\nLEFT JOIN agents a ON c.\"agentId\" = a.id\nORDER BY c.\"createdAt\" DESC \nLIMIT 20;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1064 (42000) at line 1: You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 33 near \"\"agentId\", c.\"userId\", c.\"createdAt\", c.\"updatedAt\", u.email, a.name as agent_name",
+    "FROM conversations c ",
+    "LEFT JOIN users u ON c.\"userId\" = u.id",
+    "LEFT JOIN agents a ON c.\"agentId\" = a.id",
+    "ORDER BY c.\"createdAt\" DESC ",
+    "LIMIT 20\""
+  ]
+}

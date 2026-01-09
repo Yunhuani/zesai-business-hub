@@ -84,7 +84,7 @@ export default function AgentChat() {
   );
 
   // Get all conversations for history dropdown
-  const { data: allConversations } = trpc.conversation.list.useQuery(
+  const { data: allConversations, refetch: refetchConversations } = trpc.conversation.list.useQuery(
     undefined,
     { enabled: isAuthenticated }
   );
@@ -197,6 +197,9 @@ export default function AgentChat() {
         conversationId: newConversationId,
         agentId: effectiveAgentId,
       });
+      
+      // 刷新历史对话列表，确保新对话立即显示
+      refetchConversations();
       
       // 如果有待发送的消息，现在发送
       if (pendingMessage) {
