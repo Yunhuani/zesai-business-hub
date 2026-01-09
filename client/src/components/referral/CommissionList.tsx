@@ -1,7 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { zhCN } from "date-fns/locale";
+import { formatMonthDay } from "@/lib/dateUtils";
 
 interface Commission {
   id: number;
@@ -105,7 +104,7 @@ export default function CommissionList({ commissions, loading }: CommissionListP
                 <div>
                   <div className="text-muted-foreground">创建时间</div>
                   <div className="font-medium">
-                    {format(new Date(commission.createdAt), "M月d日", { locale: zhCN })}
+                    {formatMonthDay(commission.createdAt)}
                   </div>
                 </div>
               </div>
@@ -117,7 +116,7 @@ export default function CommissionList({ commissions, loading }: CommissionListP
                     冻结中，7天内无退款后自动确认
                     {commission.confirmedAt && (
                       <span>
-                        ，预计{format(new Date(commission.confirmedAt), "M月d日", { locale: zhCN })}
+                        ，预计{formatMonthDay(commission.confirmedAt!)}
                         确认
                       </span>
                     )}
@@ -128,7 +127,7 @@ export default function CommissionList({ commissions, loading }: CommissionListP
                     已确认，可提现
                     {commission.availableAt && (
                       <span>
-                        （{format(new Date(commission.availableAt), "M月d日", { locale: zhCN })}
+                        （{formatMonthDay(commission.availableAt!)}
                         后可提现）
                       </span>
                     )}

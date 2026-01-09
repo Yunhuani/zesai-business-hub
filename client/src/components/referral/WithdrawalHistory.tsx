@@ -1,7 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { zhCN } from "date-fns/locale";
+import { formatMonthDay } from "@/lib/dateUtils";
 
 interface Withdrawal {
   id: number;
@@ -94,8 +93,8 @@ export default function WithdrawalHistory({ withdrawals, loading }: WithdrawalHi
                   </Badge>
                   <div className="text-xs text-muted-foreground mt-1">
                     {withdrawal.status === "completed" && withdrawal.completedAt
-                      ? format(new Date(withdrawal.completedAt), "M月d日", { locale: zhCN })
-                      : format(new Date(withdrawal.createdAt), "M月d日", { locale: zhCN })}
+                      ? formatMonthDay(withdrawal.completedAt)
+                      : formatMonthDay(withdrawal.createdAt)}
                   </div>
                 </div>
               </div>

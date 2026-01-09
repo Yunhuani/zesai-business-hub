@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 
 import { APP_LOGO, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
+import { formatDateTime, formatDate } from "@/lib/dateUtils";
 import * as Icons from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
@@ -63,16 +64,7 @@ export default function CreditUsage() {
     );
   }
 
-  const formatDate = (date: Date | string) => {
-    const d = new Date(date);
-    return d.toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  // 使用统一的时间格式化工具（北京时间）
 
   const getPlanName = (plan: string) => {
     const planNames: Record<string, string> = {

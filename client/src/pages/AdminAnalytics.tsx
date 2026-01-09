@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
+import { formatDateTime, formatDate, formatShortMonthDay } from "@/lib/dateUtils";
 import * as Icons from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -266,7 +267,7 @@ function AgentHeatRanking() {
                   <TableHead>顾问</TableHead>
                   {trendData.dates.map((date) => (
                     <TableHead key={date} className="text-center text-xs">
-                      {new Date(date).toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" })}
+                      {formatShortMonthDay(date)}
                     </TableHead>
                   ))}
                   <TableHead className="text-right">7天总计</TableHead>
@@ -357,7 +358,7 @@ function PaymentFailureMonitor({ failedOrders }: { failedOrders: any[] }) {
                     <TableCell>{order.plan}</TableCell>
                     <TableCell>¥{(order.amount / 100).toFixed(2)}</TableCell>
                     <TableCell className="text-xs">
-                      {new Date(order.createdAt).toLocaleString('zh-CN')}
+                      {formatDateTime(order.createdAt)}
                     </TableCell>
                     <TableCell>
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-amber-100 text-amber-800">
@@ -446,10 +447,10 @@ function UserAccessFrequency({ accessStats }: { accessStats: any[] }) {
                       </span>
                     </TableCell>
                     <TableCell className="text-xs">
-                      {stat.firstAccess ? new Date(stat.firstAccess as string).toLocaleDateString('zh-CN') : '-'}
+                      {stat.firstAccess ? formatDate(stat.firstAccess as string) : '-'}
                     </TableCell>
                     <TableCell className="text-xs">
-                      {stat.lastAccess ? new Date(stat.lastAccess as string).toLocaleDateString('zh-CN') : '-'}
+                      {stat.lastAccess ? formatDate(stat.lastAccess as string) : '-'}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -488,10 +489,10 @@ function UserAccessFrequency({ accessStats }: { accessStats: any[] }) {
                       </span>
                     </TableCell>
                     <TableCell className="text-xs">
-                      {stat.firstAccess ? new Date(stat.firstAccess as string).toLocaleDateString('zh-CN') : '-'}
+                      {stat.firstAccess ? formatDate(stat.firstAccess as string) : '-'}
                     </TableCell>
                     <TableCell className="text-xs">
-                      {stat.lastAccess ? new Date(stat.lastAccess as string).toLocaleDateString('zh-CN') : '-'}
+                      {stat.lastAccess ? formatDate(stat.lastAccess as string) : '-'}
                     </TableCell>
                     <TableCell>
                       <span className="text-xs text-amber-600">需要召回</span>

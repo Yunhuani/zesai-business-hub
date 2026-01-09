@@ -1,7 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { zhCN } from "date-fns/locale";
+import { formatMonthDay } from "@/lib/dateUtils";
 
 interface Referral {
   id: number;
@@ -75,7 +74,7 @@ export default function ReferralList({ referrals, loading }: ReferralListProps) 
                   {referral.status === "completed" ? "已完成" : "待完成"}
                 </Badge>
                 <div className="text-sm text-muted-foreground whitespace-nowrap">
-                  {format(new Date(referral.createdAt), "M月d日", { locale: zhCN })}
+                  {formatMonthDay(referral.createdAt)}
                 </div>
               </div>
             </div>
