@@ -602,7 +602,12 @@ export const appRouter = router({
         .leftJoin(users, eq(orders.userId, users.id))
         .orderBy(desc(orders.createdAt));
       
-      return result;
+      // 确保日期以ISO格式字符串返回，避免时区转换问题
+      return result.map(order => ({
+        ...order,
+        createdAt: order.createdAt instanceof Date ? order.createdAt.toISOString() : order.createdAt,
+        updatedAt: order.updatedAt instanceof Date ? order.updatedAt.toISOString() : order.updatedAt,
+      }));
     }),
   }),
   

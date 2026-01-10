@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, out_trade_no, created_at, created_at AT TIME ZONE 'UTC' as utc_time, created_at AT TIME ZONE 'Asia/Shanghai' as beijing_time FROM orders WHERE out_trade_no = 'ZS17680252919161356000' LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, out_trade_no, created_at, created_at AT TIME ZONE 'UTC' as utc_time, created_at AT TIME ZONE 'Asia/Shanghai' as beijing_time FROM orders WHERE out_trade_no = 'ZS17680252919161356000' LIMIT 1;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1064 (42000) at line 1: You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 55 near \"TIME ZONE 'UTC' as utc_time, created_at AT TIME ZONE 'Asia/Shanghai' as beijing_time FROM orders WHERE out_trade_no = 'ZS17680252919161356000' LIMIT 1\""
+  ]
+}
