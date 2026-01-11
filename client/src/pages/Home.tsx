@@ -118,79 +118,128 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b glass-effect sticky top-0 z-10">
-        <div className="container py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/zenith-icon-only.png" alt="泽思AI" className="w-10 h-10 rounded-xl" />
-            <h1 className="text-2xl font-bold">泽思 Zenith AI</h1>
+        <div className="container py-3 md:py-4 flex items-center justify-between">
+          {/* Logo区域 */}
+          <div className="flex items-center gap-2 md:gap-3">
+            <img src="/zenith-icon-only.png" alt="泽思AI" className="w-8 h-8 md:w-10 md:h-10 rounded-xl" />
+            <h1 className="hidden sm:block text-xl md:text-2xl font-bold">泽思 Zenith AI</h1>
           </div>
-          <div className="flex items-center gap-4">
+          
+          {/* 右侧操作区 */}
+          <div className="flex items-center gap-2 md:gap-4">
             {isAuthenticated && (
               <>
+                {/* 积分显示 - 移动端简化 */}
                 <CreditsDisplay />
-                {user?.role === "admin" && (
-                  <Link href="/admin">
+                
+                {/* 桌面端显示完整按钮 */}
+                <div className="hidden md:flex items-center gap-4">
+                  {user?.role === "admin" && (
+                    <Link href="/admin">
+                      <Button variant="outline" className="gap-2">
+                        <Icons.Settings className="w-4 h-4" />
+                        管理后台
+                      </Button>
+                    </Link>
+                  )}
+                  <Link href="/history">
                     <Button variant="outline" className="gap-2">
-                      <Icons.Settings className="w-4 h-4" />
-                      管理后台
+                      <Icons.History className="w-4 h-4" />
+                      历史记录
                     </Button>
                   </Link>
-                )}
-                <Link href="/history">
-                  <Button variant="outline" className="gap-2">
-                    <Icons.History className="w-4 h-4" />
-                    历史记录
-                  </Button>
-                </Link>
-                <Link href="/pricing">
-                  <Button variant="outline" className="gap-2">
-                    <Icons.Sparkles className="w-4 h-4" />
-                    升级套餐
-                  </Button>
-                </Link>
+                  <Link href="/pricing">
+                    <Button variant="outline" className="gap-2">
+                      <Icons.Sparkles className="w-4 h-4" />
+                      升级套餐
+                    </Button>
+                  </Link>
+                </div>
+                
+                {/* 移动端汉堡菜单 */}
+                <div className="md:hidden">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <Icons.Menu className="w-5 h-5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      {user?.role === "admin" && (
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin" className="flex items-center cursor-pointer">
+                            <Icons.Settings className="w-4 h-4 mr-2" />
+                            管理后台
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem asChild>
+                        <Link href="/history" className="flex items-center cursor-pointer">
+                          <Icons.History className="w-4 h-4 mr-2" />
+                          历史记录
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/pricing" className="flex items-center cursor-pointer">
+                          <Icons.Sparkles className="w-4 h-4 mr-2" />
+                          升级套餐
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-red-600 focus:text-red-600"
+                        onClick={async () => {
+                          await logout();
+                          setTimeout(() => {
+                            window.location.href = '/email-login';
+                          }, 0);
+                        }}
+                      >
+                        <Icons.LogOut className="w-4 h-4 mr-2" />
+                        退出登录
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </>
             )}
             {loading ? (
-              <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 md:w-8 md:h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
             ) : isAuthenticated ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="gap-2">
-                    <Icons.User className="w-4 h-4" />
-                    {user?.name || user?.email || user?.username}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>我的账号</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                    {user?.email && <div>邮箱: {user.email}</div>}
-                    {user?.username && <div>用户名: {user.username}</div>}
-                  </div>
-                  <DropdownMenuSeparator />
-                  {/* 推荐中心功能暂时隐藏 */}
-                  {/* <DropdownMenuItem asChild>
-                    <Link href="/referral-center" className="flex items-center cursor-pointer">
-                      <Icons.Gift className="w-4 h-4 mr-2" />
-                      推荐中心
-                    </Link>
-                  </DropdownMenuItem> */}
-                  {/* <DropdownMenuSeparator /> */}
-                  <DropdownMenuItem
-                    className="text-red-600 focus:text-red-600"
-                    onClick={async () => {
-                      await logout();
-                      setTimeout(() => {
-                        window.location.href = '/email-login';
-                      }, 0);
-                    }}
-                  >
-                    <Icons.LogOut className="w-4 h-4 mr-2" />
-                    退出登录
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              /* 桌面端用户菜单 */
+              <div className="hidden md:block">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="gap-2">
+                      <Icons.User className="w-4 h-4" />
+                      {user?.name || user?.email || user?.username}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>我的账号</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                      {user?.email && <div>邮箱: {user.email}</div>}
+                      {user?.username && <div>用户名: {user.username}</div>}
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-red-600 focus:text-red-600"
+                      onClick={async () => {
+                        await logout();
+                        setTimeout(() => {
+                          window.location.href = '/email-login';
+                        }, 0);
+                      }}
+                    >
+                      <Icons.LogOut className="w-4 h-4 mr-2" />
+                      退出登录
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             ) : (
-              <Button asChild>
+              <Button asChild size="sm" className="md:size-default">
                 <a href="/email-login">登录</a>
               </Button>
             )}
@@ -199,23 +248,23 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="container py-20 text-center relative overflow-hidden">
+      <section className="container py-10 md:py-20 text-center relative overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-pink-900/20 animate-gradient" />
         
         {/* WeChat Browser Guide */}
         {isInWeChatBrowser && <WeChatBrowserGuide />}
         
         <div className="animate-fade-in-up">
-          <h2 className="text-6xl md:text-7xl font-extrabold mb-8 bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent leading-tight">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-4 md:mb-8 bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent leading-tight">
             您的AI商业顾问
           </h2>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto mb-6 md:mb-12 leading-relaxed px-2">
             将全球顶级咨询公司的方法论，与前沿AI大模型相结合。提供麦肯锡级别的战略规划、品牌营销、增长策略、融资规划等全流程解决方案。
           </p>
           
           {/* 智能搜索框 - 移至Hero区域 */}
           {!agentsLoading && agents && (
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-2xl mx-auto px-2">
               <SmartAssistantSearch 
                 smartAssistantId={agents.find(a => a.name === '智能AI助手')?.id || 0}
               />

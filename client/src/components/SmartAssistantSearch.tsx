@@ -34,13 +34,13 @@ export function SmartAssistantSearch({ smartAssistantId }: SmartAssistantSearchP
         </p>
       </div>
       
-      <div className="flex gap-3 items-center bg-background/80 backdrop-blur-sm border-2 border-purple-200/50 rounded-xl p-3 shadow-diffuse hover:shadow-lg hover:border-purple-300/70 transition-all duration-300">
+      <div className="flex gap-2 md:gap-3 items-center bg-background/80 backdrop-blur-sm border-2 border-purple-200/50 rounded-xl p-2 md:p-3 shadow-diffuse hover:shadow-lg hover:border-purple-300/70 transition-all duration-300">
         <Textarea
           placeholder="描述你的商业挑战或目标..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base bg-transparent min-h-[40px] max-h-[120px] resize-none py-2"
+          className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm md:text-base bg-transparent min-h-[36px] md:min-h-[40px] max-h-[120px] resize-none py-2"
           rows={1}
           style={{
             height: 'auto',
@@ -58,10 +58,10 @@ export function SmartAssistantSearch({ smartAssistantId }: SmartAssistantSearchP
         <Button
           onClick={handleSearch}
           disabled={!query.trim()}
-          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-6 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-4 py-4 md:px-8 md:py-6 text-sm md:text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
         >
-          <Sparkles className="w-5 h-5 mr-2" />
-          开始咨询
+          <Sparkles className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
+          <span className="hidden md:inline">开始咨询</span>
         </Button>
       </div>
     </div>
