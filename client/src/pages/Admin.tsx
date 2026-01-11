@@ -152,6 +152,22 @@ export default function Admin() {
               </Button>
             </CardContent>
           </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setLocation("/admin/knowledge")}>
+            <CardHeader>
+              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-xl flex items-center justify-center mb-4">
+                <Icons.Database className="w-6 h-6 text-white" />
+              </div>
+              <CardTitle>知识库管理</CardTitle>
+              <CardDescription>管理AI顾问的知识库文档，提升回答质量</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" className="w-full">
+                <Icons.FileText className="w-4 h-4 mr-2" />
+                管理知识库
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

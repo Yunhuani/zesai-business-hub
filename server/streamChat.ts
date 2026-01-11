@@ -101,6 +101,7 @@ export async function handleStreamChat(req: Request, res: Response) {
 
     // Build system prompt with global rules + agent-specific prompt + user inputs
     const { getGlobalPromptRules } = await import("../shared/promptRules");
+    const { searchKnowledge, buildRAGPrompt, saveMessageKnowledgeRefs } = await import("./_core/knowledge");
     
     let systemPrompt = `${getGlobalPromptRules()}\n\n## 专业角色\n${agent.systemPrompt}`;
     
@@ -110,6 +111,19 @@ export async function handleStreamChat(req: Request, res: Response) {
         .map((field: { name: string; label: string }) => `${field.label}: ${userInputs[field.name] || "未提供"}`) 
         .join("\n");
       systemPrompt = `${systemPrompt}\n\n## 用户提供的信息\n${inputContext}`;
+    }
+    
+    // RAG: Search knowledge base for relevant content
+    let knowledgeResults: Awaited<ReturnType<typeof searchKnowledge>> = [];
+    try {
+      knowledgeResults = await searchKnowledge(content, agent.id, 5);
+      if (knowledgeResults.length > 0) {
+        systemPrompt = buildRAGPrompt(content, knowledgeResults, systemPrompt);
+        console.log(`[RAG] Found ${knowledgeResults.length} relevant knowledge chunks for agent ${agent.id}`);
+      }
+    } catch (ragError) {
+      console.error('[RAG] Knowledge search failed:', ragError);
+      // Continue without RAG enhancement
     }
 
     // Set up SSE (Server-Sent Events)
