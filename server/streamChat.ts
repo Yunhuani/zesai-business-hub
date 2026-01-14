@@ -50,7 +50,7 @@ export async function handleStreamChat(req: Request, res: Response) {
       return;
     }
 
-    const { createMessage, getConversationMessages, getConversationById, getAgentById } = await import("./db");
+    const { createMessage, getConversationMessages, getConversationById, getAgentByIdFull } = await import("./db");
     const { checkCredits, deductCredits, CREDITS_COST, checkAndResetCredits, getUserCredits } = await import("./creditsManager");
     
     // Check and reset credits if needed
@@ -79,7 +79,7 @@ export async function handleStreamChat(req: Request, res: Response) {
       return;
     }
 
-    const agent = await getAgentById(conversation.agentId);
+    const agent = await getAgentByIdFull(conversation.agentId);
     if (!agent) {
       res.status(404).json({ error: "Agent not found" });
       return;

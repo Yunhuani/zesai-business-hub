@@ -333,9 +333,14 @@ export const appRouter = router({
         return val as { id: number };
       }
       throw new Error("Invalid input: expected { id: number }");
-    }).query(async ({ input }) => {
+    }).query(async ({ ctx, input }) => {
       const { getConversationById } = await import("./db");
-      return getConversationById(input.id);
+      const conversation = await getConversationById(input.id);
+      // 安全：校验对话是否属于当前用户
+      if (conversation && conversation.userId !== ctx.user.id) {
+        throw new Error("Unauthorized: 无权访问此对话");
+      }
+      return conversation;
     }),
     getLatestByAgent: protectedProcedure.input((val: unknown) => {
       if (typeof val === "object" && val !== null && "agentId" in val && typeof val.agentId === "number") {
@@ -450,7 +455,7 @@ export const appRouter = router({
       }
       throw new Error("Invalid input: expected { conversationId: number, content: string, userInputs?: Record<string, string> }");
     }).mutation(async ({ ctx, input }) => {
-      const { createMessage, getConversationMessages, getConversationById, getAgentById } = await import("./db");
+      const { createMessage, getConversationMessages, getConversationById, getAgentByIdFull } = await import("./db");
       const { checkCredits, deductCredits, CREDITS_COST, checkAndResetCredits, getUserCredits } = await import("./creditsManager");
       
       // Check and reset credits if needed
@@ -477,7 +482,7 @@ export const appRouter = router({
       if (!conversation) throw new Error("Conversation not found");
       if (conversation.userId !== ctx.user.id) throw new Error("Unauthorized");
 
-      const agent = await getAgentById(conversation.agentId);
+      const agent = await getAgentByIdFull(conversation.agentId);
       if (!agent) throw new Error("Agent not found");
 
       // Save user message

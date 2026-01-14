@@ -121,10 +121,39 @@ export async function getAllAgents() {
   const db = await getDb();
   if (!db) return [];
   const { agents } = await import("../drizzle/schema");
-  return db.select().from(agents);
+  // 安全：不返回 systemPrompt 字段
+  return db.select({
+    id: agents.id,
+    name: agents.name,
+    description: agents.description,
+    icon: agents.icon,
+    welcomeMessage: agents.welcomeMessage,
+    inputFields: agents.inputFields,
+    createdAt: agents.createdAt,
+    updatedAt: agents.updatedAt,
+  }).from(agents);
 }
 
 export async function getAgentById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const { agents } = await import("../drizzle/schema");
+  // 安全：不返回 systemPrompt 字段
+  const result = await db.select({
+    id: agents.id,
+    name: agents.name,
+    description: agents.description,
+    icon: agents.icon,
+    welcomeMessage: agents.welcomeMessage,
+    inputFields: agents.inputFields,
+    createdAt: agents.createdAt,
+    updatedAt: agents.updatedAt,
+  }).from(agents).where(eq(agents.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// 服务端内部使用：获取完整agent数据（含 systemPrompt）
+export async function getAgentByIdFull(id: number) {
   const db = await getDb();
   if (!db) return undefined;
   const { agents } = await import("../drizzle/schema");

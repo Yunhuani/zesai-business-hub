@@ -1621,4 +1621,8 @@
 - [x] 优化Hero区域间距（移动端减少padding）
 - [x] 优化搜索框按钮尺寸（移动端缩小）
 - [x] 测试移动端适配效果
-- [ ] 创建检查点
+- [x] 创建检查点
+
+## 安全漏洞修复
+- [x] 修复Agent提示词泄露（过滤systemPrompt字段）
+- [x] 修复对话越权访问（conversation.getById增加userId校验）
