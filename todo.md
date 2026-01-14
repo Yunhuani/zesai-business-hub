@@ -1626,3 +1626,6 @@
 ## 安全漏洞修复
 - [x] 修复Agent提示词泄露（过滤systemPrompt字段）
 - [x] 修复对话越权访问（conversation.getById增加userId校验）
+
+## 社交分享优化
+- [x] 添加Open Graph标签（og:title, og:description, og:image, og:url）
