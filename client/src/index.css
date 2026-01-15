@@ -221,6 +221,39 @@
 /* 卡片悬停增强效果 */
 .card-hover-enhanced {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-hover-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  transition: none;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.card-hover-enhanced:hover::before {
+  animation: scan-light 0.6s ease-out forwards;
+}
+
+@keyframes scan-light {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 .card-hover-enhanced:hover {

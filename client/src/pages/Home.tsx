@@ -104,6 +104,30 @@ export default function Home() {
     }));
   };
 
+  // 场景化引导配置
+  const SCENARIO_CHIPS = [
+    { id: 'money', label: '💰 我要搞钱', targetCategory: 'strategy' },
+    { id: 'traffic', label: '📈 我要流量', targetCategory: 'marketing' },
+    { id: 'manage', label: '🏢 我要管理', targetCategory: 'operation' },
+    { id: 'opportunity', label: '💡 寻找机会', targetCategory: 'investment' },
+  ];
+
+  // 点击场景胶囊：展开对应分类并滚动
+  const handleScenarioClick = (targetCategory: string) => {
+    // 展开目标分类
+    setOpenCategories(prev => ({
+      ...prev,
+      [targetCategory]: true,
+    }));
+    // 滚动到目标分类
+    setTimeout(() => {
+      const element = document.getElementById(`category-${targetCategory}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
+
   // 按分类组织agents
   const getAgentsByCategory = (categoryAgentNames: string[]) => {
     if (!agents) return [];
@@ -278,6 +302,21 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 场景化引导胶囊 */}
+      <section className="container pb-8">
+        <div className="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto">
+          {SCENARIO_CHIPS.map((chip) => (
+            <button
+              key={chip.id}
+              onClick={() => handleScenarioClick(chip.targetCategory)}
+              className="px-5 py-2.5 rounded-full bg-white/5 border border-purple-500/30 text-sm font-medium text-gray-200 hover:bg-purple-500/20 hover:border-purple-400/60 hover:text-white hover:scale-105 transition-all duration-300 backdrop-blur-sm"
+            >
+              {chip.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
       {/* Agents by Category */}
       <section className="container pb-20">
         {agentsLoading ? (
@@ -297,7 +336,7 @@ export default function Home() {
                   open={isOpen}
                   onOpenChange={() => toggleCategory(category.id)}
                 >
-                  <Card className="border-2 overflow-hidden">
+                  <Card id={`category-${category.id}`} className="border-2 overflow-hidden scroll-mt-20">
                     <CollapsibleTrigger className="w-full">
                       <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
                         <div className="flex items-center justify-between">

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Sparkles } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 
 interface SmartAssistantSearchProps {
@@ -21,11 +21,11 @@ export function SmartAssistantSearch({ smartAssistantId }: SmartAssistantSearchP
   const [query, setQuery] = useState("");
   const [, setLocation] = useLocation();
   const [placeholder, setPlaceholder] = useState("");
-  const [isTyping, setIsTyping] = useState(true);
   const [isFocused, setIsFocused] = useState(false);
-  const questionIndexRef = useRef(0);
-  const charIndexRef = useRef(0);
-  const isDeleteRef = useRef(false);
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   // 打字机效果
   useEffect(() => {
@@ -34,39 +34,44 @@ export function SmartAssistantSearch({ smartAssistantId }: SmartAssistantSearchP
       return;
     }
 
-    const currentQuestion = EXAMPLE_QUESTIONS[questionIndexRef.current];
-    
-    const typeInterval = setInterval(() => {
-      if (!isDeleteRef.current) {
-        // 打字阶段
-        if (charIndexRef.current < currentQuestion.length) {
-          setPlaceholder(currentQuestion.slice(0, charIndexRef.current + 1));
-          charIndexRef.current++;
-        } else {
-          // 打字完成，等待2秒后开始删除
-          clearInterval(typeInterval);
-          setTimeout(() => {
-            isDeleteRef.current = true;
-            setIsTyping(true);
-          }, 2000);
-        }
-      } else {
-        // 删除阶段
-        if (charIndexRef.current > 0) {
-          charIndexRef.current--;
-          setPlaceholder(currentQuestion.slice(0, charIndexRef.current));
-        } else {
-          // 删除完成，切换到下一个问题
-          clearInterval(typeInterval);
-          isDeleteRef.current = false;
-          questionIndexRef.current = (questionIndexRef.current + 1) % EXAMPLE_QUESTIONS.length;
-          setIsTyping(true);
-        }
-      }
-    }, isDeleteRef.current ? 30 : 80); // 删除速度更快
+    const currentQuestion = EXAMPLE_QUESTIONS[questionIndex];
 
-    return () => clearInterval(typeInterval);
-  }, [query, isFocused, isTyping]);
+    if (isPaused) {
+      // 暂停2秒后开始删除
+      const pauseTimer = setTimeout(() => {
+        setIsPaused(false);
+        setIsDeleting(true);
+      }, 2000);
+      return () => clearTimeout(pauseTimer);
+    }
+
+    if (!isDeleting) {
+      // 打字阶段
+      if (charIndex < currentQuestion.length) {
+        const typeTimer = setTimeout(() => {
+          setPlaceholder(currentQuestion.slice(0, charIndex + 1));
+          setCharIndex(charIndex + 1);
+        }, 80);
+        return () => clearTimeout(typeTimer);
+      } else {
+        // 打字完成，进入暂停
+        setIsPaused(true);
+      }
+    } else {
+      // 删除阶段
+      if (charIndex > 0) {
+        const deleteTimer = setTimeout(() => {
+          setCharIndex(charIndex - 1);
+          setPlaceholder(currentQuestion.slice(0, charIndex - 1));
+        }, 30);
+        return () => clearTimeout(deleteTimer);
+      } else {
+        // 删除完成，切换到下一个问题
+        setIsDeleting(false);
+        setQuestionIndex((questionIndex + 1) % EXAMPLE_QUESTIONS.length);
+      }
+    }
+  }, [query, isFocused, questionIndex, charIndex, isDeleting, isPaused]);
 
   const handleSearch = () => {
     if (!query.trim()) return;
@@ -90,22 +95,16 @@ export function SmartAssistantSearch({ smartAssistantId }: SmartAssistantSearchP
     if (!query) {
       setIsFocused(false);
       // 重置打字机状态
-      questionIndexRef.current = 0;
-      charIndexRef.current = 0;
-      isDeleteRef.current = false;
+      setQuestionIndex(0);
+      setCharIndex(0);
+      setIsDeleting(false);
+      setIsPaused(false);
       setPlaceholder("");
-      setIsTyping(true);
     }
   };
 
   return (
     <div className="w-full max-w-4xl mx-auto">
-      <div className="text-center mb-4">
-        <p className="text-sm text-muted-foreground">
-          不知道选哪个AI顾问，可以在下方框内输入你想解决的问题
-        </p>
-      </div>
-      
       <div className="flex gap-2 md:gap-3 items-center bg-background/80 backdrop-blur-sm border-2 border-purple-200/50 rounded-xl p-2 md:p-3 shadow-diffuse hover:shadow-lg hover:border-purple-300/70 transition-all duration-300">
         <div className="flex-1 relative">
           <Textarea
@@ -148,6 +147,11 @@ export function SmartAssistantSearch({ smartAssistantId }: SmartAssistantSearchP
           <Sparkles className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
           <span className="hidden md:inline">开始咨询</span>
         </Button>
+      </div>
+      <div className="text-center mt-4">
+        <p className="text-sm text-muted-foreground">
+          不知道选哪个AI顾问，可以在上方框内输入你想解决的问题
+        </p>
       </div>
     </div>
   );
