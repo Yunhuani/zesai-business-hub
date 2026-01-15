@@ -1,0 +1,8 @@
+# 泽思AI - robots.txt
+# 允许所有搜索引擎爬虫抓取
+
+User-agent: *
+Allow: /
+
+# 站点地图
+Sitemap: https://www.zesiai.com/sitemap.xml

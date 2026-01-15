@@ -1633,3 +1633,8 @@
 ## 公安备案
 - [x] 添加公安备案图标到public目录
 - [x] 在Footer添加公安备案号链接（Home, Pricing, EmailLogin, About）
+
+## 百度SEO基础优化
+- [x] 创建robots.txt允许爬虫抓取
+- [x] 更新sitemap.xml日期
+- [x] 添加百度主动推送说明
