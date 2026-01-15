@@ -1629,3 +1629,7 @@
 
 ## 社交分享优化
 - [x] 添加Open Graph标签（og:title, og:description, og:image, og:url）
+
+## 公安备案
+- [x] 添加公安备案图标到public目录
+- [x] 在Footer添加公安备案号链接（Home, Pricing, EmailLogin, About）

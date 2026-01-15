@@ -552,7 +552,7 @@ export default function Home() {
             </a>
           </div>
           <div>© 2025 泽思 Zenith AI - 专业AI商业咨询平台</div>
-          <div>
+          <div className="flex justify-center items-center gap-4 flex-wrap">
             <a 
               href="https://beian.miit.gov.cn/" 
               target="_blank" 
@@ -560,6 +560,15 @@ export default function Home() {
               className="hover:text-foreground transition-colors"
             >
               沪ICP备2024048847号
+            </a>
+            <a 
+              href="https://beian.mps.gov.cn/#/query/webSearch?code=31011502404980" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-foreground transition-colors flex items-center gap-1"
+            >
+              <img src="/police-badge.png" alt="公安备案" className="w-4 h-4" />
+              沪公网安备31011502404980号
             </a>
           </div>
         </div>
