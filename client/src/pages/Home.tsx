@@ -24,6 +24,7 @@ import { WeChatBrowserGuide } from "@/components/WeChatBrowserGuide";
 import { isWeChatBrowser } from "@/utils/wechatDetector";
 import { trackConversion, ConversionEvents, trackAgent, AgentEvents } from "@/lib/analytics";
 import { useEffect } from "react";
+import { DataWaveBackground } from "@/components/DataWaveBackground";
 
 // Agent分类配置
 const AGENT_CATEGORIES = [
@@ -115,7 +116,11 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      {/* 数据波纹背景 */}
+      <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+        <DataWaveBackground />
+      </div>
       {/* Header */}
       <header className="border-b glass-effect sticky top-0 z-10">
         <div className="container py-3 md:py-4 flex items-center justify-between">
@@ -249,7 +254,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="container py-10 md:py-20 text-center relative overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-pink-900/20 animate-gradient" />
+
         
         {/* WeChat Browser Guide */}
         {isInWeChatBrowser && <WeChatBrowserGuide />}
