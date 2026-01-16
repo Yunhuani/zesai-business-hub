@@ -720,7 +720,7 @@ export default function AgentChat() {
                 {/* 临时欢迎消息（在数据库保存完成前显示） */}
                 {tempWelcomeMessage && (
                   <div className="flex justify-start">
-                    <div className="max-w-[90%] glass-effect rounded-lg p-3 md:p-4 text-sm md:text-base">
+                    <div className="max-w-[90%] text-sm md:text-base">
                       <EnhancedMessage content={tempWelcomeMessage} />
                     </div>
                   </div>
@@ -731,10 +731,10 @@ export default function AgentChat() {
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[90%] rounded-lg p-3 md:p-4 text-sm md:text-base ${
+                      className={`max-w-[90%] text-sm md:text-base ${
                         msg.role === "user"
-                          ? "bg-gradient-to-br from-blue-600 to-purple-600 text-white"
-                          : "glass-effect"
+                          ? "rounded-lg p-3 md:p-4 bg-gradient-to-br from-blue-600 to-purple-600 text-white"
+                          : ""
                       }`}
                     >
                       {msg.role === "assistant" ? (
@@ -824,7 +824,7 @@ export default function AgentChat() {
             </button>
             {/* 输入框 */}
             <Textarea
-              placeholder={!isAuthenticated ? "请先登录后开始咨询..." : "有问题，尽管问"}
+              placeholder={!isAuthenticated ? "请先登录后开始咨询..." : "请输入您的信息或问题..."}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
