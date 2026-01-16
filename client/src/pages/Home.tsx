@@ -151,7 +151,7 @@ export default function Home() {
           {/* Logo区域 */}
           <div className="flex items-center gap-2 md:gap-3">
             <img src="/zenith-icon-only.png" alt="泽思AI" className="w-8 h-8 md:w-10 md:h-10 rounded-xl" />
-            <h1 className="hidden sm:block text-xl md:text-2xl font-bold">泽思 Zenith AI</h1>
+            <h1 className="text-sm sm:text-xl md:text-2xl font-bold">泽思 Zenith AI</h1>
           </div>
           
           {/* 右侧操作区 */}
@@ -302,8 +302,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 场景化引导胶囊 */}
-      <section className="container pb-8">
+      {/* 场景化引导胶囊 - 暂时隐藏，后续优化 */}
+      {/* <section className="container pb-8">
         <div className="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto">
           {SCENARIO_CHIPS.map((chip) => (
             <button
@@ -315,7 +315,7 @@ export default function Home() {
             </button>
           ))}
         </div>
-      </section>
+      </section> */}
 
       {/* Agents by Category */}
       <section className="container pb-20">
