@@ -1,4 +1,5 @@
 import { getDb } from "../db";
+import { sql } from "drizzle-orm";
 
 // Types
 export type DocumentWeight = 'strong' | 'preferred' | 'reference';
@@ -45,23 +46,38 @@ export interface KnowledgeSearchResult {
 export async function getDocuments(agentId?: number): Promise<KnowledgeDocument[]> {
   const db = await getDb();
   
-  let query = `
-    SELECT id, name, original_name as "originalName", file_type as "fileType", 
-           file_size as "fileSize", s3_key as "s3Key", agent_id as "agentId",
-           weight, status, chunk_count as "chunkCount", error_message as "errorMessage",
-           created_at as "createdAt", updated_at as "updatedAt"
-    FROM knowledge_documents
-  `;
-  
+  let result;
   if (agentId === null) {
-    query += ` WHERE agent_id IS NULL`;
+    result = await db.execute(sql`
+      SELECT id, name, original_name as "originalName", file_type as "fileType", 
+             file_size as "fileSize", s3_key as "s3Key", agent_id as "agentId",
+             weight, status, chunk_count as "chunkCount", error_message as "errorMessage",
+             created_at as "createdAt", updated_at as "updatedAt"
+      FROM knowledge_documents
+      WHERE agent_id IS NULL
+      ORDER BY created_at DESC
+    `);
   } else if (agentId !== undefined) {
-    query += ` WHERE agent_id = ${agentId}`;
+    result = await db.execute(sql`
+      SELECT id, name, original_name as "originalName", file_type as "fileType", 
+             file_size as "fileSize", s3_key as "s3Key", agent_id as "agentId",
+             weight, status, chunk_count as "chunkCount", error_message as "errorMessage",
+             created_at as "createdAt", updated_at as "updatedAt"
+      FROM knowledge_documents
+      WHERE agent_id = ${agentId}
+      ORDER BY created_at DESC
+    `);
+  } else {
+    result = await db.execute(sql`
+      SELECT id, name, original_name as "originalName", file_type as "fileType", 
+             file_size as "fileSize", s3_key as "s3Key", agent_id as "agentId",
+             weight, status, chunk_count as "chunkCount", error_message as "errorMessage",
+             created_at as "createdAt", updated_at as "updatedAt"
+      FROM knowledge_documents
+      ORDER BY created_at DESC
+    `);
   }
   
-  query += ` ORDER BY created_at DESC`;
-  
-  const result = await db.execute(query);
   return result.rows as KnowledgeDocument[];
 }
 
@@ -70,7 +86,7 @@ export async function getDocuments(agentId?: number): Promise<KnowledgeDocument[
  */
 export async function getDocumentById(id: number): Promise<KnowledgeDocument | null> {
   const db = await getDb();
-  const result = await db.execute(`
+  const result = await db.execute(sql`
     SELECT id, name, original_name as "originalName", file_type as "fileType", 
            file_size as "fileSize", s3_key as "s3Key", agent_id as "agentId",
            weight, status, chunk_count as "chunkCount", error_message as "errorMessage",
@@ -93,12 +109,11 @@ export async function createDocument(data: {
   weight?: DocumentWeight;
 }): Promise<number> {
   const db = await getDb();
-  const result = await db.execute(`
+  const weight = data.weight || 'preferred';
+  const result = await db.execute(sql`
     INSERT INTO knowledge_documents (name, original_name, file_type, file_size, s3_key, agent_id, weight)
-    VALUES ('${data.name}', '${data.originalName}', '${data.fileType}', ${data.fileSize}, 
-            ${data.s3Key ? `'${data.s3Key}'` : 'NULL'}, 
-            ${data.agentId ?? 'NULL'}, 
-            '${data.weight || 'preferred'}')
+    VALUES (${data.name}, ${data.originalName}, ${data.fileType}, ${data.fileSize}, 
+            ${data.s3Key ?? null}, ${data.agentId ?? null}, ${weight})
     RETURNING id
   `);
   return (result.rows[0] as { id: number }).id;
@@ -114,17 +129,32 @@ export async function updateDocumentStatus(
   errorMessage?: string
 ): Promise<void> {
   const db = await getDb();
-  let query = `UPDATE knowledge_documents SET status = '${status}', updated_at = NOW()`;
   
-  if (chunkCount !== undefined) {
-    query += `, chunk_count = ${chunkCount}`;
+  if (chunkCount !== undefined && errorMessage) {
+    await db.execute(sql`
+      UPDATE knowledge_documents 
+      SET status = ${status}, chunk_count = ${chunkCount}, error_message = ${errorMessage}, updated_at = NOW()
+      WHERE id = ${id}
+    `);
+  } else if (chunkCount !== undefined) {
+    await db.execute(sql`
+      UPDATE knowledge_documents 
+      SET status = ${status}, chunk_count = ${chunkCount}, updated_at = NOW()
+      WHERE id = ${id}
+    `);
+  } else if (errorMessage) {
+    await db.execute(sql`
+      UPDATE knowledge_documents 
+      SET status = ${status}, error_message = ${errorMessage}, updated_at = NOW()
+      WHERE id = ${id}
+    `);
+  } else {
+    await db.execute(sql`
+      UPDATE knowledge_documents 
+      SET status = ${status}, updated_at = NOW()
+      WHERE id = ${id}
+    `);
   }
-  if (errorMessage) {
-    query += `, error_message = '${errorMessage.replace(/'/g, "''")}'`;
-  }
-  
-  query += ` WHERE id = ${id}`;
-  await db.execute(query);
 }
 
 /**
@@ -132,7 +162,7 @@ export async function updateDocumentStatus(
  */
 export async function updateDocumentWeight(id: number, weight: DocumentWeight): Promise<void> {
   const db = await getDb();
-  await db.execute(`UPDATE knowledge_documents SET weight = '${weight}', updated_at = NOW() WHERE id = ${id}`);
+  await db.execute(sql`UPDATE knowledge_documents SET weight = ${weight}, updated_at = NOW() WHERE id = ${id}`);
 }
 
 /**
@@ -140,7 +170,7 @@ export async function updateDocumentWeight(id: number, weight: DocumentWeight): 
  */
 export async function deleteDocument(id: number): Promise<void> {
   const db = await getDb();
-  await db.execute(`DELETE FROM knowledge_documents WHERE id = ${id}`);
+  await db.execute(sql`DELETE FROM knowledge_documents WHERE id = ${id}`);
 }
 
 /**
@@ -151,12 +181,11 @@ export async function createChunks(documentId: number, chunks: { content: string
   
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
-    const content = chunk.content.replace(/'/g, "''");
-    const metadata = JSON.stringify(chunk.metadata || {}).replace(/'/g, "''");
+    const metadata = JSON.stringify(chunk.metadata || {});
     
-    await db.execute(`
+    await db.execute(sql`
       INSERT INTO knowledge_chunks (document_id, content, chunk_index, metadata)
-      VALUES (${documentId}, '${content}', ${i}, '${metadata}'::jsonb)
+      VALUES (${documentId}, ${chunk.content}, ${i}, ${metadata}::jsonb)
     `);
   }
 }
@@ -166,7 +195,7 @@ export async function createChunks(documentId: number, chunks: { content: string
  */
 export async function getChunksByDocument(documentId: number): Promise<KnowledgeChunk[]> {
   const db = await getDb();
-  const result = await db.execute(`
+  const result = await db.execute(sql`
     SELECT id, document_id as "documentId", content, chunk_index as "chunkIndex", 
            metadata, created_at as "createdAt"
     FROM knowledge_chunks 
@@ -269,21 +298,27 @@ export async function searchKnowledge(
   const db = await getDb();
   
   // Get all chunks from relevant documents (global + agent-specific)
-  let docQuery = `
-    SELECT d.id as doc_id, d.name as doc_name, d.weight,
-           c.id as chunk_id, c.content, c.metadata
-    FROM knowledge_documents d
-    JOIN knowledge_chunks c ON c.document_id = d.id
-    WHERE d.status = 'completed'
-  `;
-  
+  let result;
   if (agentId) {
-    docQuery += ` AND (d.agent_id IS NULL OR d.agent_id = ${agentId})`;
+    result = await db.execute(sql`
+      SELECT d.id as doc_id, d.name as doc_name, d.weight,
+             c.id as chunk_id, c.content, c.metadata
+      FROM knowledge_documents d
+      JOIN knowledge_chunks c ON c.document_id = d.id
+      WHERE d.status = 'completed'
+        AND (d.agent_id IS NULL OR d.agent_id = ${agentId})
+    `);
   } else {
-    docQuery += ` AND d.agent_id IS NULL`;
+    result = await db.execute(sql`
+      SELECT d.id as doc_id, d.name as doc_name, d.weight,
+             c.id as chunk_id, c.content, c.metadata
+      FROM knowledge_documents d
+      JOIN knowledge_chunks c ON c.document_id = d.id
+      WHERE d.status = 'completed'
+        AND d.agent_id IS NULL
+    `);
   }
   
-  const result = await db.execute(docQuery);
   const rows = result.rows as Array<{
     doc_id: number;
     doc_name: string;
@@ -372,7 +407,7 @@ export async function saveMessageKnowledgeRefs(
   const db = await getDb();
   
   for (const ref of refs) {
-    await db.execute(`
+    await db.execute(sql`
       INSERT INTO message_knowledge_refs (message_id, chunk_id, similarity_score)
       VALUES (${messageId}, ${ref.chunkId}, ${ref.similarityScore})
     `);
@@ -389,7 +424,7 @@ export async function getMessageKnowledgeRefs(messageId: number): Promise<Array<
   similarityScore: number;
 }>> {
   const db = await getDb();
-  const result = await db.execute(`
+  const result = await db.execute(sql`
     SELECT r.chunk_id as "chunkId", d.name as "documentName", 
            c.content, r.similarity_score as "similarityScore"
     FROM message_knowledge_refs r
