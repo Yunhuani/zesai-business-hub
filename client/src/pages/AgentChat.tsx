@@ -805,56 +805,57 @@ export default function AgentChat() {
       {/* Input area - fixed at bottom */}
       <div className="border-t glass-effect flex-shrink-0">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex gap-1.5 sm:gap-2">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf,.doc,.docx,.xls,.xlsx"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleFileUpload}
-                  title="上传文档"
-                  className="h-10 sm:h-12 w-10 sm:w-12"
-                >
-                  <Icons.Paperclip className="w-4 h-4" />
-                </Button>
-                <Textarea
-                  placeholder={!isAuthenticated ? "请先登录后开始咨询..." : "输入您的问题或信息..."}
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  disabled={!isAuthenticated || sendMessage.isPending || !conversationId}
-                  className="flex-1 min-h-[40px] max-h-[200px] resize-none text-sm sm:text-base py-2.5 sm:py-3"
-                  rows={1}
-                  style={{
-                    height: 'auto',
-                    overflowY: message.split('\n').length > 5 ? 'auto' : 'hidden',
-                    whiteSpace: 'pre-wrap',
-                    wordWrap: 'break-word',
-                    overflowWrap: 'break-word'
-                  }}
-                  onInput={(e) => {
-                    const target = e.target as HTMLTextAreaElement;
-                    target.style.height = 'auto';
-                    target.style.height = Math.min(target.scrollHeight, 200) + 'px';
-                  }}
-                />
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={!isAuthenticated || !message.trim() || sendMessage.isPending || !conversationId}
-                  className="gap-2 h-10 sm:h-12 px-3 sm:px-4"
-                >
-                  {sendMessage.isPending ? (
-                    <Icons.Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Icons.Send className="w-4 h-4" />
-                  )}
-                  <span className="hidden sm:inline">发送</span>
-                </Button>
+          {/* ChatGPT风格统一输入容器 */}
+          <div className="flex items-end gap-2 bg-zinc-800/50 border border-zinc-700 rounded-2xl px-3 py-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.doc,.docx,.xls,.xlsx"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            {/* 附件按钮 - 内部左侧 */}
+            <button
+              onClick={handleFileUpload}
+              title="上传文档"
+              className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-zinc-700"
+            >
+              <Icons.Plus className="w-5 h-5" />
+            </button>
+            {/* 输入框 */}
+            <Textarea
+              placeholder={!isAuthenticated ? "请先登录后开始咨询..." : "有问题，尽管问"}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={!isAuthenticated || sendMessage.isPending || !conversationId}
+              className="flex-1 min-h-[24px] max-h-[200px] resize-none text-sm sm:text-base bg-transparent border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 px-0 py-1"
+              rows={1}
+              style={{
+                height: 'auto',
+                overflowY: message.split('\n').length > 5 ? 'auto' : 'hidden',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word'
+              }}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = 'auto';
+                target.style.height = Math.min(target.scrollHeight, 200) + 'px';
+              }}
+            />
+            {/* 发送按钮 - 内部右侧 */}
+            <button
+              onClick={handleSendMessage}
+              disabled={!isAuthenticated || !message.trim() || sendMessage.isPending || !conversationId}
+              className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white text-black rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-200 transition-colors"
+            >
+              {sendMessage.isPending ? (
+                <Icons.Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Icons.ArrowUp className="w-4 h-4" />
+              )}
+            </button>
           </div>
           <p className="text-xs text-gray-500 text-center mt-2">AI 也可能会犯错，请核查重要信息。</p>
         </div>
