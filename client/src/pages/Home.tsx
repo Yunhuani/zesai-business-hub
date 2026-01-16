@@ -33,7 +33,7 @@ const AGENT_CATEGORIES = [
     name: "战略与规划",
     icon: "Target",
     description: "企业战略、商业模式、融资路演、竞品分析、一人公司",
-    agentNames: ["战略规划", "融资BP与路演", "竞品分析专家", "商业模式设计", "一人公司顾问"],
+    agentNames: ["战略规划", "融资商业计划书", "竞品分析专家", "商业模式设计", "一人公司顾问"],
     defaultOpen: true,
     colors: {
       gradient: "from-purple-600 to-blue-600",
@@ -108,7 +108,7 @@ export default function Home() {
   const SCENARIO_CHIPS = [
     { id: 'money', label: '💰 我要搞钱', targetCategory: 'strategy' },
     { id: 'traffic', label: '📈 我要流量', targetCategory: 'marketing' },
-    { id: 'manage', label: '🏢 我要管理', targetCategory: 'operation' },
+    { id: 'manage', label: '🏢 绩效管理', targetCategory: 'operation' },
     { id: 'opportunity', label: '💡 寻找机会', targetCategory: 'investment' },
   ];
 

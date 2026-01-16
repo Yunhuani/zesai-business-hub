@@ -74,10 +74,11 @@ export function SmartAssistantSearch({ smartAssistantId }: SmartAssistantSearchP
   }, [query, isFocused, questionIndex, charIndex, isDeleting, isPaused]);
 
   const handleSearch = () => {
-    if (!query.trim()) return;
+    // 如果用户没有输入，使用当前轮播的问题
+    const searchQuery = query.trim() || EXAMPLE_QUESTIONS[questionIndex];
     
-    // 跳转到智能AI助手页面，并携带用户输入作为初始消息
-    setLocation(`/agent/${smartAssistantId}?initial=${encodeURIComponent(query)}`);
+    // 跳转到智能AI助手页面，并携带问题作为初始消息
+    setLocation(`/agent/${smartAssistantId}?initial=${encodeURIComponent(searchQuery)}`);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -141,7 +142,7 @@ export function SmartAssistantSearch({ smartAssistantId }: SmartAssistantSearchP
         </div>
         <Button
           onClick={handleSearch}
-          disabled={!query.trim()}
+          
           className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-4 py-4 md:px-8 md:py-6 text-sm md:text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
         >
           <Sparkles className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
