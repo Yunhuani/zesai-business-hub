@@ -720,7 +720,7 @@ export default function AgentChat() {
                 {/* 临时欢迎消息（在数据库保存完成前显示） */}
                 {tempWelcomeMessage && (
                   <div className="flex justify-start">
-                    <div className="max-w-[90%] text-sm md:text-base">
+                    <div className="max-w-[90%] text-sm md:text-base pl-3">
                       <EnhancedMessage content={tempWelcomeMessage} />
                     </div>
                   </div>
@@ -734,7 +734,7 @@ export default function AgentChat() {
                       className={`max-w-[90%] text-sm md:text-base ${
                         msg.role === "user"
                           ? "rounded-lg p-3 md:p-4 bg-gradient-to-br from-blue-600 to-purple-600 text-white"
-                          : ""
+                          : "pl-3"
                       }`}
                     >
                       {msg.role === "assistant" ? (
@@ -774,7 +774,7 @@ export default function AgentChat() {
               {/* Streaming message */}
               {isStreaming && streamingMessage && (
                 <div className="flex justify-start">
-                  <div className="max-w-[90%] glass-effect rounded-lg p-3 md:p-4 text-sm md:text-base">
+                  <div className="max-w-[90%] text-sm md:text-base pl-3">
                     <EnhancedMessage content={streamingMessage} />
                   </div>
                 </div>
@@ -784,7 +784,7 @@ export default function AgentChat() {
             {/* 正在等待响应提示 */}
             {isWaitingForResponse && (
               <div className="flex justify-start">
-                <div className="glass-effect rounded-lg p-4">
+                <div className="p-4">
                   <div className="flex items-center gap-2 text-gray-400">
                     <span className="font-medium">泽思</span>
                     <span>正在思考</span>
