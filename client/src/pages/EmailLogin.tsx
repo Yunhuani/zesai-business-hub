@@ -7,10 +7,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, LogIn, UserPlus } from "lucide-react";
+import { Loader2, LogIn, UserPlus, Eye, EyeOff } from "lucide-react";
 import { Link } from "wouter";
 import { APP_LOGO, APP_TITLE } from "@/const";
 import { trackConversion, ConversionEvents } from "@/lib/analytics";
+import { PasswordStrengthIndicator, validatePasswordStrength } from "@/components/PasswordStrengthIndicator";
 
 export default function EmailLogin() {
   const [, setLocation] = useLocation();
@@ -19,21 +20,15 @@ export default function EmailLogin() {
   // Login form state
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
 
   // Register form state
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerConfirmPassword, setRegisterConfirmPassword] = useState("");
   const [registerName, setRegisterName] = useState("");
-  // 推荐功能暂时隐藏
-  // const [referralCode, setReferralCode] = useState<string | null>(null);
-  // useEffect(() => {
-  //   const params = new URLSearchParams(window.location.search);
-  //   const ref = params.get('ref');
-  //   if (ref) {
-  //     setReferralCode(ref);
-  //   }
-  // }, []);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const loginMutation = trpc.auth.loginWithEmail.useMutation({
     onSuccess: (data) => {
@@ -81,10 +76,14 @@ export default function EmailLogin() {
       toast.error("请输入邮箱和密码");
       return;
     }
-    if (registerPassword.length < 6) {
-      toast.error("密码长度至少6位");
+    
+    // 密码强度校验
+    const strengthCheck = validatePasswordStrength(registerPassword);
+    if (!strengthCheck.valid) {
+      toast.error(strengthCheck.message);
       return;
     }
+    
     if (registerPassword !== registerConfirmPassword) {
       toast.error("两次输入的密码不一致");
       return;
@@ -93,7 +92,6 @@ export default function EmailLogin() {
       email: registerEmail,
       password: registerPassword,
       name: registerName || registerEmail.split('@')[0],
-      // referralCode: referralCode || undefined, // 推荐功能暂时隐藏
     });
   };
 
@@ -143,15 +141,25 @@ export default function EmailLogin() {
                         忘记密码？
                       </Link>
                     </div>
-                    <Input
-                      id="login-password"
-                      type="password"
-                      placeholder="请输入密码"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      disabled={loginMutation.isPending}
-                      autoComplete="current-password"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="login-password"
+                        type={showLoginPassword ? "text" : "password"}
+                        placeholder="请输入密码"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        disabled={loginMutation.isPending}
+                        autoComplete="current-password"
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowLoginPassword(!showLoginPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                      >
+                        {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-4">
@@ -187,14 +195,8 @@ export default function EmailLogin() {
           <TabsContent value="register">
             <Card>
               <CardHeader>
-                <CardTitle>注册账号</CardTitle>
-                <CardDescription>创建新账号开始使用</CardDescription>
-                {/* 推荐功能暂时隐藏 */}
-                {/* {referralCode && (
-                  <div className="mt-3 text-sm text-green-600 bg-green-50 border border-green-200 p-3 rounded-lg">
-                    ✓ 使用推荐码：<span className="font-semibold">{referralCode}</span>
-                  </div>
-                )} */}
+                <CardTitle>注册</CardTitle>
+                <CardDescription>创建您的账户</CardDescription>
               </CardHeader>
               <form onSubmit={handleRegister}>
                 <CardContent className="space-y-4">
@@ -212,27 +214,49 @@ export default function EmailLogin() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="register-password">密码</Label>
-                    <Input
-                      id="register-password"
-                      type="password"
-                      placeholder="至少6位密码"
-                      value={registerPassword}
-                      onChange={(e) => setRegisterPassword(e.target.value)}
-                      disabled={registerMutation.isPending}
-                      autoComplete="new-password"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="register-password"
+                        type={showRegisterPassword ? "text" : "password"}
+                        placeholder="请输入密码"
+                        value={registerPassword}
+                        onChange={(e) => setRegisterPassword(e.target.value)}
+                        disabled={registerMutation.isPending}
+                        autoComplete="new-password"
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                      >
+                        {showRegisterPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    {/* 密码强度指示器 */}
+                    <PasswordStrengthIndicator password={registerPassword} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="register-confirm-password">确认密码</Label>
-                    <Input
-                      id="register-confirm-password"
-                      type="password"
-                      placeholder="再次输入密码"
-                      value={registerConfirmPassword}
-                      onChange={(e) => setRegisterConfirmPassword(e.target.value)}
-                      disabled={registerMutation.isPending}
-                      autoComplete="new-password"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="register-confirm-password"
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="再次输入密码"
+                        value={registerConfirmPassword}
+                        onChange={(e) => setRegisterConfirmPassword(e.target.value)}
+                        disabled={registerMutation.isPending}
+                        autoComplete="new-password"
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="register-name">昵称（可选）</Label>
@@ -246,6 +270,13 @@ export default function EmailLogin() {
                       autoComplete="name"
                     />
                   </div>
+                  <p className="text-xs text-gray-500">
+                    继续即表示您同意我们的{" "}
+                    <Link href="/terms" className="text-purple-500 hover:underline">用户协议</Link>
+                    {" "}和{" "}
+                    <Link href="/privacy" className="text-purple-500 hover:underline">隐私政策</Link>
+                    。
+                  </p>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-4">
                   <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
