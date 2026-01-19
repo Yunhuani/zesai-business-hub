@@ -8,6 +8,7 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
 import { initSentry } from "@/lib/sentry";
+import { toast } from "sonner";
 
 // 初始化Sentry错误监控
 initSentry();

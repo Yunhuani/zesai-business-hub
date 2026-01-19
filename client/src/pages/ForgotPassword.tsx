@@ -18,7 +18,17 @@ export default function ForgotPassword() {
       setSubmitted(true);
     },
     onError: (error) => {
-      toast.error(error.message);
+      // 解析zod校验错误
+      let errorMessage = "发送失败";
+      try {
+        const parsed = JSON.parse(error.message);
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].message) {
+          errorMessage = parsed[0].message;
+        }
+      } catch {
+        errorMessage = error.message || "发送失败";
+      }
+      toast.error(errorMessage);
     },
   });
 

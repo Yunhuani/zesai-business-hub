@@ -42,7 +42,17 @@ export default function EmailLogin() {
     },
     onError: (error) => {
       trackConversion(ConversionEvents.LOGIN_FAIL);
-      toast.error(error.message || "登录失败");
+      // 解析zod校验错误
+      let errorMessage = "登录失败";
+      try {
+        const parsed = JSON.parse(error.message);
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].message) {
+          errorMessage = parsed[0].message;
+        }
+      } catch {
+        errorMessage = error.message || "登录失败";
+      }
+      toast.error(errorMessage);
     },
   });
 
@@ -57,7 +67,17 @@ export default function EmailLogin() {
       setLocation("/");
     },
     onError: (error) => {
-      toast.error(error.message || "注册失败");
+      // 解析zod校验错误
+      let errorMessage = "注册失败";
+      try {
+        const parsed = JSON.parse(error.message);
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].message) {
+          errorMessage = parsed[0].message;
+        }
+      } catch {
+        errorMessage = error.message || "注册失败";
+      }
+      toast.error(errorMessage);
     },
   });
 
