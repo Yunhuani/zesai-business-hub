@@ -29,6 +29,8 @@ import SupportFloatingButton from "./components/SupportFloatingButton";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import About from "./pages/About";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 // import ReferralCenter from "./pages/ReferralCenter"; // 推荐功能暂时隐藏
 
 function Router() {
@@ -60,6 +62,8 @@ function Router() {
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/about" component={About} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/privacy" component={Privacy} />
       {/* 推荐功能暂时隐藏 */}
       {/* <Route path="/referral-center" component={ReferralCenter} /> */}
       <Route path={"/404"} component={NotFound} />
