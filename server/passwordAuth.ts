@@ -125,12 +125,36 @@ export async function loginUser(username: string, password: string) {
 /**
  * Register a new user with email and password
  */
+// Password strength validation
+function validatePasswordStrength(password: string): { valid: boolean; message: string } {
+  const checks = [
+    { regex: /.{8,}/, message: "密码至少8个字符" },
+    { regex: /[A-Z]/, message: "密码需包含大写字母" },
+    { regex: /[a-z]/, message: "密码需包含小写字母" },
+    { regex: /[0-9]/, message: "密码需包含数字" },
+    { regex: /[!@#$%^&*(),.?":{}|<>\[\]\\;'`~_+=-]/, message: "密码需包含特殊字符" },
+  ];
+  
+  for (const check of checks) {
+    if (!check.regex.test(password)) {
+      return { valid: false, message: check.message };
+    }
+  }
+  return { valid: true, message: "" };
+}
+
 export async function registerUserWithEmail(
   email: string, 
   password: string, 
   name?: string,
   referralCode?: string
 ) {
+  // Validate password strength
+  const passwordCheck = validatePasswordStrength(password);
+  if (!passwordCheck.valid) {
+    throw new Error(passwordCheck.message);
+  }
+
   const db = await getDb();
   if (!db) {
     throw new Error("Database not available");
