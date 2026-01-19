@@ -1676,3 +1676,8 @@
 - [x] 密码可见切换（眼睛图标）
 - [x] 注册页面集成
 - [x] 后端校验同步（validatePasswordStrength函数）
+
+
+## 重置密码强度校验
+- [ ] 前端：重置密码页面添加PasswordStrengthIndicator组件
+- [ ] 后端：resetPassword接口添加密码强度验证

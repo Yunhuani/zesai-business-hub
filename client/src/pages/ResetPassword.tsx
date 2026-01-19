@@ -7,6 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
 import * as Icons from "lucide-react";
+import { PasswordStrengthIndicator, validatePasswordStrength } from "@/components/PasswordStrengthIndicator";
 
 export default function ResetPassword() {
   const [, navigate] = useLocation();
@@ -14,6 +15,8 @@ export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [resetSuccess, setResetSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // 从URL获取token
   useEffect(() => {
@@ -63,8 +66,10 @@ export default function ResetPassword() {
       return;
     }
     
-    if (password.length < 6) {
-      toast.error("密码至少6位");
+    // 密码强度校验
+    const strengthCheck = validatePasswordStrength(password);
+    if (!strengthCheck.valid) {
+      toast.error(strengthCheck.message);
       return;
     }
     
@@ -102,26 +107,47 @@ export default function ResetPassword() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="text-sm font-medium mb-2 block">新密码</label>
-              <Input
-                type="password"
-                placeholder="至少6位"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={resetPassword.isPending}
-                required
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="请输入新密码"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={resetPassword.isPending}
+                  required
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <Icons.EyeOff className="w-4 h-4" /> : <Icons.Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {password && <PasswordStrengthIndicator password={password} />}
             </div>
 
             <div>
               <label className="text-sm font-medium mb-2 block">确认密码</label>
-              <Input
-                type="password"
-                placeholder="再次输入新密码"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={resetPassword.isPending}
-                required
-              />
+              <div className="relative">
+                <Input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="再次输入新密码"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={resetPassword.isPending}
+                  required
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showConfirmPassword ? <Icons.EyeOff className="w-4 h-4" /> : <Icons.Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             <Button

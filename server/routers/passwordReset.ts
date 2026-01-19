@@ -166,6 +166,24 @@ export const passwordResetRouter = router({
         });
       }
       
+      // 密码强度校验
+      const passwordChecks = [
+        { regex: /.{8,}/, message: "密码至少8个字符" },
+        { regex: /[A-Z]/, message: "密码需包含大写字母" },
+        { regex: /[a-z]/, message: "密码需包含小写字母" },
+        { regex: /[0-9]/, message: "密码需包含数字" },
+        { regex: /[!@#$%^&*(),.?":{}|<>\[\]\\;'`~_+=-]/, message: "密码需包含特殊字符" },
+      ];
+      
+      for (const check of passwordChecks) {
+        if (!check.regex.test(input.password)) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: check.message,
+          });
+        }
+      }
+      
       // 哈希新密码
       const passwordHash = await bcrypt.hash(input.password, 10);
       
