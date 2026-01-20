@@ -148,7 +148,7 @@ export const phoneAuthRouter = router({
 
       if (!user) {
         // 新用户注册
-        const [result] = await db.insert(users).values({
+        await db.insert(users).values({
           phone,
           name: `用户${phone.slice(-4)}`,
           loginMethod: "phone",
@@ -157,10 +157,11 @@ export const phoneAuthRouter = router({
           creditsSubscription: 100, // 新用户赠送100积分
         });
 
+        // 重新查询新创建的用户
         [user] = await db
           .select()
           .from(users)
-          .where(eq(users.id, result.insertId))
+          .where(eq(users.phone, phone))
           .limit(1);
       } else {
         // 更新最后登录时间

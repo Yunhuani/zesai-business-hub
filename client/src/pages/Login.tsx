@@ -86,7 +86,7 @@ export default function Login() {
       toast.success(data.message);
       // 刷新用户状态后再跳转
       await utils.auth.me.invalidate();
-      window.location.href = "/";
+      setLocation("/");
     },
     onError: (error) => {
       trackConversion(ConversionEvents.LOGIN_FAIL);
