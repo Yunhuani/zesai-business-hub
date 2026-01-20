@@ -75,14 +75,18 @@ export default function Login() {
     },
   });
 
+  const utils = trpc.useUtils();
+
   const phoneLoginMutation = trpc.phoneAuth.loginWithPhone.useMutation({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       if (data.token) {
         localStorage.setItem('auth_token', data.token);
       }
       trackConversion(ConversionEvents.LOGIN_SUCCESS);
       toast.success(data.message);
-      setLocation("/");
+      // 刷新用户状态后再跳转
+      await utils.auth.me.invalidate();
+      window.location.href = "/";
     },
     onError: (error) => {
       trackConversion(ConversionEvents.LOGIN_FAIL);
@@ -263,34 +267,44 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      {/* 背景装饰元素 */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-600/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-600/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+      </div>
+
       {/* Logo & Title */}
-      <div className="text-center mb-6">
-        <Link href="/" className="flex flex-col items-center gap-3">
-          <img src={APP_LOGO} alt={APP_TITLE} className="w-16 h-16" />
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+      <div className="text-center mb-8 relative z-10">
+        <Link href="/" className="flex flex-col items-center gap-4 group">
+          <div className="relative">
+            <div className="absolute inset-0 bg-purple-500/30 rounded-2xl blur-xl group-hover:bg-purple-500/40 transition-all duration-300" />
+            <img src={APP_LOGO} alt={APP_TITLE} className="w-20 h-20 relative z-10 drop-shadow-2xl" />
+          </div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
             泽思AI商业智库
           </h1>
         </Link>
-        <p className="text-gray-400 text-sm mt-2">专业的AI商业咨询平台</p>
+        <p className="text-gray-400 text-sm mt-3">专业的AI商业咨询平台</p>
       </div>
 
       {/* Main Card */}
-      <div className="w-full max-w-md">
-        <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
+      <div className="w-full max-w-md relative z-10">
+        <Card className="bg-gray-800/60 border-gray-700/50 backdrop-blur-xl shadow-2xl shadow-purple-900/20">
           {/* 主Tab：手机 | 邮箱 */}
           <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "phone" | "email")} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-gray-700/50 p-1 m-4 mx-auto" style={{ width: 'calc(100% - 2rem)' }}>
+            <TabsList className="grid w-full grid-cols-2 bg-gray-700/30 p-1.5 m-4 mx-auto rounded-xl" style={{ width: 'calc(100% - 2rem)' }}>
               <TabsTrigger 
                 value="phone" 
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white flex items-center gap-2"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-purple-500/25 flex items-center gap-2 rounded-lg transition-all duration-200"
               >
                 <Smartphone className="w-4 h-4" />
                 手机登录
               </TabsTrigger>
               <TabsTrigger 
                 value="email"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white flex items-center gap-2"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-purple-500/25 flex items-center gap-2 rounded-lg transition-all duration-200"
               >
                 <Mail className="w-4 h-4" />
                 邮箱登录
@@ -308,24 +322,27 @@ export default function Login() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-gray-300">手机号</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="请输入手机号"
-                      value={phone}
-                      onChange={(e) => {
-                        setPhone(e.target.value);
-                        setPhoneError("");
-                      }}
-                      disabled={phoneLoginMutation.isPending || sendCodeMutation.isPending}
-                      className={`bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-500 ${phoneError ? "border-red-500" : ""}`}
-                    />
+                    <Label htmlFor="phone" className="text-gray-300 font-medium">手机号</Label>
+                    <div className="relative">
+                      <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="请输入手机号"
+                        value={phone}
+                        onChange={(e) => {
+                          setPhone(e.target.value);
+                          setPhoneError("");
+                        }}
+                        disabled={phoneLoginMutation.isPending || sendCodeMutation.isPending}
+                        className={`bg-gray-700/30 border-gray-600/50 text-white placeholder:text-gray-500 pl-10 h-11 focus:border-purple-500 focus:ring-purple-500/20 transition-all ${phoneError ? "border-red-500" : ""}`}
+                      />
+                    </div>
                     {phoneError && <p className="text-sm text-red-500">{phoneError}</p>}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="code" className="text-gray-300">验证码</Label>
-                    <div className="flex gap-2">
+                    <Label htmlFor="code" className="text-gray-300 font-medium">验证码</Label>
+                    <div className="flex gap-3">
                       <Input
                         id="code"
                         type="text"
@@ -336,14 +353,14 @@ export default function Login() {
                           setCodeError("");
                         }}
                         disabled={phoneLoginMutation.isPending}
-                        className={`bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-500 flex-1 ${codeError ? "border-red-500" : ""}`}
+                        className={`bg-gray-700/30 border-gray-600/50 text-white placeholder:text-gray-500 flex-1 h-11 focus:border-purple-500 focus:ring-purple-500/20 transition-all tracking-widest text-center text-lg ${codeError ? "border-red-500" : ""}`}
                       />
                       <Button
                         type="button"
                         variant="outline"
                         onClick={handleSendCode}
                         disabled={countdown > 0 || sendCodeMutation.isPending || !phone}
-                        className="bg-purple-600/20 border-purple-500 text-purple-400 hover:bg-purple-600/30 whitespace-nowrap"
+                        className="bg-purple-600 border-purple-600 text-white hover:bg-purple-700 hover:shadow-lg hover:shadow-purple-500/25 whitespace-nowrap font-medium h-11 px-5 transition-all"
                       >
                         {sendCodeMutation.isPending ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -357,25 +374,25 @@ export default function Login() {
                     {codeError && <p className="text-sm text-red-500">{codeError}</p>}
                   </div>
                 </CardContent>
-                <CardFooter className="flex flex-col gap-4">
+                <CardFooter className="flex flex-col gap-4 pt-2">
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                    className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 hover:shadow-lg hover:shadow-purple-500/25 transition-all text-base font-medium"
                     disabled={phoneLoginMutation.isPending}
                   >
                     {phoneLoginMutation.isPending ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                         登录中...
                       </>
                     ) : (
                       <>
-                        <LogIn className="mr-2 h-4 w-4" />
+                        <LogIn className="mr-2 h-5 w-5" />
                         登录 / 注册
                       </>
                     )}
                   </Button>
-                  <p className="text-xs text-gray-500 text-center">
+                  <p className="text-xs text-gray-400 text-center">
                     ✨ 未注册手机号验证后自动创建账号
                   </p>
                 </CardFooter>
@@ -612,7 +629,7 @@ export default function Login() {
       </div>
 
       {/* Footer */}
-      <footer className="w-full max-w-md text-center text-sm text-gray-500 py-4 space-y-2 mt-4">
+      <footer className="w-full max-w-md text-center text-sm text-gray-500 py-4 space-y-2 mt-6 relative z-10">
         <div className="flex justify-center gap-4">
           <Link href="/about" className="hover:text-gray-300">关于我们</Link>
           <Link href="/support" className="hover:text-gray-300">联系客服</Link>
