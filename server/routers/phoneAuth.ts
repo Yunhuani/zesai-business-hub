@@ -150,6 +150,7 @@ export const phoneAuthRouter = router({
         // 新用户注册
         await db.insert(users).values({
           phone,
+          openId: `phone_${phone}`,
           name: `用户${phone.slice(-4)}`,
           loginMethod: "phone",
           role: "user",
