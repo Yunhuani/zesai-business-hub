@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, LogIn, UserPlus, Eye, EyeOff, Smartphone, Mail } from "lucide-react";
+import { Loader2, LogIn, UserPlus, Eye, EyeOff, Smartphone, Mail, Lock, User } from "lucide-react";
 import { Link } from "wouter";
 import { APP_LOGO, APP_TITLE } from "@/const";
 import { trackConversion, ConversionEvents } from "@/lib/analytics";
@@ -404,9 +404,9 @@ export default function Login() {
               {/* 邮箱子Tab：登录 | 注册 */}
               <Tabs value={emailTab} onValueChange={(v) => setEmailTab(v as "login" | "register")} className="w-full">
                 <div className="px-4">
-                  <TabsList className="grid w-full grid-cols-2 bg-gray-700/30 h-9">
-                    <TabsTrigger value="login" className="data-[state=active]:bg-gray-600 text-sm">登录</TabsTrigger>
-                    <TabsTrigger value="register" className="data-[state=active]:bg-gray-600 text-sm">注册</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-2 bg-gray-700/30 h-10 rounded-lg p-1">
+                    <TabsTrigger value="login" className="data-[state=active]:bg-gray-600 data-[state=active]:shadow-md text-sm rounded-md transition-all">登录</TabsTrigger>
+                    <TabsTrigger value="register" className="data-[state=active]:bg-gray-600 data-[state=active]:shadow-md text-sm rounded-md transition-all">注册</TabsTrigger>
                   </TabsList>
                 </div>
 
@@ -419,29 +419,33 @@ export default function Login() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="login-email" className="text-gray-300">邮箱</Label>
-                        <Input
-                          id="login-email"
-                          type="email"
-                          placeholder="请输入邮箱"
-                          value={loginEmail}
-                          onChange={(e) => {
-                            setLoginEmail(e.target.value);
-                            setLoginEmailError("");
-                          }}
-                          disabled={emailLoginMutation.isPending}
-                          className={`bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-500 ${loginEmailError ? "border-red-500" : ""}`}
-                        />
+                        <Label htmlFor="login-email" className="text-gray-300 font-medium">邮箱</Label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Input
+                            id="login-email"
+                            type="email"
+                            placeholder="请输入邮箱"
+                            value={loginEmail}
+                            onChange={(e) => {
+                              setLoginEmail(e.target.value);
+                              setLoginEmailError("");
+                            }}
+                            disabled={emailLoginMutation.isPending}
+                            className={`bg-gray-700/30 border-gray-600/50 text-white placeholder:text-gray-500 pl-10 h-11 focus:border-purple-500 focus:ring-purple-500/20 transition-all ${loginEmailError ? "border-red-500" : ""}`}
+                          />
+                        </div>
                         {loginEmailError && <p className="text-sm text-red-500">{loginEmailError}</p>}
                       </div>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <Label htmlFor="login-password" className="text-gray-300">密码</Label>
+                          <Label htmlFor="login-password" className="text-gray-300 font-medium">密码</Label>
                           <Link href="/forgot-password" className="text-xs text-purple-400 hover:underline">
                             忘记密码？
                           </Link>
                         </div>
                         <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                           <Input
                             id="login-password"
                             type={showLoginPassword ? "text" : "password"}
@@ -452,7 +456,7 @@ export default function Login() {
                               setLoginPasswordError("");
                             }}
                             disabled={emailLoginMutation.isPending}
-                            className={`bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-500 pr-10 ${loginPasswordError ? "border-red-500" : ""}`}
+                            className={`bg-gray-700/30 border-gray-600/50 text-white placeholder:text-gray-500 pl-10 pr-10 h-11 focus:border-purple-500 focus:ring-purple-500/20 transition-all ${loginPasswordError ? "border-red-500" : ""}`}
                           />
                           <button
                             type="button"
@@ -465,20 +469,20 @@ export default function Login() {
                         {loginPasswordError && <p className="text-sm text-red-500">{loginPasswordError}</p>}
                       </div>
                     </CardContent>
-                    <CardFooter className="flex flex-col gap-4">
+                    <CardFooter className="flex flex-col gap-4 pt-2">
                       <Button 
                         type="submit" 
-                        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                        className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 hover:shadow-lg hover:shadow-purple-500/25 transition-all text-base font-medium"
                         disabled={emailLoginMutation.isPending}
                       >
                         {emailLoginMutation.isPending ? (
                           <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                             登录中...
                           </>
                         ) : (
                           <>
-                            <LogIn className="mr-2 h-4 w-4" />
+                            <LogIn className="mr-2 h-5 w-5" />
                             登录
                           </>
                         )}
@@ -506,24 +510,28 @@ export default function Login() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="register-email" className="text-gray-300">邮箱</Label>
-                        <Input
-                          id="register-email"
-                          type="email"
-                          placeholder="请输入邮箱"
-                          value={registerEmail}
-                          onChange={(e) => {
-                            setRegisterEmail(e.target.value);
-                            setRegisterEmailError("");
-                          }}
-                          disabled={registerMutation.isPending}
-                          className={`bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-500 ${registerEmailError ? "border-red-500" : ""}`}
-                        />
+                        <Label htmlFor="register-email" className="text-gray-300 font-medium">邮箱</Label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Input
+                            id="register-email"
+                            type="email"
+                            placeholder="请输入邮箱"
+                            value={registerEmail}
+                            onChange={(e) => {
+                              setRegisterEmail(e.target.value);
+                              setRegisterEmailError("");
+                            }}
+                            disabled={registerMutation.isPending}
+                            className={`bg-gray-700/30 border-gray-600/50 text-white placeholder:text-gray-500 pl-10 h-11 focus:border-purple-500 focus:ring-purple-500/20 transition-all ${registerEmailError ? "border-red-500" : ""}`}
+                          />
+                        </div>
                         {registerEmailError && <p className="text-sm text-red-500">{registerEmailError}</p>}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="register-password" className="text-gray-300">密码</Label>
+                        <Label htmlFor="register-password" className="text-gray-300 font-medium">密码</Label>
                         <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                           <Input
                             id="register-password"
                             type={showRegisterPassword ? "text" : "password"}
@@ -534,7 +542,7 @@ export default function Login() {
                               setRegisterPasswordError("");
                             }}
                             disabled={registerMutation.isPending}
-                            className={`bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-500 pr-10 ${registerPasswordError ? "border-red-500" : ""}`}
+                            className={`bg-gray-700/30 border-gray-600/50 text-white placeholder:text-gray-500 pl-10 pr-10 h-11 focus:border-purple-500 focus:ring-purple-500/20 transition-all ${registerPasswordError ? "border-red-500" : ""}`}
                           />
                           <button
                             type="button"
@@ -548,8 +556,9 @@ export default function Login() {
                         {registerPassword && <PasswordStrengthIndicator password={registerPassword} />}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="register-confirm" className="text-gray-300">确认密码</Label>
+                        <Label htmlFor="register-confirm" className="text-gray-300 font-medium">确认密码</Label>
                         <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                           <Input
                             id="register-confirm"
                             type={showConfirmPassword ? "text" : "password"}
@@ -560,7 +569,7 @@ export default function Login() {
                               setRegisterConfirmError("");
                             }}
                             disabled={registerMutation.isPending}
-                            className={`bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-500 pr-10 ${registerConfirmError ? "border-red-500" : ""}`}
+                            className={`bg-gray-700/30 border-gray-600/50 text-white placeholder:text-gray-500 pl-10 pr-10 h-11 focus:border-purple-500 focus:ring-purple-500/20 transition-all ${registerConfirmError ? "border-red-500" : ""}`}
                           />
                           <button
                             type="button"
@@ -573,16 +582,19 @@ export default function Login() {
                         {registerConfirmError && <p className="text-sm text-red-500">{registerConfirmError}</p>}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="register-name" className="text-gray-300">昵称（选填）</Label>
-                        <Input
-                          id="register-name"
-                          type="text"
-                          placeholder="请输入昵称"
-                          value={registerName}
-                          onChange={(e) => setRegisterName(e.target.value)}
-                          disabled={registerMutation.isPending}
-                          className="bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-500"
-                        />
+                        <Label htmlFor="register-name" className="text-gray-300 font-medium">昵称（选填）</Label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Input
+                            id="register-name"
+                            type="text"
+                            placeholder="请输入昵称"
+                            value={registerName}
+                            onChange={(e) => setRegisterName(e.target.value)}
+                            disabled={registerMutation.isPending}
+                            className="bg-gray-700/30 border-gray-600/50 text-white placeholder:text-gray-500 pl-10 h-11 focus:border-purple-500 focus:ring-purple-500/20 transition-all"
+                          />
+                        </div>
                       </div>
                       <p className="text-xs text-gray-500">
                         继续即表示您同意我们的{" "}
@@ -591,20 +603,20 @@ export default function Login() {
                         <Link href="/privacy" className="text-purple-400 hover:underline">隐私政策</Link>。
                       </p>
                     </CardContent>
-                    <CardFooter className="flex flex-col gap-4">
+                    <CardFooter className="flex flex-col gap-4 pt-2">
                       <Button 
                         type="submit" 
-                        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                        className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 hover:shadow-lg hover:shadow-purple-500/25 transition-all text-base font-medium"
                         disabled={registerMutation.isPending}
                       >
                         {registerMutation.isPending ? (
                           <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                             注册中...
                           </>
                         ) : (
                           <>
-                            <UserPlus className="mr-2 h-4 w-4" />
+                            <UserPlus className="mr-2 h-5 w-5" />
                             注册
                           </>
                         )}
