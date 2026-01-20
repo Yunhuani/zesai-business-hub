@@ -173,7 +173,7 @@ export const phoneAuthRouter = router({
 
       // 生成JWT token
       const token = jwt.sign(
-        { userId: user.id, phone: user.phone },
+        { userId: user.id, openId: `phone_${user.phone}` },
         process.env.JWT_SECRET || "default-secret",
         { expiresIn: "7d" }
       );
