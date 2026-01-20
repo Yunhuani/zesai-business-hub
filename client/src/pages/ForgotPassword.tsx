@@ -11,6 +11,7 @@ import * as Icons from "lucide-react";
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [emailError, setEmailError] = useState("");
 
   const requestReset = trpc.passwordReset.requestReset.useMutation({
     onSuccess: (data) => {
@@ -24,6 +25,11 @@ export default function ForgotPassword() {
         const parsed = JSON.parse(error.message);
         if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].message) {
           errorMessage = parsed[0].message;
+          // 如果是邮箱格式错误，显示在输入框下方
+          if (errorMessage.includes("邮箱")) {
+            setEmailError(errorMessage);
+            return;
+          }
         }
       } catch {
         errorMessage = error.message || "发送失败";
@@ -34,6 +40,7 @@ export default function ForgotPassword() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setEmailError(""); // 清除之前的错误
     if (!email) {
       toast.error("请输入邮箱地址");
       return;
@@ -60,10 +67,17 @@ export default function ForgotPassword() {
                 type="email"
                 placeholder="your@email.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setEmailError(""); // 输入时清除错误
+                }}
                 disabled={requestReset.isPending}
                 required
+                className={emailError ? "border-red-500" : ""}
               />
+              {emailError && (
+                <p className="text-sm text-red-500 mt-1">{emailError}</p>
+              )}
             </div>
 
             <Button
@@ -110,6 +124,7 @@ export default function ForgotPassword() {
                 onClick={() => {
                   setSubmitted(false);
                   setEmail("");
+                  setEmailError("");
                 }}
               >
                 重新发送

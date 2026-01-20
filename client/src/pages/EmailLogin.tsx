@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,7 @@ export default function EmailLogin() {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [loginEmailError, setLoginEmailError] = useState("");
 
   // Register form state
   const [registerEmail, setRegisterEmail] = useState("");
@@ -29,6 +30,7 @@ export default function EmailLogin() {
   const [registerName, setRegisterName] = useState("");
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [registerEmailError, setRegisterEmailError] = useState("");
 
   const loginMutation = trpc.auth.loginWithEmail.useMutation({
     onSuccess: (data) => {
@@ -48,6 +50,11 @@ export default function EmailLogin() {
         const parsed = JSON.parse(error.message);
         if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].message) {
           errorMessage = parsed[0].message;
+          // 如果是邮箱格式错误，显示在输入框下方
+          if (errorMessage.includes("邮箱")) {
+            setLoginEmailError(errorMessage);
+            return;
+          }
         }
       } catch {
         errorMessage = error.message || "登录失败";
@@ -73,6 +80,11 @@ export default function EmailLogin() {
         const parsed = JSON.parse(error.message);
         if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].message) {
           errorMessage = parsed[0].message;
+          // 如果是邮箱格式错误，显示在输入框下方
+          if (errorMessage.includes("邮箱")) {
+            setRegisterEmailError(errorMessage);
+            return;
+          }
         }
       } catch {
         errorMessage = error.message || "注册失败";
@@ -83,6 +95,7 @@ export default function EmailLogin() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginEmailError(""); // 清除之前的错误
     if (!loginEmail || !loginPassword) {
       toast.error("请输入邮箱和密码");
       return;
@@ -92,6 +105,7 @@ export default function EmailLogin() {
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
+    setRegisterEmailError(""); // 清除之前的错误
     if (!registerEmail || !registerPassword) {
       toast.error("请输入邮箱和密码");
       return;
@@ -149,10 +163,17 @@ export default function EmailLogin() {
                       type="email"
                       placeholder="请输入邮箱"
                       value={loginEmail}
-                      onChange={(e) => setLoginEmail(e.target.value)}
+                      onChange={(e) => {
+                        setLoginEmail(e.target.value);
+                        setLoginEmailError(""); // 输入时清除错误
+                      }}
                       disabled={loginMutation.isPending}
                       autoComplete="email"
+                      className={loginEmailError ? "border-red-500" : ""}
                     />
+                    {loginEmailError && (
+                      <p className="text-sm text-red-500">{loginEmailError}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -200,8 +221,8 @@ export default function EmailLogin() {
                     还没有账号？
                     <button
                       type="button"
-                      className="text-purple-600 hover:underline ml-1"
                       onClick={() => setActiveTab("register")}
+                      className="text-blue-600 hover:underline ml-1"
                     >
                       立即注册
                     </button>
@@ -225,12 +246,19 @@ export default function EmailLogin() {
                     <Input
                       id="register-email"
                       type="email"
-                      placeholder="请输入邮箱地址"
+                      placeholder="请输入邮箱"
                       value={registerEmail}
-                      onChange={(e) => setRegisterEmail(e.target.value)}
+                      onChange={(e) => {
+                        setRegisterEmail(e.target.value);
+                        setRegisterEmailError(""); // 输入时清除错误
+                      }}
                       disabled={registerMutation.isPending}
                       autoComplete="email"
+                      className={registerEmailError ? "border-red-500" : ""}
                     />
+                    {registerEmailError && (
+                      <p className="text-sm text-red-500">{registerEmailError}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="register-password">密码</Label>
@@ -253,7 +281,6 @@ export default function EmailLogin() {
                         {showRegisterPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
-                    {/* 密码强度指示器 */}
                     <PasswordStrengthIndicator password={registerPassword} />
                   </div>
                   <div className="space-y-2">
@@ -262,7 +289,7 @@ export default function EmailLogin() {
                       <Input
                         id="register-confirm-password"
                         type={showConfirmPassword ? "text" : "password"}
-                        placeholder="再次输入密码"
+                        placeholder="请再次输入密码"
                         value={registerConfirmPassword}
                         onChange={(e) => setRegisterConfirmPassword(e.target.value)}
                         disabled={registerMutation.isPending}
@@ -283,19 +310,18 @@ export default function EmailLogin() {
                     <Input
                       id="register-name"
                       type="text"
-                      placeholder="显示名称"
+                      placeholder="请输入昵称"
                       value={registerName}
                       onChange={(e) => setRegisterName(e.target.value)}
                       disabled={registerMutation.isPending}
                       autoComplete="name"
                     />
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-400">
                     继续即表示您同意我们的{" "}
-                    <Link href="/terms" className="text-purple-500 hover:underline">用户协议</Link>
+                    <Link href="/terms" className="text-blue-600 hover:underline">用户协议</Link>
                     {" "}和{" "}
-                    <Link href="/privacy" className="text-purple-500 hover:underline">隐私政策</Link>
-                    。
+                    <Link href="/privacy" className="text-blue-600 hover:underline">隐私政策</Link>。
                   </p>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-4">
@@ -316,8 +342,8 @@ export default function EmailLogin() {
                     已有账号？
                     <button
                       type="button"
-                      className="text-purple-600 hover:underline ml-1"
                       onClick={() => setActiveTab("login")}
+                      className="text-blue-600 hover:underline ml-1"
                     >
                       立即登录
                     </button>
@@ -330,48 +356,21 @@ export default function EmailLogin() {
       </div>
 
       {/* Footer */}
-      <footer className="w-full py-6 mt-8">
-        <div className="text-center text-sm text-muted-foreground space-y-3">
-          <div className="flex justify-center gap-6">
-            <a 
-              href="/about" 
-              className="hover:text-foreground transition-colors"
-            >
-              关于我们
-            </a>
-            <a 
-              href="/support" 
-              className="hover:text-foreground transition-colors"
-            >
-              联系客服
-            </a>
-            <a 
-              href="/pricing" 
-              className="hover:text-foreground transition-colors"
-            >
-              价格套餐
-            </a>
-          </div>
-          <div>© 2025 泽思 Zenith AI - 专业AI商业咨询平台</div>
-          <div className="flex justify-center items-center gap-4 flex-wrap">
-            <a 
-              href="https://beian.miit.gov.cn/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors"
-            >
-              沪ICP备2024048847号
-            </a>
-            <a 
-              href="https://beian.mps.gov.cn/#/query/webSearch?code=31011502404980" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors flex items-center gap-1"
-            >
-              <img src="/police-badge.png" alt="公安备案" className="w-4 h-4" />
-              沪公网安备31011502404980号
-            </a>
-          </div>
+      <footer className="w-full max-w-md text-center text-sm text-gray-500 py-4 space-y-2">
+        <div className="flex justify-center gap-4">
+          <Link href="/about" className="hover:text-gray-300">关于我们</Link>
+          <Link href="/contact" className="hover:text-gray-300">联系客服</Link>
+          <Link href="/pricing" className="hover:text-gray-300">价格套餐</Link>
+        </div>
+        <p>© 2025 泽思 Zenith AI - 专业AI商业咨询平台</p>
+        <div className="flex justify-center gap-4 text-xs">
+          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" className="hover:text-gray-300">
+            沪ICP备2024048847号
+          </a>
+          <a href="https://www.beian.gov.cn/portal/registerSystemInfo?recordcode=31011502404980" target="_blank" rel="noopener noreferrer" className="hover:text-gray-300 flex items-center gap-1">
+            <img src="https://www.beian.gov.cn/img/ghs.png" alt="" className="w-3 h-3" />
+            沪公网安备31011502404980号
+          </a>
         </div>
       </footer>
     </div>
