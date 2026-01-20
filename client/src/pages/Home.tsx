@@ -269,7 +269,7 @@ export default function Home() {
               </div>
             ) : (
               <Button asChild size="sm" className="md:size-default">
-                <a href="/email-login">登录</a>
+                <a href="/login">登录</a>
               </Button>
             )}
           </div>

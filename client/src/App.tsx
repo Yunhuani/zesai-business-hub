@@ -28,6 +28,7 @@ import SupportForm from "./pages/SupportForm";
 import SupportFloatingButton from "./components/SupportFloatingButton";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import PhoneLogin from "./pages/PhoneLogin";
 import About from "./pages/About";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -49,6 +50,8 @@ function Router() {
       <Route path="/wechat-login" component={WechatLogin} />
       <Route path="/wechat-callback" component={WechatLogin} />
       <Route path="/email-login" component={EmailLogin} />
+      <Route path="/phone-login" component={PhoneLogin} />
+      <Route path="/login" component={PhoneLogin} />
       {/* <Route path="/login" component={PasswordLogin} /> */}
       <Route path="/payment/:plan" component={Payment} />
       <Route path="/payment/result" component={PaymentResult} />

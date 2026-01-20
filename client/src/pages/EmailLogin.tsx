@@ -264,6 +264,11 @@ export default function EmailLogin() {
                       立即注册
                     </button>
                   </div>
+                  <div className="text-center text-sm text-gray-400">
+                    <Link href="/login" className="text-blue-600 hover:underline">
+                      使用手机验证码登录
+                    </Link>
+                  </div>
                 </CardFooter>
               </form>
             </Card>

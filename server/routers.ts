@@ -17,6 +17,7 @@ import { referralRouter } from "./routers/referral";
 import { sentryRouter } from "./routers/sentry";
 import { agentAnalyticsRouter } from "./routers/agentAnalytics";
 import { knowledgeRouter } from "./routers/knowledge";
+import { phoneAuthRouter } from "./routers/phoneAuth";
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
@@ -624,6 +625,8 @@ export const appRouter = router({
   sentry: sentryRouter,
   // Knowledge base routes
   knowledge: knowledgeRouter,
+  // Phone auth routes
+  phoneAuth: phoneAuthRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -132,6 +132,7 @@ export const users = mysqlTable("users", {
 	openId: varchar({ length: 64 }),
 	name: text(),
 	email: varchar({ length: 320 }),
+	phone: varchar({ length: 20 }),
 	loginMethod: varchar({ length: 64 }),
 	role: mysqlEnum(['user','admin']).default('user').notNull(),
 	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
@@ -146,10 +147,11 @@ export const users = mysqlTable("users", {
 	commissionBalance: int().default(0).notNull(),
 },
 (table) => [
-	index("users_openId_unique").on(table.openId),
-	index("users_email_unique").on(table.email),
-	index("users_username_unique").on(table.username),
-]);
+		index("users_openId_unique").on(table.openId),
+		index("users_email_unique").on(table.email),
+		index("users_username_unique").on(table.username),
+		index("users_phone_unique").on(table.phone),
+	]);
 
 /**
  * System configuration table - stores system-wide settings
@@ -207,6 +209,22 @@ export const commissions = mysqlTable("commissions", {
 /**
  * Withdrawals table - stores user withdrawal requests
  */
+/**
+ * SMS verification codes table - stores phone verification codes
+ */
+export const smsCodes = mysqlTable("smsCodes", {
+	id: int().autoincrement().notNull(),
+	phone: varchar({ length: 20 }).notNull(),
+	code: varchar({ length: 6 }).notNull(),
+	type: mysqlEnum(['login','register','bind']).default('login').notNull(),
+	used: int().default(0).notNull(),
+	expiresAt: timestamp({ mode: 'string' }).notNull(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+},
+(table) => [
+	index("smsCodes_phone_idx").on(table.phone),
+]);
+
 export const withdrawals = mysqlTable("withdrawals", {
 	id: int().autoincrement().notNull(),
 	userId: int().notNull(),
