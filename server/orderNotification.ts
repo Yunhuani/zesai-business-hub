@@ -17,7 +17,7 @@ export interface OrderInfo {
  * 发送订单通知邮件给管理员
  */
 export async function notifyAdminNewOrder(orderInfo: OrderInfo): Promise<void> {
-  const adminEmail = "16289209@qq.com";
+  const adminEmail = "cs@zesiai.com";
 
   // 格式化金额
   const formattedAmount = (orderInfo.amount / 100).toFixed(2);

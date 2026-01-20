@@ -6,7 +6,7 @@ import { supportTickets } from "../../drizzle/schema";
 import { eq, desc, and, sql } from "drizzle-orm";
 import { sendEmail } from "../_core/email";
 
-const SUPPORT_EMAIL = "16289209@qq.com";
+const SUPPORT_EMAIL = "cs@zesiai.com";
 
 export const supportRouter = router({
   /**

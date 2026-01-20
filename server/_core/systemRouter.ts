@@ -3,7 +3,7 @@ import { adminProcedure, publicProcedure, router } from "./trpc";
 import { notifyOwner } from "./notification";
 import { sendEmail } from "./email";
 
-const EXPERT_CONSULTATION_EMAIL = "16289209@qq.com";
+const EXPERT_CONSULTATION_EMAIL = "cs@zesiai.com";
 
 export const systemRouter = router({
   health: publicProcedure
