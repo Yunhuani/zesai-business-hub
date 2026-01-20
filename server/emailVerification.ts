@@ -95,9 +95,9 @@ export async function sendVerificationEmail(email: string, code: string): Promis
   // 创建邮件传输器 - 使用QQ邮箱作为示例
   // 生产环境建议使用阿里云邮件推送服务
   const transporter = nodemailer.createTransport({
-    host: "smtp.qq.com",
-    port: 587,
-    secure: false,
+    host: "smtp.exmail.qq.com",
+    port: 465,
+    secure: true,
     auth: {
       // 这里需要配置SMTP账号,暂时使用环境变量
       user: process.env.SMTP_USER || "your-email@qq.com",

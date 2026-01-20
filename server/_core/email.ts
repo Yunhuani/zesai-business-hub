@@ -11,9 +11,9 @@ export async function sendEmail(options: {
 }): Promise<void> {
   // Create email transporter
   const transporter = nodemailer.createTransport({
-    host: "smtp.qq.com",
-    port: 587,
-    secure: false,
+    host: "smtp.exmail.qq.com",
+    port: 465,
+    secure: true,
     auth: {
       user: process.env.SMTP_USER || "your-email@qq.com",
       pass: process.env.SMTP_PASS || "your-smtp-password",
