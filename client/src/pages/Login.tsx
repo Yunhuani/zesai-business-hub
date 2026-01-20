@@ -306,12 +306,7 @@ export default function Login() {
             {/* ========== 手机登录 Tab ========== */}
             <TabsContent value="phone" className="mt-0">
               <form onSubmit={handlePhoneLogin}>
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg text-white">手机验证码登录</CardTitle>
-                  <CardDescription className="text-gray-400">
-                    输入手机号获取验证码，新用户自动注册
-                  </CardDescription>
-                </CardHeader>
+                <CardHeader className="pb-4" />
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="text-gray-300 font-medium">手机号</Label>
@@ -384,9 +379,7 @@ export default function Login() {
                       </>
                     )}
                   </Button>
-                  <p className="text-xs text-gray-400 text-center">
-                    ✨ 未注册手机号验证后自动创建账号
-                  </p>
+                  
                 </CardFooter>
               </form>
             </TabsContent>
@@ -405,10 +398,7 @@ export default function Login() {
                 {/* 邮箱登录 */}
                 <TabsContent value="login" className="mt-0">
                   <form onSubmit={handleEmailLogin}>
-                    <CardHeader className="pb-4">
-                      <CardTitle className="text-lg text-white">邮箱密码登录</CardTitle>
-                      <CardDescription className="text-gray-400">使用邮箱和密码登录</CardDescription>
-                    </CardHeader>
+                    <CardHeader className="pb-4" />
                     <CardContent className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="login-email" className="text-gray-300 font-medium">邮箱</Label>
@@ -496,10 +486,7 @@ export default function Login() {
                 {/* 邮箱注册 */}
                 <TabsContent value="register" className="mt-0">
                   <form onSubmit={handleRegister}>
-                    <CardHeader className="pb-4">
-                      <CardTitle className="text-lg text-white">邮箱注册</CardTitle>
-                      <CardDescription className="text-gray-400">创建您的账户</CardDescription>
-                    </CardHeader>
+                    <CardHeader className="pb-4" />
                     <CardContent className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="register-email" className="text-gray-300 font-medium">邮箱</Label>
