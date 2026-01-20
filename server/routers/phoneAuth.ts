@@ -264,10 +264,10 @@ export const phoneAuthRouter = router({
         .set({ used: 1 })
         .where(eq(smsCodes.id, smsCode.id));
 
-      // 更新用户手机号
+      // 更新用户手机号和openId
       await db
         .update(users)
-        .set({ phone })
+        .set({ phone, openId: `phone_${phone}` })
         .where(eq(users.id, userId));
 
       return {

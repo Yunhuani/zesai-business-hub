@@ -1,0 +1,35 @@
+{
+  "query": "SELECT id, email, openId FROM users LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, email, openId FROM users LIMIT 5;",
+  "rows": [
+    {
+      "id": "1",
+      "email": "yunhua.ni@gmail.com",
+      "openId": "email_yunhua.ni@gmail.com"
+    },
+    {
+      "id": "2580008",
+      "email": "16289209@qq.com",
+      "openId": "email_16289209@qq.com"
+    },
+    {
+      "id": "3990008",
+      "email": "test_credits_1764301720214@example.com",
+      "openId": "test_credits_1764301720214"
+    },
+    {
+      "id": "4440010",
+      "email": "NULL",
+      "openId": "username_testuser_1764563413734"
+    },
+    {
+      "id": "4440012",
+      "email": "NULL",
+      "openId": "username_testuser123"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\topenId\n1\tyunhua.ni@gmail.com\temail_yunhua.ni@gmail.com\n2580008\t16289209@qq.com\temail_16289209@qq.com\n3990008\ttest_credits_1764301720214@example.com\ttest_credits_1764301720214\n4440010\tNULL\tusername_testuser_1764563413734\n4440012\tNULL\tusername_testuser123\n",
+  "stderr": "",
+  "execution_time_ms": 1503
+}
