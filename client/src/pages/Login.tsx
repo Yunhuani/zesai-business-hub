@@ -267,22 +267,14 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      {/* 背景装饰元素 */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-600/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-600/20 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
-      </div>
-
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 relative overflow-hidden">
       {/* Logo & Title */}
       <div className="text-center mb-8 relative z-10">
         <Link href="/" className="flex flex-col items-center gap-4 group">
           <div className="relative">
-            <div className="absolute inset-0 bg-purple-500/30 rounded-2xl blur-xl group-hover:bg-purple-500/40 transition-all duration-300" />
             <img src={APP_LOGO} alt={APP_TITLE} className="w-20 h-20 relative z-10 drop-shadow-2xl" />
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent">
             泽思AI商业智库
           </h1>
         </Link>
