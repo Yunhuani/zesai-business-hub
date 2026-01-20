@@ -22,6 +22,7 @@ export default function EmailLogin() {
   const [loginPassword, setLoginPassword] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [loginEmailError, setLoginEmailError] = useState("");
+  const [loginPasswordError, setLoginPasswordError] = useState("");
 
   // Register form state
   const [registerEmail, setRegisterEmail] = useState("");
@@ -31,10 +32,22 @@ export default function EmailLogin() {
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [registerEmailError, setRegisterEmailError] = useState("");
+  const [registerPasswordError, setRegisterPasswordError] = useState("");
+  const [registerConfirmError, setRegisterConfirmError] = useState("");
+
+  const clearLoginErrors = () => {
+    setLoginEmailError("");
+    setLoginPasswordError("");
+  };
+
+  const clearRegisterErrors = () => {
+    setRegisterEmailError("");
+    setRegisterPasswordError("");
+    setRegisterConfirmError("");
+  };
 
   const loginMutation = trpc.auth.loginWithEmail.useMutation({
     onSuccess: (data) => {
-      // Save token to localStorage
       if (data.token) {
         localStorage.setItem('auth_token', data.token);
       }
@@ -44,13 +57,11 @@ export default function EmailLogin() {
     },
     onError: (error) => {
       trackConversion(ConversionEvents.LOGIN_FAIL);
-      // 解析zod校验错误
       let errorMessage = "登录失败";
       try {
         const parsed = JSON.parse(error.message);
         if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].message) {
           errorMessage = parsed[0].message;
-          // 如果是邮箱格式错误，显示在输入框下方
           if (errorMessage.includes("邮箱")) {
             setLoginEmailError(errorMessage);
             return;
@@ -59,13 +70,13 @@ export default function EmailLogin() {
       } catch {
         errorMessage = error.message || "登录失败";
       }
-      toast.error(errorMessage);
+      // 登录失败显示在密码框下方
+      setLoginPasswordError(errorMessage);
     },
   });
 
   const registerMutation = trpc.auth.registerWithEmail.useMutation({
     onSuccess: (data) => {
-      // Save token to localStorage
       if (data.token) {
         localStorage.setItem('auth_token', data.token);
       }
@@ -74,54 +85,74 @@ export default function EmailLogin() {
       setLocation("/");
     },
     onError: (error) => {
-      // 解析zod校验错误
       let errorMessage = "注册失败";
       try {
         const parsed = JSON.parse(error.message);
         if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].message) {
           errorMessage = parsed[0].message;
-          // 如果是邮箱格式错误，显示在输入框下方
           if (errorMessage.includes("邮箱")) {
             setRegisterEmailError(errorMessage);
+            return;
+          }
+          if (errorMessage.includes("密码")) {
+            setRegisterPasswordError(errorMessage);
             return;
           }
         }
       } catch {
         errorMessage = error.message || "注册失败";
       }
-      toast.error(errorMessage);
+      // 其他错误显示在密码框下方
+      setRegisterPasswordError(errorMessage);
     },
   });
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoginEmailError(""); // 清除之前的错误
-    if (!loginEmail || !loginPassword) {
-      toast.error("请输入邮箱和密码");
-      return;
+    clearLoginErrors();
+    
+    let hasError = false;
+    if (!loginEmail) {
+      setLoginEmailError("请输入邮箱");
+      hasError = true;
     }
+    if (!loginPassword) {
+      setLoginPasswordError("请输入密码");
+      hasError = true;
+    }
+    if (hasError) return;
+    
     loginMutation.mutate({ email: loginEmail, password: loginPassword });
   };
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    setRegisterEmailError(""); // 清除之前的错误
-    if (!registerEmail || !registerPassword) {
-      toast.error("请输入邮箱和密码");
-      return;
-    }
+    clearRegisterErrors();
     
-    // 密码强度校验
-    const strengthCheck = validatePasswordStrength(registerPassword);
-    if (!strengthCheck.valid) {
-      toast.error(strengthCheck.message);
-      return;
+    let hasError = false;
+    if (!registerEmail) {
+      setRegisterEmailError("请输入邮箱");
+      hasError = true;
     }
+    if (!registerPassword) {
+      setRegisterPasswordError("请输入密码");
+      hasError = true;
+    } else {
+      const strengthCheck = validatePasswordStrength(registerPassword);
+      if (!strengthCheck.valid) {
+        setRegisterPasswordError(strengthCheck.message);
+        hasError = true;
+      }
+    }
+    if (!registerConfirmPassword) {
+      setRegisterConfirmError("请确认密码");
+      hasError = true;
+    } else if (registerPassword !== registerConfirmPassword) {
+      setRegisterConfirmError("两次输入的密码不一致");
+      hasError = true;
+    }
+    if (hasError) return;
     
-    if (registerPassword !== registerConfirmPassword) {
-      toast.error("两次输入的密码不一致");
-      return;
-    }
     registerMutation.mutate({
       email: registerEmail,
       password: registerPassword,
@@ -165,7 +196,7 @@ export default function EmailLogin() {
                       value={loginEmail}
                       onChange={(e) => {
                         setLoginEmail(e.target.value);
-                        setLoginEmailError(""); // 输入时清除错误
+                        setLoginEmailError("");
                       }}
                       disabled={loginMutation.isPending}
                       autoComplete="email"
@@ -188,10 +219,13 @@ export default function EmailLogin() {
                         type={showLoginPassword ? "text" : "password"}
                         placeholder="请输入密码"
                         value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
+                        onChange={(e) => {
+                          setLoginPassword(e.target.value);
+                          setLoginPasswordError("");
+                        }}
                         disabled={loginMutation.isPending}
                         autoComplete="current-password"
-                        className="pr-10"
+                        className={`pr-10 ${loginPasswordError ? "border-red-500" : ""}`}
                       />
                       <button
                         type="button"
@@ -201,6 +235,9 @@ export default function EmailLogin() {
                         {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
+                    {loginPasswordError && (
+                      <p className="text-sm text-red-500">{loginPasswordError}</p>
+                    )}
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-4">
@@ -250,7 +287,7 @@ export default function EmailLogin() {
                       value={registerEmail}
                       onChange={(e) => {
                         setRegisterEmail(e.target.value);
-                        setRegisterEmailError(""); // 输入时清除错误
+                        setRegisterEmailError("");
                       }}
                       disabled={registerMutation.isPending}
                       autoComplete="email"
@@ -268,10 +305,13 @@ export default function EmailLogin() {
                         type={showRegisterPassword ? "text" : "password"}
                         placeholder="请输入密码"
                         value={registerPassword}
-                        onChange={(e) => setRegisterPassword(e.target.value)}
+                        onChange={(e) => {
+                          setRegisterPassword(e.target.value);
+                          setRegisterPasswordError("");
+                        }}
                         disabled={registerMutation.isPending}
                         autoComplete="new-password"
-                        className="pr-10"
+                        className={`pr-10 ${registerPasswordError ? "border-red-500" : ""}`}
                       />
                       <button
                         type="button"
@@ -281,6 +321,9 @@ export default function EmailLogin() {
                         {showRegisterPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
+                    {registerPasswordError && (
+                      <p className="text-sm text-red-500">{registerPasswordError}</p>
+                    )}
                     <PasswordStrengthIndicator password={registerPassword} />
                   </div>
                   <div className="space-y-2">
@@ -291,10 +334,13 @@ export default function EmailLogin() {
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="请再次输入密码"
                         value={registerConfirmPassword}
-                        onChange={(e) => setRegisterConfirmPassword(e.target.value)}
+                        onChange={(e) => {
+                          setRegisterConfirmPassword(e.target.value);
+                          setRegisterConfirmError("");
+                        }}
                         disabled={registerMutation.isPending}
                         autoComplete="new-password"
-                        className="pr-10"
+                        className={`pr-10 ${registerConfirmError ? "border-red-500" : ""}`}
                       />
                       <button
                         type="button"
@@ -304,6 +350,9 @@ export default function EmailLogin() {
                         {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
+                    {registerConfirmError && (
+                      <p className="text-sm text-red-500">{registerConfirmError}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="register-name">昵称（可选）</Label>

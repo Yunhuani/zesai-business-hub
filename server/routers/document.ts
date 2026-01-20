@@ -250,7 +250,7 @@ export const documentRouter = router({
  * 使用LLM基于完整对话历史生成文档内容（V2方案）
  */
 async function enhanceDocumentContent(
-  conversationMessages: Array<{ role: string; content: string; createdAt: Date }>,
+  conversationMessages: Array<{ role: string; content: string; createdAt: string | Date }>,
   fileName: string
 ): Promise<string> {
   // 将对话历史转换为文本

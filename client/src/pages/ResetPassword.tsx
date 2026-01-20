@@ -17,6 +17,8 @@ export default function ResetPassword() {
   const [resetSuccess, setResetSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmError, setConfirmError] = useState("");
 
   // 从URL获取token
   useEffect(() => {
@@ -54,29 +56,45 @@ export default function ResetPassword() {
       setTimeout(() => navigate("/email-login"), 3000);
     },
     onError: (error) => {
-      toast.error(error.message);
+      let errorMessage = error.message || "重置失败";
+      try {
+        const parsed = JSON.parse(error.message);
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].message) {
+          errorMessage = parsed[0].message;
+        }
+      } catch {
+        // 保持原错误消息
+      }
+      setPasswordError(errorMessage);
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setPasswordError("");
+    setConfirmError("");
     
-    if (!password || !confirmPassword) {
-      toast.error("请填写所有字段");
-      return;
+    let hasError = false;
+    if (!password) {
+      setPasswordError("请输入新密码");
+      hasError = true;
+    } else {
+      const strengthCheck = validatePasswordStrength(password);
+      if (!strengthCheck.valid) {
+        setPasswordError(strengthCheck.message);
+        hasError = true;
+      }
     }
     
-    // 密码强度校验
-    const strengthCheck = validatePasswordStrength(password);
-    if (!strengthCheck.valid) {
-      toast.error(strengthCheck.message);
-      return;
+    if (!confirmPassword) {
+      setConfirmError("请确认密码");
+      hasError = true;
+    } else if (password !== confirmPassword) {
+      setConfirmError("两次输入的密码不一致");
+      hasError = true;
     }
     
-    if (password !== confirmPassword) {
-      toast.error("两次输入的密码不一致");
-      return;
-    }
+    if (hasError) return;
     
     resetPassword.mutate({ token, password });
   };
@@ -112,10 +130,13 @@ export default function ResetPassword() {
                   type={showPassword ? "text" : "password"}
                   placeholder="请输入新密码"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setPasswordError("");
+                  }}
                   disabled={resetPassword.isPending}
                   required
-                  className="pr-10"
+                  className={`pr-10 ${passwordError ? "border-red-500" : ""}`}
                 />
                 <button
                   type="button"
@@ -125,6 +146,9 @@ export default function ResetPassword() {
                   {showPassword ? <Icons.EyeOff className="w-4 h-4" /> : <Icons.Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {passwordError && (
+                <p className="text-sm text-red-500 mt-1">{passwordError}</p>
+              )}
               {password && <PasswordStrengthIndicator password={password} />}
             </div>
 
@@ -135,10 +159,13 @@ export default function ResetPassword() {
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="再次输入新密码"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    setConfirmError("");
+                  }}
                   disabled={resetPassword.isPending}
                   required
-                  className="pr-10"
+                  className={`pr-10 ${confirmError ? "border-red-500" : ""}`}
                 />
                 <button
                   type="button"
@@ -148,6 +175,9 @@ export default function ResetPassword() {
                   {showConfirmPassword ? <Icons.EyeOff className="w-4 h-4" /> : <Icons.Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {confirmError && (
+                <p className="text-sm text-red-500 mt-1">{confirmError}</p>
+              )}
             </div>
 
             <Button

@@ -115,7 +115,7 @@ export const passwordResetRouter = router({
         });
       }
       
-      if (new Date() > resetToken.expiresAt) {
+      if (new Date() > new Date(resetToken.expiresAt)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "重置链接已过期，请重新申请",
@@ -159,7 +159,7 @@ export const passwordResetRouter = router({
         });
       }
       
-      if (new Date() > resetToken.expiresAt) {
+      if (new Date() > new Date(resetToken.expiresAt)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "重置链接已过期，请重新申请",

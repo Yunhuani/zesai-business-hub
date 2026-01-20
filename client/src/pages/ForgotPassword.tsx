@@ -19,30 +19,26 @@ export default function ForgotPassword() {
       setSubmitted(true);
     },
     onError: (error) => {
-      // 解析zod校验错误
       let errorMessage = "发送失败";
       try {
         const parsed = JSON.parse(error.message);
         if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].message) {
           errorMessage = parsed[0].message;
-          // 如果是邮箱格式错误，显示在输入框下方
-          if (errorMessage.includes("邮箱")) {
-            setEmailError(errorMessage);
-            return;
-          }
         }
       } catch {
         errorMessage = error.message || "发送失败";
       }
-      toast.error(errorMessage);
+      // 所有错误都显示在输入框下方
+      setEmailError(errorMessage);
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setEmailError(""); // 清除之前的错误
+    setEmailError("");
+    
     if (!email) {
-      toast.error("请输入邮箱地址");
+      setEmailError("请输入邮箱地址");
       return;
     }
     requestReset.mutate({ email });
