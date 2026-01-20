@@ -1,4 +1,4 @@
-import { publicProcedure, router } from "../_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { sendSmsCode, generateCode } from "../lib/sms";
@@ -188,6 +188,89 @@ export const phoneAuthRouter = router({
           email: user.email,
           role: user.role,
         },
+      };
+    }),
+
+  /**
+   * 绑定手机号（已登录用户）
+   */
+  bindPhone: protectedProcedure
+    .input(
+      z.object({
+        phone: z.string().regex(/^1[3-9]\d{9}$/, "请输入正确的手机号"),
+        code: z.string().length(6, "验证码为6位数字"),
+      })
+    )
+    .mutation(async ({ input, ctx }: { input: { phone: string; code: string }; ctx: any }) => {
+      const { phone, code } = input;
+      const userId = ctx.user?.id;
+      
+      if (!userId) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "请先登录" });
+      }
+
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "数据库连接失败" });
+
+      // 检查手机号是否已被其他用户绑定
+      const [existingUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.phone, phone))
+        .limit(1);
+
+      if (existingUser && existingUser.id !== userId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "该手机号已被其他账号绑定",
+        });
+      }
+
+      // 验证验证码
+      const [smsCode] = await db
+        .select()
+        .from(smsCodes)
+        .where(
+          and(
+            eq(smsCodes.phone, phone),
+            eq(smsCodes.code, code),
+            eq(smsCodes.used, 0),
+            eq(smsCodes.type, "bind")
+          )
+        )
+        .orderBy(desc(smsCodes.createdAt))
+        .limit(1);
+
+      if (!smsCode) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "验证码错误或已过期",
+        });
+      }
+
+      // 检查是否过期
+      if (new Date() > new Date(smsCode.expiresAt)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "验证码已过期，请重新获取",
+        });
+      }
+
+      // 标记验证码为已使用
+      await db
+        .update(smsCodes)
+        .set({ used: 1 })
+        .where(eq(smsCodes.id, smsCode.id));
+
+      // 更新用户手机号
+      await db
+        .update(users)
+        .set({ phone })
+        .where(eq(users.id, userId));
+
+      return {
+        success: true,
+        message: "手机号绑定成功",
       };
     }),
 });

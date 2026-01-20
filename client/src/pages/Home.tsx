@@ -249,9 +249,18 @@ export default function Home() {
                     <DropdownMenuSeparator />
                     <div className="px-2 py-1.5 text-sm text-muted-foreground">
                       {user?.email && <div>邮箱: {user.email}</div>}
+                      {user?.phone && <div>手机: {user.phone.replace(/(\d{3})\d{4}(\d{4})/, "$1****$2")}</div>}
                       {user?.username && <div>用户名: {user.username}</div>}
                     </div>
                     <DropdownMenuSeparator />
+                    {!user?.phone && (
+                      <DropdownMenuItem asChild>
+                        <a href="/bind-phone">
+                          <Icons.Smartphone className="w-4 h-4 mr-2" />
+                          绑定手机号
+                        </a>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       className="text-red-600 focus:text-red-600"
                       onClick={async () => {
