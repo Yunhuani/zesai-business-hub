@@ -1,0 +1,16 @@
+{
+  "query": "SELECT id, name, phone, openId FROM users WHERE phone = '13900139001';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, name, phone, openId FROM users WHERE phone = '13900139001';",
+  "rows": [
+    {
+      "id": "15180036",
+      "name": "用户9001",
+      "phone": "13900139001",
+      "openId": "phone_13900139001"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tphone\topenId\n15180036\t用户9001\t13900139001\tphone_13900139001\n",
+  "stderr": "",
+  "execution_time_ms": 1510
+}

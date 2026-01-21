@@ -25,7 +25,7 @@ export function LoginMethodDialog({ open, onOpenChange }: LoginMethodDialogProps
 
   const handleEmailLogin = () => {
     onOpenChange(false);
-    setLocation("/email-login");
+    setLocation("/login");
   };
 
   const handleManusLogin = () => {

@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, name, phone, email, openId FROM users ORDER BY id DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, name, phone, email, openId FROM users ORDER BY id DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "15180001",
+      "name": "用户9286",
+      "phone": "18321469286",
+      "email": "NULL",
+      "openId": "phone_18321469286"
+    },
+    {
+      "id": "15150001",
+      "name": "用户2810",
+      "phone": "18072962810",
+      "email": "NULL",
+      "openId": "phone_18072962810"
+    },
+    {
+      "id": "15090043",
+      "name": "Yankee",
+      "phone": "13636435975",
+      "email": "yankee007@163.com",
+      "openId": "phone_13636435975"
+    },
+    {
+      "id": "15090040",
+      "name": "samyang78",
+      "phone": "NULL",
+      "email": "samyang78@qq.com",
+      "openId": "Wjr7ZUXiVFHUspXg86jVQW"
+    },
+    {
+      "id": "15090024",
+      "name": "用户7486",
+      "phone": "15601837486",
+      "email": "NULL",
+      "openId": "phone_15601837486"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tphone\temail\topenId\n15180001\t用户9286\t18321469286\tNULL\tphone_18321469286\n15150001\t用户2810\t18072962810\tNULL\tphone_18072962810\n15090043\tYankee\t13636435975\tyankee007@163.com\tphone_13636435975\n15090040\tsamyang78\tNULL\tsamyang78@qq.com\tWjr7ZUXiVFHUspXg86jVQW\n15090024\t用户7486\t15601837486\tNULL\tphone_15601837486\n",
+  "stderr": "",
+  "execution_time_ms": 1584
+}

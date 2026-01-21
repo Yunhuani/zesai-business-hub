@@ -220,7 +220,7 @@ export default function Home() {
                         onClick={async () => {
                           await logout();
                           setTimeout(() => {
-                            window.location.href = '/email-login';
+                            window.location.href = '/login';
                           }, 0);
                         }}
                       >
@@ -266,7 +266,7 @@ export default function Home() {
                       onClick={async () => {
                         await logout();
                         setTimeout(() => {
-                          window.location.href = '/email-login';
+                          window.location.href = '/login';
                         }, 0);
                       }}
                     >

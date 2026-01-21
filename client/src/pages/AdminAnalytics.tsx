@@ -544,7 +544,7 @@ export default function AdminAnalytics() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      setTimeout(() => window.location.href = "/email-login", 0);
+      setTimeout(() => window.location.href = "/login", 0);
     } else if (!authLoading && isAuthenticated && user?.role !== "admin") {
       setLocation("/");
     }

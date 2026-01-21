@@ -206,7 +206,7 @@ export default function PhoneLogin() {
                 )}
               </Button>
               <div className="text-center text-sm text-gray-400">
-                <Link href="/email-login" className="text-blue-600 hover:underline">
+                <Link href="/login" className="text-blue-600 hover:underline">
                   使用邮箱密码登录
                 </Link>
               </div>

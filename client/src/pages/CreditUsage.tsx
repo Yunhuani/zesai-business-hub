@@ -52,7 +52,7 @@ export default function CreditUsage() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      setTimeout(() => window.location.href = "/email-login", 0);
+      setTimeout(() => window.location.href = "/login", 0);
     }
   }, [authLoading, isAuthenticated]);
 

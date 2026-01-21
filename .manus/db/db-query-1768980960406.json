@@ -1,0 +1,1198 @@
+{
+  "query": "SELECT id, name, phone, openId FROM users;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, name, phone, openId FROM users;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Zenith",
+      "phone": "13601761270",
+      "openId": "email_yunhua.ni@gmail.com"
+    },
+    {
+      "id": "2580008",
+      "name": "Ryan",
+      "phone": "NULL",
+      "openId": "email_16289209@qq.com"
+    },
+    {
+      "id": "3990008",
+      "name": "Test Credits User",
+      "phone": "NULL",
+      "openId": "test_credits_1764301720214"
+    },
+    {
+      "id": "4440010",
+      "name": "Test User",
+      "phone": "NULL",
+      "openId": "username_testuser_1764563413734"
+    },
+    {
+      "id": "4440012",
+      "name": "测试用户",
+      "phone": "NULL",
+      "openId": "username_testuser123"
+    },
+    {
+      "id": "4440027",
+      "name": "Test User",
+      "phone": "NULL",
+      "openId": "email_test1764563955512@example.com"
+    },
+    {
+      "id": "4440031",
+      "name": "邮箱测试用户",
+      "phone": "NULL",
+      "openId": "email_test@example.com"
+    },
+    {
+      "id": "4620003",
+      "name": "guanli118",
+      "phone": "NULL",
+      "openId": "email_guanli118@gmail.com"
+    },
+    {
+      "id": "4650040",
+      "name": "测试用户",
+      "phone": "NULL",
+      "openId": "test-stream-1764572175744"
+    },
+    {
+      "id": "6360001",
+      "name": "18601389681",
+      "phone": "NULL",
+      "openId": "email_18601389681@163.com"
+    },
+    {
+      "id": "6810001",
+      "name": "lingmoyuan",
+      "phone": "NULL",
+      "openId": "email_lingmoyuan@sina.com"
+    },
+    {
+      "id": "6930017",
+      "name": "赵玉琳",
+      "phone": "NULL",
+      "openId": "email_15010497770@sina.cn"
+    },
+    {
+      "id": "6990001",
+      "name": "hehe ren",
+      "phone": "NULL",
+      "openId": "eCEqhshYSKWp28eTRbucvf"
+    },
+    {
+      "id": "7230001",
+      "name": "edison wang",
+      "phone": "NULL",
+      "openId": "d8ybBLNnDUxNGpsTVzsXzy"
+    },
+    {
+      "id": "7350017",
+      "name": "小段",
+      "phone": "15800682625",
+      "openId": "phone_15800682625"
+    },
+    {
+      "id": "7470018",
+      "name": "测试用户",
+      "phone": "NULL",
+      "openId": "email_test@zesiai.com"
+    },
+    {
+      "id": "8070021",
+      "name": "文档测试用户",
+      "phone": "NULL",
+      "openId": "test_doc_user_1765426475373"
+    },
+    {
+      "id": "8820001",
+      "name": "fengqiannan17",
+      "phone": "NULL",
+      "openId": "email_fengqiannan17@163.com"
+    },
+    {
+      "id": "8970016",
+      "name": "annexiaoju17",
+      "phone": "NULL",
+      "openId": "email_annexiaoju17@163.com"
+    },
+    {
+      "id": "9030001",
+      "name": "1538958274",
+      "phone": "NULL",
+      "openId": "email_1538958274@qq.com"
+    },
+    {
+      "id": "9210001",
+      "name": "382868331",
+      "phone": "NULL",
+      "openId": "email_382868331@qq.com"
+    },
+    {
+      "id": "9300023",
+      "name": "539687064",
+      "phone": "NULL",
+      "openId": "email_539687064@qq.com"
+    },
+    {
+      "id": "9810001",
+      "name": "402427016",
+      "phone": "NULL",
+      "openId": "email_402427016@qq.com"
+    },
+    {
+      "id": "10080001",
+      "name": "深思666",
+      "phone": "NULL",
+      "openId": "email_f13625284688@qq.com"
+    },
+    {
+      "id": "10110001",
+      "name": "EvaShen",
+      "phone": "NULL",
+      "openId": "email_2287169376@qq.com"
+    },
+    {
+      "id": "10140001",
+      "name": "Evian",
+      "phone": "NULL",
+      "openId": "email_51880049@qq.com"
+    },
+    {
+      "id": "10170001",
+      "name": "mike",
+      "phone": "NULL",
+      "openId": "email_heesiewloong@gmail.com"
+    },
+    {
+      "id": "10350001",
+      "name": "一枚钻石",
+      "phone": "NULL",
+      "openId": "email_shirleyshi1214@163.com"
+    },
+    {
+      "id": "10380030",
+      "name": "段小段",
+      "phone": "NULL",
+      "openId": "email_779041765@qq.com"
+    },
+    {
+      "id": "10380037",
+      "name": "Wang勇亚",
+      "phone": "NULL",
+      "openId": "email_wyy_ocean@163.com"
+    },
+    {
+      "id": "10410001",
+      "name": "tony qu",
+      "phone": "NULL",
+      "openId": "AfqbVEc8xEfpXCaRSZGz87"
+    },
+    {
+      "id": "10440001",
+      "name": "1641752002",
+      "phone": "NULL",
+      "openId": "email_1641752002@qq.com"
+    },
+    {
+      "id": "10470001",
+      "name": "Lily",
+      "phone": "NULL",
+      "openId": "email_57182365@qq.com"
+    },
+    {
+      "id": "10500001",
+      "name": "樊峻恺",
+      "phone": "NULL",
+      "openId": "email_fzx712@Petalmail.com"
+    },
+    {
+      "id": "10530001",
+      "name": "Daisy程",
+      "phone": "NULL",
+      "openId": "email_diasy31@163.com"
+    },
+    {
+      "id": "10560001",
+      "name": "笨笨",
+      "phone": "NULL",
+      "openId": "Yvdd2djFsekXpwhPyRiKmj"
+    },
+    {
+      "id": "10590008",
+      "name": "万里雪飘",
+      "phone": "NULL",
+      "openId": "email_1844450162@qq.com"
+    },
+    {
+      "id": "10650001",
+      "name": "12",
+      "phone": "NULL",
+      "openId": "email_1096626639@qq.com"
+    },
+    {
+      "id": "10710001",
+      "name": "Song",
+      "phone": "NULL",
+      "openId": "email_LS-444@outlook.com"
+    },
+    {
+      "id": "10830001",
+      "name": "mmbg",
+      "phone": "NULL",
+      "openId": "email_duxiaoyiwei@126.com"
+    },
+    {
+      "id": "11010002",
+      "name": "Test User",
+      "phone": "NULL",
+      "openId": "email_test_1766481875490@example.com"
+    },
+    {
+      "id": "11010003",
+      "name": "DB Test User",
+      "phone": "NULL",
+      "openId": "email_dbtest_1766481877671@example.com"
+    },
+    {
+      "id": "11040010",
+      "name": "新用户",
+      "phone": "NULL",
+      "openId": "email_newuser@test.com"
+    },
+    {
+      "id": "11040016",
+      "name": "最终测试用户",
+      "phone": "NULL",
+      "openId": "email_finaltest@example.com"
+    },
+    {
+      "id": "11040022",
+      "name": "调试测试",
+      "phone": "NULL",
+      "openId": "email_debugtest@example.com"
+    },
+    {
+      "id": "11070003",
+      "name": "Token测试用户",
+      "phone": "NULL",
+      "openId": "email_tokentest@example.com"
+    },
+    {
+      "id": "11160005",
+      "name": "圆月超人",
+      "phone": "NULL",
+      "openId": "email_super_yue_ming@foxmail.com"
+    },
+    {
+      "id": "11160018",
+      "name": "聊天测试",
+      "phone": "NULL",
+      "openId": "email_chattest@example.com"
+    },
+    {
+      "id": "11460001",
+      "name": "xuqiangsh",
+      "phone": "NULL",
+      "openId": "email_xuqiangsh@gmail.com"
+    },
+    {
+      "id": "11490001",
+      "name": " Anthony Wei",
+      "phone": "NULL",
+      "openId": "email_13801327270@139.com"
+    },
+    {
+      "id": "11520001",
+      "name": "闹闹",
+      "phone": "NULL",
+      "openId": "email_voodookiss@163.com"
+    },
+    {
+      "id": "11520002",
+      "name": "大表姐",
+      "phone": "NULL",
+      "openId": "email_414161919@qq.com"
+    },
+    {
+      "id": "11520003",
+      "name": "victorcj523",
+      "phone": "NULL",
+      "openId": "email_victorcj523@gmail.com"
+    },
+    {
+      "id": "11550001",
+      "name": "Ziyang Wei",
+      "phone": "NULL",
+      "openId": "SU9XG7Ab8Gck3ASMATiZRu"
+    },
+    {
+      "id": "11580001",
+      "name": "zeyujiang275",
+      "phone": "NULL",
+      "openId": "email_zeyujiang275@gmail.com"
+    },
+    {
+      "id": "11610001",
+      "name": "QY",
+      "phone": "NULL",
+      "openId": "email_18126499429@163.com"
+    },
+    {
+      "id": "11640001",
+      "name": "维克多",
+      "phone": "NULL",
+      "openId": "email_37593301@qq.com"
+    },
+    {
+      "id": "11670001",
+      "name": "Helen",
+      "phone": "NULL",
+      "openId": "email_347847155@qq.com"
+    },
+    {
+      "id": "11730006",
+      "name": "1786572988",
+      "phone": "NULL",
+      "openId": "email_1786572988@qq.com"
+    },
+    {
+      "id": "11730012",
+      "name": "418388243",
+      "phone": "NULL",
+      "openId": "email_418388243@qq.com"
+    },
+    {
+      "id": "11730015",
+      "name": "辰竹老王",
+      "phone": "NULL",
+      "openId": "email_wangzp@chenzhu-inst.com"
+    },
+    {
+      "id": "11760001",
+      "name": "wen",
+      "phone": "NULL",
+      "openId": "email_774377622@qq.com"
+    },
+    {
+      "id": "11790001",
+      "name": "Jonathan Yang",
+      "phone": "NULL",
+      "openId": "Dx6vzne84UHYaFrwTxaDa4"
+    },
+    {
+      "id": "11820001",
+      "name": "姥杨",
+      "phone": "NULL",
+      "openId": "email_67208204@qq.com"
+    },
+    {
+      "id": "11850001",
+      "name": "YS",
+      "phone": "NULL",
+      "openId": "email_panyinet@126.com"
+    },
+    {
+      "id": "11880162",
+      "name": "Zero",
+      "phone": "NULL",
+      "openId": "email_271629716@qq.com"
+    },
+    {
+      "id": "11910001",
+      "name": "mjc196999",
+      "phone": "NULL",
+      "openId": "email_mjc196999@outlook.com"
+    },
+    {
+      "id": "11910002",
+      "name": "13149919146",
+      "phone": "NULL",
+      "openId": "email_13149919146@163.com"
+    },
+    {
+      "id": "12000012",
+      "name": "1305594501",
+      "phone": "NULL",
+      "openId": "email_1305594501@qq.com"
+    },
+    {
+      "id": "12000267",
+      "name": "yoshiko",
+      "phone": "NULL",
+      "openId": "email_yoshiko.mana.synerarch@gmail.com"
+    },
+    {
+      "id": "12060001",
+      "name": "847150994",
+      "phone": "NULL",
+      "openId": "email_847150994@qq.com"
+    },
+    {
+      "id": "12120001",
+      "name": "James",
+      "phone": "NULL",
+      "openId": "email_chengxiang@outlook.com"
+    },
+    {
+      "id": "12120002",
+      "name": "宝仔",
+      "phone": "NULL",
+      "openId": "email_aris0817@mail.ru"
+    },
+    {
+      "id": "12150001",
+      "name": "Fred",
+      "phone": "NULL",
+      "openId": "email_819303833@qq.com"
+    },
+    {
+      "id": "12180001",
+      "name": "1198079142",
+      "phone": "NULL",
+      "openId": "email_1198079142@qq.com"
+    },
+    {
+      "id": "12270001",
+      "name": "寿山石",
+      "phone": "NULL",
+      "openId": "email_chzh7011@126.com"
+    },
+    {
+      "id": "12300001",
+      "name": "badbed198218",
+      "phone": "NULL",
+      "openId": "email_badbed198218@163.com"
+    },
+    {
+      "id": "12300002",
+      "name": "夏风",
+      "phone": "NULL",
+      "openId": "email_1040043431@qq.com"
+    },
+    {
+      "id": "12330001",
+      "name": "maoben",
+      "phone": "NULL",
+      "openId": "email_maoben@163.com"
+    },
+    {
+      "id": "12360001",
+      "name": "vincent",
+      "phone": "NULL",
+      "openId": "email_vincentshangpeng@gmail.com"
+    },
+    {
+      "id": "12390001",
+      "name": "橘子",
+      "phone": "NULL",
+      "openId": "email_18642601700@163.com"
+    },
+    {
+      "id": "12420001",
+      "name": "443855512",
+      "phone": "NULL",
+      "openId": "email_443855512@qq.com"
+    },
+    {
+      "id": "12450001",
+      "name": "高峰",
+      "phone": "NULL",
+      "openId": "email_gufengyixia@126.com"
+    },
+    {
+      "id": "12480001",
+      "name": "joseph",
+      "phone": "NULL",
+      "openId": "email_joseph@impr.com.tw"
+    },
+    {
+      "id": "12600017",
+      "name": "设计狗",
+      "phone": "NULL",
+      "openId": "email_670210314@qq.com"
+    },
+    {
+      "id": "12630044",
+      "name": "cherisher",
+      "phone": "NULL",
+      "openId": "email_cherisher@139.com"
+    },
+    {
+      "id": "12660001",
+      "name": "丁丁",
+      "phone": "NULL",
+      "openId": "email_405117758@qq.com"
+    },
+    {
+      "id": "12690001",
+      "name": "小李哥",
+      "phone": "NULL",
+      "openId": "email_371722620@qq.com"
+    },
+    {
+      "id": "12720001",
+      "name": "victor8383",
+      "phone": "NULL",
+      "openId": "email_hanwenchao123@126.com"
+    },
+    {
+      "id": "12720002",
+      "name": "微笑问",
+      "phone": "NULL",
+      "openId": "email_409735339@qq.com"
+    },
+    {
+      "id": "12780007",
+      "name": "测试用户",
+      "phone": "NULL",
+      "openId": "email_testhistory@example.com"
+    },
+    {
+      "id": "12780008",
+      "name": "XIANQING SHEN",
+      "phone": "NULL",
+      "openId": "Ho3FqF6gtDi8DiwUkpqcKt"
+    },
+    {
+      "id": "12780009",
+      "name": "lorraine",
+      "phone": "NULL",
+      "openId": "email_43998149@qq.com"
+    },
+    {
+      "id": "12870005",
+      "name": "327l4u3q",
+      "phone": "NULL",
+      "openId": "VnGo2r4mDfsZ4juGEgmSUc"
+    },
+    {
+      "id": "12900006",
+      "name": "suri",
+      "phone": "NULL",
+      "openId": "email_1806708832@qq.com"
+    },
+    {
+      "id": "12900007",
+      "name": "知识桥",
+      "phone": "NULL",
+      "openId": "email_melissachan2019@163.com"
+    },
+    {
+      "id": "12900083",
+      "name": "wzl71111",
+      "phone": "NULL",
+      "openId": "email_351510145@QQ.COM"
+    },
+    {
+      "id": "12900126",
+      "name": "测试用户",
+      "phone": "NULL",
+      "openId": "email_testuser@example.com"
+    },
+    {
+      "id": "12900133",
+      "name": "诗经",
+      "phone": "NULL",
+      "openId": "email_858205602@qq.com"
+    },
+    {
+      "id": "12900138",
+      "name": "Johnny G",
+      "phone": "NULL",
+      "openId": "email_95363655@qq.com"
+    },
+    {
+      "id": "12900141",
+      "name": "Luuuucas",
+      "phone": "NULL",
+      "openId": "email_1977057625@qq.com"
+    },
+    {
+      "id": "12900142",
+      "name": "CHANG SHU",
+      "phone": "NULL",
+      "openId": "email_199512168@QQ.COM"
+    },
+    {
+      "id": "12930001",
+      "name": "charlyhuang2007",
+      "phone": "NULL",
+      "openId": "email_charlyhuang2007@163.com"
+    },
+    {
+      "id": "12930002",
+      "name": "ljmimi",
+      "phone": "NULL",
+      "openId": "email_ljmimi@gmail.com"
+    },
+    {
+      "id": "12930007",
+      "name": "charlyhuang1979",
+      "phone": "NULL",
+      "openId": "email_charlyhuang1979@163.com"
+    },
+    {
+      "id": "12930008",
+      "name": "凤凰",
+      "phone": "NULL",
+      "openId": "email_15888290093@139.com"
+    },
+    {
+      "id": "13020001",
+      "name": "zsdh",
+      "phone": "NULL",
+      "openId": "email_zhdhzhx@126.com"
+    },
+    {
+      "id": "13020008",
+      "name": "辉哥",
+      "phone": "NULL",
+      "openId": "email_lqh123456@qq.com"
+    },
+    {
+      "id": "13050001",
+      "name": "风雨",
+      "phone": "NULL",
+      "openId": "email_wrq1433@163.com"
+    },
+    {
+      "id": "13050002",
+      "name": "2665362523",
+      "phone": "NULL",
+      "openId": "email_2665362523@qq.com"
+    },
+    {
+      "id": "13080001",
+      "name": "青阅",
+      "phone": "NULL",
+      "openId": "email_414452814@qq.com"
+    },
+    {
+      "id": "13080002",
+      "name": "2",
+      "phone": "NULL",
+      "openId": "email_794375814@qq.com"
+    },
+    {
+      "id": "13080003",
+      "name": "froggie",
+      "phone": "NULL",
+      "openId": "email_jennywang_0902@163.com"
+    },
+    {
+      "id": "13110001",
+      "name": "changjun",
+      "phone": "NULL",
+      "openId": "email_1339174052@qq.com"
+    },
+    {
+      "id": "13110002",
+      "name": "454677085",
+      "phone": "NULL",
+      "openId": "email_454677085@qq.com"
+    },
+    {
+      "id": "13140001",
+      "name": "xu 天涯海角wow",
+      "phone": "NULL",
+      "openId": "email_yinuo.xu.shcm@outlook.com"
+    },
+    {
+      "id": "13170001",
+      "name": "小天",
+      "phone": "NULL",
+      "openId": "email_3083926061@qq.com"
+    },
+    {
+      "id": "13170002",
+      "name": "nyhcnn",
+      "phone": "NULL",
+      "openId": "email_nyhcnn@126.com"
+    },
+    {
+      "id": "13200001",
+      "name": "推荐测试用户",
+      "phone": "NULL",
+      "openId": "email_test_referral_20260107@test.com"
+    },
+    {
+      "id": "13200002",
+      "name": "test_referral_new_20260107",
+      "phone": "NULL",
+      "openId": "email_test_referral_new_20260107@test.com"
+    },
+    {
+      "id": "13200003",
+      "name": "test_referral_new_20260108",
+      "phone": "NULL",
+      "openId": "email_test_referral_new_20260108@test.com"
+    },
+    {
+      "id": "13200009",
+      "name": "test11",
+      "phone": "NULL",
+      "openId": "email_test11@zesiai.com"
+    },
+    {
+      "id": "13200030",
+      "name": "jeff",
+      "phone": "NULL",
+      "openId": "email_403230810@qq.com"
+    },
+    {
+      "id": "13200031",
+      "name": "DK",
+      "phone": "NULL",
+      "openId": "email_dkwong01@gmail.com"
+    },
+    {
+      "id": "13230010",
+      "name": "德德",
+      "phone": "NULL",
+      "openId": "email_598364001@qq.com"
+    },
+    {
+      "id": "13260001",
+      "name": "涂明",
+      "phone": "NULL",
+      "openId": "email_275392122@qq.com"
+    },
+    {
+      "id": "13260002",
+      "name": "yifeng",
+      "phone": "NULL",
+      "openId": "email_yifeng123a@gmail.com"
+    },
+    {
+      "id": "13290001",
+      "name": "bing sun",
+      "phone": "NULL",
+      "openId": "email_sun@topduty.com"
+    },
+    {
+      "id": "13320001",
+      "name": "tonlon924",
+      "phone": "NULL",
+      "openId": "email_tonlon924@163.com"
+    },
+    {
+      "id": "13350001",
+      "name": "thecissp",
+      "phone": "NULL",
+      "openId": "email_thecissp@gmail.com"
+    },
+    {
+      "id": "13380038",
+      "name": "JamesLiu",
+      "phone": "NULL",
+      "openId": "email_liuj3218@163.com"
+    },
+    {
+      "id": "13440001",
+      "name": "Nielson",
+      "phone": "NULL",
+      "openId": "email_nschou@gmail.com"
+    },
+    {
+      "id": "13470001",
+      "name": "Ilst",
+      "phone": "NULL",
+      "openId": "email_Ilstqld@gmail.comI"
+    },
+    {
+      "id": "13500001",
+      "name": "沿途的美景",
+      "phone": "NULL",
+      "openId": "email_474358486@qq.com"
+    },
+    {
+      "id": "13530001",
+      "name": "duawei",
+      "phone": "NULL",
+      "openId": "email_duawei@faw.com.cn"
+    },
+    {
+      "id": "13530002",
+      "name": "婉婉",
+      "phone": "NULL",
+      "openId": "email_27324010@qq.com"
+    },
+    {
+      "id": "13560001",
+      "name": "shawnstockman",
+      "phone": "NULL",
+      "openId": "email_386669895@qq.com"
+    },
+    {
+      "id": "13590005",
+      "name": "刘小姐",
+      "phone": "NULL",
+      "openId": "email_1179834807@qq.com"
+    },
+    {
+      "id": "13620001",
+      "name": "Ambriel",
+      "phone": "NULL",
+      "openId": "email_melodyzjq@hotmail.com"
+    },
+    {
+      "id": "13650001",
+      "name": "Jeongmin",
+      "phone": "NULL",
+      "openId": "email_623793573@qq.com"
+    },
+    {
+      "id": "13680001",
+      "name": "AI狂人老杨哥",
+      "phone": "NULL",
+      "openId": "email_68755671@qq.com"
+    },
+    {
+      "id": "13680004",
+      "name": "文档测试用户",
+      "phone": "NULL",
+      "openId": "test_doc_user_1768121776748"
+    },
+    {
+      "id": "13680005",
+      "name": "Test Credits User",
+      "phone": "NULL",
+      "openId": "test_credits_1768121776918"
+    },
+    {
+      "id": "13770005",
+      "name": "堡烨",
+      "phone": "NULL",
+      "openId": "email_zhengbaoye169@163.com"
+    },
+    {
+      "id": "13770006",
+      "name": "Jacky",
+      "phone": "NULL",
+      "openId": "email_hepeng0102@163.com"
+    },
+    {
+      "id": "13800001",
+      "name": "桃子",
+      "phone": "NULL",
+      "openId": "email_373991717@qq.com"
+    },
+    {
+      "id": "13830001",
+      "name": "岁月无痕",
+      "phone": "NULL",
+      "openId": "email_390250902@qq.com"
+    },
+    {
+      "id": "13860001",
+      "name": "315436073",
+      "phone": "NULL",
+      "openId": "email_315436073@qq.com"
+    },
+    {
+      "id": "13890001",
+      "name": "1419328826",
+      "phone": "NULL",
+      "openId": "email_1419328826@qq.com"
+    },
+    {
+      "id": "13920001",
+      "name": "樊老还童",
+      "phone": "NULL",
+      "openId": "email_790264366@qq.com"
+    },
+    {
+      "id": "13920002",
+      "name": "1234567",
+      "phone": "NULL",
+      "openId": "email_1234567@qq.com"
+    },
+    {
+      "id": "13950001",
+      "name": "蒋皓帆",
+      "phone": "NULL",
+      "openId": "email_19136144919@163.com"
+    },
+    {
+      "id": "13980001",
+      "name": "1136515328",
+      "phone": "NULL",
+      "openId": "email_1136515328@qq.com"
+    },
+    {
+      "id": "14010001",
+      "name": "yuqingchou",
+      "phone": "NULL",
+      "openId": "email_1372866632@qq.com"
+    },
+    {
+      "id": "14040001",
+      "name": "winder2000",
+      "phone": "NULL",
+      "openId": "email_winder2000@163.com"
+    },
+    {
+      "id": "14070004",
+      "name": "一飞冲天",
+      "phone": "NULL",
+      "openId": "email_770514759@qq.comm"
+    },
+    {
+      "id": "14070013",
+      "name": "一飞冲天 ",
+      "phone": "NULL",
+      "openId": "email_770514759@qq.com"
+    },
+    {
+      "id": "14070014",
+      "name": "1051138887",
+      "phone": "NULL",
+      "openId": "email_1051138887@qq.com"
+    },
+    {
+      "id": "14100008",
+      "name": "翟玉艳",
+      "phone": "NULL",
+      "openId": "email_zhaiyy@szidd.com"
+    },
+    {
+      "id": "14160001",
+      "name": "2271221317",
+      "phone": "NULL",
+      "openId": "email_2271221317@qq.com"
+    },
+    {
+      "id": "14190052",
+      "name": "xxxking",
+      "phone": "NULL",
+      "openId": "email_07911001@163.com"
+    },
+    {
+      "id": "14340001",
+      "name": "123",
+      "phone": "NULL",
+      "openId": "email_caolinli@xdf.cn"
+    },
+    {
+      "id": "14340008",
+      "name": "12289562",
+      "phone": "NULL",
+      "openId": "email_12289562@qq.com"
+    },
+    {
+      "id": "14340010",
+      "name": "lily",
+      "phone": "NULL",
+      "openId": "email_690262089@qq.com"
+    },
+    {
+      "id": "14400001",
+      "name": "邯郸三郎",
+      "phone": "NULL",
+      "openId": "email_13313109158@163.com"
+    },
+    {
+      "id": "14460001",
+      "name": "Chee Chin Seng",
+      "phone": "NULL",
+      "openId": "email_cheechinseng@gmail.com"
+    },
+    {
+      "id": "14490001",
+      "name": "老虎",
+      "phone": "NULL",
+      "openId": "email_13710855666@139.com"
+    },
+    {
+      "id": "14520001",
+      "name": "83176183",
+      "phone": "NULL",
+      "openId": "email_83176183@qq.com"
+    },
+    {
+      "id": "14520002",
+      "name": "朱哥哥",
+      "phone": "NULL",
+      "openId": "email_13320339922@189.cn"
+    },
+    {
+      "id": "14520003",
+      "name": "LampLighter",
+      "phone": "NULL",
+      "openId": "email_lamplighter0303@gmail.com"
+    },
+    {
+      "id": "14550001",
+      "name": "长长久久",
+      "phone": "NULL",
+      "openId": "email_498056493@qq.com"
+    },
+    {
+      "id": "14580001",
+      "name": "empero",
+      "phone": "NULL",
+      "openId": "email_empero@126.com"
+    },
+    {
+      "id": "14610001",
+      "name": "财富人生",
+      "phone": "NULL",
+      "openId": "email_dr.freeman@126.com"
+    },
+    {
+      "id": "14640001",
+      "name": "517030790",
+      "phone": "NULL",
+      "openId": "email_517030790@qq.com"
+    },
+    {
+      "id": "14670001",
+      "name": "一介看客",
+      "phone": "NULL",
+      "openId": "email_sheldon_2007@163.com"
+    },
+    {
+      "id": "14700001",
+      "name": "lucky",
+      "phone": "NULL",
+      "openId": "email_3885998@gmail.com"
+    },
+    {
+      "id": "14730001",
+      "name": "samyang",
+      "phone": "NULL",
+      "openId": "email_samyang@qq.com"
+    },
+    {
+      "id": "14820001",
+      "name": "Dammis Sha",
+      "phone": "NULL",
+      "openId": "email_dammissha94@gmail.com"
+    },
+    {
+      "id": "14820004",
+      "name": "测试用户",
+      "phone": "NULL",
+      "openId": "email_test_weak_pwd_20260119@test.com"
+    },
+    {
+      "id": "14820005",
+      "name": "abc",
+      "phone": "NULL",
+      "openId": "email_abc@abc.com"
+    },
+    {
+      "id": "14850001",
+      "name": "Bccm",
+      "phone": "NULL",
+      "openId": "email_37387025@qq.com"
+    },
+    {
+      "id": "14850002",
+      "name": "chenen",
+      "phone": "NULL",
+      "openId": "email_chenen1225@qq.com"
+    },
+    {
+      "id": "14880001",
+      "name": "pplxx",
+      "phone": "NULL",
+      "openId": "email_pplxxzax@163.com"
+    },
+    {
+      "id": "14880002",
+      "name": "朱耕田",
+      "phone": "NULL",
+      "openId": "email_81459487@qq.com"
+    },
+    {
+      "id": "14880011",
+      "name": "Vigoss",
+      "phone": "NULL",
+      "openId": "email_2229646476@qq.com"
+    },
+    {
+      "id": "14880012",
+      "name": "豁达的陌路狂花",
+      "phone": "NULL",
+      "openId": "email_qing_dongfang@foxmail.com"
+    },
+    {
+      "id": "14880014",
+      "name": "372279491",
+      "phone": "NULL",
+      "openId": "email_372279491@qq.com"
+    },
+    {
+      "id": "15000001",
+      "name": "lqruacg7h",
+      "phone": "NULL",
+      "openId": "email_lqruacg7h@mx.bymn.cn"
+    },
+    {
+      "id": "15030033",
+      "name": "ziyinsu",
+      "phone": "NULL",
+      "openId": "email_794250645@qq.com"
+    },
+    {
+      "id": "15030104",
+      "name": "test.db",
+      "phone": "NULL",
+      "openId": "email_test.db@test.com"
+    },
+    {
+      "id": "15030106",
+      "name": "绑定测试",
+      "phone": "NULL",
+      "openId": "email_bindtest@example.com"
+    },
+    {
+      "id": "15090001",
+      "name": "博士",
+      "phone": "NULL",
+      "openId": "email_15399927168@189.cn"
+    },
+    {
+      "id": "15090024",
+      "name": "用户7486",
+      "phone": "15601837486",
+      "openId": "phone_15601837486"
+    },
+    {
+      "id": "15090040",
+      "name": "samyang78",
+      "phone": "NULL",
+      "openId": "Wjr7ZUXiVFHUspXg86jVQW"
+    },
+    {
+      "id": "15090043",
+      "name": "Yankee",
+      "phone": "13636435975",
+      "openId": "phone_13636435975"
+    },
+    {
+      "id": "15150001",
+      "name": "用户2810",
+      "phone": "18072962810",
+      "openId": "phone_18072962810"
+    },
+    {
+      "id": "15180001",
+      "name": "用户9286",
+      "phone": "18321469286",
+      "openId": "phone_18321469286"
+    },
+    {
+      "id": "15180036",
+      "name": "用户9001",
+      "phone": "13900139001",
+      "openId": "phone_13900139001"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tphone\topenId\n1\tZenith\t13601761270\temail_yunhua.ni@gmail.com\n2580008\tRyan\tNULL\temail_16289209@qq.com\n3990008\tTest Credits User\tNULL\ttest_credits_1764301720214\n4440010\tTest User\tNULL\tusername_testuser_1764563413734\n4440012\t测试用户\tNULL\tusername_testuser123\n4440027\tTest User\tNULL\temail_test1764563955512@example.com\n4440031\t邮箱测试用户\tNULL\temail_test@example.com\n4620003\tguanli118\tNULL\temail_guanli118@gmail.com\n4650040\t测试用户\tNULL\ttest-stream-1764572175744\n6360001\t18601389681\tNULL\temail_18601389681@163.com\n6810001\tlingmoyuan\tNULL\temail_lingmoyuan@sina.com\n6930017\t赵玉琳\tNULL\temail_15010497770@sina.cn\n6990001\thehe ren\tNULL\teCEqhshYSKWp28eTRbucvf\n7230001\tedison wang\tNULL\td8ybBLNnDUxNGpsTVzsXzy\n7350017\t小段\t15800682625\tphone_15800682625\n7470018\t测试用户\tNULL\temail_test@zesiai.com\n8070021\t文档测试用户\tNULL\ttest_doc_user_1765426475373\n8820001\tfengqiannan17\tNULL\temail_fengqiannan17@163.com\n8970016\tannexiaoju17\tNULL\temail_annexiaoju17@163.com\n9030001\t1538958274\tNULL\temail_1538958274@qq.com\n9210001\t382868331\tNULL\temail_382868331@qq.com\n9300023\t539687064\tNULL\temail_539687064@qq.com\n9810001\t402427016\tNULL\temail_402427016@qq.com\n10080001\t深思666\tNULL\temail_f13625284688@qq.com\n10110001\tEvaShen\tNULL\temail_2287169376@qq.com\n10140001\tEvian\tNULL\temail_51880049@qq.com\n10170001\tmike\tNULL\temail_heesiewloong@gmail.com\n10350001\t一枚钻石\tNULL\temail_shirleyshi1214@163.com\n10380030\t段小段\tNULL\temail_779041765@qq.com\n10380037\tWang勇亚\tNULL\temail_wyy_ocean@163.com\n10410001\ttony qu\tNULL\tAfqbVEc8xEfpXCaRSZGz87\n10440001\t1641752002\tNULL\temail_1641752002@qq.com\n10470001\tLily\tNULL\temail_57182365@qq.com\n10500001\t樊峻恺\tNULL\temail_fzx712@Petalmail.com\n10530001\tDaisy程\tNULL\temail_diasy31@163.com\n10560001\t笨笨\tNULL\tYvdd2djFsekXpwhPyRiKmj\n10590008\t万里雪飘\tNULL\temail_1844450162@qq.com\n10650001\t12\tNULL\temail_1096626639@qq.com\n10710001\tSong\tNULL\temail_LS-444@outlook.com\n10830001\tmmbg\tNULL\temail_duxiaoyiwei@126.com\n11010002\tTest User\tNULL\temail_test_1766481875490@example.com\n11010003\tDB Test User\tNULL\temail_dbtest_1766481877671@example.com\n11040010\t新用户\tNULL\temail_newuser@test.com\n11040016\t最终测试用户\tNULL\temail_finaltest@example.com\n11040022\t调试测试\tNULL\temail_debugtest@example.com\n11070003\tToken测试用户\tNULL\temail_tokentest@example.com\n11160005\t圆月超人\tNULL\temail_super_yue_ming@foxmail.com\n11160018\t聊天测试\tNULL\temail_chattest@example.com\n11460001\txuqiangsh\tNULL\temail_xuqiangsh@gmail.com\n11490001\t Anthony Wei\tNULL\temail_13801327270@139.com\n11520001\t闹闹\tNULL\temail_voodookiss@163.com\n11520002\t大表姐\tNULL\temail_414161919@qq.com\n11520003\tvictorcj523\tNULL\temail_victorcj523@gmail.com\n11550001\tZiyang Wei\tNULL\tSU9XG7Ab8Gck3ASMATiZRu\n11580001\tzeyujiang275\tNULL\temail_zeyujiang275@gmail.com\n11610001\tQY\tNULL\temail_18126499429@163.com\n11640001\t维克多\tNULL\temail_37593301@qq.com\n11670001\tHelen\tNULL\temail_347847155@qq.com\n11730006\t1786572988\tNULL\temail_1786572988@qq.com\n11730012\t418388243\tNULL\temail_418388243@qq.com\n11730015\t辰竹老王\tNULL\temail_wangzp@chenzhu-inst.com\n11760001\twen\tNULL\temail_774377622@qq.com\n11790001\tJonathan Yang\tNULL\tDx6vzne84UHYaFrwTxaDa4\n11820001\t姥杨\tNULL\temail_67208204@qq.com\n11850001\tYS\tNULL\temail_panyinet@126.com\n11880162\tZero\tNULL\temail_271629716@qq.com\n11910001\tmjc196999\tNULL\temail_mjc196999@outlook.com\n11910002\t13149919146\tNULL\temail_13149919146@163.com\n12000012\t1305594501\tNULL\temail_1305594501@qq.com\n12000267\tyoshiko\tNULL\temail_yoshiko.mana.synerarch@gmail.com\n12060001\t847150994\tNULL\temail_847150994@qq.com\n12120001\tJames\tNULL\temail_chengxiang@outlook.com\n12120002\t宝仔\tNULL\temail_aris0817@mail.ru\n12150001\tFred\tNULL\temail_819303833@qq.com\n12180001\t1198079142\tNULL\temail_1198079142@qq.com\n12270001\t寿山石\tNULL\temail_chzh7011@126.com\n12300001\tbadbed198218\tNULL\temail_badbed198218@163.com\n12300002\t夏风\tNULL\temail_1040043431@qq.com\n12330001\tmaoben\tNULL\temail_maoben@163.com\n12360001\tvincent\tNULL\temail_vincentshangpeng@gmail.com\n12390001\t橘子\tNULL\temail_18642601700@163.com\n12420001\t443855512\tNULL\temail_443855512@qq.com\n12450001\t高峰\tNULL\temail_gufengyixia@126.com\n12480001\tjoseph\tNULL\temail_joseph@impr.com.tw\n12600017\t设计狗\tNULL\temail_670210314@qq.com\n12630044\tcherisher\tNULL\temail_cherisher@139.com\n12660001\t丁丁\tNULL\temail_405117758@qq.com\n12690001\t小李哥\tNULL\temail_371722620@qq.com\n12720001\tvictor8383\tNULL\temail_hanwenchao123@126.com\n12720002\t微笑问\tNULL\temail_409735339@qq.com\n12780007\t测试用户\tNULL\temail_testhistory@example.com\n12780008\tXIANQING SHEN\tNULL\tHo3FqF6gtDi8DiwUkpqcKt\n12780009\tlorraine\tNULL\temail_43998149@qq.com\n12870005\t327l4u3q\tNULL\tVnGo2r4mDfsZ4juGEgmSUc\n12900006\tsuri\tNULL\temail_1806708832@qq.com\n12900007\t知识桥\tNULL\temail_melissachan2019@163.com\n12900083\twzl71111\tNULL\temail_351510145@QQ.COM\n12900126\t测试用户\tNULL\temail_testuser@example.com\n12900133\t诗经\tNULL\temail_858205602@qq.com\n12900138\tJohnny G\tNULL\temail_95363655@qq.com\n12900141\tLuuuucas\tNULL\temail_1977057625@qq.com\n12900142\tCHANG SHU\tNULL\temail_199512168@QQ.COM\n12930001\tcharlyhuang2007\tNULL\temail_charlyhuang2007@163.com\n12930002\tljmimi\tNULL\temail_ljmimi@gmail.com\n12930007\tcharlyhuang1979\tNULL\temail_charlyhuang1979@163.com\n12930008\t凤凰\tNULL\temail_15888290093@139.com\n13020001\tzsdh\tNULL\temail_zhdhzhx@126.com\n13020008\t辉哥\tNULL\temail_lqh123456@qq.com\n13050001\t风雨\tNULL\temail_wrq1433@163.com\n13050002\t2665362523\tNULL\temail_2665362523@qq.com\n13080001\t青阅\tNULL\temail_414452814@qq.com\n13080002\t2\tNULL\temail_794375814@qq.com\n13080003\tfroggie\tNULL\temail_jennywang_0902@163.com\n13110001\tchangjun\tNULL\temail_1339174052@qq.com\n13110002\t454677085\tNULL\temail_454677085@qq.com\n13140001\txu 天涯海角wow\tNULL\temail_yinuo.xu.shcm@outlook.com\n13170001\t小天\tNULL\temail_3083926061@qq.com\n13170002\tnyhcnn\tNULL\temail_nyhcnn@126.com\n13200001\t推荐测试用户\tNULL\temail_test_referral_20260107@test.com\n13200002\ttest_referral_new_20260107\tNULL\temail_test_referral_new_20260107@test.com\n13200003\ttest_referral_new_20260108\tNULL\temail_test_referral_new_20260108@test.com\n13200009\ttest11\tNULL\temail_test11@zesiai.com\n13200030\tjeff\tNULL\temail_403230810@qq.com\n13200031\tDK\tNULL\temail_dkwong01@gmail.com\n13230010\t德德\tNULL\temail_598364001@qq.com\n13260001\t涂明\tNULL\temail_275392122@qq.com\n13260002\tyifeng\tNULL\temail_yifeng123a@gmail.com\n13290001\tbing sun\tNULL\temail_sun@topduty.com\n13320001\ttonlon924\tNULL\temail_tonlon924@163.com\n13350001\tthecissp\tNULL\temail_thecissp@gmail.com\n13380038\tJamesLiu\tNULL\temail_liuj3218@163.com\n13440001\tNielson\tNULL\temail_nschou@gmail.com\n13470001\tIlst\tNULL\temail_Ilstqld@gmail.comI\n13500001\t沿途的美景\tNULL\temail_474358486@qq.com\n13530001\tduawei\tNULL\temail_duawei@faw.com.cn\n13530002\t婉婉\tNULL\temail_27324010@qq.com\n13560001\tshawnstockman\tNULL\temail_386669895@qq.com\n13590005\t刘小姐\tNULL\temail_1179834807@qq.com\n13620001\tAmbriel\tNULL\temail_melodyzjq@hotmail.com\n13650001\tJeongmin\tNULL\temail_623793573@qq.com\n13680001\tAI狂人老杨哥\tNULL\temail_68755671@qq.com\n13680004\t文档测试用户\tNULL\ttest_doc_user_1768121776748\n13680005\tTest Credits User\tNULL\ttest_credits_1768121776918\n13770005\t堡烨\tNULL\temail_zhengbaoye169@163.com\n13770006\tJacky\tNULL\temail_hepeng0102@163.com\n13800001\t桃子\tNULL\temail_373991717@qq.com\n13830001\t岁月无痕\tNULL\temail_390250902@qq.com\n13860001\t315436073\tNULL\temail_315436073@qq.com\n13890001\t1419328826\tNULL\temail_1419328826@qq.com\n13920001\t樊老还童\tNULL\temail_790264366@qq.com\n13920002\t1234567\tNULL\temail_1234567@qq.com\n13950001\t蒋皓帆\tNULL\temail_19136144919@163.com\n13980001\t1136515328\tNULL\temail_1136515328@qq.com\n14010001\tyuqingchou\tNULL\temail_1372866632@qq.com\n14040001\twinder2000\tNULL\temail_winder2000@163.com\n14070004\t一飞冲天\tNULL\temail_770514759@qq.comm\n14070013\t一飞冲天 \tNULL\temail_770514759@qq.com\n14070014\t1051138887\tNULL\temail_1051138887@qq.com\n14100008\t翟玉艳\tNULL\temail_zhaiyy@szidd.com\n14160001\t2271221317\tNULL\temail_2271221317@qq.com\n14190052\txxxking\tNULL\temail_07911001@163.com\n14340001\t123\tNULL\temail_caolinli@xdf.cn\n14340008\t12289562\tNULL\temail_12289562@qq.com\n14340010\tlily\tNULL\temail_690262089@qq.com\n14400001\t邯郸三郎\tNULL\temail_13313109158@163.com\n14460001\tChee Chin Seng\tNULL\temail_cheechinseng@gmail.com\n14490001\t老虎\tNULL\temail_13710855666@139.com\n14520001\t83176183\tNULL\temail_83176183@qq.com\n14520002\t朱哥哥\tNULL\temail_13320339922@189.cn\n14520003\tLampLighter\tNULL\temail_lamplighter0303@gmail.com\n14550001\t长长久久\tNULL\temail_498056493@qq.com\n14580001\tempero\tNULL\temail_empero@126.com\n14610001\t财富人生\tNULL\temail_dr.freeman@126.com\n14640001\t517030790\tNULL\temail_517030790@qq.com\n14670001\t一介看客\tNULL\temail_sheldon_2007@163.com\n14700001\tlucky\tNULL\temail_3885998@gmail.com\n14730001\tsamyang\tNULL\temail_samyang@qq.com\n14820001\tDammis Sha\tNULL\temail_dammissha94@gmail.com\n14820004\t测试用户\tNULL\temail_test_weak_pwd_20260119@test.com\n14820005\tabc\tNULL\temail_abc@abc.com\n14850001\tBccm\tNULL\temail_37387025@qq.com\n14850002\tchenen\tNULL\temail_chenen1225@qq.com\n14880001\tpplxx\tNULL\temail_pplxxzax@163.com\n14880002\t朱耕田\tNULL\temail_81459487@qq.com\n14880011\tVigoss\tNULL\temail_2229646476@qq.com\n14880012\t豁达的陌路狂花\tNULL\temail_qing_dongfang@foxmail.com\n14880014\t372279491\tNULL\temail_372279491@qq.com\n15000001\tlqruacg7h\tNULL\temail_lqruacg7h@mx.bymn.cn\n15030033\tziyinsu\tNULL\temail_794250645@qq.com\n15030104\ttest.db\tNULL\temail_test.db@test.com\n15030106\t绑定测试\tNULL\temail_bindtest@example.com\n15090001\t博士\tNULL\temail_15399927168@189.cn\n15090024\t用户7486\t15601837486\tphone_15601837486\n15090040\tsamyang78\tNULL\tWjr7ZUXiVFHUspXg86jVQW\n15090043\tYankee\t13636435975\tphone_13636435975\n15150001\t用户2810\t18072962810\tphone_18072962810\n15180001\t用户9286\t18321469286\tphone_18321469286\n15180036\t用户9001\t13900139001\tphone_13900139001\n",
+  "stderr": "",
+  "execution_time_ms": 1518
+}

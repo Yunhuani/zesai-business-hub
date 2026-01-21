@@ -172,11 +172,11 @@ export const phoneAuthRouter = router({
           .where(eq(users.id, user.id));
       }
 
-      // 生成JWT token
+      // 生成JWT token - 使用用户实际的openId
       const token = jwt.sign(
-        { userId: user.id, openId: `phone_${user.phone}` },
+        { userId: user.id, openId: user.openId },
         process.env.JWT_SECRET || "default-secret",
-        { expiresIn: "7d" }
+        { expiresIn: "30d" }
       );
 
       return {

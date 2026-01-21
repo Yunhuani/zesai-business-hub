@@ -1,0 +1,46 @@
+{
+  "query": "SELECT id, name, phone, openId FROM users WHERE phone = '13900139000' OR openId LIKE '%phone%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, name, phone, openId FROM users WHERE phone = '13900139000' OR openId LIKE '%phone%';",
+  "rows": [
+    {
+      "id": "7350017",
+      "name": "小段",
+      "phone": "15800682625",
+      "openId": "phone_15800682625"
+    },
+    {
+      "id": "15090024",
+      "name": "用户7486",
+      "phone": "15601837486",
+      "openId": "phone_15601837486"
+    },
+    {
+      "id": "15090043",
+      "name": "Yankee",
+      "phone": "13636435975",
+      "openId": "phone_13636435975"
+    },
+    {
+      "id": "15150001",
+      "name": "用户2810",
+      "phone": "18072962810",
+      "openId": "phone_18072962810"
+    },
+    {
+      "id": "15180001",
+      "name": "用户9286",
+      "phone": "18321469286",
+      "openId": "phone_18321469286"
+    },
+    {
+      "id": "15180036",
+      "name": "用户9001",
+      "phone": "13900139001",
+      "openId": "phone_13900139001"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tphone\topenId\n7350017\t小段\t15800682625\tphone_15800682625\n15090024\t用户7486\t15601837486\tphone_15601837486\n15090043\tYankee\t13636435975\tphone_13636435975\n15150001\t用户2810\t18072962810\tphone_18072962810\n15180001\t用户9286\t18321469286\tphone_18321469286\n15180036\t用户9001\t13900139001\tphone_13900139001\n",
+  "stderr": "",
+  "execution_time_ms": 1536
+}

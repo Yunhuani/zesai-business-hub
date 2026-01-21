@@ -1,0 +1,69 @@
+{
+  "query": "DESCRIBE sms_codes; SELECT * FROM sms_codes;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute DESCRIBE sms_codes; SELECT * FROM sms_codes;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "phone",
+      "Type": "varchar(20)",
+      "Null": "NO",
+      "Key": "UNI",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "code",
+      "Type": "varchar(10)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "expires_at",
+      "Type": "datetime",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "used",
+      "Type": "tinyint(1)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "created_at",
+      "Type": "datetime",
+      "Null": "YES",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "updated_at",
+      "Type": "datetime",
+      "Null": "YES",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    }
+  ],
+  "messages": [
+    "id\tphone\tcode\texpires_at\tused\tcreated_at\tupdated_at",
+    "1\t13900139001\t123456\t2026-01-21 07:42:23\t0\t2026-01-21 07:32:23\t2026-01-21 07:32:23"
+  ],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint(11)\tNO\tPRI\tNULL\tauto_increment\nphone\tvarchar(20)\tNO\tUNI\tNULL\t\ncode\tvarchar(10)\tNO\t\tNULL\t\nexpires_at\tdatetime\tNO\t\tNULL\t\nused\ttinyint(1)\tYES\t\t0\t\ncreated_at\tdatetime\tYES\t\tCURRENT_TIMESTAMP\t\nupdated_at\tdatetime\tYES\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\nid\tphone\tcode\texpires_at\tused\tcreated_at\tupdated_at\n1\t13900139001\t123456\t2026-01-21 07:42:23\t0\t2026-01-21 07:32:23\t2026-01-21 07:32:23\n",
+  "stderr": "",
+  "execution_time_ms": 1774
+}

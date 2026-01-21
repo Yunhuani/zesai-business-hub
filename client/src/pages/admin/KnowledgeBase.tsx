@@ -85,7 +85,7 @@ export default function KnowledgeBase() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      setLocation("/email-login");
+      setLocation("/login");
     } else if (!authLoading && isAuthenticated && user?.role !== "admin") {
       setLocation("/");
     }
