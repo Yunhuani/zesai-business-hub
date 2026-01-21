@@ -1,0 +1,9 @@
+{
+  "query": "RENAME TABLE sms_codes TO sms_codes_dropme;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute RENAME TABLE sms_codes TO sms_codes_dropme;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2835
+}

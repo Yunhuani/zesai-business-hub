@@ -1,6 +1,7 @@
 // 阿里云短信服务
 import * as DysmsapiModule from '@alicloud/dysmsapi20170525';
 import OpenApi from '@alicloud/openapi-client';
+import { logger } from './logger';
 
 // 处理ESM/CJS兼容性问题
 const Dysmsapi = (DysmsapiModule.default as any)?.default || DysmsapiModule.default;
@@ -10,16 +11,21 @@ const { SendSmsRequest } = DysmsapiModule;
  * 发送短信验证码
  * @param phone 手机号
  * @param code 验证码
+ * @param type 验证码类型
  * @returns 发送结果
  */
-export async function sendSmsCode(phone: string, code: string): Promise<{ success: boolean; message: string }> {
+export async function sendSmsCode(
+  phone: string,
+  code: string,
+  type: 'login' | 'register' | 'bind' = 'login'
+): Promise<{ success: boolean; message: string }> {
   const signName = process.env.ALIYUN_SMS_SIGN_NAME;
   const templateCode = process.env.ALIYUN_SMS_TEMPLATE_CODE;
   const accessKeyId = process.env.ALIYUN_SMS_ACCESS_KEY_ID;
   const accessKeySecret = process.env.ALIYUN_SMS_ACCESS_KEY_SECRET;
 
   if (!signName || !templateCode || !accessKeyId || !accessKeySecret) {
-    console.error('[SMS] Missing SMS configuration');
+    logger.error('SMS', 'Missing SMS configuration');
     return { success: false, message: '短信服务配置错误' };
   }
 
@@ -39,17 +45,19 @@ export async function sendSmsCode(phone: string, code: string): Promise<{ succes
       templateParam: JSON.stringify({ code }),
     });
 
+    logger.info('SMS', `Sending SMS to ${phone.substring(0, 3)}****${phone.substring(7)} (type: ${type})`);
+    
     const response = await client.sendSms(sendSmsRequest);
     
     if (response.body.code === 'OK') {
-      console.log(`[SMS] Successfully sent code to ${phone.substring(0, 3)}****${phone.substring(7)}`);
+      logger.info('SMS', `Successfully sent code to ${phone.substring(0, 3)}****${phone.substring(7)}`);
       return { success: true, message: '验证码已发送' };
     } else {
-      console.error(`[SMS] Failed to send: ${response.body.code} - ${response.body.message}`);
+      logger.error('SMS', `Failed to send: ${response.body.code} - ${response.body.message}`);
       return { success: false, message: response.body.message || '发送失败' };
     }
   } catch (error: any) {
-    console.error('[SMS] Error sending SMS:', error.message);
+    logger.error('SMS', `Error sending SMS to ${phone}`, error);
     return { success: false, message: '短信发送失败，请稍后重试' };
   }
 }

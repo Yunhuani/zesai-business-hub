@@ -8,6 +8,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { initSentry } from "./sentry";
+import { logger } from "../lib/logger";
 
 // 初始化Sentry错误监控
 initSentry();

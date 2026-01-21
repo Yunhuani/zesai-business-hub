@@ -630,3 +630,52 @@ export const appRouter = router({
 });
 
 export type AppRouter = typeof appRouter;
+
+// SMS logs router
+const smsLogsRouter = router({
+  // 查询短信发送日志（仅管理员）
+  list: adminProcedure
+    .input(z.object({
+      phone: z.string().optional(),
+      status: z.enum(['pending', 'success', 'failed']).optional(),
+      limit: z.number().default(50),
+      offset: z.number().default(0),
+    }))
+    .query(async ({ input }) => {
+      const { phone, status, limit, offset } = input;
+      
+      let query = sdk.db.select().from(sdk.smsLogs);
+      
+      if (phone) {
+        query = query.where(eq(sdk.smsLogs.phone, phone));
+      }
+      
+      if (status) {
+        query = query.where(eq(sdk.smsLogs.status, status));
+      }
+      
+      const logs = await query
+        .orderBy(desc(sdk.smsLogs.createdAt))
+        .limit(limit)
+        .offset(offset);
+      
+      return logs;
+    }),
+  
+  // 获取短信发送统计（仅管理员）
+  stats: adminProcedure.query(async () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const stats = await sdk.db
+      .select({
+        status: sdk.smsLogs.status,
+        count: count(sdk.smsLogs.id),
+      })
+      .from(sdk.smsLogs)
+      .where(gte(sdk.smsLogs.createdAt, today.toISOString()))
+      .groupBy(sdk.smsLogs.status);
+    
+    return stats;
+  }),
+});

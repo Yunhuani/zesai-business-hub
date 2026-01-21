@@ -1,0 +1,76 @@
+{
+  "query": "SHOW TABLES LIKE 'sms%'; DESC sms_codes; DESC smsCodes; SELECT COUNT(*) FROM sms_codes; SELECT COUNT(*) FROM smsCodes;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SHOW TABLES LIKE 'sms%'; DESC sms_codes; DESC smsCodes; SELECT COUNT(*) FROM sms_codes; SELECT COUNT(*) FROM smsCodes;",
+  "rows": [
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "smsCodes"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "sms_codes"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "Field\tType\tNull\tKey\tDefault\tExtra"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "id\tint(11)\tNO\tPRI\tNULL\tauto_increment"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "phone\tvarchar(20)\tNO\tUNI\tNULL\t"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "code\tvarchar(10)\tNO\t\tNULL\t"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "expires_at\tdatetime\tNO\t\tNULL\t"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "used\ttinyint(1)\tYES\t\t0\t"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "created_at\tdatetime\tYES\t\tCURRENT_TIMESTAMP\t"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "updated_at\tdatetime\tYES\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "Field\tType\tNull\tKey\tDefault\tExtra"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "id\tint(11)\tNO\tPRI\tNULL\tauto_increment"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "phone\tvarchar(20)\tNO\tMUL\tNULL\t"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "code\tvarchar(6)\tNO\t\tNULL\t"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "type\tenum('login','register','bind')\tNO\t\tlogin\t"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "used\tint(11)\tNO\t\t0\t"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "expiresAt\ttimestamp\tNO\t\tNULL\t"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "createdAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "COUNT(*)"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "1"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "COUNT(*)"
+    },
+    {
+      "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)": "54"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_fEn26P5cBLWrvAhCKkPvkZ (sms%)\nsmsCodes\nsms_codes\nField\tType\tNull\tKey\tDefault\tExtra\nid\tint(11)\tNO\tPRI\tNULL\tauto_increment\nphone\tvarchar(20)\tNO\tUNI\tNULL\t\ncode\tvarchar(10)\tNO\t\tNULL\t\nexpires_at\tdatetime\tNO\t\tNULL\t\nused\ttinyint(1)\tYES\t\t0\t\ncreated_at\tdatetime\tYES\t\tCURRENT_TIMESTAMP\t\nupdated_at\tdatetime\tYES\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\nField\tType\tNull\tKey\tDefault\tExtra\nid\tint(11)\tNO\tPRI\tNULL\tauto_increment\nphone\tvarchar(20)\tNO\tMUL\tNULL\t\ncode\tvarchar(6)\tNO\t\tNULL\t\ntype\tenum('login','register','bind')\tNO\t\tlogin\t\nused\tint(11)\tNO\t\t0\t\nexpiresAt\ttimestamp\tNO\t\tNULL\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nCOUNT(*)\n1\nCOUNT(*)\n54\n",
+  "stderr": "",
+  "execution_time_ms": 2460
+}

@@ -210,6 +210,27 @@ export const commissions = mysqlTable("commissions", {
  * Withdrawals table - stores user withdrawal requests
  */
 /**
+ * SMS logs table - stores SMS sending records and tracking
+ */
+export const smsLogs = mysqlTable("smsLogs", {
+	id: int().autoincrement().notNull(),
+	phone: varchar({ length: 20 }).notNull(),
+	type: mysqlEnum(['login','register','bind']).default('login').notNull(),
+	code: varchar({ length: 6 }).notNull(),
+	status: mysqlEnum(['pending','success','failed']).default('pending').notNull(),
+	aliyunCode: varchar({ length: 20 }),
+	aliyunMessage: text(),
+	errorReason: text(),
+	requestedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	respondedAt: timestamp({ mode: 'string' }),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+},
+(table) => [
+	index("smsLogs_phone_idx").on(table.phone),
+	index("smsLogs_status_idx").on(table.status),
+]);
+
+/**
  * SMS verification codes table - stores phone verification codes
  */
 export const smsCodes = mysqlTable("smsCodes", {
