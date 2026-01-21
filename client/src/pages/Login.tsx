@@ -379,24 +379,20 @@ export default function Login() {
                       </>
                     )}
                   </Button>
-                  
+                  <p className="text-xs text-gray-500 text-center">
+                    继续即表示您同意我们的{" "}
+                    <Link href="/terms" className="text-purple-400 hover:underline">用户协议</Link>
+                    {" "}和{" "}
+                    <Link href="/privacy" className="text-purple-400 hover:underline">隐私政策</Link>。
+                  </p>
                 </CardFooter>
               </form>
             </TabsContent>
 
             {/* ========== 邮箱登录 Tab ========== */}
             <TabsContent value="email" className="mt-0">
-              {/* 邮箱子Tab：登录 | 注册 */}
-              <Tabs value={emailTab} onValueChange={(v) => setEmailTab(v as "login" | "register")} className="w-full">
-                <div className="px-4">
-                  <TabsList className="grid w-full grid-cols-2 bg-gray-700/30 h-10 rounded-lg p-1">
-                    <TabsTrigger value="login" className="data-[state=active]:bg-gray-600 data-[state=active]:shadow-md text-sm rounded-md transition-all">登录</TabsTrigger>
-                    <TabsTrigger value="register" className="data-[state=active]:bg-gray-600 data-[state=active]:shadow-md text-sm rounded-md transition-all">注册</TabsTrigger>
-                  </TabsList>
-                </div>
-
-                {/* 邮箱登录 */}
-                <TabsContent value="login" className="mt-0">
+              {/* 邮箱登录/注册切换 */}
+              {emailTab === "login" ? (
                   <form onSubmit={handleEmailLogin}>
                     <CardHeader className="pb-4" />
                     <CardContent className="space-y-4">
@@ -481,10 +477,7 @@ export default function Login() {
                       </p>
                     </CardFooter>
                   </form>
-                </TabsContent>
-
-                {/* 邮箱注册 */}
-                <TabsContent value="register" className="mt-0">
+              ) : (
                   <form onSubmit={handleRegister}>
                     <CardHeader className="pb-4" />
                     <CardContent className="space-y-4">
@@ -612,8 +605,7 @@ export default function Login() {
                       </p>
                     </CardFooter>
                   </form>
-                </TabsContent>
-              </Tabs>
+              )}
             </TabsContent>
           </Tabs>
         </Card>
