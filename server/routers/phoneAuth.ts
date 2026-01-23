@@ -270,9 +270,18 @@ export const phoneAuthRouter = router({
         .set({ phone, openId: `phone_${phone}` })
         .where(eq(users.id, userId));
 
+      // 绑定成功后生成新的JWT token（包含更新后的openId）
+      const newOpenId = `phone_${phone}`;
+      const newToken = jwt.sign(
+        { userId, openId: newOpenId },
+        process.env.JWT_SECRET || "default-secret",
+        { expiresIn: "30d" }
+      );
+
       return {
         success: true,
         message: "手机号绑定成功",
+        token: newToken,
       };
     }),
 });

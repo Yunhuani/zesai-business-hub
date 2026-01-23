@@ -59,11 +59,14 @@ export default function BindPhone() {
   });
 
   const bindPhoneMutation = trpc.phoneAuth.bindPhone.useMutation({
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       setBindSuccess(true);
       toast.success("手机号绑定成功");
-      // 绑定成功后，强制刷新页面以重新获取JWT token
-      // 这确保了用户的openId更新后，后续的认证请求不会失败
+      // 绑定成功后，保存新的JWT token到localStorage
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+      // 然后刷新页面以重新加载用户信息
       setTimeout(() => {
         window.location.href = "/";
       }, 1500);

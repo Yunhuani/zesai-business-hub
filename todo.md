@@ -1794,3 +1794,10 @@
 - [x] 诊断问题：使用Link路由跳转导致JWT token没有刷新
 - [x] 修复BindPhone.tsx：改为window.location.href强制页面刷新
 - [x] 测试：验证用户保持登录状态（成功）
+
+
+## 绑定手机号后点击返回按钮退出登录bug修复（第二次修复）
+- [x] 诊断根本原因：后端更新openId后，JWT token没有更新
+- [x] 修复后端：bindPhone接口生成新的JWT token并返回
+- [x] 修复前端：接收新token并保存到localStorage
+- [x] 测试：验证用户保持登录状态（成功）
