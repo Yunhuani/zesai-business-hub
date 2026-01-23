@@ -245,8 +245,8 @@ export default function Login() {
       hasError = true;
     } else {
       const strength = validatePasswordStrength(registerPassword);
-      if (!strength.isValid) {
-        setRegisterPasswordError(strength.feedback);
+      if (!strength.valid) {
+        setRegisterPasswordError(strength.message || "密码强度不足");
         hasError = true;
       }
     }
