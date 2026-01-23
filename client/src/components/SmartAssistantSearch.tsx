@@ -151,7 +151,7 @@ export function SmartAssistantSearch({ smartAssistantId }: SmartAssistantSearchP
       </div>
       <div className="text-center mt-4">
         <p className="text-xs text-muted-foreground">
-          不知道选下面哪个AI顾问，在框内输入你想解决的问题
+          不知道选哪个AI顾问，在框内输入你想解决的问题。
         </p>
       </div>
     </div>
