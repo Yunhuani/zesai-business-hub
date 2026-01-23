@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Loader2, Smartphone, ArrowLeft, CheckCircle } from "lucide-react";
-import { Link } from "wouter";
+
 import { APP_LOGO, APP_TITLE } from "@/const";
 
 export default function BindPhone() {
@@ -62,7 +62,11 @@ export default function BindPhone() {
     onSuccess: () => {
       setBindSuccess(true);
       toast.success("手机号绑定成功");
-      refetch();
+      // 绑定成功后，强制刷新页面以重新获取JWT token
+      // 这确保了用户的openId更新后，后续的认证请求不会失败
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1500);
     },
     onError: (error) => {
       let errorMessage = "绑定失败";
@@ -129,12 +133,12 @@ export default function BindPhone() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center p-4">
         <div className="text-center mb-6">
-          <Link href="/" className="flex flex-col items-center gap-3">
+        <button onClick={() => window.location.href = "/"} className="flex flex-col items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
             <img src={APP_LOGO} alt={APP_TITLE} className="w-16 h-16" />
             <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-              泽思AI商业智库
+              泽思 AI商业智库
             </h1>
-          </Link>
+          </button>
         </div>
         
         <Card className="w-full max-w-md bg-gray-800/50 border-gray-700 backdrop-blur-sm">
@@ -148,11 +152,13 @@ export default function BindPhone() {
             </CardDescription>
           </CardHeader>
           <CardFooter>
-            <Button asChild className="w-full" variant="outline">
-              <Link href="/">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                返回首页
-              </Link>
+            <Button 
+              onClick={() => window.location.href = "/"}
+              className="w-full" 
+              variant="outline"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              返回首页
             </Button>
           </CardFooter>
         </Card>
@@ -165,12 +171,12 @@ export default function BindPhone() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center p-4">
         <div className="text-center mb-6">
-          <Link href="/" className="flex flex-col items-center gap-3">
+          <button onClick={() => window.location.href = "/"} className="flex flex-col items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
             <img src={APP_LOGO} alt={APP_TITLE} className="w-16 h-16" />
             <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-              泽思AI商业智库
+              泽思 AI商业智库
             </h1>
-          </Link>
+          </button>
         </div>
         
         <Card className="w-full max-w-md bg-gray-800/50 border-gray-700 backdrop-blur-sm">
@@ -184,10 +190,11 @@ export default function BindPhone() {
             </CardDescription>
           </CardHeader>
           <CardFooter>
-            <Button asChild className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-              <Link href="/">
-                返回首页
-              </Link>
+            <Button 
+              onClick={() => window.location.href = "/"}
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            >
+              返回首页
             </Button>
           </CardFooter>
         </Card>
@@ -199,12 +206,12 @@ export default function BindPhone() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center p-4">
       {/* Logo & Title */}
       <div className="text-center mb-6">
-        <Link href="/" className="flex flex-col items-center gap-3">
+        <button onClick={() => window.location.href = "/"} className="flex flex-col items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
           <img src={APP_LOGO} alt={APP_TITLE} className="w-16 h-16" />
           <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-            泽思AI商业智库
+            泽思 AI商业智库
           </h1>
-        </Link>
+        </button>
         <p className="text-gray-400 text-sm mt-2">专业的AI商业咨询平台</p>
       </div>
 
@@ -292,11 +299,13 @@ export default function BindPhone() {
                 "确认绑定"
               )}
             </Button>
-            <Button asChild variant="ghost" className="w-full text-gray-400 hover:text-white">
-              <Link href="/">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                返回首页
-              </Link>
+            <Button 
+              variant="ghost" 
+              onClick={() => window.location.href = "/"}
+              className="w-full text-gray-400 hover:text-white"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              返回首页
             </Button>
           </CardFooter>
         </form>
