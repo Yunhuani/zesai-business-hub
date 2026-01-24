@@ -145,6 +145,8 @@ export const users = mysqlTable("users", {
 	password: varchar({ length: 255 }),
 	referralCode: varchar({ length: 20 }),
 	commissionBalance: int().default(0).notNull(),
+	bindPhonePrompted: int().default(0).notNull(),
+	loginCount: int().default(0).notNull(),
 },
 (table) => [
 		index("users_openId_unique").on(table.openId),
