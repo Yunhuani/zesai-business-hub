@@ -25,6 +25,7 @@ import { isWeChatBrowser } from "@/utils/wechatDetector";
 import { trackConversion, ConversionEvents, trackAgent, AgentEvents } from "@/lib/analytics";
 import { useEffect } from "react";
 import { DataWaveBackground } from "@/components/DataWaveBackground";
+import { BindPhonePrompt } from "@/components/BindPhonePrompt";
 
 // Agent分类配置
 const AGENT_CATEGORIES = [
@@ -141,6 +142,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background relative">
+      {/* 绑定手机号提示弹窗 */}
+      <BindPhonePrompt />
       {/* 数据波纹背景 */}
       <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
         <DataWaveBackground />

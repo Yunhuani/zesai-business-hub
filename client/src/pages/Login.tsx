@@ -597,7 +597,7 @@ export default function Login() {
                         已有账号？
                         <button
                           type="button"
-                          onClick={() => setMainTab("phone")}
+                          onClick={() => setEmailTab("login")}
                           className="text-purple-400 hover:underline ml-1"
                         >
                           立即登录

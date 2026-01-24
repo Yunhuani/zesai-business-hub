@@ -259,14 +259,19 @@ export async function loginUserWithEmail(email: string, password: string) {
     throw new Error("邮箱或密码错误");
   }
 
-  // Update last signed in
+  // Update last signed in and increment login count
   await db
     .update(users)
-    .set({ lastSignedIn: new Date() })
+    .set({ 
+      lastSignedIn: new Date(),
+      loginCount: (user.loginCount || 0) + 1
+    })
     .where(eq(users.id, user.id));
 
   // Generate JWT token
   const token = generateToken(user.id, user.openId || '');
 
-  return { user, token };
+  // Return updated user with incremented loginCount
+  const updatedUser = { ...user, loginCount: (user.loginCount || 0) + 1 };
+  return { user: updatedUser, token };
 }
