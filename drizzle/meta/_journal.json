@@ -113,13 +113,6 @@
       "when": 1768994526339,
       "tag": "0015_crazy_guardian",
       "breakpoints": true
-    },
-    {
-      "idx": 16,
-      "version": "5",
-      "when": 1769218271537,
-      "tag": "0016_panoramic_lifeguard",
-      "breakpoints": true
     }
   ]
 }

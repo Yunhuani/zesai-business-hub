@@ -64,7 +64,7 @@ export default function BindPhone() {
       toast.success("手机号绑定成功");
       // 绑定成功后，保存新的JWT token到localStorage
       if (data.token) {
-        localStorage.setItem("auth_token", data.token);
+        localStorage.setItem("token", data.token);
       }
       // 然后刷新页面以重新加载用户信息
       setTimeout(() => {
