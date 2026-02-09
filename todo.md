@@ -1886,3 +1886,20 @@
 - [x] 修复发现的问题（PptxGenJS import方式、LLM prompt优化）
 - [x] 浏览器端到端测试（15页PPT成功生成并上传S3）
 - [ ] 修复"开始生成"按钮点击无反应的问题（用户反馈）
+
+## P0改进：PPT内容质量+视觉效果提升
+- [x] 重写LLM System Prompt（从内容搬运升级为内容策划）
+- [x] 增加iconEmoji字段到SlidePoint数据结构
+- [x] 提高信息密度（4-6个要点/页，30-50字描述）
+- [x] 强制布局多样化（至少5种不同布局，禁止连续相同）
+- [x] 标题改为观点/结论式（非描述性）
+- [x] 更新HTML模板支持emoji图标渲染
+- [x] 测试验证改进效果
+- [x] 保存checkpoint
+
+## P0改进新增
+- [x] 新增grid_cards布局类型（2x2/2x3网格卡片）
+- [x] 重设计标题栏（左侧accent竖线+半透明渐变背景）
+- [x] 统一页脚设计（左侧footerNote+右侧页码）
+- [x] timeline布局使用emoji替代数字序号
+- [x] data_highlight布局增加emoji图标展示
