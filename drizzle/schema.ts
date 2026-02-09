@@ -265,3 +265,29 @@ export const withdrawals = mysqlTable("withdrawals", {
 	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 });
+
+/**
+ * PPT Documents table - stores text-to-PPT generation tasks
+ */
+export const pptDocuments = mysqlTable("pptDocuments", {
+	id: int().autoincrement().notNull(),
+	userId: int().notNull(),
+	title: varchar({ length: 255 }).notNull(),
+	inputText: text().notNull(),
+	themeStyle: varchar({ length: 50 }).default('business').notNull(),
+	colorScheme: varchar({ length: 50 }).default('forest_gold').notNull(),
+	slideCount: int().default(0).notNull(),
+	fileUrl: text(),
+	fileSize: int(),
+	status: mysqlEnum(['pending','structuring','rendering','assembling','uploading','completed','failed']).default('pending').notNull(),
+	errorMessage: text(),
+	creditsDeducted: int().default(0).notNull(),
+	outlineJson: text(),
+	expiresAt: timestamp({ mode: 'string' }),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("pptDocuments_userId_idx").on(table.userId),
+	index("pptDocuments_status_idx").on(table.status),
+]);
