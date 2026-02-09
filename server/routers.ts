@@ -17,7 +17,7 @@ import { referralRouter } from "./routers/referral";
 import { sentryRouter } from "./routers/sentry";
 import { agentAnalyticsRouter } from "./routers/agentAnalytics";
 import { knowledgeRouter } from "./routers/knowledge";
-import { phoneAuthRouter } from "./routers/phoneAuth";
+
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
@@ -230,31 +230,7 @@ export const appRouter = router({
           });
         }
       }),
-    // Mark bind phone prompted
-    markBindPhonePrompted: publicProcedure
-      .mutation(async ({ ctx }) => {
-        if (!ctx.user) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "请先登录",
-          });
-        }
-        const { getDb } = await import("./db");
-        const { users } = await import("../drizzle/schema");
-        const { eq } = await import("drizzle-orm");
-        const db = await getDb();
-        if (!db) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "数据库连接失败",
-          });
-        }
-        await db
-          .update(users)
-          .set({ bindPhonePrompted: 1 })
-          .where(eq(users.id, ctx.user.id));
-        return { success: true };
-      }),
+
   }),
 
   // Admin routes
@@ -650,8 +626,7 @@ export const appRouter = router({
   sentry: sentryRouter,
   // Knowledge base routes
   knowledge: knowledgeRouter,
-  // Phone auth routes
-  phoneAuth: phoneAuthRouter,
+
 });
 
 export type AppRouter = typeof appRouter;
