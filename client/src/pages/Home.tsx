@@ -251,7 +251,6 @@ export default function Home() {
                     <DropdownMenuSeparator />
                     <div className="px-2 py-1.5 text-sm text-muted-foreground">
                       {user?.email && <div>邮箱: {user.email}</div>}
-                      {user?.phone && <div>手机: {user.phone.replace(/(\d{3})\d{4}(\d{4})/, "$1****$2")}</div>}
                       {user?.username && <div>用户名: {user.username}</div>}
                     </div>
                     <DropdownMenuSeparator />
