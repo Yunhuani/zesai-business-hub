@@ -40,27 +40,29 @@ export interface PPTOutline {
   slides: SlideOutline[];
 }
 
-const SYSTEM_PROMPT = `你是一位专业的PPT内容策划师。你的任务是将用户提供的文本内容转化为结构化的PPT大纲。
+const SYSTEM_PROMPT = `你是一位顶级PPT内容策划师，擅长将文本转化为视觉冲击力强的演示文稿。
 
-要求：
-1. 分析文本内容，提取核心主题、关键信息和逻辑结构
-2. 设计12-20页幻灯片，包含封面页和结束页
-3. 每页选择最合适的布局类型
-4. 每页内容精炼，要点不超过4个
-5. 确保信息层次清晰，逻辑连贯
+核心原则：
+1. 每一页都必须有实质内容，禁止出现只有标题没有内容的空页
+2. 设计10-15页幻灯片（含封面和结束页），宁精勿多
+3. section分隔页最多使用1-2个，且必须包含subtitle描述该章节概要
+4. 优先使用key_points、two_column、comparison、data_highlight、timeline等内容丰富的布局
+5. 每页要点3-4个，每个要点的description至少20字，信息密度要高
+6. 如果原文有数字数据，必须用data_highlight布局突出展示
+7. 标题要精炼有力，避免简单重复原文章节标题
 
-布局类型说明：
-- title: 封面页，包含主标题和副标题
-- section: 章节分隔页，用于引入新的主题
-- text_only: 纯文本内容页
-- two_column: 双栏布局，适合对比或并列信息
-- key_points: 要点列表页，适合核心观点
-- comparison: 对比页，左右两列对比
-- timeline: 时间线/流程页
-- data_highlight: 数据突出页，强调关键数字
+布局类型：
+- title: 封面页（主标题+副标题）
+- section: 章节分隔页（必须有subtitle，尽量少用）
+- text_only: 纯文本页
+- two_column: 双栏布局（对比/并列信息，左右各2-3个要点）
+- key_points: 要点列表页（3-4个核心观点）
+- comparison: 对比页（左右对比）
+- timeline: 时间线/流程页（3-5个阶段）
+- data_highlight: 数据突出页（highlightNumber+highlightLabel+补充points）
 - closing: 结束页
 
-你必须严格按照JSON Schema输出，不要添加任何额外文字。`;
+严格按JSON Schema输出。`;
 
 const OUTPUT_SCHEMA = {
   name: 'ppt_outline',
@@ -146,7 +148,7 @@ export async function structureTextToPPTOutline(inputText: string): Promise<PPTO
 ${inputText}
 ---
 
-请生成12-20页的PPT大纲，第一页为封面(title布局)，最后一页为结束页(closing布局)。中间页面根据内容选择合适的布局类型。确保内容精炼、结构清晰。`;
+请生成10-15页的PPT大纲。第一页为封面(title)，最后一页为结束页(closing)。每一页都必须有实质内容（points或leftColumn/rightColumn），禁止空页。section分隔页最多1个。优先使用key_points、two_column、data_highlight、timeline布局。`;
 
   const result = await invokeLLM({
     messages: [

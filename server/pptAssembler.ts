@@ -2,7 +2,9 @@
  * PPT Assembler
  * Assembles slide images into a PPTX file using pptxgenjs
  */
-import PptxGenJS from 'pptxgenjs';
+import PptxGenJSModule from 'pptxgenjs';
+// Handle both ESM default and CJS module exports
+const PptxGenJS = (PptxGenJSModule as any).default || PptxGenJSModule;
 import { storagePut } from './storage';
 import path from 'path';
 import fs from 'fs';

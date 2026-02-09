@@ -199,6 +199,53 @@ async function startServer() {
       res.status(500).send("fail");
     }
   });
+  // PPT file download proxy
+  app.get("/api/ppt/download/:documentId", async (req, res) => {
+    try {
+      const token = req.headers.authorization?.replace('Bearer ', '') || req.query.token as string;
+      if (!token) return res.status(401).json({ error: 'Unauthorized' });
+      
+      let userId: number;
+      try {
+        const jwt = await import('jsonwebtoken');
+        const decoded = jwt.default.verify(token, process.env.JWT_SECRET || 'fallback-secret') as any;
+        userId = decoded.userId || decoded.id;
+      } catch {
+        return res.status(401).json({ error: 'Invalid token' });
+      }
+      
+      const { getDb } = await import("../db");
+      const db = await getDb();
+      if (!db) return res.status(500).json({ error: 'Database unavailable' });
+      
+      const { pptDocuments } = await import("../../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const [doc] = await db.select().from(pptDocuments)
+        .where(eq(pptDocuments.id, Number(req.params.documentId)))
+        .limit(1);
+      
+      if (!doc || doc.userId !== userId) return res.status(404).json({ error: 'Not found' });
+      if (!doc.fileUrl) return res.status(400).json({ error: 'File not ready' });
+      
+      // Fetch from CDN and stream to client
+      const response = await globalThis.fetch(doc.fileUrl);
+      if (!response.ok) return res.status(502).json({ error: 'Failed to fetch file' });
+      
+      const fileName = encodeURIComponent(doc.title || 'presentation') + '.pptx';
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
+      res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${fileName}`);
+      if (doc.fileSize) res.setHeader('Content-Length', doc.fileSize.toString());
+      
+      // Convert Web ReadableStream to Node.js Readable and pipe
+      const { Readable } = await import('stream');
+      const nodeStream = Readable.fromWeb(response.body as any);
+      nodeStream.pipe(res);
+    } catch (error) {
+      console.error('[PPT Download] Error:', error);
+      res.status(500).json({ error: 'Download failed' });
+    }
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",

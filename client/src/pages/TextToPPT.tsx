@@ -58,12 +58,9 @@ export default function TextToPPT() {
   const createMutation = trpc.pptGeneration.create.useMutation();
   const statusQuery = trpc.pptGeneration.getStatus.useQuery(
     { documentId: documentId! },
-    { enabled: !!documentId && step === "generating", refetchInterval: 2000 }
+    { enabled: !!documentId && (step === "generating" || step === "preview"), refetchInterval: step === "generating" ? 2000 : false }
   );
-  const previewsQuery = trpc.pptGeneration.getPreviews.useQuery(
-    { documentId: documentId! },
-    { enabled: !!documentId && step === "preview" }
-  );
+  // Previews are now included in getStatus response when completed
   const downloadQuery = trpc.pptGeneration.getDownloadUrl.useQuery(
     { documentId: documentId! },
     { enabled: !!documentId && step === "preview" }
@@ -85,12 +82,12 @@ export default function TextToPPT() {
     }
   }, [statusQuery.data]);
 
-  // Load previews when entering preview step
+  // Load previews from status response when completed
   useEffect(() => {
-    if (previewsQuery.data?.previews) {
-      setPreviews(previewsQuery.data.previews);
+    if (statusQuery.data?.previewUrls && statusQuery.data.previewUrls.length > 0) {
+      setPreviews(statusQuery.data.previewUrls);
     }
-  }, [previewsQuery.data]);
+  }, [statusQuery.data?.previewUrls]);
 
   const charCount = inputText.length;
   const estimatedSlides = Math.max(8, Math.min(25, Math.floor(charCount / 200)));
@@ -123,8 +120,15 @@ export default function TextToPPT() {
   };
 
   const handleDownload = () => {
-    if (downloadQuery.data?.url) {
-      window.open(downloadQuery.data.url, "_blank");
+    if (documentId) {
+      const token = localStorage.getItem('auth_token') || '';
+      const url = `/api/ppt/download/${documentId}?token=${encodeURIComponent(token)}`;
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = docInfo?.title ? `${docInfo.title}.pptx` : 'presentation.pptx';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
   };
 
@@ -397,7 +401,7 @@ export default function TextToPPT() {
             </div>
 
             {/* Slide Preview */}
-            {previewsQuery.isLoading ? (
+            {previews.length === 0 && statusQuery.isLoading ? (
               <div className="flex items-center justify-center py-20">
                 <Icons.Loader2 className="w-8 h-8 animate-spin text-purple-400" />
                 <span className="ml-3 text-gray-400">正在加载预览...</span>

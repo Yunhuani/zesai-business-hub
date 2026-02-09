@@ -1,6 +1,6 @@
 /**
  * PPT Generation Router
- * Handles text-to-PPT generation requests with SSE progress
+ * Handles text-to-PPT generation requests
  */
 import { router, protectedProcedure } from '../_core/trpc';
 import { z } from 'zod';
@@ -12,7 +12,7 @@ import { deductCredits, getUserCredits } from '../creditsManager';
 import { structureTextToPPTOutline } from '../pptStructurer';
 import { renderAllSlidesToImages, closeBrowser } from '../pptRenderer';
 import { assemblePPT, generatePreviewBase64 } from '../pptAssembler';
-import { storageGet } from '../storage';
+import { storageGet, storagePut } from '../storage';
 
 const PPT_CREDITS_COST = 200;
 
@@ -77,7 +77,7 @@ export const pptGenerationRouter = router({
       return { documentId: Number(documentId) };
     }),
 
-  // Get document status
+  // Get document status (includes preview URLs when completed)
   getStatus: protectedProcedure
     .input(z.object({ documentId: z.number() }))
     .query(async ({ input, ctx }) => {
@@ -92,6 +92,17 @@ export const pptGenerationRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: '文档不存在' });
       }
 
+      // Parse preview URLs from outlineJson if completed
+      let previewUrls: string[] = [];
+      if (doc.status === 'completed' && doc.outlineJson) {
+        try {
+          const data = JSON.parse(doc.outlineJson);
+          if (data.previewUrls) {
+            previewUrls = data.previewUrls;
+          }
+        } catch {}
+      }
+
       return {
         id: doc.id,
         title: doc.title,
@@ -102,10 +113,11 @@ export const pptGenerationRouter = router({
         errorMessage: doc.errorMessage,
         creditsDeducted: doc.creditsDeducted,
         createdAt: doc.createdAt,
+        previewUrls,
       };
     }),
 
-  // Get download URL (presigned)
+  // Get download URL
   getDownloadUrl: protectedProcedure
     .input(z.object({ documentId: z.number() }))
     .query(async ({ input, ctx }) => {
@@ -124,18 +136,11 @@ export const pptGenerationRouter = router({
         throw new TRPCError({ code: 'BAD_REQUEST', message: '文档尚未生成完成' });
       }
 
-      // Extract S3 key from URL and get presigned URL
-      const s3Key = `ppt/${doc.userId}/${doc.id}/${doc.title.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g, '_')}.pptx`;
-      try {
-        const { url } = await storageGet(s3Key);
-        return { url };
-      } catch {
-        // Fallback to stored URL
-        return { url: doc.fileUrl };
-      }
+      // Return the CDN URL directly from database
+      return { url: doc.fileUrl, title: doc.title };
     }),
 
-  // Get slide previews (base64 images)
+  // Get slide previews (from S3 stored images)
   getPreviews: protectedProcedure
     .input(z.object({ documentId: z.number() }))
     .query(async ({ input, ctx }) => {
@@ -154,16 +159,27 @@ export const pptGenerationRouter = router({
         return { previews: [] };
       }
 
-      // Re-render slides for preview
+      // Get preview URLs from stored data
       try {
-        const outline = JSON.parse(doc.outlineJson);
-        const images = await renderAllSlidesToImages(outline.slides, doc.colorScheme, doc.themeStyle);
-        const previews = generatePreviewBase64(images);
-        await closeBrowser();
-        return { previews };
-      } catch {
-        return { previews: [] };
-      }
+        const data = JSON.parse(doc.outlineJson);
+        if (data.previewUrls && data.previewUrls.length > 0) {
+          // Return presigned URLs for each preview
+          const previews: string[] = [];
+          for (const key of data.previewKeys || []) {
+            try {
+              const { url } = await storageGet(key);
+              previews.push(url);
+            } catch {
+              // Skip failed ones
+            }
+          }
+          if (previews.length > 0) return { previews };
+          // Fallback to stored URLs
+          return { previews: data.previewUrls };
+        }
+      } catch {}
+
+      return { previews: [] };
     }),
 
   // List user's PPT documents
@@ -232,23 +248,45 @@ async function generatePPTAsync(
     );
     await closeBrowser();
 
-    // Step 3: Assemble PPT
+    // Step 3: Upload preview images to S3
     await updateStatus('assembling');
+    console.log(`[PPT] Doc ${documentId}: Uploading previews...`);
+    const previewKeys: string[] = [];
+    const previewUrls: string[] = [];
+    for (let i = 0; i < slideImages.length; i++) {
+      const key = `ppt/${userId}/${documentId}/preview_${i}.png`;
+      try {
+        const result = await storagePut(key, slideImages[i], 'image/png');
+        previewKeys.push(key);
+        previewUrls.push(result.url);
+      } catch (err) {
+        console.error(`[PPT] Doc ${documentId}: Failed to upload preview ${i}:`, err);
+      }
+    }
+
+    // Step 4: Assemble PPT
     console.log(`[PPT] Doc ${documentId}: Assembling PPT...`);
     const { url, fileSize } = await assemblePPT(slideImages, outline.presentationTitle, userId, documentId);
 
-    // Step 4: Deduct credits
+    // Step 5: Deduct credits
     console.log(`[PPT] Doc ${documentId}: Deducting credits...`);
     await deductCredits(userId, PPT_CREDITS_COST, `生成PPT: ${outline.presentationTitle}`);
 
-    // Step 5: Mark completed
+    // Step 6: Mark completed (store preview keys/urls in outlineJson)
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
+
+    const outlineWithPreviews = {
+      ...outline,
+      previewKeys,
+      previewUrls,
+    };
 
     await updateStatus('completed', {
       fileUrl: url,
       fileSize,
       creditsDeducted: PPT_CREDITS_COST,
+      outlineJson: JSON.stringify(outlineWithPreviews),
       expiresAt: expiresAt.toISOString().slice(0, 19).replace('T', ' '),
     });
     console.log(`[PPT] Doc ${documentId}: Completed! URL: ${url}`);
