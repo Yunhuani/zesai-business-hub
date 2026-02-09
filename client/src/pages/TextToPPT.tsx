@@ -55,6 +55,10 @@ export default function TextToPPT() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const optionsQuery = trpc.pptGeneration.getOptions.useQuery(undefined, { enabled: !!user });
+  const creditsQuery = trpc.credits.get.useQuery(undefined, { enabled: !!user });
+  const userCredits = creditsQuery.data?.total ?? 0;
+  const creditsCost = optionsQuery.data?.creditsCost || 200;
+  const hasEnoughCredits = userCredits >= creditsCost;
   const createMutation = trpc.pptGeneration.create.useMutation();
   const statusQuery = trpc.pptGeneration.getStatus.useQuery(
     { documentId: documentId! },
@@ -115,7 +119,9 @@ export default function TextToPPT() {
       setStep("generating");
       setCurrentStatus("pending");
     } catch (err: any) {
-      toast.error(err.message || "创建失败");
+      const msg = err?.data?.message || err?.message || "创建失败";
+      console.error('[PPT] Create error:', msg);
+      toast.error(msg, { duration: 5000 });
     }
   };
 
@@ -294,13 +300,16 @@ export default function TextToPPT() {
 
             {/* Generate Button */}
             <div className="flex items-center justify-between pt-4 border-t border-white/10">
-              <div className="text-sm text-gray-400">
-                消耗 <span className="text-purple-400 font-medium">{optionsQuery.data?.creditsCost || 200}</span> 积分
+              <div className="text-sm">
+                <span className="text-gray-400">消耗 <span className="text-purple-400 font-medium">{creditsCost}</span> 积分</span>
+                {user && !hasEnoughCredits && (
+                  <span className="text-red-400 ml-3">积分不足（当前 {userCredits}），<Link href="/pricing" className="text-purple-400 underline">去充值</Link></span>
+                )}
               </div>
               <Button
                 onClick={handleGenerate}
-                disabled={charCount < 100 || createMutation.isPending}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-8 py-2"
+                disabled={charCount < 100 || createMutation.isPending || (!!user && !hasEnoughCredits)}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-8 py-2 disabled:opacity-50"
               >
                 {createMutation.isPending ? (
                   <><Icons.Loader2 className="w-4 h-4 mr-2 animate-spin" />创建中...</>
