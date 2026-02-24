@@ -280,9 +280,9 @@ function renderCaseSection(section: SlideSection, colors: ColorScheme, maxH: num
   const cases = section.cases || [];
   if (cases.length === 0) return '';
   
-  return `<div style="height:${maxH}px;overflow:hidden;display:flex;flex-direction:column;gap:6px;">
+  return `<div style="height:${maxH}px;overflow:hidden;display:flex;flex-direction:column;gap:8px;justify-content:stretch;">
     ${cases.map(c => {
-      return `<div style="flex:1;background:${colors.cardBg};border:1px solid ${colors.cardBorder};border-left:3px solid ${colors.accent};border-radius:4px;padding:10px 12px;overflow:hidden;">
+      return `<div style="flex:1;background:${colors.cardBg};border:1px solid ${colors.cardBorder};border-left:3px solid ${colors.accent};border-radius:4px;padding:12px 14px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
           <span style="font-size:16px;">${c.icon || '🏢'}</span>
           <span style="font-size:13px;font-weight:700;color:${colors.text};">${c.company}</span>
@@ -349,9 +349,9 @@ function renderStatsSection(section: SlideSection, colors: ColorScheme, maxH: nu
   if (stats.length === 0) return '';
   const title = section.title || '';
   
-  return `<div style="height:${maxH}px;overflow:hidden;display:flex;flex-direction:column;">
+  return `<div style="height:${maxH}px;overflow:hidden;display:flex;flex-direction:column;justify-content:center;">
     ${title ? `<div style="font-size:13px;font-weight:700;color:${colors.text};margin-bottom:8px;">${title}</div>` : ''}
-    <div style="flex:1;display:flex;gap:8px;align-items:center;">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;">
       ${stats.map(s => `<div style="flex:1;background:${colors.cardBg};border:1px solid ${colors.cardBorder};border-radius:6px;padding:10px 8px;text-align:center;">
         <div style="font-size:14px;margin-bottom:4px;">${s.icon || '📊'}</div>
         <div style="font-size:20px;font-weight:800;color:${colors.accent};margin-bottom:2px;">${s.number}</div>
@@ -511,29 +511,33 @@ function renderComparisonPage(slide: SlideOutline, colors: ColorScheme, theme: T
   const rightLabel = slide.rightLabel || rightSec?.title || '新模式';
 
   const renderCompCol = (sec: SlideSection | undefined, label: string, borderColor: string, h: number) => {
-    const bullets = sec?.bullets || [];
-    return `<div style="flex:1;border:2px solid ${borderColor}40;border-top:3px solid ${borderColor};border-radius:6px;padding:12px 14px;height:${h}px;overflow:hidden;display:flex;flex-direction:column;">
-      <div style="font-size:14px;font-weight:700;color:${borderColor};margin-bottom:10px;text-align:center;padding-bottom:8px;border-bottom:1px solid ${colors.cardBorder};">${label}</div>
-      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;">
-      ${bullets.map(b => `<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:8px;">
-        <span style="font-size:12px;flex-shrink:0;">${b.icon || '📌'}</span>
+    const bullets = (sec?.bullets || []).slice(0, 4); // Limit to 4 bullets to prevent overflow
+    const fontSize = bullets.length > 3 ? '9px' : '10px';
+    const titleSize = bullets.length > 3 ? '10px' : '11px';
+    const gap = bullets.length > 3 ? '3px' : '6px';
+    return `<div style="flex:1;border:2px solid ${borderColor}40;border-top:3px solid ${borderColor};border-radius:6px;padding:10px 12px;height:${h}px;overflow:hidden;display:flex;flex-direction:column;">
+      <div style="font-size:13px;font-weight:700;color:${borderColor};margin-bottom:8px;text-align:center;padding-bottom:6px;border-bottom:1px solid ${colors.cardBorder};">${label}</div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:${gap};">
+      ${bullets.map(b => `<div style="display:flex;align-items:flex-start;gap:5px;">
+        <span style="font-size:11px;flex-shrink:0;">${b.icon || '📌'}</span>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:11px;font-weight:600;color:${colors.text};margin-bottom:1px;">${b.title}</div>
-          <div style="font-size:10px;color:${colors.textSecondary};line-height:1.4;">${b.description}</div>
+          <div style="font-size:${titleSize};font-weight:600;color:${colors.text};margin-bottom:1px;">${b.title}</div>
+          <div style="font-size:${fontSize};color:${colors.textSecondary};line-height:1.3;">${b.description}</div>
         </div>
       </div>`).join('')}
+    </div>
     </div>`;
   };
 
   return `<div style="display:flex;flex-direction:column;padding:${PAD_TOP}px ${PAD_X}px ${PAD_BOT}px;height:100%;position:relative;">
     ${titleBar(slide.title, slide.subtitle, colors, theme)}
-    <div style="display:flex;gap:0;height:${contentH}px;align-items:stretch;">
+    <div style="display:flex;flex-direction:row;gap:0;height:${contentH}px;align-items:stretch;">
       ${renderCompCol(leftSec, leftLabel, colors.negative, contentH)}
-      <div style="display:flex;align-items:center;flex-shrink:0;padding:0 8px;">
+      <div style="display:flex;align-items:center;flex-shrink:0;padding:0 10px;">
         <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-          <div style="width:2px;height:20px;border-left:2px dashed ${colors.accent};"></div>
-          <div style="background:${colors.accent};color:${colors.bg};font-size:10px;font-weight:700;padding:6px 10px;border-radius:16px;white-space:nowrap;">转变</div>
-          <div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid ${colors.accent};"></div>
+          <div style="width:2px;height:24px;border-left:2px dashed ${colors.accent};"></div>
+          <div style="background:${colors.accent};color:${colors.bg};font-size:10px;font-weight:700;padding:6px 12px;border-radius:16px;white-space:nowrap;">→</div>
+          <div style="width:2px;height:24px;border-left:2px dashed ${colors.accent};"></div>
         </div>
       </div>
       ${renderCompCol(rightSec, rightLabel, colors.positive, contentH)}
@@ -552,12 +556,19 @@ function renderKeyPointsPage(slide: SlideOutline, colors: ColorScheme, theme: Th
   const contentH = CONTENT_H;
 
   if (otherSec) {
-    // Two column: bullets left, other right (flex:3 vs flex:2 for better proportion)
+    // Two column: bullets left, other right
+    const leftBullets = bulletSec?.bullets || [];
     return `<div style="display:flex;flex-direction:column;padding:${PAD_TOP}px ${PAD_X}px ${PAD_BOT}px;height:100%;position:relative;">
       ${titleBar(slide.title, slide.subtitle, colors, theme)}
       <div style="flex:1;display:flex;gap:16px;">
-        <div style="flex:3;overflow:hidden;">
-          ${bulletSec ? renderSection(bulletSec, colors, contentH) : ''}
+        <div style="flex:3;display:flex;flex-direction:column;justify-content:space-evenly;overflow:hidden;">
+          ${leftBullets.map(b => `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:${colors.cardBg};border:1px solid ${colors.cardBorder};border-radius:6px;">
+            <span style="font-size:16px;flex-shrink:0;margin-top:2px;">${b.icon || '📌'}</span>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;font-weight:600;color:${colors.text};margin-bottom:3px;">${b.title}${b.highlight ? `<span style="color:${colors.accent};margin-left:6px;font-size:12px;">${b.highlight}</span>` : ''}</div>
+              <div style="font-size:11px;color:${colors.textSecondary};line-height:1.5;">${b.description}</div>
+            </div>
+          </div>`).join('')}
         </div>
         <div style="flex:2;background:${colors.blockBg};border:1px solid ${colors.cardBorder};border-radius:6px;padding:12px 14px;overflow:hidden;display:flex;flex-direction:column;justify-content:center;">
           ${renderSection(otherSec, colors, contentH - 28)}
@@ -572,7 +583,7 @@ function renderKeyPointsPage(slide: SlideOutline, colors: ColorScheme, theme: Th
   const bullets = bulletSec?.bullets || [];
   return `<div style="display:flex;flex-direction:column;padding:${PAD_TOP}px ${PAD_X}px ${PAD_BOT}px;height:100%;position:relative;">
     ${titleBar(slide.title, slide.subtitle, colors, theme)}
-    <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:space-evenly;">
       ${bullets.map(b => `<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:${colors.cardBg};border:1px solid ${colors.cardBorder};border-radius:6px;">
         <span style="font-size:16px;flex-shrink:0;margin-top:2px;">${b.icon || '📌'}</span>
         <div style="flex:1;min-width:0;">

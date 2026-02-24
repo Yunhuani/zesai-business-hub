@@ -142,12 +142,12 @@ const SYSTEM_PROMPT = `你是顶级商业咨询PPT策划师。将客户文本转
 6. 严禁在任何字段中重复内容，每个字段只写一次
 
 ## 区块类型及必填字段
-- text_block/bullet_list: 必填bullets数组(3-5个)，每个{icon,title(3-8字),description(20-40字)}
+- text_block/bullet_list: 必填bullets数组(4-6个)，每个{icon,title(3-8字),description(30-60字,包含具体数据或案例)}
 - chart_block: 必填chartData{type,title,items[{label,value}](4-6个),source}
-- case_block: 必填cases数组(2-3个)，每个{icon,company,traditional(15-30字),transformed(15-30字),valueProposition(15-30字)}
+- case_block: 必填cases数组(2-3个)，每个{icon,company,industry,traditional(30-60字),transformed(30-60字),valueProposition(30-60字)}
 - stats_block: 必填stats数组(3-4个)，每个{icon,number,label}
 - flow_block: 必填flowNodes数组(4-5个)，每个{icon,label}
-- insight_block: 必填insightText(20-50字),insightLabel
+- insight_block: 必填insightText(30-60字),insightLabel
 - progress_block: 必填chartData(type="progress",items4-6个)
 
 ## 布局类型及要求
@@ -163,8 +163,9 @@ const SYSTEM_PROMPT = `你是顶级商业咨询PPT策划师。将客户文本转
 
 ## 重要规则
 - section.title只写8字以内短标题，内容放在结构化字段中
-- description控制15-30字，简洁有力
+- description控制30-60字，包含具体数据或案例，信息密度高
 - case_cards布局必须有2-3个case_block section，每个都有完整cases数组
+- 每个bullet的description必须包含具体信息（数据、案例、对比），不能是空洞的套话
 - 确保JSON完整闭合
 
 请严格按JSON Schema输出。简体中文。`;
@@ -793,8 +794,8 @@ export async function structureTextToPPTOutline(inputText: string): Promise<PPTO
   const MAX_RETRIES = 3;
   
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    const maxTokens = attempt === 1 ? 12000 : attempt === 2 ? 10000 : 8000;
-    const pageHint = attempt === 1 ? '8-12页' : attempt === 2 ? '6-10页' : '6-8页';
+    const maxTokens = attempt === 1 ? 16000 : attempt === 2 ? 12000 : 8000;
+    const pageHint = attempt === 1 ? '10-14页' : attempt === 2 ? '8-10页' : '6-8页';
     const textLimit = attempt === 1 ? 6000 : attempt === 2 ? 5000 : 3000;
     
     const userPrompt = `请将以下文本转化为PPT大纲：
@@ -803,7 +804,7 @@ export async function structureTextToPPTOutline(inputText: string): Promise<PPTO
 ${inputText.slice(0, textLimit)}
 ---
 
-要求：${pageHint}，补充案例数据，观点式标题，布局多样化。section.title只写8字以内短标题。description控制15-30字。严禁重复内容。确保JSON完整闭合。`;
+要求：${pageHint}，补充案例数据，观点式标题，布局多样化。section.title只写8字以内短标题。description控制30-60字，包含具体数据或案例。每个bullet必须有实质内容。严禁重复内容。确保JSON完整闭合。`;
 
     console.log(`[PPT Structurer] Attempt ${attempt}/${MAX_RETRIES}, maxTokens=${maxTokens}, pages=${pageHint}, textLimit=${textLimit}`);
     

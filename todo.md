@@ -1980,3 +1980,13 @@
 - [x] 错误信息改为用户友好文案（“AI服务暂时繁忙”）
 - [x] 端到端测试通过（6页PPT 68秒生成）
 - [x] 保存checkpoint
+
+## 提升PPT内容密度
+- [x] Prompt优化：description 30-60字，bullets 4-6个，case字段30-60字
+- [x] Prompt优化：maxTokens第1次16000，给LLM更多空间
+- [x] 渲染优化：case_cards卡片填满页面高度
+- [x] 渲染优化：comparison左右并排布局修复（div闭合标签bug）
+- [x] 渲染优化：key_points bullets分散填满+stats居中
+- [x] 总页数目标8页（LLM首次尝试即通过）
+- [x] 端到端测试验证
+- [ ] 保存checkpoint
