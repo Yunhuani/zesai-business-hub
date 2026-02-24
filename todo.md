@@ -2002,3 +2002,9 @@
 - [x] 渲染层：右侧空白区域填充优化
 - [x] 渲染层：图表区域增大
 - [x] 渲染层：金句区增高增醒目
+
+## Bug: PPT生成失败 - JSON解析/修复失败
+- [x] 问题：LLM输出被truncateRepetitiveContent误截断，导致JSON不完整，repair也失败
+- [x] 修复truncateRepetitiveContent：降低误判率，提高窗口大小阈值（15→120字符）
+- [x] 增强repairTruncatedJSON：新增quick repair（闭合括号法），增加日志
+- [x] 增加LLM原始输出长度日志，便于调试

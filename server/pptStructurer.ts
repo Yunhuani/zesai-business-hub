@@ -610,32 +610,37 @@ function postProcessOutline(outline: PPTOutline): PPTOutline {
 // ============================================================
 
 function truncateRepetitiveContent(jsonStr: string): string {
+  console.log(`[PPT Structurer] Raw LLM output length: ${jsonStr.length} chars`);
+  
   // Quick check: if string is valid JSON, no need to process
   try {
     JSON.parse(jsonStr);
+    console.log('[PPT Structurer] JSON is valid, no truncation needed');
     return jsonStr;
   } catch {
     // Continue with repair
   }
   
-  // Strategy: scan from the end backwards to find where repetition starts
-  // Look for any 15+ char pattern that repeats 3+ times
+  // Strategy: detect truly repetitive LLM output (hallucination loops)
+  // Use large window (120+ chars) to avoid false positives from normal JSON structure
+  // JSON naturally has repeated keys like "title", "icon", "description" — these are NOT repetition
   const len = jsonStr.length;
   let cutPoint = len;
   
-  // Check from 60% of the string onwards for repetition
-  const startCheck = Math.floor(len * 0.5);
+  // Only check the last 30% of the string for repetition loops
+  const startCheck = Math.floor(len * 0.7);
   
-  for (let windowSize = 15; windowSize <= 80; windowSize += 5) {
+  // Window must be 120+ chars to avoid matching normal JSON key patterns
+  for (let windowSize = 120; windowSize <= 300; windowSize += 20) {
     for (let pos = startCheck; pos < len - windowSize * 3; pos++) {
       const pattern = jsonStr.slice(pos, pos + windowSize);
-      // Check if this pattern appears again within 2x window
+      // Skip patterns that look like normal JSON structure (contain common JSON keys)
+      if (pattern.includes('"slideIndex"') || pattern.includes('"sections"')) continue;
       const next1 = jsonStr.indexOf(pattern, pos + windowSize);
-      if (next1 > 0 && next1 < pos + windowSize * 2) {
+      if (next1 > 0 && next1 < pos + windowSize * 3) {
         const next2 = jsonStr.indexOf(pattern, next1 + windowSize);
-        if (next2 > 0 && next2 < next1 + windowSize * 2) {
-          // Found 3 consecutive occurrences - cut before first
-          console.log(`[PPT Structurer] Repetitive pattern (${windowSize} chars) at pos ${pos}, cutting`);
+        if (next2 > 0 && next2 < next1 + windowSize * 3) {
+          console.log(`[PPT Structurer] True repetitive pattern (${windowSize} chars) at pos ${pos}, cutting`);
           cutPoint = Math.min(cutPoint, pos);
           break;
         }
@@ -645,7 +650,10 @@ function truncateRepetitiveContent(jsonStr: string): string {
   }
   
   if (cutPoint < len) {
+    console.log(`[PPT Structurer] Truncated from ${len} to ${cutPoint} chars`);
     jsonStr = jsonStr.slice(0, cutPoint);
+  } else {
+    console.log('[PPT Structurer] No repetitive pattern detected, keeping full output');
   }
   
   return jsonStr;
@@ -657,9 +665,68 @@ function truncateRepetitiveContent(jsonStr: string): string {
 
 function repairTruncatedJSON(jsonStr: string): PPTOutline | null {
   try {
-    // Strategy: use regex to find complete slide objects (between matching braces)
-    // by looking for the pattern: { "slideIndex": N, ... }
-    
+    // First try: close all open brackets/braces and parse
+    try {
+      let fixed = jsonStr;
+      let openBraces = 0, openBrackets = 0;
+      let inStr = false, esc = false;
+      for (const c of fixed) {
+        if (esc) { esc = false; continue; }
+        if (c === '\\' && inStr) { esc = true; continue; }
+        if (c === '"') { inStr = !inStr; continue; }
+        if (inStr) continue;
+        if (c === '{') openBraces++;
+        if (c === '}') openBraces--;
+        if (c === '[') openBrackets++;
+        if (c === ']') openBrackets--;
+      }
+      // If we're inside a string, close it
+      if (inStr) fixed += '"';
+      // Find last complete comma-separated item and trim after it
+      const lastComma = fixed.lastIndexOf(',');
+      const lastBrace = fixed.lastIndexOf('}');
+      const lastBracket = fixed.lastIndexOf(']');
+      // If last char is not a closing bracket, trim to last complete item
+      const lastChar = fixed.trim().slice(-1);
+      if (lastChar !== '}' && lastChar !== ']' && lastChar !== '"' && lastComma > fixed.length * 0.5) {
+        fixed = fixed.slice(0, lastComma);
+        // Recount brackets
+        openBraces = 0; openBrackets = 0; inStr = false; esc = false;
+        for (const c of fixed) {
+          if (esc) { esc = false; continue; }
+          if (c === '\\' && inStr) { esc = true; continue; }
+          if (c === '"') { inStr = !inStr; continue; }
+          if (inStr) continue;
+          if (c === '{') openBraces++;
+          if (c === '}') openBraces--;
+          if (c === '[') openBrackets++;
+          if (c === ']') openBrackets--;
+        }
+      }
+      fixed += ']'.repeat(Math.max(0, openBrackets)) + '}'.repeat(Math.max(0, openBraces));
+      const quickParsed: PPTOutline = JSON.parse(fixed);
+      if (quickParsed.presentationTitle && quickParsed.slides && quickParsed.slides.length >= 2) {
+        console.log(`[PPT Structurer] Quick repair succeeded: ${quickParsed.slides.length} slides`);
+        // Add closing slide if missing
+        const lastSlide = quickParsed.slides[quickParsed.slides.length - 1];
+        if (lastSlide.layout !== 'closing') {
+          quickParsed.slides.push({
+            slideIndex: quickParsed.slides.length,
+            layout: 'closing',
+            title: '感谢观看',
+            subtitle: quickParsed.presentationSubtitle || '',
+            sections: [],
+            quote: '未来已来，唯变不变',
+            quoteLabel: '结束语',
+          });
+        }
+        return quickParsed;
+      }
+    } catch {
+      console.log('[PPT Structurer] Quick repair failed, trying slide-by-slide repair...');
+    }
+
+    // Second try: extract complete slide objects one by one
     const slidesMatch = jsonStr.indexOf('"slides"');
     if (slidesMatch === -1) return null;
     
