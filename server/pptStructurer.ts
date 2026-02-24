@@ -790,22 +790,22 @@ async function tryParseLLMResponse(content: string): Promise<PPTOutline | null> 
 }
 
 export async function structureTextToPPTOutline(inputText: string): Promise<PPTOutline> {
-  const MAX_RETRIES = 2;
+  const MAX_RETRIES = 3;
   
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    const isRetry = attempt > 1;
-    const maxTokens = isRetry ? 8000 : 12000;
-    const pageHint = isRetry ? '6-8页' : '8-12页';
+    const maxTokens = attempt === 1 ? 12000 : attempt === 2 ? 10000 : 8000;
+    const pageHint = attempt === 1 ? '8-12页' : attempt === 2 ? '6-10页' : '6-8页';
+    const textLimit = attempt === 1 ? 6000 : attempt === 2 ? 5000 : 3000;
     
     const userPrompt = `请将以下文本转化为PPT大纲：
 
 ---
-${inputText.slice(0, isRetry ? 3000 : 6000)}
+${inputText.slice(0, textLimit)}
 ---
 
 要求：${pageHint}，补充案例数据，观点式标题，布局多样化。section.title只写8字以内短标题。description控制15-30字。严禁重复内容。确保JSON完整闭合。`;
 
-    console.log(`[PPT Structurer] Attempt ${attempt}/${MAX_RETRIES}, maxTokens=${maxTokens}, pages=${pageHint}`);
+    console.log(`[PPT Structurer] Attempt ${attempt}/${MAX_RETRIES}, maxTokens=${maxTokens}, pages=${pageHint}, textLimit=${textLimit}`);
     
     try {
       const result = await invokeLLM({
@@ -832,12 +832,22 @@ ${inputText.slice(0, isRetry ? 3000 : 6000)}
         return outline;
       }
       
-      console.error(`[PPT Structurer] Attempt ${attempt}: Parse/repair failed, ${attempt < MAX_RETRIES ? 'retrying with smaller params...' : 'giving up'}`);
+      console.error(`[PPT Structurer] Attempt ${attempt}: Parse/repair failed, ${attempt < MAX_RETRIES ? 'retrying...' : 'giving up'}`);
     } catch (e: any) {
-      console.error(`[PPT Structurer] Attempt ${attempt} error:`, e.message);
-      if (attempt >= MAX_RETRIES) throw e;
+      const is500 = e.message?.includes('500') || e.message?.includes('Internal Server');
+      console.error(`[PPT Structurer] Attempt ${attempt} error (is500=${is500}):`, e.message);
+      
+      if (attempt < MAX_RETRIES) {
+        // Wait before retry: 2s for 500 errors, 1s for others
+        const waitMs = is500 ? 2000 : 1000;
+        console.log(`[PPT Structurer] Waiting ${waitMs}ms before retry...`);
+        await new Promise(r => setTimeout(r, waitMs));
+        continue;
+      }
+      // Final attempt failed - throw user-friendly error
+      throw new Error('AI服务暂时繁忙，请稍后重试');
     }
   }
   
-  throw new Error('PPT生成失败，请稍后重试');
+  throw new Error('AI服务暂时繁忙，请稍后重试');
 }

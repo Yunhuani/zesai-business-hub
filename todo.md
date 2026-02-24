@@ -1973,3 +1973,10 @@
 - [x] 降低maxTokens（第1次12000，重试8000）
 - [x] 重试机制已验证生效（LLM API临时500错误时自动重试）
 - [x] 保存checkpoint
+
+## 修复PPT生成500错误
+-- [x] invokeLLM尊重传入的maxTokens参数（不再硬编32768）
+- [x] pptStructurer中500错误自动重试（3次重试+递减参数）
+- [x] 错误信息改为用户友好文案（“AI服务暂时繁忙”）
+- [x] 端到端测试通过（6页PPT 68秒生成）
+- [x] 保存checkpoint
