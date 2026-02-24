@@ -755,32 +755,7 @@ function repairTruncatedJSON(jsonStr: string): PPTOutline | null {
 // Main export
 // ============================================================
 
-export async function structureTextToPPTOutline(inputText: string): Promise<PPTOutline> {
-  const userPrompt = `请将以下文本转化为PPT大纲：
-
----
-${inputText}
----
-
-要求：8-12页，补充案例数据，观点式标题，布局多样化。section.title只写8字以内短标题。description控制15-30字。严禁重复内容。确保JSON完整闭合。`;
-
-  const result = await invokeLLM({
-    messages: [
-      { role: 'system', content: SYSTEM_PROMPT },
-      { role: 'user', content: userPrompt },
-    ],
-    responseFormat: {
-      type: 'json_schema',
-      json_schema: OUTPUT_SCHEMA,
-    },
-    maxTokens: 16000,
-  });
-
-  const content = result.choices[0]?.message?.content;
-  if (!content || typeof content !== 'string') {
-    throw new Error('LLM返回内容为空');
-  }
-
+async function tryParseLLMResponse(content: string): Promise<PPTOutline | null> {
   // Try to extract JSON from the response
   let jsonStr = content.trim();
   // Sometimes LLM wraps JSON in markdown code blocks
@@ -794,24 +769,75 @@ ${inputText}
   
   try {
     const outline: PPTOutline = JSON.parse(jsonStr);
-    if (!outline.presentationTitle || !outline.slides || outline.slides.length < 3) {
+    if (!outline.presentationTitle || !outline.slides || outline.slides.length < 2) {
       console.error('[PPT Structurer] Incomplete outline:', JSON.stringify(outline).slice(0, 200));
-      throw new Error('PPT大纲结构不完整');
+      return null;
     }
     return postProcessOutline(outline);
   } catch (e) {
     if (e instanceof SyntaxError) {
-      console.log('[PPT Structurer] JSON parse failed, attempting truncation repair...');
-      // Try to repair truncated JSON by finding the last complete slide
+      console.log('[PPT Structurer] JSON parse failed, attempting repair...');
       const repaired = repairTruncatedJSON(jsonStr);
       if (repaired) {
-        console.log('[PPT Structurer] JSON repair succeeded');
+        console.log(`[PPT Structurer] JSON repair succeeded: ${repaired.slides.length} slides`);
         return postProcessOutline(repaired);
       }
-      console.error('[PPT Structurer] JSON repair failed. First 500 chars:', content.slice(0, 500));
-      console.error('[PPT Structurer] Last 200 chars:', content.slice(-200));
-      throw new Error('LLM返回的JSON格式无效，请重试');
+      console.error('[PPT Structurer] Repair failed. First 300 chars:', content.slice(0, 300));
+      return null;
     }
     throw e;
   }
+}
+
+export async function structureTextToPPTOutline(inputText: string): Promise<PPTOutline> {
+  const MAX_RETRIES = 2;
+  
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    const isRetry = attempt > 1;
+    const maxTokens = isRetry ? 8000 : 12000;
+    const pageHint = isRetry ? '6-8页' : '8-12页';
+    
+    const userPrompt = `请将以下文本转化为PPT大纲：
+
+---
+${inputText.slice(0, isRetry ? 3000 : 6000)}
+---
+
+要求：${pageHint}，补充案例数据，观点式标题，布局多样化。section.title只写8字以内短标题。description控制15-30字。严禁重复内容。确保JSON完整闭合。`;
+
+    console.log(`[PPT Structurer] Attempt ${attempt}/${MAX_RETRIES}, maxTokens=${maxTokens}, pages=${pageHint}`);
+    
+    try {
+      const result = await invokeLLM({
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: userPrompt },
+        ],
+        responseFormat: {
+          type: 'json_schema',
+          json_schema: OUTPUT_SCHEMA,
+        },
+        maxTokens,
+      });
+
+      const content = result.choices[0]?.message?.content;
+      if (!content || typeof content !== 'string') {
+        console.error(`[PPT Structurer] Attempt ${attempt}: LLM returned empty content`);
+        continue;
+      }
+
+      const outline = await tryParseLLMResponse(content);
+      if (outline) {
+        console.log(`[PPT Structurer] Success on attempt ${attempt}: ${outline.slides.length} slides`);
+        return outline;
+      }
+      
+      console.error(`[PPT Structurer] Attempt ${attempt}: Parse/repair failed, ${attempt < MAX_RETRIES ? 'retrying with smaller params...' : 'giving up'}`);
+    } catch (e: any) {
+      console.error(`[PPT Structurer] Attempt ${attempt} error:`, e.message);
+      if (attempt >= MAX_RETRIES) throw e;
+    }
+  }
+  
+  throw new Error('PPT生成失败，请稍后重试');
 }

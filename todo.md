@@ -1966,3 +1966,10 @@
 - [x] 页数调整为8-12页
 - [x] 端到端测试通过：8页37秒完成，JSON首次解析通过
 - [x] 保存checkpoint
+
+## 线上PPT生成JSON无效Bug修复
+- [x] 增加重试机制（JSON解析失败自动重试1次，第2次用更小参数）
+- [x] 增强repair逻辑（抽取tryParseLLMResponse函数）
+- [x] 降低maxTokens（第1次12000，重试8000）
+- [x] 重试机制已验证生效（LLM API临时500错误时自动重试）
+- [x] 保存checkpoint
