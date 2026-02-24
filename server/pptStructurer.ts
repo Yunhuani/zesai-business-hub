@@ -128,105 +128,46 @@ export type ProcessNode = FlowNode;
 // LLM Prompt
 // ============================================================
 
-const SYSTEM_PROMPT = `你是一位顶级商业咨询顾问兼PPT策划大师。你的任务是将客户提供的文本转化为一份**咨询级演示文档**。
+const SYSTEM_PROMPT = `你是顶级商业咨询PPT策划师。将客户文本转化为咨询级PPT大纲。
 
 ## 核心原则
+你是“内容增值引擎”：原文结构化呈现 + 补充案例数据洞察 + 清晰信息架构。
 
-你不是"文字搬运工"，而是"内容增值引擎"。最终输出必须让客户看到：
-1. 他提供的原始内容（结构化呈现）
-2. 你补充的增值内容（案例、数据、洞察）
-3. 精心设计的信息架构（逻辑清晰、层次分明）
+## 关键规则
+1. 分析原文逻辑后重新组织，不按原文顺序平铺
+2. 标题必须是观点/结论式（如“AI Agent将取代40%重复性工作”）
+3. 每页必须有quote金句
+4. 布局多样化，禁止连续相同布局
+5. 总页数8-12页，不用section分隔页
+6. 严禁在任何字段中重复内容，每个字段只写一次
 
-## 工作流程
+## 区块类型及必填字段
+- text_block/bullet_list: 必填bullets数组(3-5个)，每个{icon,title(3-8字),description(20-40字)}
+- chart_block: 必填chartData{type,title,items[{label,value}](4-6个),source}
+- case_block: 必填cases数组(2-3个)，每个{icon,company,traditional(15-30字),transformed(15-30字),valueProposition(15-30字)}
+- stats_block: 必填stats数组(3-4个)，每个{icon,number,label}
+- flow_block: 必填flowNodes数组(4-5个)，每个{icon,label}
+- insight_block: 必填insightText(20-50字),insightLabel
+- progress_block: 必填chartData(type="progress",items4-6个)
 
-### 第一步：分析原文，形成逻辑结构
-- 识别核心主题和论点，根据逻辑关系重新组织（不按原文顺序平铺）
-- 常见结构：总分总、问题-分析-方案、现状-趋势-行动、并列递进
+## 布局类型及要求
+- title: 封面，sections空数组
+- quad: 4个不同类型区块（核心布局，至少用3次）
+- two_col_mixed: 2个区块（左文右图）
+- case_cards: 2-3个case_block，每个必须有完整的cases数组
+- comparison: 2个bullet_list（旧vs新），必须有leftLabel和rightLabel
+- key_points: 1个bullet_list(4-6个bullets) + 可选1个stats_block
+- data_dashboard: stats_block(3-4个) + chart_block + bullet_list
+- timeline: 1个bullet_list(4-5个步骤)
+- closing: 结束页，sections空数组
 
-### 第二步：内容增值
-- 补充具体企业案例（真实公司名+具体做法+量化结果）
-- 补充关键数据点（百分比、金额、增长率），标注数据来源
-- 为每个论点提炼金句（quote）
-- 当涉及数据对比/趋势时，构造chartData
+## 重要规则
+- section.title只写8字以内短标题，内容放在结构化字段中
+- description控制15-30字，简洁有力
+- case_cards布局必须有2-3个case_block section，每个都有完整cases数组
+- 确保JSON完整闭合
 
-### 第三步：设计多区块页面
-每个内容页由2-4个sections（区块）组成，不同区块类型混合使用。
-
-## 页面结构
-
-每页 = 标题栏 + 2-4个内容区块 + 底部金句
-
-### 区块类型说明
-
-| 类型 | 用途 | 必填字段 |
-|------|------|---------|
-| text_block | 文字要点块 | title, bullets(2-4个) |
-| chart_block | 图表数据块 | chartData(type/title/items/source) |
-| case_block | 企业案例块 | cases(1-3个, 每个有company/traditional/transformed/valueProposition) |
-| insight_block | 洞察/引用块 | insightText, insightLabel |
-| progress_block | 进度条数据块 | chartData(type=progress, items有label和value百分比) |
-| flow_block | 流程图块 | flowNodes(3-5个节点) |
-| stats_block | 数据卡片块 | stats(2-4个, 每个有icon/number/label) |
-| bullet_list | 结构化列表块 | title, bullets(3-6个, 每个有icon/title/description/highlight) |
-
-### 页面布局类型
-
-| 布局 | 区块数量 | 适用场景 | sections要求 |
-|------|---------|---------|-------------|
-| title | 0 | 封面 | 无sections |
-| quad | 4 | 核心解读页（最重要！） | 4个不同类型区块，如: text_block + chart_block + flow_block + bullet_list |
-| two_col_mixed | 2 | 左文右图/左文右案例 | 2个区块，左侧text_block/bullet_list，右侧chart_block/progress_block/case_block |
-| case_cards | 2-3 | 案例展示页 | 2-3个case_block |
-| comparison | 2 | A vs B对比 | 2个bullet_list，第一个=旧模式，第二个=新模式 |
-| key_points | 1-2 | 要点阐述 | 1个bullet_list(4-6个bullets) + 可选1个stats_block/chart_block |
-| data_dashboard | 3-4 | 数据密集页 | stats_block + chart_block + bullet_list组合 |
-| timeline | 1 | 时间线/步骤 | 1个bullet_list(作为时间线步骤，3-5个) |
-| closing | 0 | 结束页 | 无sections |
-
-## 内容质量标准
-
-### 标题必须是观点/结论式
-- ❌ "市场分析" → ✅ "中国理财市场突破200万亿，个人理财师迎来黄金时代"
-- ❌ "AI趋势" → ✅ "AI Agent将在2026年取代40%的重复性知识工作"
-
-### 每页必须有quote（金句）
-金句是全页灵魂，一句话总结核心洞察。quoteLabel标注类型（"核心洞察"/"关键启示"/"讲者话术"）。
-
-### 文字4层结构
-每个text_block/bullet_list中的bullets必须有：
-1. icon: emoji图标
-2. title: 粗体关键词（3-8字）
-3. description: 描述说明（20-50字）
-4. highlight: 可选的高亮数据（如"40%"、"3倍"、"$17.5B"）
-
-### 案例要具体
-- ❌ "某公司使用AI提升效率"
-- ✅ company:"Klarna", traditional:"700名客服人员处理工单", transformed:"AI客服替代，处理速度从11分钟降至2分钟", valueProposition:"效率提升3倍，客户满意度持平"
-
-### 数据要有来源
-chartData中的source字段标注数据来源（如"Gartner 2025预测"、"公司年报"）
-
-### 布局多样化
-- 至少使用5种不同布局
-- 禁止连续2页使用相同布局
-- quad布局至少使用3次（这是核心布局）
-- 每个主要章节用2页展开：第1页quad/two_col_mixed（解读），第2页case_cards/key_points（案例+启示）
-
-### 页数要求
-- 总页数15-25页（含封面和结束页）
-- 不要使用section分隔页
-- 内容丰富的主题用2页展开
-
-## emoji图标选择
-- 商业/战略：🎯💡🔑📊💰🏆🚀📈
-- 技术/AI：⚡🤖🔧💻🔬🧩🧠
-- 人员/组织：👥🤝💪🎓👨‍💼
-- 数据/分析：📊📈💹🔍📉
-- 创新/增长：🌟✨🔥💎🌱
-- 行业/场景：🏭🏥🛒🏦✈️🚗
-- 状态标记：✅❌⚠️🔴🟢🟡
-
-请严格按JSON Schema输出。所有内容使用简体中文。`;
+请严格按JSON Schema输出。简体中文。`;
 
 const OUTPUT_SCHEMA = {
   name: 'ppt_outline',
@@ -365,6 +306,76 @@ const OUTPUT_SCHEMA = {
 // Post-processing
 // ============================================================
 
+/**
+ * Parse a long text (often dumped into section.title by LLM) into structured BulletPoints.
+ * Recognizes patterns like: emoji Title: Description  or  emoji Title Description
+ */
+function parseTitleToBullets(text: string): BulletPoint[] {
+  if (!text || text.length < 20) return [];
+  
+  // Split by emoji patterns at the start of segments
+  const emojiSplitRegex = /(?=(?:^|\n)\s*[\p{Emoji_Presentation}\p{Extended_Pictographic}])/gu;
+  const segments = text.split(emojiSplitRegex).filter(s => s.trim().length > 10);
+  
+  if (segments.length < 2) {
+    // Try splitting by newlines or sentence boundaries
+    const lines = text.split(/\n+/).filter(l => l.trim().length > 10);
+    if (lines.length >= 2) {
+      return lines.slice(0, 6).map((line, i) => {
+        const emojiMatch = line.match(/^\s*([\p{Emoji_Presentation}\p{Extended_Pictographic}])\s*/u);
+        const icon = emojiMatch ? emojiMatch[1] : ['📌', '💡', '🔑', '📊', '🎯', '🚀'][i % 6];
+        const rest = emojiMatch ? line.slice(emojiMatch[0].length) : line;
+        const colonIdx = rest.indexOf('：');
+        const colonIdx2 = rest.indexOf(':');
+        const splitIdx = colonIdx > 0 && colonIdx < 20 ? colonIdx : (colonIdx2 > 0 && colonIdx2 < 20 ? colonIdx2 : -1);
+        if (splitIdx > 0) {
+          return { icon, title: rest.slice(0, splitIdx).trim(), description: rest.slice(splitIdx + 1).trim().slice(0, 80) };
+        }
+        // Split at first space after 2-8 chars
+        const words = rest.trim();
+        const titleEnd = Math.min(words.indexOf(' ', 2), 15);
+        if (titleEnd > 2) {
+          return { icon, title: words.slice(0, titleEnd).trim(), description: words.slice(titleEnd).trim().slice(0, 80) };
+        }
+        return { icon, title: words.slice(0, 12), description: words.slice(12).slice(0, 80) };
+      });
+    }
+    return [];
+  }
+  
+  return segments.slice(0, 6).map((seg, i) => {
+    const trimmed = seg.trim();
+    const emojiMatch = trimmed.match(/^([\p{Emoji_Presentation}\p{Extended_Pictographic}])\s*/u);
+    const icon = emojiMatch ? emojiMatch[1] : ['📌', '💡', '🔑', '📊', '🎯', '🚀'][i % 6];
+    const rest = emojiMatch ? trimmed.slice(emojiMatch[0].length) : trimmed;
+    
+    // Find title: text before first colon (Chinese or English) within first 20 chars
+    const colonIdx = rest.indexOf('：');
+    const colonIdx2 = rest.indexOf(':');
+    const splitIdx = colonIdx > 0 && colonIdx < 25 ? colonIdx : (colonIdx2 > 0 && colonIdx2 < 25 ? colonIdx2 : -1);
+    
+    if (splitIdx > 0) {
+      const title = rest.slice(0, splitIdx).trim();
+      const desc = rest.slice(splitIdx + 1).trim();
+      // Extract highlight number if present
+      const numMatch = desc.match(/(\d+[%％万亿倍x]|\$[\d.]+[BMKbmk]?)/u);
+      return {
+        icon,
+        title: title.slice(0, 20),
+        description: desc.slice(0, 80),
+        highlight: numMatch ? numMatch[1] : undefined,
+      };
+    }
+    
+    // No colon, split at reasonable point
+    const spaceIdx = rest.indexOf(' ', 4);
+    if (spaceIdx > 0 && spaceIdx < 20) {
+      return { icon, title: rest.slice(0, spaceIdx).trim(), description: rest.slice(spaceIdx).trim().slice(0, 80) };
+    }
+    return { icon, title: rest.slice(0, 15), description: rest.slice(15).slice(0, 80) };
+  });
+}
+
 function postProcessOutline(outline: PPTOutline): PPTOutline {
   // Ensure first slide is title and last is closing
   if (outline.slides[0]?.layout !== 'title') {
@@ -395,7 +406,153 @@ function postProcessOutline(outline: PPTOutline): PPTOutline {
     }
   }
 
-  // Ensure all bullets have icons
+  // ============================================================
+  // CRITICAL: Fix sections with content in title field but empty bullets/stats
+  // LLM sometimes dumps all content into section.title as a long string
+  // ============================================================
+  outline.slides.forEach((slide, slideIdx) => {
+    if (slide.layout === 'title' || slide.layout === 'closing') return;
+    
+    slide.sections?.forEach(section => {
+      const titleLen = (section.title || '').length;
+      const hasBullets = section.bullets && section.bullets.length > 0;
+      const hasCases = section.cases && section.cases.length > 0;
+      const hasChart = section.chartData && section.chartData.items && section.chartData.items.length > 0;
+      const hasStats = section.stats && section.stats.length > 0;
+      const hasFlow = section.flowNodes && section.flowNodes.length > 0;
+      const hasInsight = section.insightText && section.insightText.length > 0;
+      
+      // If title is very long (>100 chars) and no structured data, parse title into bullets
+      if (titleLen > 100 && !hasBullets && !hasCases && !hasChart && !hasStats && !hasFlow && !hasInsight) {
+        console.log(`[PPT V3] Slide ${slideIdx}: Parsing long title (${titleLen} chars) into bullets for section type=${section.type}`);
+        const parsed = parseTitleToBullets(section.title || '');
+        if (parsed.length >= 2) {
+          section.bullets = parsed;
+          // Set a short title from the first few words
+          const firstLine = (section.title || '').split('\n')[0] || '';
+          const shortTitle = firstLine.slice(0, 30).replace(/[：:].*/u, '').trim();
+          section.title = shortTitle || undefined;
+          // Force type to bullet_list if it was text_block
+          if (section.type === 'text_block') {
+            section.type = 'bullet_list';
+          }
+        }
+      }
+      
+      // If bullet_list/text_block has content field but no bullets, parse content
+      if ((section.type === 'bullet_list' || section.type === 'text_block') && !hasBullets) {
+        const content = (section as any).content;
+        if (content && typeof content === 'string' && content.length > 50) {
+          const parsed = parseTitleToBullets(content);
+          if (parsed.length >= 2) {
+            section.bullets = parsed;
+          }
+        }
+      }
+    });
+    
+    // ============================================================
+    // Fix quad layout: must have 4 sections
+    // If only 1 section with parsed bullets, split into 4 bullet_list sections
+    // ============================================================
+    if (slide.layout === 'quad' && slide.sections.length < 4) {
+      const existingSec = slide.sections[0];
+      if (existingSec && existingSec.bullets && existingSec.bullets.length >= 4) {
+        console.log(`[PPT V3] Slide ${slideIdx}: Splitting ${existingSec.bullets.length} bullets into 4 quad sections`);
+        const allBullets = existingSec.bullets;
+        const perSection = Math.ceil(allBullets.length / 4);
+        const newSections: SlideSection[] = [];
+        for (let i = 0; i < 4; i++) {
+          const chunk = allBullets.slice(i * perSection, (i + 1) * perSection);
+          if (chunk.length > 0) {
+            newSections.push({
+              type: 'bullet_list',
+              title: chunk[0]?.icon + ' ' + chunk[0]?.title,
+              bullets: chunk,
+            });
+          }
+        }
+        // Pad to 4 if needed
+        while (newSections.length < 4 && newSections.length > 0) {
+          newSections.push({ ...newSections[newSections.length - 1] });
+        }
+        slide.sections = newSections;
+      } else if (existingSec && (!existingSec.bullets || existingSec.bullets.length === 0)) {
+        // No bullets at all, downgrade to key_points
+        console.log(`[PPT V3] Slide ${slideIdx}: Downgrading quad to key_points (no bullets)`);
+        slide.layout = 'key_points';
+      }
+    }
+    
+    // ============================================================
+    // Fix key_points: bullet_list must have bullets
+    // ============================================================
+    if (slide.layout === 'key_points') {
+      const bulletSec = slide.sections.find(s => s.type === 'bullet_list' || s.type === 'text_block');
+      if (bulletSec && (!bulletSec.bullets || bulletSec.bullets.length === 0)) {
+        // Try to parse from title
+        if (bulletSec.title && bulletSec.title.length > 50) {
+          const parsed = parseTitleToBullets(bulletSec.title);
+          if (parsed.length >= 2) {
+            bulletSec.bullets = parsed;
+            bulletSec.title = undefined;
+          }
+        }
+        // Still empty? Create placeholder bullets from slide title
+        if (!bulletSec.bullets || bulletSec.bullets.length === 0) {
+          bulletSec.bullets = [{ icon: '📌', title: '要点', description: slide.title || '详见正文' }];
+        }
+      }
+    }
+    
+    // ============================================================
+    // Fix data_dashboard: stats_block must have stats
+    // ============================================================
+    if (slide.layout === 'data_dashboard') {
+      const statsSec = slide.sections.find(s => s.type === 'stats_block');
+      if (statsSec && (!statsSec.stats || statsSec.stats.length === 0)) {
+        // Try to extract numbers from title or other sections
+        const allText = slide.sections.map(s => (s.title || '') + ' ' + (s.bullets || []).map(b => b.title + ' ' + b.description + ' ' + (b.highlight || '')).join(' ')).join(' ');
+        const numMatches = allText.match(/(\d+[%％万亿倍x]|\$[\d.]+[BMKbmk]?)/gu) || [];
+        if (numMatches.length >= 2) {
+          statsSec.stats = numMatches.slice(0, 4).map((n, i) => ({
+            icon: ['📊', '📈', '💰', '🎯'][i % 4],
+            number: n,
+            label: '关键指标',
+          }));
+        }
+      }
+      // Fix bullet_list in data_dashboard
+      const bulletSec = slide.sections.find(s => s.type === 'bullet_list' || s.type === 'text_block');
+      if (bulletSec && (!bulletSec.bullets || bulletSec.bullets.length === 0) && bulletSec.title && bulletSec.title.length > 50) {
+        const parsed = parseTitleToBullets(bulletSec.title);
+        if (parsed.length >= 2) {
+          bulletSec.bullets = parsed;
+          bulletSec.title = undefined;
+        }
+      }
+    }
+    
+    // ============================================================
+    // Fix comparison: both sides must have bullets
+    // ============================================================
+    if (slide.layout === 'comparison' && slide.sections.length >= 2) {
+      slide.sections.slice(0, 2).forEach(sec => {
+        if (!sec.bullets || sec.bullets.length === 0) {
+          if (sec.title && sec.title.length > 50) {
+            const parsed = parseTitleToBullets(sec.title);
+            if (parsed.length >= 2) {
+              const sectionLabel = parsed[0]?.title || sec.title.slice(0, 15);
+              sec.bullets = parsed;
+              sec.title = sectionLabel;
+            }
+          }
+        }
+      });
+    }
+  });
+
+  // Ensure all bullets have icons (after parsing)
   outline.slides.forEach(slide => {
     slide.sections?.forEach(section => {
       section.bullets?.forEach(b => {
@@ -414,22 +571,18 @@ function postProcessOutline(outline: PPTOutline): PPTOutline {
 
     // Backward compat: populate legacy fields from sections
     if (slide.sections && slide.sections.length > 0) {
-      // Extract points from first bullet_list or text_block section
       const bulletSection = slide.sections.find(s => s.type === 'bullet_list' || s.type === 'text_block');
       if (bulletSection?.bullets && !slide.points) {
         slide.points = bulletSection.bullets;
       }
-      // Extract chartData from first chart_block or progress_block
       const chartSection = slide.sections.find(s => s.type === 'chart_block' || s.type === 'progress_block');
       if (chartSection?.chartData && !slide.chartData) {
         slide.chartData = chartSection.chartData;
       }
-      // Extract processFlow from first flow_block
       const flowSection = slide.sections.find(s => s.type === 'flow_block');
       if (flowSection?.flowNodes && !slide.processFlow) {
         slide.processFlow = flowSection.flowNodes;
       }
-      // For comparison, extract leftColumn/rightColumn
       if (slide.layout === 'comparison' && slide.sections.length >= 2) {
         if (!slide.leftColumn) slide.leftColumn = slide.sections[0]?.bullets;
         if (!slide.rightColumn) slide.rightColumn = slide.sections[1]?.bullets;
@@ -443,30 +596,173 @@ function postProcessOutline(outline: PPTOutline): PPTOutline {
 }
 
 // ============================================================
+// Pre-process: truncate repetitive content in LLM output
+// ============================================================
+
+function truncateRepetitiveContent(jsonStr: string): string {
+  // Quick check: if string is valid JSON, no need to process
+  try {
+    JSON.parse(jsonStr);
+    return jsonStr;
+  } catch {
+    // Continue with repair
+  }
+  
+  // Strategy: scan from the end backwards to find where repetition starts
+  // Look for any 15+ char pattern that repeats 3+ times
+  const len = jsonStr.length;
+  let cutPoint = len;
+  
+  // Check from 60% of the string onwards for repetition
+  const startCheck = Math.floor(len * 0.5);
+  
+  for (let windowSize = 15; windowSize <= 80; windowSize += 5) {
+    for (let pos = startCheck; pos < len - windowSize * 3; pos++) {
+      const pattern = jsonStr.slice(pos, pos + windowSize);
+      // Check if this pattern appears again within 2x window
+      const next1 = jsonStr.indexOf(pattern, pos + windowSize);
+      if (next1 > 0 && next1 < pos + windowSize * 2) {
+        const next2 = jsonStr.indexOf(pattern, next1 + windowSize);
+        if (next2 > 0 && next2 < next1 + windowSize * 2) {
+          // Found 3 consecutive occurrences - cut before first
+          console.log(`[PPT Structurer] Repetitive pattern (${windowSize} chars) at pos ${pos}, cutting`);
+          cutPoint = Math.min(cutPoint, pos);
+          break;
+        }
+      }
+    }
+    if (cutPoint < len) break;
+  }
+  
+  if (cutPoint < len) {
+    jsonStr = jsonStr.slice(0, cutPoint);
+  }
+  
+  return jsonStr;
+}
+
+// ============================================================
+// JSON Repair for truncated LLM output
+// ============================================================
+
+function repairTruncatedJSON(jsonStr: string): PPTOutline | null {
+  try {
+    // Strategy: use regex to find complete slide objects (between matching braces)
+    // by looking for the pattern: { "slideIndex": N, ... }
+    
+    const slidesMatch = jsonStr.indexOf('"slides"');
+    if (slidesMatch === -1) return null;
+    
+    const arrayStart = jsonStr.indexOf('[', slidesMatch);
+    if (arrayStart === -1) return null;
+    
+    // Extract the header (everything before slides array)
+    const header = jsonStr.slice(0, arrayStart + 1);
+    
+    // Find all complete slide objects using brace matching
+    const completeSlides: string[] = [];
+    let braceDepth = 0;
+    let inString = false;
+    let escapeNext = false;
+    let slideStart = -1;
+    
+    for (let i = arrayStart + 1; i < jsonStr.length; i++) {
+      const ch = jsonStr[i];
+      
+      if (escapeNext) { escapeNext = false; continue; }
+      if (ch === '\\' && inString) { escapeNext = true; continue; }
+      if (ch === '"' && !escapeNext) { inString = !inString; continue; }
+      if (inString) continue;
+      
+      if (ch === '{') {
+        if (braceDepth === 0) slideStart = i;
+        braceDepth++;
+      } else if (ch === '}') {
+        braceDepth--;
+        if (braceDepth === 0 && slideStart >= 0) {
+          const slideStr = jsonStr.slice(slideStart, i + 1);
+          // Verify this is a valid JSON object
+          try {
+            JSON.parse(slideStr);
+            completeSlides.push(slideStr);
+          } catch {
+            // This slide object has issues, try to fix common problems
+            // Truncated string values - find last complete key-value pair
+            try {
+              // Remove everything after the last complete property
+              const lastCompleteComma = slideStr.lastIndexOf(',\n');
+              if (lastCompleteComma > slideStr.length * 0.3) {
+                // Close all open arrays and objects
+                let fixed = slideStr.slice(0, lastCompleteComma);
+                // Count open brackets
+                let openBraces = 0, openBrackets = 0;
+                let inStr = false, esc = false;
+                for (const c of fixed) {
+                  if (esc) { esc = false; continue; }
+                  if (c === '\\' && inStr) { esc = true; continue; }
+                  if (c === '"') { inStr = !inStr; continue; }
+                  if (inStr) continue;
+                  if (c === '{') openBraces++;
+                  if (c === '}') openBraces--;
+                  if (c === '[') openBrackets++;
+                  if (c === ']') openBrackets--;
+                }
+                fixed += ']'.repeat(Math.max(0, openBrackets)) + '}'.repeat(Math.max(0, openBraces));
+                JSON.parse(fixed);
+                completeSlides.push(fixed);
+              }
+            } catch {
+              // Skip this slide entirely
+            }
+          }
+          slideStart = -1;
+        }
+      }
+    }
+    
+    if (completeSlides.length < 2) return null;
+    
+    // Reconstruct JSON
+    const repaired = header + '\n    ' + completeSlides.join(',\n    ') + '\n  ]\n}';
+    
+    const parsed: PPTOutline = JSON.parse(repaired);
+    if (parsed.presentationTitle && parsed.slides && parsed.slides.length >= 2) {
+      console.log(`[PPT Structurer] Repaired JSON: ${parsed.slides.length} slides recovered from ${completeSlides.length} complete objects`);
+      
+      // Add closing slide if missing
+      const lastSlide = parsed.slides[parsed.slides.length - 1];
+      if (lastSlide.layout !== 'closing') {
+        parsed.slides.push({
+          slideIndex: parsed.slides.length,
+          layout: 'closing',
+          title: '感谢观看',
+          subtitle: parsed.presentationSubtitle || '',
+          sections: [],
+          quote: '未来已来，唯变不变',
+          quoteLabel: '结束语',
+        });
+      }
+      return parsed;
+    }
+    return null;
+  } catch (e) {
+    console.error('[PPT Structurer] Repair exception:', e);
+    return null;
+  }
+}
+
+// ============================================================
 // Main export
 // ============================================================
 
 export async function structureTextToPPTOutline(inputText: string): Promise<PPTOutline> {
-  const userPrompt = `请将以下文本内容转化为一份高质量的咨询级PPT大纲：
+  const userPrompt = `请将以下文本转化为PPT大纲：
 
 ---
 ${inputText}
 ---
 
-要求：
-1. 先分析原文核心主题和逻辑结构，然后重新组织信息
-2. 基于原文进行内容增值：补充真实企业案例、关键数据、深度洞察
-3. 总页数15-25页（含封面和结束页），每个主要章节用2页展开（解读页+案例页）
-4. 每页必须有quote字段（金句/核心洞察）和quoteLabel
-5. 标题必须是观点/结论式
-6. 至少使用5种不同布局，quad布局至少使用3次
-7. 禁止连续2页使用相同布局
-8. 每页的sections数组必须有2-4个不同类型的区块（title和closing页除外）
-9. quad布局的4个sections必须是不同类型（如text_block + chart_block + flow_block + bullet_list）
-10. case_block中的案例必须有具体公司名、传统做法、转型做法、价值结果
-11. chart_block必须有source字段标注数据来源
-12. bullet_list中每个bullet的description至少20字
-13. 不要使用section分隔页`;
+要求：8-12页，补充案例数据，观点式标题，布局多样化。section.title只写8字以内短标题。description控制15-30字。严禁重复内容。确保JSON完整闭合。`;
 
   const result = await invokeLLM({
     messages: [
@@ -477,7 +773,7 @@ ${inputText}
       type: 'json_schema',
       json_schema: OUTPUT_SCHEMA,
     },
-    maxTokens: 32000,
+    maxTokens: 16000,
   });
 
   const content = result.choices[0]?.message?.content;
@@ -485,15 +781,36 @@ ${inputText}
     throw new Error('LLM返回内容为空');
   }
 
+  // Try to extract JSON from the response
+  let jsonStr = content.trim();
+  // Sometimes LLM wraps JSON in markdown code blocks
+  const jsonMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (jsonMatch) {
+    jsonStr = jsonMatch[1].trim();
+  }
+  
+  // Pre-process: detect and truncate repetitive content patterns
+  jsonStr = truncateRepetitiveContent(jsonStr);
+  
   try {
-    const outline: PPTOutline = JSON.parse(content);
+    const outline: PPTOutline = JSON.parse(jsonStr);
     if (!outline.presentationTitle || !outline.slides || outline.slides.length < 3) {
+      console.error('[PPT Structurer] Incomplete outline:', JSON.stringify(outline).slice(0, 200));
       throw new Error('PPT大纲结构不完整');
     }
     return postProcessOutline(outline);
   } catch (e) {
     if (e instanceof SyntaxError) {
-      throw new Error('LLM返回的JSON格式无效');
+      console.log('[PPT Structurer] JSON parse failed, attempting truncation repair...');
+      // Try to repair truncated JSON by finding the last complete slide
+      const repaired = repairTruncatedJSON(jsonStr);
+      if (repaired) {
+        console.log('[PPT Structurer] JSON repair succeeded');
+        return postProcessOutline(repaired);
+      }
+      console.error('[PPT Structurer] JSON repair failed. First 500 chars:', content.slice(0, 500));
+      console.error('[PPT Structurer] Last 200 chars:', content.slice(-200));
+      throw new Error('LLM返回的JSON格式无效，请重试');
     }
     throw e;
   }

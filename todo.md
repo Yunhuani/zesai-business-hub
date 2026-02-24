@@ -1958,3 +1958,11 @@
 ### 测试验证
 - [x] 端到端测试所有9种布局全部通过
 - [x] 保存checkpoint
+
+## V3 Bug修复与优化
+- [x] 修复LLM输出重复内容导致JSON截断：增加truncateRepetitiveContent预处理
+- [x] 重写repairTruncatedJSON：逐slide提取+brace匹配+自动闭合
+- [x] 精简SYSTEM_PROMPT减少token消耗
+- [x] 页数调整为8-12页
+- [x] 端到端测试通过：8页37秒完成，JSON首次解析通过
+- [x] 保存checkpoint
