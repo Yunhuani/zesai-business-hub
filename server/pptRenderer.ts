@@ -1,6 +1,7 @@
 /**
- * PPT Slide Renderer V3
- * Multi-block composite pages with rich visual design
+ * PPT Slide Renderer V4
+ * Enhanced visual design: larger fonts, colored circle icons, structured bullet display,
+ * enhanced progress bars, better space filling, taller quote blocks
  */
 import puppeteer, { Browser } from 'puppeteer';
 import type {
@@ -15,19 +16,19 @@ export interface ColorScheme {
   name: string;
   bg: string;
   bgGradient: string;
-  accent: string;         // Primary accent (orange-like)
+  accent: string;
   accentLight: string;
   accentDark: string;
-  accentSecondary: string; // Secondary accent (green-like)
-  positive: string;       // Green for positive/new
-  negative: string;       // Red for negative/old
+  accentSecondary: string;
+  positive: string;
+  negative: string;
   text: string;
   textSecondary: string;
   cardBg: string;
   cardBorder: string;
-  blockBg: string;        // Slightly different bg for blocks
+  blockBg: string;
   quoteBg: string;
-  insightBg: string;      // Background for insight blocks
+  insightBg: string;
 }
 
 export const COLOR_SCHEMES: Record<string, ColorScheme> = {
@@ -46,7 +47,7 @@ export const COLOR_SCHEMES: Record<string, ColorScheme> = {
     cardBg: 'rgba(200,169,81,0.07)',
     cardBorder: 'rgba(200,169,81,0.15)',
     blockBg: 'rgba(200,169,81,0.04)',
-    quoteBg: 'rgba(200,169,81,0.06)',
+    quoteBg: 'rgba(200,169,81,0.08)',
     insightBg: 'rgba(93,186,125,0.08)',
   },
   deep_blue: {
@@ -64,7 +65,7 @@ export const COLOR_SCHEMES: Record<string, ColorScheme> = {
     cardBg: 'rgba(240,160,48,0.06)',
     cardBorder: 'rgba(240,160,48,0.15)',
     blockBg: 'rgba(74,144,217,0.05)',
-    quoteBg: 'rgba(240,160,48,0.06)',
+    quoteBg: 'rgba(240,160,48,0.08)',
     insightBg: 'rgba(46,204,113,0.08)',
   },
   zenith_purple: {
@@ -82,7 +83,7 @@ export const COLOR_SCHEMES: Record<string, ColorScheme> = {
     cardBg: 'rgba(139,92,246,0.07)',
     cardBorder: 'rgba(139,92,246,0.15)',
     blockBg: 'rgba(139,92,246,0.04)',
-    quoteBg: 'rgba(139,92,246,0.06)',
+    quoteBg: 'rgba(139,92,246,0.08)',
     insightBg: 'rgba(52,211,153,0.08)',
   },
   classic_dark: {
@@ -100,7 +101,7 @@ export const COLOR_SCHEMES: Record<string, ColorScheme> = {
     cardBg: 'rgba(255,255,255,0.04)',
     cardBorder: 'rgba(255,255,255,0.10)',
     blockBg: 'rgba(255,255,255,0.03)',
-    quoteBg: 'rgba(240,160,48,0.06)',
+    quoteBg: 'rgba(240,160,48,0.08)',
     insightBg: 'rgba(46,204,113,0.08)',
   },
 };
@@ -128,12 +129,23 @@ export const THEME_STYLES: Record<string, ThemeStyle> = {
 const SLIDE_W = 1280;
 const SLIDE_H = 720;
 const PAD_X = 48;
-const PAD_TOP = 32;
-const PAD_BOT = 20;
-const TITLE_H = 70;
-const QUOTE_H = 60;
-const FOOTER_H = 28;
+const PAD_TOP = 28;
+const PAD_BOT = 16;
+const TITLE_H = 68;
+const QUOTE_H = 70;
+const FOOTER_H = 26;
 const CONTENT_H = SLIDE_H - PAD_TOP - TITLE_H - QUOTE_H - FOOTER_H - PAD_BOT;
+
+// Icon color palette for colored circle backgrounds
+const ICON_COLORS = ['#f0a030', '#2ecc71', '#4a90d9', '#e74c3c', '#8b5cf6', '#f59e0b', '#34d399', '#ef4444'];
+
+/** Get a colored circle icon HTML */
+function coloredIcon(emoji: string, idx: number, size: number = 36): string {
+  const bgColor = ICON_COLORS[idx % ICON_COLORS.length];
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${bgColor};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+    <span style="font-size:${Math.round(size * 0.5)}px;line-height:1;filter:brightness(0) invert(1);">${emoji}</span>
+  </div>`;
+}
 
 /** Background decorations */
 function bgDeco(colors: ColorScheme): string {
@@ -143,66 +155,74 @@ function bgDeco(colors: ColorScheme): string {
   </div>`;
 }
 
-/** Title bar with accent left border */
+/** Title bar with accent left border - V4: larger font */
 function titleBar(title: string, subtitle: string | undefined, colors: ColorScheme, theme: ThemeStyle): string {
-  return `<div style="padding:0 0 12px 0;margin-bottom:8px;">
+  return `<div style="padding:0 0 10px 0;margin-bottom:6px;">
     <div style="display:flex;align-items:center;gap:12px;">
-      <div style="width:4px;height:28px;background:${colors.accent};border-radius:2px;flex-shrink:0;"></div>
-      <h2 style="font-size:24px;font-weight:${theme.headingWeight};color:${colors.text};margin:0;line-height:1.3;">${title}</h2>
+      <div style="width:4px;height:32px;background:${colors.accent};border-radius:2px;flex-shrink:0;"></div>
+      <h2 style="font-size:26px;font-weight:${theme.headingWeight};color:${colors.text};margin:0;line-height:1.3;">${title}</h2>
     </div>
-    ${subtitle ? `<p style="font-size:13px;color:${colors.textSecondary};margin:6px 0 0 16px;line-height:1.3;">${subtitle}</p>` : ''}
+    ${subtitle ? `<p style="font-size:14px;color:${colors.textSecondary};margin:5px 0 0 16px;line-height:1.3;">${subtitle}</p>` : ''}
   </div>`;
 }
 
-/** Quote block at bottom */
+/** Quote block at bottom - V4: taller, more prominent */
 function quoteBlock(quote: string | undefined, quoteLabel: string | undefined, colors: ColorScheme): string {
   if (!quote) return `<div style="height:${QUOTE_H}px;"></div>`;
   const label = quoteLabel || '核心洞察';
-  return `<div style="height:${QUOTE_H}px;display:flex;align-items:center;gap:10px;padding:8px 16px;background:${colors.quoteBg};border-left:3px solid ${colors.accent};border-radius:0 4px 4px 0;margin-top:auto;">
-    <span style="font-size:22px;color:${colors.accent};font-family:Georgia,serif;line-height:1;flex-shrink:0;">"</span>
+  return `<div style="height:${QUOTE_H}px;display:flex;align-items:center;gap:12px;padding:10px 18px;background:${colors.quoteBg};border-left:3px solid ${colors.accent};border-radius:0 6px 6px 0;margin-top:auto;">
+    <span style="font-size:28px;color:${colors.accent};font-family:Georgia,serif;line-height:1;flex-shrink:0;">"</span>
     <div style="flex:1;min-width:0;">
-      <span style="font-size:10px;color:${colors.accent};font-weight:600;letter-spacing:0.5px;">${label}</span>
-      <p style="font-size:11px;color:${colors.accentLight};margin:2px 0 0;line-height:1.5;font-style:italic;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${quote}</p>
+      <span style="font-size:11px;color:${colors.accent};font-weight:700;letter-spacing:0.5px;">${label}</span>
+      <p style="font-size:13px;color:${colors.accentLight};margin:3px 0 0;line-height:1.5;font-style:italic;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${quote}</p>
     </div>
-    <span style="font-size:22px;color:${colors.accent};font-family:Georgia,serif;line-height:1;flex-shrink:0;">"</span>
+    <span style="font-size:28px;color:${colors.accent};font-family:Georgia,serif;line-height:1;flex-shrink:0;">"</span>
   </div>`;
 }
 
 /** Footer */
 function footer(index: number, total: number, colors: ColorScheme, note?: string): string {
-  return `<div style="height:${FOOTER_H}px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid ${colors.cardBorder};padding-top:6px;">
+  return `<div style="height:${FOOTER_H}px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid ${colors.cardBorder};padding-top:5px;">
     ${note ? `<span style="font-size:9px;color:${colors.textSecondary};opacity:0.5;max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${note}</span>` : '<span></span>'}
     <span style="font-size:9px;color:${colors.textSecondary};opacity:0.4;">泽思AI · ${index + 1}/${total}</span>
   </div>`;
 }
 
 // ============================================================
-// Section Renderers (individual blocks)
+// Section Renderers (individual blocks) - V4 Enhanced
 // ============================================================
 
-/** Render a text_block or bullet_list section */
+/** Render a text_block or bullet_list section - V4: separate title/desc lines, larger fonts, colored icons */
 function renderBulletSection(section: SlideSection, colors: ColorScheme, maxH: number): string {
   const bullets = section.bullets || [];
   const title = section.title || '';
   const lead = section.leadSentence || '';
   
+  // Calculate dynamic sizing based on bullet count
+  const bulletCount = bullets.length;
+  const titleFontSize = maxH > 200 ? '16px' : '14px';
+  const leadFontSize = maxH > 200 ? '13px' : '11px';
+  const bulletTitleSize = maxH > 200 ? '14px' : '12px';
+  const bulletDescSize = maxH > 200 ? '12px' : '10px';
+  const iconSize = maxH > 200 ? 32 : 26;
+  const bulletGap = bulletCount > 4 ? '4px' : '6px';
+  
   return `<div style="height:${maxH}px;overflow:hidden;display:flex;flex-direction:column;">
-    ${title ? `<div style="font-size:13px;font-weight:700;color:${colors.text};margin-bottom:4px;display:flex;align-items:center;gap:4px;">${title}</div>` : ''}
-    ${lead ? `<div style="font-size:10px;color:${colors.textSecondary};margin-bottom:6px;line-height:1.4;">${lead}</div>` : ''}
-    <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:4px;">
-      ${bullets.map(b => `<div style="display:flex;align-items:flex-start;gap:6px;padding:4px 0;">
-        <span style="font-size:13px;flex-shrink:0;line-height:1;">${b.icon || '📌'}</span>
-        <div style="flex:1;min-width:0;">
-          <span style="font-size:11px;font-weight:600;color:${colors.text};">${b.title}</span>
-          <span style="font-size:10px;color:${colors.textSecondary};margin-left:4px;">${b.description}</span>
-          ${b.highlight ? `<span style="font-size:11px;font-weight:700;color:${colors.accent};margin-left:4px;">${b.highlight}</span>` : ''}
+    ${title ? `<div style="font-size:${titleFontSize};font-weight:700;color:${colors.text};margin-bottom:4px;display:flex;align-items:center;gap:6px;">${title}</div>` : ''}
+    ${lead ? `<div style="font-size:${leadFontSize};color:${colors.textSecondary};margin-bottom:8px;line-height:1.4;">${lead}</div>` : ''}
+    <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;justify-content:space-evenly;gap:${bulletGap};">
+      ${bullets.map((b, i) => `<div style="display:flex;align-items:flex-start;gap:8px;padding:3px 0;">
+        ${coloredIcon(b.icon || '📌', i, iconSize)}
+        <div style="flex:1;min-width:0;padding-top:2px;">
+          <div style="font-size:${bulletTitleSize};font-weight:700;color:${colors.text};line-height:1.3;margin-bottom:2px;">${b.title}${b.highlight ? `<span style="color:${colors.accent};margin-left:6px;font-size:${bulletTitleSize};font-weight:800;">${b.highlight}</span>` : ''}</div>
+          <div style="font-size:${bulletDescSize};color:${colors.textSecondary};line-height:1.4;">${b.description}</div>
         </div>
       </div>`).join('')}
     </div>
   </div>`;
 }
 
-/** Render chart_block or progress_block */
+/** Render chart_block or progress_block - V4: larger progress bars with right-side numbers */
 function renderChartSection(section: SlideSection, colors: ColorScheme, maxH: number): string {
   const cd = section.chartData;
   if (!cd) return '';
@@ -211,130 +231,127 @@ function renderChartSection(section: SlideSection, colors: ColorScheme, maxH: nu
   const source = cd.source || '';
   
   if (cd.type === 'progress') {
-    // Progress bars
-    const items = cd.items.slice(0, 4);
+    const items = cd.items.slice(0, 5);
     return `<div style="height:${maxH}px;overflow:hidden;display:flex;flex-direction:column;">
-      ${title ? `<div style="font-size:13px;font-weight:700;color:${colors.text};margin-bottom:8px;">${title}</div>` : ''}
-      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px;">
+      ${title ? `<div style="font-size:15px;font-weight:700;color:${colors.text};margin-bottom:10px;">${title}</div>` : ''}
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;">
         ${items.map((item, i) => {
           const pct = Math.min(item.value, 100);
           const barColor = i % 2 === 0 ? colors.accent : colors.accentSecondary;
           return `<div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-              <span style="font-size:11px;color:${colors.text};">${item.label}</span>
-              <span style="font-size:12px;font-weight:700;color:${barColor};">${item.value}${cd.unit || '%'}</span>
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+              <span style="font-size:13px;font-weight:600;color:${colors.text};">${item.label}</span>
+              <span style="font-size:15px;font-weight:800;color:${barColor};">${item.value}${cd.unit || '%'}</span>
             </div>
-            <div style="height:8px;background:${colors.cardBg};border-radius:4px;overflow:hidden;">
-              <div style="height:100%;width:${pct}%;background:${barColor};border-radius:4px;"></div>
+            <div style="height:14px;background:${colors.cardBg};border-radius:7px;overflow:hidden;">
+              <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,${barColor},${barColor}cc);border-radius:7px;"></div>
             </div>
           </div>`;
         }).join('')}
       </div>
-      ${source ? `<div style="font-size:8px;color:${colors.textSecondary};opacity:0.4;margin-top:4px;">数据来源：${source}</div>` : ''}
+      ${source ? `<div style="font-size:9px;color:${colors.textSecondary};opacity:0.5;margin-top:6px;">数据来源：${source}</div>` : ''}
     </div>`;
   }
   
   if (cd.type === 'line') {
-    // Vertical bar chart (line-like)
     const maxVal = Math.max(...cd.items.map(d => d.value), 1);
     return `<div style="height:${maxH}px;overflow:hidden;display:flex;flex-direction:column;">
-      ${title ? `<div style="font-size:13px;font-weight:700;color:${colors.text};margin-bottom:8px;">${title}</div>` : ''}
-      <div style="flex:1;display:flex;align-items:flex-end;gap:6px;padding-bottom:20px;">
+      ${title ? `<div style="font-size:15px;font-weight:700;color:${colors.text};margin-bottom:10px;">${title}</div>` : ''}
+      <div style="flex:1;display:flex;align-items:flex-end;gap:8px;padding-bottom:24px;">
         ${cd.items.map((item, i) => {
           const hPct = Math.round((item.value / maxVal) * 100);
           const barColor = i % 2 === 0 ? colors.accent : colors.accentSecondary;
           return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;">
-            <div style="font-size:10px;font-weight:700;color:${barColor};margin-bottom:4px;">${item.value}${cd.unit || ''}</div>
-            <div style="width:70%;height:${hPct}%;background:linear-gradient(180deg,${barColor},${barColor}60);border-radius:3px 3px 0 0;min-height:4px;"></div>
-            <div style="font-size:9px;color:${colors.textSecondary};margin-top:4px;text-align:center;">${item.label}</div>
+            <div style="font-size:12px;font-weight:800;color:${barColor};margin-bottom:4px;">${item.value}${cd.unit || ''}</div>
+            <div style="width:70%;height:${hPct}%;background:linear-gradient(180deg,${barColor},${barColor}60);border-radius:4px 4px 0 0;min-height:4px;"></div>
+            <div style="font-size:10px;color:${colors.textSecondary};margin-top:6px;text-align:center;">${item.label}</div>
           </div>`;
         }).join('')}
       </div>
-      ${source ? `<div style="font-size:8px;color:${colors.textSecondary};opacity:0.4;">${source}</div>` : ''}
+      ${source ? `<div style="font-size:9px;color:${colors.textSecondary};opacity:0.5;">${source}</div>` : ''}
     </div>`;
   }
   
-  // Bar chart (horizontal)
+  // Bar chart (horizontal) - V4: larger bars
   const maxVal = Math.max(...cd.items.map(d => d.value), 1);
   return `<div style="height:${maxH}px;overflow:hidden;display:flex;flex-direction:column;">
-    ${title ? `<div style="font-size:13px;font-weight:700;color:${colors.text};margin-bottom:8px;">${title}</div>` : ''}
-    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px;">
+    ${title ? `<div style="font-size:15px;font-weight:700;color:${colors.text};margin-bottom:10px;">${title}</div>` : ''}
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px;">
       ${cd.items.map((item, i) => {
         const pct = Math.round((item.value / maxVal) * 100);
         const barColor = i % 2 === 0 ? colors.accent : colors.accentSecondary;
-        return `<div style="display:flex;align-items:center;gap:8px;">
-          <div style="width:70px;font-size:10px;color:${colors.textSecondary};text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.label}</div>
-          <div style="flex:1;height:18px;background:${colors.cardBg};border-radius:3px;overflow:hidden;">
-            <div style="height:100%;width:${pct}%;background:${barColor};border-radius:3px;"></div>
+        return `<div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:80px;font-size:12px;color:${colors.textSecondary};text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.label}</div>
+          <div style="flex:1;height:22px;background:${colors.cardBg};border-radius:4px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,${barColor},${barColor}cc);border-radius:4px;"></div>
           </div>
-          <div style="width:50px;font-size:11px;font-weight:700;color:${barColor};flex-shrink:0;">${item.value}${cd.unit || ''}</div>
+          <div style="width:60px;font-size:14px;font-weight:800;color:${barColor};flex-shrink:0;">${item.value}${cd.unit || ''}</div>
         </div>`;
       }).join('')}
     </div>
-    ${source ? `<div style="font-size:8px;color:${colors.textSecondary};opacity:0.4;margin-top:4px;">${source}</div>` : ''}
+    ${source ? `<div style="font-size:9px;color:${colors.textSecondary};opacity:0.5;margin-top:6px;">${source}</div>` : ''}
   </div>`;
 }
 
-/** Render case_block */
+/** Render case_block - V4: colored icons, larger fonts */
 function renderCaseSection(section: SlideSection, colors: ColorScheme, maxH: number): string {
   const cases = section.cases || [];
   if (cases.length === 0) return '';
   
   return `<div style="height:${maxH}px;overflow:hidden;display:flex;flex-direction:column;gap:8px;justify-content:stretch;">
-    ${cases.map(c => {
-      return `<div style="flex:1;background:${colors.cardBg};border:1px solid ${colors.cardBorder};border-left:3px solid ${colors.accent};border-radius:4px;padding:12px 14px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-          <span style="font-size:16px;">${c.icon || '🏢'}</span>
-          <span style="font-size:13px;font-weight:700;color:${colors.text};">${c.company}</span>
-          ${c.industry ? `<span style="font-size:9px;color:${colors.accent};background:${colors.accent}15;padding:1px 6px;border-radius:8px;">${c.industry}</span>` : ''}
+    ${cases.map((c, ci) => {
+      return `<div style="flex:1;background:${colors.cardBg};border:1px solid ${colors.cardBorder};border-left:3px solid ${colors.accent};border-radius:6px;padding:12px 14px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          ${coloredIcon(c.icon || '🏢', ci, 32)}
+          <span style="font-size:15px;font-weight:700;color:${colors.text};">${c.company}</span>
+          ${c.industry ? `<span style="font-size:10px;color:${colors.accent};background:${colors.accent}15;padding:2px 8px;border-radius:8px;">${c.industry}</span>` : ''}
         </div>
-        <div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:4px;">
-          <span style="font-size:9px;color:${colors.negative};flex-shrink:0;">⬤</span>
-          <span style="font-size:10px;color:${colors.textSecondary};line-height:1.4;">${c.traditional}</span>
+        <div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:4px;">
+          <span style="font-size:10px;color:${colors.negative};flex-shrink:0;margin-top:2px;">⬤</span>
+          <span style="font-size:12px;color:${colors.textSecondary};line-height:1.4;">${c.traditional}</span>
         </div>
-        <div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:4px;">
-          <span style="font-size:9px;color:${colors.positive};flex-shrink:0;">⬤</span>
-          <span style="font-size:10px;color:${colors.textSecondary};line-height:1.4;">${c.transformed}</span>
+        <div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:4px;">
+          <span style="font-size:10px;color:${colors.positive};flex-shrink:0;margin-top:2px;">⬤</span>
+          <span style="font-size:12px;color:${colors.textSecondary};line-height:1.4;">${c.transformed}</span>
         </div>
-        <div style="background:${colors.accent}12;padding:4px 8px;border-radius:3px;margin-top:2px;">
-          <span style="font-size:10px;font-weight:600;color:${colors.accent};">💡 ${c.valueProposition}</span>
+        <div style="background:${colors.accent}12;padding:5px 10px;border-radius:4px;margin-top:2px;">
+          <span style="font-size:11px;font-weight:600;color:${colors.accent};">💡 ${c.valueProposition}</span>
         </div>
       </div>`;
     }).join('')}
   </div>`;
 }
 
-/** Render insight_block */
+/** Render insight_block - V4: larger, more prominent */
 function renderInsightSection(section: SlideSection, colors: ColorScheme, maxH: number): string {
   const label = section.insightLabel || '核心洞察';
   const text = section.insightText || '';
   if (!text) return '';
   
-  return `<div style="height:${maxH}px;overflow:hidden;background:${colors.insightBg};border:1px solid ${colors.positive}20;border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;justify-content:center;">
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
-      <span style="font-size:14px;">💡</span>
-      <span style="font-size:12px;font-weight:700;color:${colors.positive};">${label}</span>
+  return `<div style="height:${maxH}px;overflow:hidden;background:${colors.insightBg};border:1px solid ${colors.positive}20;border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;justify-content:center;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      ${coloredIcon('💡', 1, 32)}
+      <span style="font-size:14px;font-weight:700;color:${colors.positive};">${label}</span>
     </div>
-    <p style="font-size:11px;color:${colors.text};line-height:1.6;margin:0;">${text}</p>
+    <p style="font-size:13px;color:${colors.text};line-height:1.7;margin:0;">${text}</p>
   </div>`;
 }
 
-/** Render flow_block */
+/** Render flow_block - V4: larger nodes with colored backgrounds */
 function renderFlowSection(section: SlideSection, colors: ColorScheme, maxH: number): string {
   const nodes = section.flowNodes || [];
   if (nodes.length === 0) return '';
   const title = section.title || '';
   
   return `<div style="height:${maxH}px;overflow:hidden;display:flex;flex-direction:column;">
-    ${title ? `<div style="font-size:13px;font-weight:700;color:${colors.text};margin-bottom:8px;">${title}</div>` : ''}
-    <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:nowrap;">
+    ${title ? `<div style="font-size:15px;font-weight:700;color:${colors.text};margin-bottom:10px;">${title}</div>` : ''}
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:nowrap;">
       ${nodes.map((n, i) => {
-        const nodeColor = i % 2 === 0 ? colors.accent : colors.accentSecondary;
-        const arrow = i < nodes.length - 1 ? `<div style="color:${colors.accent};font-size:16px;flex-shrink:0;">→</div>` : '';
-        return `<div style="display:flex;align-items:center;gap:4px;">
-          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:60px;">
-            <div style="width:40px;height:40px;border-radius:50%;background:${nodeColor}18;border:2px solid ${nodeColor};display:flex;align-items:center;justify-content:center;font-size:18px;">${n.icon}</div>
-            <div style="font-size:9px;color:${colors.text};font-weight:500;text-align:center;max-width:70px;line-height:1.2;">${n.label}</div>
+        const arrow = i < nodes.length - 1 ? `<div style="color:${colors.accent};font-size:18px;flex-shrink:0;">→</div>` : '';
+        return `<div style="display:flex;align-items:center;gap:6px;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;min-width:65px;">
+            ${coloredIcon(n.icon, i, 44)}
+            <div style="font-size:11px;color:${colors.text};font-weight:600;text-align:center;max-width:75px;line-height:1.3;">${n.label}</div>
           </div>
           ${arrow}
         </div>`;
@@ -343,19 +360,19 @@ function renderFlowSection(section: SlideSection, colors: ColorScheme, maxH: num
   </div>`;
 }
 
-/** Render stats_block */
+/** Render stats_block - V4: larger numbers, colored icons */
 function renderStatsSection(section: SlideSection, colors: ColorScheme, maxH: number): string {
   const stats = section.stats || [];
   if (stats.length === 0) return '';
   const title = section.title || '';
   
   return `<div style="height:${maxH}px;overflow:hidden;display:flex;flex-direction:column;justify-content:center;">
-    ${title ? `<div style="font-size:13px;font-weight:700;color:${colors.text};margin-bottom:8px;">${title}</div>` : ''}
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;">
-      ${stats.map(s => `<div style="flex:1;background:${colors.cardBg};border:1px solid ${colors.cardBorder};border-radius:6px;padding:10px 8px;text-align:center;">
-        <div style="font-size:14px;margin-bottom:4px;">${s.icon || '📊'}</div>
-        <div style="font-size:20px;font-weight:800;color:${colors.accent};margin-bottom:2px;">${s.number}</div>
-        <div style="font-size:9px;color:${colors.textSecondary};line-height:1.3;">${s.label}</div>
+    ${title ? `<div style="font-size:15px;font-weight:700;color:${colors.text};margin-bottom:10px;">${title}</div>` : ''}
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;">
+      ${stats.map((s, i) => `<div style="flex:1;background:${colors.cardBg};border:1px solid ${colors.cardBorder};border-radius:8px;padding:14px 10px;text-align:center;">
+        <div style="margin-bottom:6px;display:flex;justify-content:center;">${coloredIcon(s.icon || '📊', i, 36)}</div>
+        <div style="font-size:24px;font-weight:800;color:${colors.accent};margin-bottom:4px;">${s.number}</div>
+        <div style="font-size:11px;color:${colors.textSecondary};line-height:1.3;">${s.label}</div>
       </div>`).join('')}
     </div>
   </div>`;
@@ -384,7 +401,7 @@ function renderSection(section: SlideSection, colors: ColorScheme, maxH: number)
 }
 
 // ============================================================
-// Page Layout Renderers
+// Page Layout Renderers - V4 Enhanced
 // ============================================================
 
 function renderTitlePage(slide: SlideOutline, colors: ColorScheme, theme: ThemeStyle): string {
@@ -411,7 +428,7 @@ function renderClosingPage(slide: SlideOutline, colors: ColorScheme, theme: Them
 function renderQuadPage(slide: SlideOutline, colors: ColorScheme, theme: ThemeStyle, idx: number, total: number): string {
   const sections = slide.sections || [];
   const s = [sections[0], sections[1], sections[2], sections[3]].filter(Boolean);
-  const blockH = Math.floor((CONTENT_H - 12) / 2); // 2 rows with gap
+  const blockH = Math.floor((CONTENT_H - 12) / 2);
   const halfW = `calc(50% - 6px)`;
   
   const renderBlock = (sec: SlideSection | undefined, h: number) => {
@@ -463,7 +480,6 @@ function renderCaseCardsPage(slide: SlideOutline, colors: ColorScheme, theme: Th
   const otherSections = sections.filter(s => s.type !== 'case_block');
   const contentH = CONTENT_H;
   
-  // If we have other sections (like insight_block), split layout
   if (otherSections.length > 0 && caseSections.length > 0) {
     const caseH = Math.floor(contentH * 0.65);
     const otherH = contentH - caseH - 12;
@@ -485,7 +501,6 @@ function renderCaseCardsPage(slide: SlideOutline, colors: ColorScheme, theme: Th
     </div>`;
   }
   
-  // All case blocks
   return `<div style="display:flex;flex-direction:column;padding:${PAD_TOP}px ${PAD_X}px ${PAD_BOT}px;height:100%;position:relative;">
     ${titleBar(slide.title, slide.subtitle, colors, theme)}
     <div style="flex:1;display:flex;gap:12px;">
@@ -511,18 +526,18 @@ function renderComparisonPage(slide: SlideOutline, colors: ColorScheme, theme: T
   const rightLabel = slide.rightLabel || rightSec?.title || '新模式';
 
   const renderCompCol = (sec: SlideSection | undefined, label: string, borderColor: string, h: number) => {
-    const bullets = (sec?.bullets || []).slice(0, 4); // Limit to 4 bullets to prevent overflow
-    const fontSize = bullets.length > 3 ? '9px' : '10px';
-    const titleSize = bullets.length > 3 ? '10px' : '11px';
-    const gap = bullets.length > 3 ? '3px' : '6px';
+    const bullets = (sec?.bullets || []).slice(0, 4);
+    const bulletTitleSize = bullets.length > 3 ? '12px' : '13px';
+    const bulletDescSize = bullets.length > 3 ? '10px' : '11px';
+    const gap = bullets.length > 3 ? '4px' : '8px';
     return `<div style="flex:1;border:2px solid ${borderColor}40;border-top:3px solid ${borderColor};border-radius:6px;padding:10px 12px;height:${h}px;overflow:hidden;display:flex;flex-direction:column;">
-      <div style="font-size:13px;font-weight:700;color:${borderColor};margin-bottom:8px;text-align:center;padding-bottom:6px;border-bottom:1px solid ${colors.cardBorder};">${label}</div>
+      <div style="font-size:15px;font-weight:700;color:${borderColor};margin-bottom:10px;text-align:center;padding-bottom:6px;border-bottom:1px solid ${colors.cardBorder};">${label}</div>
       <div style="flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:${gap};">
-      ${bullets.map(b => `<div style="display:flex;align-items:flex-start;gap:5px;">
-        <span style="font-size:11px;flex-shrink:0;">${b.icon || '📌'}</span>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:${titleSize};font-weight:600;color:${colors.text};margin-bottom:1px;">${b.title}</div>
-          <div style="font-size:${fontSize};color:${colors.textSecondary};line-height:1.3;">${b.description}</div>
+      ${bullets.map((b, i) => `<div style="display:flex;align-items:flex-start;gap:6px;">
+        ${coloredIcon(b.icon || '📌', borderColor === colors.negative ? i + 4 : i, 28)}
+        <div style="flex:1;min-width:0;padding-top:2px;">
+          <div style="font-size:${bulletTitleSize};font-weight:700;color:${colors.text};margin-bottom:2px;">${b.title}</div>
+          <div style="font-size:${bulletDescSize};color:${colors.textSecondary};line-height:1.3;">${b.description}</div>
         </div>
       </div>`).join('')}
     </div>
@@ -536,7 +551,7 @@ function renderComparisonPage(slide: SlideOutline, colors: ColorScheme, theme: T
       <div style="display:flex;align-items:center;flex-shrink:0;padding:0 10px;">
         <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
           <div style="width:2px;height:24px;border-left:2px dashed ${colors.accent};"></div>
-          <div style="background:${colors.accent};color:${colors.bg};font-size:10px;font-weight:700;padding:6px 12px;border-radius:16px;white-space:nowrap;">→</div>
+          <div style="background:${colors.accent};color:${colors.bg};font-size:12px;font-weight:700;padding:8px 14px;border-radius:16px;white-space:nowrap;">→</div>
           <div style="width:2px;height:24px;border-left:2px dashed ${colors.accent};"></div>
         </div>
       </div>
@@ -548,7 +563,7 @@ function renderComparisonPage(slide: SlideOutline, colors: ColorScheme, theme: T
   </div>`;
 }
 
-/** Key points: enhanced bullet list with optional side block */
+/** Key points: enhanced bullet list with side block - V4: ensure right side always has content */
 function renderKeyPointsPage(slide: SlideOutline, colors: ColorScheme, theme: ThemeStyle, idx: number, total: number): string {
   const sections = slide.sections || [];
   const bulletSec = sections.find(s => s.type === 'bullet_list' || s.type === 'text_block');
@@ -562,11 +577,11 @@ function renderKeyPointsPage(slide: SlideOutline, colors: ColorScheme, theme: Th
       ${titleBar(slide.title, slide.subtitle, colors, theme)}
       <div style="flex:1;display:flex;gap:16px;">
         <div style="flex:3;display:flex;flex-direction:column;justify-content:space-evenly;overflow:hidden;">
-          ${leftBullets.map(b => `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:${colors.cardBg};border:1px solid ${colors.cardBorder};border-radius:6px;">
-            <span style="font-size:16px;flex-shrink:0;margin-top:2px;">${b.icon || '📌'}</span>
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:13px;font-weight:600;color:${colors.text};margin-bottom:3px;">${b.title}${b.highlight ? `<span style="color:${colors.accent};margin-left:6px;font-size:12px;">${b.highlight}</span>` : ''}</div>
-              <div style="font-size:11px;color:${colors.textSecondary};line-height:1.5;">${b.description}</div>
+          ${leftBullets.map((b, i) => `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:${colors.cardBg};border:1px solid ${colors.cardBorder};border-radius:6px;">
+            ${coloredIcon(b.icon || '📌', i, 36)}
+            <div style="flex:1;min-width:0;padding-top:2px;">
+              <div style="font-size:14px;font-weight:700;color:${colors.text};margin-bottom:3px;">${b.title}${b.highlight ? `<span style="color:${colors.accent};margin-left:6px;font-size:14px;font-weight:800;">${b.highlight}</span>` : ''}</div>
+              <div style="font-size:12px;color:${colors.textSecondary};line-height:1.5;">${b.description}</div>
             </div>
           </div>`).join('')}
         </div>
@@ -579,16 +594,16 @@ function renderKeyPointsPage(slide: SlideOutline, colors: ColorScheme, theme: Th
     </div>`;
   }
 
-  // Full width bullets
+  // Full width bullets (no right side content) - V4: use larger cards
   const bullets = bulletSec?.bullets || [];
   return `<div style="display:flex;flex-direction:column;padding:${PAD_TOP}px ${PAD_X}px ${PAD_BOT}px;height:100%;position:relative;">
     ${titleBar(slide.title, slide.subtitle, colors, theme)}
     <div style="flex:1;display:flex;flex-direction:column;justify-content:space-evenly;">
-      ${bullets.map(b => `<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:${colors.cardBg};border:1px solid ${colors.cardBorder};border-radius:6px;">
-        <span style="font-size:16px;flex-shrink:0;margin-top:2px;">${b.icon || '📌'}</span>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:600;color:${colors.text};margin-bottom:3px;">${b.title}${b.highlight ? `<span style="color:${colors.accent};margin-left:6px;font-size:12px;">${b.highlight}</span>` : ''}</div>
-          <div style="font-size:11px;color:${colors.textSecondary};line-height:1.6;">${b.description}</div>
+      ${bullets.map((b, i) => `<div style="display:flex;align-items:flex-start;gap:14px;padding:12px 16px;background:${colors.cardBg};border:1px solid ${colors.cardBorder};border-radius:6px;">
+        ${coloredIcon(b.icon || '📌', i, 40)}
+        <div style="flex:1;min-width:0;padding-top:4px;">
+          <div style="font-size:15px;font-weight:700;color:${colors.text};margin-bottom:4px;">${b.title}${b.highlight ? `<span style="color:${colors.accent};margin-left:8px;font-size:15px;font-weight:800;">${b.highlight}</span>` : ''}</div>
+          <div style="font-size:13px;color:${colors.textSecondary};line-height:1.6;">${b.description}</div>
         </div>
       </div>`).join('')}
     </div>
@@ -604,7 +619,7 @@ function renderDataDashboardPage(slide: SlideOutline, colors: ColorScheme, theme
   const chartSec = sections.find(s => s.type === 'chart_block' || s.type === 'progress_block');
   const bulletSec = sections.find(s => s.type === 'bullet_list' || s.type === 'text_block');
   
-  const topH = statsSec ? 90 : 0;
+  const topH = statsSec ? 100 : 0;
   const bottomH = CONTENT_H - topH - (topH > 0 ? 12 : 0);
 
   return `<div style="display:flex;flex-direction:column;padding:${PAD_TOP}px ${PAD_X}px ${PAD_BOT}px;height:100%;position:relative;">
@@ -619,7 +634,7 @@ function renderDataDashboardPage(slide: SlideOutline, colors: ColorScheme, theme
   </div>`;
 }
 
-/** Timeline: vertical steps */
+/** Timeline: vertical steps - V4: colored icons, larger text */
 function renderTimelinePage(slide: SlideOutline, colors: ColorScheme, theme: ThemeStyle, idx: number, total: number): string {
   const sections = slide.sections || [];
   const bulletSec = sections.find(s => s.type === 'bullet_list' || s.type === 'text_block');
@@ -628,12 +643,12 @@ function renderTimelinePage(slide: SlideOutline, colors: ColorScheme, theme: The
   const stepsHtml = bullets.map((b, i) => `
     <div style="display:flex;align-items:flex-start;gap:14px;">
       <div style="display:flex;flex-direction:column;align-items:center;">
-        <div style="width:34px;height:34px;background:${colors.accent}18;border:2px solid ${colors.accent};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">${b.icon || (i + 1)}</div>
-        ${i < bullets.length - 1 ? `<div style="width:2px;height:16px;background:${colors.accent}40;margin:3px 0;"></div>` : ''}
+        ${coloredIcon(b.icon || String(i + 1), i, 38)}
+        ${i < bullets.length - 1 ? `<div style="width:2px;height:16px;background:${colors.accent}40;margin:4px 0;"></div>` : ''}
       </div>
-      <div style="padding-top:4px;padding-bottom:${i < bullets.length - 1 ? '4px' : '0'};flex:1;">
-        <div style="font-size:13px;font-weight:600;color:${colors.text};margin-bottom:2px;">${b.title}${b.highlight ? `<span style="color:${colors.accent};margin-left:6px;font-size:12px;">${b.highlight}</span>` : ''}</div>
-        <div style="font-size:11px;color:${colors.textSecondary};line-height:1.5;">${b.description}</div>
+      <div style="flex:1;min-width:0;padding-top:4px;">
+        <div style="font-size:15px;font-weight:700;color:${colors.text};margin-bottom:3px;">${b.title}${b.highlight ? `<span style="color:${colors.accent};margin-left:6px;font-size:14px;font-weight:800;">${b.highlight}</span>` : ''}</div>
+        <div style="font-size:12px;color:${colors.textSecondary};line-height:1.5;">${b.description}</div>
       </div>
     </div>
   `).join('');
@@ -650,16 +665,15 @@ function renderTimelinePage(slide: SlideOutline, colors: ColorScheme, theme: The
 function renderGenericPage(slide: SlideOutline, colors: ColorScheme, theme: ThemeStyle, idx: number, total: number): string {
   const sections = slide.sections || [];
   if (sections.length === 0) {
-    // Legacy fallback: use points
     const bullets = slide.points || [];
     return `<div style="display:flex;flex-direction:column;padding:${PAD_TOP}px ${PAD_X}px ${PAD_BOT}px;height:100%;position:relative;">
       ${titleBar(slide.title, slide.subtitle, colors, theme)}
       <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
-        ${bullets.map(b => `<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 12px;background:${colors.cardBg};border:1px solid ${colors.cardBorder};border-radius:6px;">
-          <span style="font-size:14px;flex-shrink:0;">${b.icon || '📌'}</span>
+        ${bullets.map((b, i) => `<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 12px;background:${colors.cardBg};border:1px solid ${colors.cardBorder};border-radius:6px;">
+          ${coloredIcon(b.icon || '📌', i, 32)}
           <div style="flex:1;min-width:0;">
-            <div style="font-size:13px;font-weight:600;color:${colors.text};margin-bottom:2px;">${b.title}</div>
-            <div style="font-size:11px;color:${colors.textSecondary};line-height:1.5;">${b.description}</div>
+            <div style="font-size:14px;font-weight:700;color:${colors.text};margin-bottom:2px;">${b.title}</div>
+            <div style="font-size:12px;color:${colors.textSecondary};line-height:1.5;">${b.description}</div>
           </div>
         </div>`).join('')}
       </div>
@@ -668,7 +682,6 @@ function renderGenericPage(slide: SlideOutline, colors: ColorScheme, theme: Them
     </div>`;
   }
   
-  // Render sections in a flex column
   const secH = Math.floor(CONTENT_H / sections.length) - 8;
   return `<div style="display:flex;flex-direction:column;padding:${PAD_TOP}px ${PAD_X}px ${PAD_BOT}px;height:100%;position:relative;">
     ${titleBar(slide.title, slide.subtitle, colors, theme)}
