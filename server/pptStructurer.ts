@@ -1,6 +1,9 @@
 /**
- * PPT Content Structurer V4
- * Two-phase batch architecture: Phase 1 generates outline skeleton, Phase 2 fills content batch by batch
+ * PPT Content Structurer V5
+ * Three-phase architecture:
+ *   Phase 1: Generate outline skeleton (lightweight)
+ *   Phase 2: Content expansion & research (enrich each page with data, cases, trends)
+ *   Phase 3: Batch content generation (3-4 slides per call, detailed sections/bullets)
  */
 import { invokeLLM } from './_core/llm';
 
@@ -22,8 +25,8 @@ export type SectionType =
 /** A bullet point with layered structure */
 export interface BulletPoint {
   icon: string;           // Emoji icon
-  title: string;          // Bold keyword/phrase
-  description: string;    // 20-50 char description
+  title: string;          // Bold keyword/phrase (3-10 chars)
+  description: string;    // 15-40 char description
   highlight?: string;     // Optional highlighted number/data in accent color
 }
 
@@ -38,17 +41,17 @@ export interface ChartData {
   title: string;
   items: ChartDataItem[];
   unit?: string;
-  source?: string;  // Data source attribution
+  source?: string;
 }
 
 /** Case study */
 export interface CaseStudy {
-  icon: string;           // Emoji for the case
-  company: string;        // Company name
-  industry?: string;      // Industry tag
-  traditional: string;    // Before / traditional approach
-  transformed: string;    // After / AI-enabled approach
-  valueProposition: string; // Key value / result
+  icon: string;
+  company: string;
+  industry?: string;
+  traditional: string;
+  transformed: string;
+  valueProposition: string;
 }
 
 /** Process flow node */
@@ -60,35 +63,35 @@ export interface FlowNode {
 /** Stat card */
 export interface StatCard {
   icon: string;
-  number: string;    // e.g. "40%", "$17.5B", "3x"
-  label: string;     // What the number represents
+  number: string;
+  label: string;
 }
 
 /** A section/block within a slide */
 export interface SlideSection {
   type: SectionType;
-  title?: string;         // Block title (emoji + text)
-  leadSentence?: string;  // One-sentence summary below title
+  title?: string;
+  leadSentence?: string;
   bullets?: BulletPoint[];
   chartData?: ChartData;
   cases?: CaseStudy[];
-  insightText?: string;   // For insight_block
-  insightLabel?: string;  // e.g. "核心洞察", "讲者话术"
+  insightText?: string;
+  insightLabel?: string;
   flowNodes?: FlowNode[];
   stats?: StatCard[];
 }
 
 /** Page layout type */
 export type PageLayout =
-  | 'title'              // Cover page
-  | 'quad'               // 2x2 four-block composite (the core layout)
-  | 'two_col_mixed'      // Left text + right chart/cases
-  | 'case_cards'         // 2-3 case study cards in columns
-  | 'comparison'         // A vs B with transition arrow
-  | 'key_points'         // Structured bullet points (enhanced)
-  | 'data_dashboard'     // Stats + chart + bullets combined
-  | 'timeline'           // Vertical timeline with detailed steps
-  | 'closing';           // End page
+  | 'title'
+  | 'quad'
+  | 'two_col_mixed'
+  | 'case_cards'
+  | 'comparison'
+  | 'key_points'
+  | 'data_dashboard'
+  | 'timeline'
+  | 'closing';
 
 /** A single slide page */
 export interface SlideOutline {
@@ -96,10 +99,10 @@ export interface SlideOutline {
   layout: PageLayout;
   title: string;
   subtitle?: string;
-  sections: SlideSection[];    // 2-4 content blocks per page
-  quote?: string;              // Bottom golden quote
-  quoteLabel?: string;         // e.g. "核心洞察", "关键启示"
-  footerNote?: string;         // Data source / footer
+  sections: SlideSection[];
+  quote?: string;
+  quoteLabel?: string;
+  footerNote?: string;
   // Legacy fields for backward compatibility
   points?: BulletPoint[];
   leftColumn?: BulletPoint[];
@@ -136,7 +139,7 @@ interface OutlineSkeleton {
     layout: PageLayout;
     title: string;
     subtitle?: string;
-    sectionHints: string[];  // Brief hints for what each section should contain
+    sectionHints: string[];
     quote?: string;
     quoteLabel?: string;
   }>;
@@ -160,7 +163,7 @@ const OUTLINE_SYSTEM_PROMPT = `你是顶级商业咨询PPT策划师。根据客�
 - two_col_mixed: 左文右图（2个sectionHints）
 - case_cards: 案例卡片（2-3个sectionHints）
 - comparison: A vs B对比（2个sectionHints）
-- key_points: 要点+数据（2个sectionHints）
+- key_points: 要点列表（2个sectionHints）
 - data_dashboard: 数据仪表盘（3个sectionHints）
 - timeline: 时间线/流程（1-2个sectionHints）
 - closing: 结束页（sectionHints空数组）
@@ -248,7 +251,6 @@ ${textPreview}
         continue;
       }
 
-      // Ensure first is title, last is closing
       if (skeleton.slides[0].layout !== 'title') skeleton.slides[0].layout = 'title';
       if (skeleton.slides[skeleton.slides.length - 1].layout !== 'closing') {
         skeleton.slides[skeleton.slides.length - 1].layout = 'closing';
@@ -266,18 +268,188 @@ ${textPreview}
 }
 
 // ============================================================
-// Phase 2: Batch content generation (3-4 slides per call)
+// Phase 2: Content Expansion & Research
 // ============================================================
 
-const BATCH_SYSTEM_PROMPT = `你是顶级商业咨询PPT内容填充专家。根据大纲骨架和原文，为指定的几页PPT生成详细内容。
+interface ExpandedPageContent {
+  slideIndex: number;
+  title: string;
+  enrichedPoints: string[];   // 5-8 enriched bullet points per page
+  keyData: string[];           // 2-4 data points / statistics
+  caseExample?: string;        // Optional case study reference
+  insightSummary: string;      // 1-sentence key takeaway
+}
+
+const EXPANSION_SYSTEM_PROMPT = `你是资深商业分析师和行业研究专家。你的任务是对PPT每页的主题进行深入分析和内容扩展。
+
+## 核心任务
+根据原文内容和每页主题，为每页补充：
+1. enrichedPoints: 5-8个丰富的要点（每个30-60字，包含具体数据、趋势、案例引用）
+2. keyData: 2-4个关键数据点（如"全球AI市场规模2025年达1900亿美元"、"采用AI的企业效率提升40%"）
+3. caseExample: 1个相关案例（公司名+做了什么+效果，50-80字）
+4. insightSummary: 1句核心洞察（20-40字，观点鲜明）
+
+## 重要规则
+- 数据要具体、可信（引用知名机构如McKinsey、Gartner、IDC等）
+- 案例要真实（引用知名企业的实际做法）
+- 要点要有深度，不是简单重复原文
+- 如果原文已有数据，优先使用原文数据
+- 如果原文没有数据，基于你的知识补充合理的行业数据
+- 简体中文输出
+
+请严格按JSON输出。`;
+
+const EXPANSION_SCHEMA = {
+  name: 'ppt_content_expansion',
+  schema: {
+    type: 'object',
+    properties: {
+      pages: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            slideIndex: { type: 'number' },
+            title: { type: 'string' },
+            enrichedPoints: {
+              type: 'array',
+              items: { type: 'string' },
+              description: '5-8个丰富的分析要点',
+            },
+            keyData: {
+              type: 'array',
+              items: { type: 'string' },
+              description: '2-4个关键数据/统计',
+            },
+            caseExample: { type: 'string', description: '相关案例（可选）' },
+            insightSummary: { type: 'string', description: '核心洞察一句话' },
+          },
+          required: ['slideIndex', 'title', 'enrichedPoints', 'keyData', 'insightSummary'],
+          additionalProperties: false,
+        },
+      },
+    },
+    required: ['pages'],
+    additionalProperties: false,
+  },
+  strict: true,
+};
+
+async function expandContent(
+  inputText: string,
+  skeleton: OutlineSkeleton,
+  batchIndices: number[],
+): Promise<ExpandedPageContent[]> {
+  // Only expand content pages (skip title and closing)
+  const contentSlides = batchIndices
+    .map(i => skeleton.slides[i])
+    .filter(s => s && s.layout !== 'title' && s.layout !== 'closing');
+
+  if (contentSlides.length === 0) return [];
+
+  const slideDescriptions = contentSlides.map(s => {
+    const hints = s.sectionHints.join('；');
+    return `第${s.slideIndex}页 "${s.title}" — 内容方向：${hints}`;
+  }).join('\n');
+
+  // Provide relevant text context
+  const textPerSlide = Math.floor(inputText.length / skeleton.slides.length);
+  const startIdx = Math.max(0, (contentSlides[0].slideIndex - 1) * textPerSlide - 500);
+  const endIdx = Math.min(inputText.length, (contentSlides[contentSlides.length - 1].slideIndex + 1) * textPerSlide + 500);
+  const relevantText = inputText.slice(startIdx, Math.min(endIdx, startIdx + 6000));
+
+  const userPrompt = `请对以下${contentSlides.length}页PPT的主题进行深入分析和内容扩展：
+
+## 需要扩展的页面
+${slideDescriptions}
+
+## 原文参考
+---
+${relevantText}
+---
+
+请为每页补充丰富的要点、关键数据、案例和洞察。`;
+
+  console.log(`[PPT Expand] Expanding content for slides [${contentSlides.map(s => s.slideIndex).join(',')}]...`);
+
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const result = await invokeLLM({
+        messages: [
+          { role: 'system', content: EXPANSION_SYSTEM_PROMPT },
+          { role: 'user', content: userPrompt },
+        ],
+        responseFormat: {
+          type: 'json_schema',
+          json_schema: EXPANSION_SCHEMA,
+        },
+        maxTokens: Math.min(6000, contentSlides.length * 1500),
+      });
+
+      const content = result.choices[0]?.message?.content;
+      if (!content || typeof content !== 'string') {
+        console.error(`[PPT Expand] Attempt ${attempt}: Empty content`);
+        continue;
+      }
+
+      let jsonStr = content.trim();
+      const jsonMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (jsonMatch) jsonStr = jsonMatch[1].trim();
+
+      // Try parse, with truncation repair if needed
+      let parsed: { pages: ExpandedPageContent[] } | null = null;
+      try {
+        parsed = JSON.parse(jsonStr);
+      } catch {
+        jsonStr = truncateRepetitiveContent(jsonStr);
+        parsed = repairJSON<{ pages: ExpandedPageContent[] }>(jsonStr, 'pages');
+      }
+
+      if (parsed && parsed.pages && parsed.pages.length > 0) {
+        console.log(`[PPT Expand] Got ${parsed.pages.length} expanded pages on attempt ${attempt}`);
+        return parsed.pages;
+      }
+
+      console.error(`[PPT Expand] Attempt ${attempt}: Parse failed`);
+    } catch (e: any) {
+      console.error(`[PPT Expand] Attempt ${attempt} error:`, e.message);
+      if (attempt === 2) {
+        // Return empty expansions (fallback to original hints)
+        console.warn(`[PPT Expand] Using fallback for slides [${contentSlides.map(s => s.slideIndex).join(',')}]`);
+        return contentSlides.map(s => ({
+          slideIndex: s.slideIndex,
+          title: s.title,
+          enrichedPoints: s.sectionHints,
+          keyData: [],
+          insightSummary: s.title,
+        }));
+      }
+      await new Promise(r => setTimeout(r, 1000));
+    }
+  }
+
+  return contentSlides.map(s => ({
+    slideIndex: s.slideIndex,
+    title: s.title,
+    enrichedPoints: s.sectionHints,
+    keyData: [],
+    insightSummary: s.title,
+  }));
+}
+
+// ============================================================
+// Phase 3: Batch content generation (3-4 slides per call)
+// ============================================================
+
+const BATCH_SYSTEM_PROMPT = `你是顶级商业咨询PPT内容填充专家。根据大纲骨架、扩展研究内容和原文，为指定的几页PPT生成详细的结构化内容。
 
 ## 核心原则
-你是"内容增值引擎"：原文结构化呈现 + 补充案例数据洞察 + 清晰信息架构。
+你是"内容增值引擎"：将扩展研究的丰富内容转化为PPT的结构化展示。
 
 ## ★ Bullet输出格式（最重要）
-每个bullet必须是【短语式要点】，不是长句子：
+每个bullet必须是【短语式要点】：
 - title: 关键词短语，3-10字（如"核能：SMR模块化反应堆"、"数据中心电力需求激增"）
-- description: 一句话补充说明，15-30字
+- description: 一句话补充说明，15-40字
 - 禁止把title和description写成一整段长文！
 - 每个section必须有4-6个bullets
 
@@ -292,13 +464,13 @@ const BATCH_SYSTEM_PROMPT = `你是顶级商业咨询PPT内容填充专家。根
 
 ## 布局对应的sections结构
 - title: sections空数组
-- quad: 4个不同类型区块
-- two_col_mixed: 2个区块（左文右图）
+- quad: 4个不同类型区块（如2个bullet_list + 1个stats_block + 1个insight_block）
+- two_col_mixed: 2个区块（左bullet_list/text_block + 右chart_block/stats_block/insight_block）
 - case_cards: 2-3个case_block
-- comparison: 2个bullet_list（旧vs新）
-- key_points: 1个bullet_list + 1个stats_block或insight_block
+- comparison: 2个bullet_list（旧vs新，每个4-5个bullets）
+- key_points: 1个bullet_list(5-6个bullets) + 1个stats_block或chart_block或insight_block
 - data_dashboard: stats_block + chart_block + bullet_list
-- timeline: 1个bullet_list(4-5个步骤)
+- timeline: 1个bullet_list(4-6个步骤)
 - closing: sections空数组
 
 ## 重要
@@ -306,6 +478,7 @@ const BATCH_SYSTEM_PROMPT = `你是顶级商业咨询PPT内容填充专家。根
 - leadSentence是引导句，20-35字
 - 严禁重复内容，每个字段只写一次
 - 确保JSON完整闭合
+- 充分利用扩展研究中的数据和案例
 
 请严格按JSON Schema输出。简体中文。`;
 
@@ -443,6 +616,7 @@ async function generateSlidesBatch(
   inputText: string,
   skeleton: OutlineSkeleton,
   batchSlideIndices: number[],
+  expandedContent: ExpandedPageContent[],
 ): Promise<SlideOutline[]> {
   const batchSlides = batchSlideIndices.map(i => skeleton.slides[i]).filter(Boolean);
   if (batchSlides.length === 0) return [];
@@ -477,20 +651,33 @@ async function generateSlidesBatch(
 
   if (needsLLM.length === 0) return simpleSlides;
 
-  // Build batch prompt
+  // Build batch prompt with expanded content
   const slideDescriptions = needsLLM.map(s => {
     const hints = s.sectionHints.map((h, i) => `  区块${i + 1}: ${h}`).join('\n');
+    const expanded = expandedContent.find(e => e.slideIndex === s.slideIndex);
+    let expandedInfo = '';
+    if (expanded) {
+      expandedInfo = `\n  【扩展研究】\n`;
+      expandedInfo += `  要点：${expanded.enrichedPoints.join('；')}\n`;
+      if (expanded.keyData.length > 0) {
+        expandedInfo += `  数据：${expanded.keyData.join('；')}\n`;
+      }
+      if (expanded.caseExample) {
+        expandedInfo += `  案例：${expanded.caseExample}\n`;
+      }
+      expandedInfo += `  洞察：${expanded.insightSummary}`;
+    }
     return `第${s.slideIndex}页 [${s.layout}] "${s.title}"
-${hints}`;
+${hints}${expandedInfo}`;
   }).join('\n\n');
 
-  // Provide relevant text context (distribute text across batches)
+  // Provide relevant text context
   const textPerSlide = Math.floor(inputText.length / skeleton.slides.length);
   const startIdx = Math.max(0, (needsLLM[0].slideIndex - 1) * textPerSlide - 500);
   const endIdx = Math.min(inputText.length, (needsLLM[needsLLM.length - 1].slideIndex + 1) * textPerSlide + 500);
-  const relevantText = inputText.slice(startIdx, Math.min(endIdx, startIdx + 6000));
+  const relevantText = inputText.slice(startIdx, Math.min(endIdx, startIdx + 5000));
 
-  const userPrompt = `请为以下${needsLLM.length}页PPT生成详细内容：
+  const userPrompt = `请为以下${needsLLM.length}页PPT生成详细内容（充分利用扩展研究中的数据和案例）：
 
 ## 需要生成的页面
 ${slideDescriptions}
@@ -500,8 +687,11 @@ ${slideDescriptions}
 ${relevantText}
 ---
 
-★每个bullet的title是短语关键词(3-10字)，description是补充说明(15-30字)。
-★section必填leadSentence引导句。严禁重复内容。确保JSON完整闭合。`;
+★每个bullet的title是短语关键词(3-10字)，description是补充说明(15-40字)。
+★每个section必须有4-6个bullets。
+★充分利用【扩展研究】中的数据和案例填充内容。
+★section.title只写8字以内短标题（含emoji）。
+★确保JSON完整闭合。`;
 
   console.log(`[PPT Batch] Generating slides [${needsLLM.map(s => s.slideIndex).join(',')}]...`);
 
@@ -532,14 +722,12 @@ ${relevantText}
 
       console.log(`[PPT Batch] Raw output: ${jsonStr.length} chars`);
 
-      // Try direct parse first
       let parsed: { slides: SlideOutline[] } | null = null;
       try {
         parsed = JSON.parse(jsonStr);
       } catch {
-        // Try truncation + repair
         jsonStr = truncateRepetitiveContent(jsonStr);
-        parsed = repairBatchJSON(jsonStr);
+        parsed = repairJSON<{ slides: SlideOutline[] }>(jsonStr, 'slides');
       }
 
       if (parsed && parsed.slides && parsed.slides.length > 0) {
@@ -551,43 +739,78 @@ ${relevantText}
     } catch (e: any) {
       console.error(`[PPT Batch] Attempt ${attempt} error:`, e.message);
       if (attempt === 2) {
-        // Return simple slides + fallback content slides
         console.warn(`[PPT Batch] Using fallback for slides [${needsLLM.map(s => s.slideIndex).join(',')}]`);
-        const fallbacks = needsLLM.map(s => createFallbackSlide(s));
+        const fallbacks = needsLLM.map(s => createFallbackSlide(s, expandedContent));
         return [...simpleSlides, ...fallbacks];
       }
       await new Promise(r => setTimeout(r, 1500));
     }
   }
 
-  // Fallback: return minimal slides
-  const fallbacks = needsLLM.map(s => createFallbackSlide(s));
+  const fallbacks = needsLLM.map(s => createFallbackSlide(s, expandedContent));
   return [...simpleSlides, ...fallbacks];
 }
 
-function createFallbackSlide(skeletonSlide: OutlineSkeleton['slides'][0]): SlideOutline {
+function createFallbackSlide(
+  skeletonSlide: OutlineSkeleton['slides'][0],
+  expandedContent: ExpandedPageContent[],
+): SlideOutline {
+  const expanded = expandedContent.find(e => e.slideIndex === skeletonSlide.slideIndex);
+  const points = expanded?.enrichedPoints || skeletonSlide.sectionHints;
+  const keyData = expanded?.keyData || [];
+
+  const sections: SlideSection[] = [
+    {
+      type: 'bullet_list',
+      title: '📌 核心要点',
+      leadSentence: expanded?.insightSummary || skeletonSlide.title,
+      bullets: points.slice(0, 6).map((point, i) => {
+        const colonIdx = point.indexOf('：');
+        const colonIdx2 = point.indexOf(':');
+        const splitIdx = colonIdx > 0 && colonIdx < 20 ? colonIdx : (colonIdx2 > 0 && colonIdx2 < 20 ? colonIdx2 : -1);
+        if (splitIdx > 0) {
+          return {
+            icon: ['📌', '💡', '🔑', '📊', '🎯', '🚀'][i % 6],
+            title: point.slice(0, splitIdx).trim().slice(0, 15),
+            description: point.slice(splitIdx + 1).trim().slice(0, 50),
+          };
+        }
+        return {
+          icon: ['📌', '💡', '🔑', '📊', '🎯', '🚀'][i % 6],
+          title: point.slice(0, 12),
+          description: point.slice(12, 60) || point,
+        };
+      }),
+    },
+  ];
+
+  // Add stats if we have key data
+  if (keyData.length >= 2) {
+    sections.push({
+      type: 'stats_block',
+      stats: keyData.slice(0, 4).map((d, i) => {
+        const numMatch = d.match(/(\d+[%％万亿倍x]|\$[\d.]+[BMKbmk]?)/u);
+        return {
+          icon: ['📊', '📈', '💰', '🎯'][i % 4],
+          number: numMatch ? numMatch[1] : String(i + 1),
+          label: d.replace(numMatch?.[0] || '', '').trim().slice(0, 20) || '关键指标',
+        };
+      }),
+    });
+  } else {
+    sections.push({
+      type: 'insight_block',
+      insightText: expanded?.insightSummary || skeletonSlide.sectionHints.join('；').slice(0, 60) || skeletonSlide.title,
+      insightLabel: '核心洞察',
+    });
+  }
+
   return {
     slideIndex: skeletonSlide.slideIndex,
     layout: 'key_points',
     title: skeletonSlide.title,
-    sections: [
-      {
-        type: 'bullet_list',
-        title: '📌 核心要点',
-        leadSentence: skeletonSlide.sectionHints[0] || skeletonSlide.title,
-        bullets: skeletonSlide.sectionHints.map((hint, i) => ({
-          icon: ['📌', '💡', '🔑', '📊', '🎯', '🚀'][i % 6],
-          title: hint.slice(0, 15),
-          description: hint.slice(15, 50) || hint,
-        })),
-      },
-      {
-        type: 'insight_block',
-        insightText: skeletonSlide.sectionHints.join('；').slice(0, 60) || skeletonSlide.title,
-        insightLabel: '核心洞察',
-      },
-    ],
-    quote: skeletonSlide.quote || '深度洞察，驱动决策',
+    sections,
+    quote: skeletonSlide.quote || expanded?.insightSummary || '深度洞察，驱动决策',
     quoteLabel: skeletonSlide.quoteLabel || '核心启示',
   };
 }
@@ -599,7 +822,6 @@ function createFallbackSlide(skeletonSlide: OutlineSkeleton['slides'][0]): Slide
 function truncateRepetitiveContent(jsonStr: string): string {
   console.log(`[PPT Structurer] Raw LLM output length: ${jsonStr.length} chars`);
 
-  // Quick check: if string is valid JSON, no need to process
   try {
     JSON.parse(jsonStr);
     console.log('[PPT Structurer] JSON is valid, no truncation needed');
@@ -612,17 +834,15 @@ function truncateRepetitiveContent(jsonStr: string): string {
   let cutPoint = len;
   const startCheck = Math.floor(len * 0.5);
 
-  // Also detect short repetitive patterns like emoji spam or "成本飙升"" repeated
-  // Check for very short patterns (5-30 chars) repeated 5+ times consecutively
+  // Detect short repetitive patterns (5-30 chars) repeated 5+ times
   for (let windowSize = 5; windowSize <= 30; windowSize += 5) {
     for (let pos = startCheck; pos < len - windowSize * 5; pos++) {
       const pattern = jsonStr.slice(pos, pos + windowSize);
-      // Must repeat at least 5 times consecutively
       let repeats = 0;
       let searchPos = pos;
       while (searchPos < len) {
         const nextOccurrence = jsonStr.indexOf(pattern, searchPos);
-        if (nextOccurrence >= 0 && nextOccurrence <= searchPos + windowSize + 2) {
+        if (nextOccurrence >= 0 && nextOccurrence <= searchPos + windowSize + 5) {
           repeats++;
           searchPos = nextOccurrence + windowSize;
         } else {
@@ -670,12 +890,12 @@ function truncateRepetitiveContent(jsonStr: string): string {
 }
 
 // ============================================================
-// JSON Repair for batch output
+// Generic JSON Repair
 // ============================================================
 
-function repairBatchJSON(jsonStr: string): { slides: SlideOutline[] } | null {
+function repairJSON<T>(jsonStr: string, arrayKey: string): T | null {
+  // Strategy 1: Close all open brackets/braces
   try {
-    // Strategy 1: Close all open brackets/braces
     let fixed = jsonStr;
     let openBraces = 0, openBrackets = 0;
     let inStr = false, esc = false;
@@ -710,26 +930,27 @@ function repairBatchJSON(jsonStr: string): { slides: SlideOutline[] } | null {
     }
     fixed += ']'.repeat(Math.max(0, openBrackets)) + '}'.repeat(Math.max(0, openBraces));
     const parsed = JSON.parse(fixed);
-    if (parsed.slides && parsed.slides.length > 0) {
-      console.log(`[PPT Batch Repair] Quick repair succeeded: ${parsed.slides.length} slides`);
+    const arr = parsed[arrayKey];
+    if (arr && arr.length > 0) {
+      console.log(`[PPT Repair] Quick repair succeeded: ${arr.length} items in '${arrayKey}'`);
       return parsed;
     }
   } catch {
-    console.log('[PPT Batch Repair] Quick repair failed, trying slide extraction...');
+    console.log('[PPT Repair] Quick repair failed, trying item extraction...');
   }
 
-  // Strategy 2: Extract complete slide objects
+  // Strategy 2: Extract complete objects from array
   try {
-    const slidesMatch = jsonStr.indexOf('"slides"');
-    if (slidesMatch === -1) return null;
-    const arrayStart = jsonStr.indexOf('[', slidesMatch);
+    const keyMatch = jsonStr.indexOf(`"${arrayKey}"`);
+    if (keyMatch === -1) return null;
+    const arrayStart = jsonStr.indexOf('[', keyMatch);
     if (arrayStart === -1) return null;
 
-    const completeSlides: string[] = [];
+    const completeItems: string[] = [];
     let braceDepth = 0;
     let inString = false;
     let escapeNext = false;
-    let slideStart = -1;
+    let itemStart = -1;
 
     for (let i = arrayStart + 1; i < jsonStr.length; i++) {
       const ch = jsonStr[i];
@@ -738,58 +959,36 @@ function repairBatchJSON(jsonStr: string): { slides: SlideOutline[] } | null {
       if (ch === '"' && !escapeNext) { inString = !inString; continue; }
       if (inString) continue;
       if (ch === '{') {
-        if (braceDepth === 0) slideStart = i;
+        if (braceDepth === 0) itemStart = i;
         braceDepth++;
       } else if (ch === '}') {
         braceDepth--;
-        if (braceDepth === 0 && slideStart >= 0) {
-          const slideStr = jsonStr.slice(slideStart, i + 1);
+        if (braceDepth === 0 && itemStart >= 0) {
+          const itemStr = jsonStr.slice(itemStart, i + 1);
           try {
-            JSON.parse(slideStr);
-            completeSlides.push(slideStr);
-          } catch {
-            // Try fixing this slide
-            try {
-              const lastComma = slideStr.lastIndexOf(',\n');
-              if (lastComma > slideStr.length * 0.3) {
-                let sf = slideStr.slice(0, lastComma);
-                let ob = 0, oq = 0, si = false, se = false;
-                for (const c of sf) {
-                  if (se) { se = false; continue; }
-                  if (c === '\\' && si) { se = true; continue; }
-                  if (c === '"') { si = !si; continue; }
-                  if (si) continue;
-                  if (c === '{') ob++;
-                  if (c === '}') ob--;
-                  if (c === '[') oq++;
-                  if (c === ']') oq--;
-                }
-                sf += ']'.repeat(Math.max(0, oq)) + '}'.repeat(Math.max(0, ob));
-                JSON.parse(sf);
-                completeSlides.push(sf);
-              }
-            } catch { /* skip */ }
-          }
-          slideStart = -1;
+            JSON.parse(itemStr);
+            completeItems.push(itemStr);
+          } catch { /* skip incomplete */ }
+          itemStart = -1;
         }
       }
     }
 
-    if (completeSlides.length > 0) {
-      const repaired = '{"slides":[' + completeSlides.join(',') + ']}';
+    if (completeItems.length > 0) {
+      const repaired = `{"${arrayKey}":[${completeItems.join(',')}]}`;
       const parsed = JSON.parse(repaired);
-      console.log(`[PPT Batch Repair] Extracted ${parsed.slides.length} complete slides`);
+      console.log(`[PPT Repair] Extracted ${parsed[arrayKey].length} complete items`);
       return parsed;
     }
   } catch (e) {
-    console.error('[PPT Batch Repair] Extraction failed:', e);
+    console.error('[PPT Repair] Extraction failed:', e);
   }
 
   return null;
 }
 
 // ============================================================
-// Post-processing (same as before)
+// Post-processing
 // ============================================================
 
 function parseTitleToBullets(text: string): BulletPoint[] {
@@ -844,13 +1043,11 @@ function parseTitleToBullets(text: string): BulletPoint[] {
 }
 
 function postProcessOutline(outline: PPTOutline): PPTOutline {
-  // Ensure first slide is title and last is closing
   if (outline.slides[0]?.layout !== 'title') outline.slides[0].layout = 'title';
   if (outline.slides[outline.slides.length - 1]?.layout !== 'closing') {
     outline.slides[outline.slides.length - 1].layout = 'closing';
   }
 
-  // Re-index
   outline.slides.forEach((slide, idx) => {
     slide.slideIndex = idx;
     if (!slide.sections) slide.sections = [];
@@ -865,13 +1062,13 @@ function postProcessOutline(outline: PPTOutline): PPTOutline {
       if (i + 1 < outline.slides.length) usedByNeighbors.add(outline.slides[i + 1].layout);
       const alternatives = contentLayouts.filter(l => !usedByNeighbors.has(l));
       if (alternatives.length > 0) {
-        slide.layout = alternatives[0];
+        slide.layout = alternatives[i % alternatives.length];
       }
     }
   }
 
-  // Fix sections with content in title field but empty bullets/stats
-  outline.slides.forEach((slide, slideIdx) => {
+  // Fix sections with content issues
+  outline.slides.forEach((slide) => {
     if (slide.layout === 'title' || slide.layout === 'closing') return;
 
     slide.sections?.forEach(section => {
@@ -974,7 +1171,7 @@ function postProcessOutline(outline: PPTOutline): PPTOutline {
     }
   });
 
-  // Ensure all bullets have icons
+  // Ensure all bullets have icons + backward compat
   outline.slides.forEach(slide => {
     slide.sections?.forEach(section => {
       section.bullets?.forEach(b => { if (!b.icon) b.icon = '📌'; });
@@ -983,7 +1180,6 @@ function postProcessOutline(outline: PPTOutline): PPTOutline {
       section.stats?.forEach(s => { if (!s.icon) s.icon = '📊'; });
     });
 
-    // Backward compat: populate legacy fields
     if (slide.sections && slide.sections.length > 0) {
       const bulletSection = slide.sections.find(s => s.type === 'bullet_list' || s.type === 'text_block');
       if (bulletSection?.bullets && !slide.points) slide.points = bulletSection.bullets;
@@ -1004,7 +1200,7 @@ function postProcessOutline(outline: PPTOutline): PPTOutline {
 }
 
 // ============================================================
-// Main export: Two-phase batch generation
+// Main export: Three-phase generation
 // ============================================================
 
 export type ProgressCallback = (phase: string, detail: string, pct: number) => void;
@@ -1013,7 +1209,6 @@ export async function structureTextToPPTOutline(
   inputText: string,
   onProgress?: ProgressCallback,
 ): Promise<PPTOutline> {
-  // Determine target pages based on text length
   const charCount = inputText.length;
   let targetPages: number;
   if (charCount < 1000) targetPages = 8;
@@ -1027,31 +1222,60 @@ export async function structureTextToPPTOutline(
   // Phase 1: Generate outline skeleton
   onProgress?.('structuring', '正在生成PPT大纲...', 5);
   const skeleton = await generateOutlineSkeleton(inputText, targetPages);
-  onProgress?.('structuring', `大纲完成：${skeleton.slides.length}页`, 15);
+  onProgress?.('structuring', `大纲完成：${skeleton.slides.length}页`, 10);
 
-  // Phase 2: Generate content in batches of 3-4 slides
-  const BATCH_SIZE = 3;
+  // Phase 2: Content expansion (batch by 4-5 pages)
+  const EXPAND_BATCH_SIZE = 5;
   const contentIndices: number[] = [];
   for (let i = 0; i < skeleton.slides.length; i++) {
-    contentIndices.push(i);
+    if (skeleton.slides[i].layout !== 'title' && skeleton.slides[i].layout !== 'closing') {
+      contentIndices.push(i);
+    }
   }
 
-  const batches: number[][] = [];
-  for (let i = 0; i < contentIndices.length; i += BATCH_SIZE) {
-    batches.push(contentIndices.slice(i, i + BATCH_SIZE));
+  const expandBatches: number[][] = [];
+  for (let i = 0; i < contentIndices.length; i += EXPAND_BATCH_SIZE) {
+    expandBatches.push(contentIndices.slice(i, i + EXPAND_BATCH_SIZE));
+  }
+
+  const allExpanded: ExpandedPageContent[] = [];
+  const expandProgressPerBatch = 20 / Math.max(expandBatches.length, 1);
+
+  for (let batchIdx = 0; batchIdx < expandBatches.length; batchIdx++) {
+    const batch = expandBatches[batchIdx];
+    const pct = Math.round(10 + (batchIdx + 1) * expandProgressPerBatch);
+    onProgress?.('expanding', `正在深入分析第${batch[0] + 1}-${batch[batch.length - 1] + 1}页内容...`, pct);
+
+    console.log(`[PPT] Expand batch ${batchIdx + 1}/${expandBatches.length}: slides [${batch.join(',')}]`);
+    const expanded = await expandContent(inputText, skeleton, batch);
+    allExpanded.push(...expanded);
+  }
+
+  onProgress?.('expanding', `内容扩展完成：${allExpanded.length}页已深入分析`, 30);
+
+  // Phase 3: Generate detailed content in batches of 3 slides
+  const GEN_BATCH_SIZE = 3;
+  const allIndices: number[] = [];
+  for (let i = 0; i < skeleton.slides.length; i++) {
+    allIndices.push(i);
+  }
+
+  const genBatches: number[][] = [];
+  for (let i = 0; i < allIndices.length; i += GEN_BATCH_SIZE) {
+    genBatches.push(allIndices.slice(i, i + GEN_BATCH_SIZE));
   }
 
   const allSlides: SlideOutline[] = [];
-  const progressPerBatch = 60 / batches.length;  // 15% to 75% for content generation
+  const genProgressPerBatch = 45 / genBatches.length;
 
-  for (let batchIdx = 0; batchIdx < batches.length; batchIdx++) {
-    const batch = batches[batchIdx];
-    const pct = Math.round(15 + (batchIdx + 1) * progressPerBatch);
+  for (let batchIdx = 0; batchIdx < genBatches.length; batchIdx++) {
+    const batch = genBatches[batchIdx];
+    const pct = Math.round(30 + (batchIdx + 1) * genProgressPerBatch);
     const batchDesc = `正在生成第${batch[0] + 1}-${batch[batch.length - 1] + 1}页内容...`;
     onProgress?.('structuring', batchDesc, pct);
 
-    console.log(`[PPT] Batch ${batchIdx + 1}/${batches.length}: slides [${batch.join(',')}]`);
-    const batchSlides = await generateSlidesBatch(inputText, skeleton, batch);
+    console.log(`[PPT] Gen batch ${batchIdx + 1}/${genBatches.length}: slides [${batch.join(',')}]`);
+    const batchSlides = await generateSlidesBatch(inputText, skeleton, batch, allExpanded);
     allSlides.push(...batchSlides);
   }
 

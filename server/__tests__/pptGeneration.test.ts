@@ -1,23 +1,21 @@
 import { describe, it, expect, vi } from 'vitest';
 
-// Test pptStructurer module (V4 batch architecture)
-describe('PPT Structurer V4 Batch', () => {
+// Test pptStructurer module (V5 three-phase architecture)
+describe('PPT Structurer V5', () => {
   it('should export structureTextToPPTOutline with optional progress callback', async () => {
     const mod = await import('../pptStructurer');
     expect(typeof mod.structureTextToPPTOutline).toBe('function');
-    // Function should accept 2 params: inputText, onProgress
     expect(mod.structureTextToPPTOutline.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('should export ProgressCallback type and data structures', async () => {
+  it('should export key data structure types', async () => {
     const mod = await import('../pptStructurer');
-    // Verify key type exports exist
     expect(mod).toHaveProperty('structureTextToPPTOutline');
   });
 });
 
-// Test pptRenderer module V4
-describe('PPT Renderer V4', () => {
+// Test pptRenderer module V5
+describe('PPT Renderer V5', () => {
   it('should export COLOR_SCHEMES with expected keys', async () => {
     const { COLOR_SCHEMES } = await import('../pptRenderer');
     expect(COLOR_SCHEMES).toHaveProperty('forest_gold');
@@ -49,21 +47,22 @@ describe('PPT Renderer V4', () => {
     expect(html).toContain('720px');
   });
 
-  it('should render key_points with V4 colored icons', async () => {
+  it('should render key_points with colored icons and word-break', async () => {
     const { renderSlideToHTML } = await import('../pptRenderer');
     const slide = {
       layout: 'key_points' as const,
-      title: '关键要点',
+      title: '关键要点测试页面',
       sections: [
         {
           type: 'bullet_list' as const,
-          title: '📊 核心数据',
-          leadSentence: '以下是关键数据指标',
+          title: '📊 核心数据分析',
+          leadSentence: '以下是关键数据指标总结',
           bullets: [
-            { icon: '📈', title: '增长率', description: '同比增长45%' },
-            { icon: '💰', title: '营收规模', description: '年营收突破10亿' },
-            { icon: '🎯', title: '市场份额', description: '占据30%市场' },
-            { icon: '🚀', title: '用户增长', description: '月活用户500万' },
+            { icon: '📈', title: '增长率', description: '同比增长45%，环比增长12%' },
+            { icon: '💰', title: '营收规模', description: '年营收突破10亿元大关' },
+            { icon: '🎯', title: '市场份额', description: '占据30%市场，行业第一' },
+            { icon: '🚀', title: '用户增长', description: '月活用户突破500万' },
+            { icon: '🌐', title: '全球布局', description: '覆盖50个国家和地区' },
           ],
         },
         {
@@ -80,17 +79,17 @@ describe('PPT Renderer V4', () => {
     expect(html).toContain('关键要点');
     expect(html).toContain('增长率');
     expect(html).toContain('同比增长45%');
-    // V4: should have colored circle icons (border-radius:50%)
+    // V5: colored circle icons
     expect(html).toContain('border-radius:50%');
-    // V4: should have larger font sizes (14px for bullet titles)
-    expect(html).toContain('font-size:14px');
+    // V5: word-break to prevent truncation
+    expect(html).toContain('word-break:break-word');
   });
 
-  it('should render comparison layout with colored icons', async () => {
+  it('should render comparison layout', async () => {
     const { renderSlideToHTML } = await import('../pptRenderer');
     const slide = {
       layout: 'comparison' as const,
-      title: '新旧对比',
+      title: '新旧对比分析',
       leftLabel: '传统方式',
       rightLabel: '新方式',
       sections: [
@@ -98,8 +97,9 @@ describe('PPT Renderer V4', () => {
           type: 'bullet_list' as const,
           title: '传统方式',
           bullets: [
-            { icon: '📋', title: '手工操作', description: '效率低下' },
-            { icon: '⏰', title: '耗时长', description: '需要3-5天' },
+            { icon: '📋', title: '手工操作', description: '效率低下，容易出错' },
+            { icon: '⏰', title: '耗时长', description: '需要3-5天完成' },
+            { icon: '💸', title: '成本高', description: '人力成本居高不下' },
           ],
         },
         {
@@ -108,6 +108,7 @@ describe('PPT Renderer V4', () => {
           bullets: [
             { icon: '🤖', title: 'AI自动化', description: '效率提升10倍' },
             { icon: '⚡', title: '实时处理', description: '秒级响应' },
+            { icon: '💰', title: '降本增效', description: '成本降低80%' },
           ],
         },
       ],
@@ -119,11 +120,10 @@ describe('PPT Renderer V4', () => {
     expect(html).toContain('新方式');
     expect(html).toContain('手工操作');
     expect(html).toContain('AI自动化');
-    // V4: colored circle icons
     expect(html).toContain('border-radius:50%');
   });
 
-  it('should render data_dashboard with enhanced progress bars', async () => {
+  it('should render data_dashboard with stats and progress bars', async () => {
     const { renderSlideToHTML } = await import('../pptRenderer');
     const slide = {
       layout: 'data_dashboard' as const,
@@ -157,13 +157,11 @@ describe('PPT Renderer V4', () => {
     expect(html).toContain('数据看板');
     expect(html).toContain('1000W');
     expect(html).toContain('47%');
-    // V4: larger progress bars (14px height)
     expect(html).toContain('height:14px');
-    // V4: larger stat numbers (24px)
     expect(html).toContain('font-size:24px');
   });
 
-  it('should render closing slide to HTML', async () => {
+  it('should render closing slide', async () => {
     const { renderSlideToHTML } = await import('../pptRenderer');
     const slide = {
       layout: 'closing' as const,
@@ -176,7 +174,7 @@ describe('PPT Renderer V4', () => {
     expect(html).toContain('泽思 Zenith AI');
   });
 
-  it('should render V4 quote block with larger height', async () => {
+  it('should render quote block', async () => {
     const { renderSlideToHTML } = await import('../pptRenderer');
     const slide = {
       layout: 'key_points' as const,
@@ -187,7 +185,7 @@ describe('PPT Renderer V4', () => {
         {
           type: 'bullet_list' as const,
           bullets: [
-            { icon: '📌', title: '要点', description: '测试' },
+            { icon: '📌', title: '要点一', description: '测试内容' },
           ],
         },
       ],
@@ -196,8 +194,84 @@ describe('PPT Renderer V4', () => {
     const html = renderSlideToHTML(slide, 'deep_blue', 'business');
     expect(html).toContain('未来已来');
     expect(html).toContain('核心洞察');
-    // V4: quote block is 70px tall
     expect(html).toContain('height:70px');
+  });
+
+  it('should render quad layout with 4 sections', async () => {
+    const { renderSlideToHTML } = await import('../pptRenderer');
+    const slide = {
+      layout: 'quad' as const,
+      title: '四象限分析',
+      sections: [
+        { type: 'bullet_list' as const, title: '象限1', bullets: [{ icon: '🔵', title: '策略A', description: '高价值低风险' }] },
+        { type: 'bullet_list' as const, title: '象限2', bullets: [{ icon: '🟢', title: '策略B', description: '高价值高风险' }] },
+        { type: 'bullet_list' as const, title: '象限3', bullets: [{ icon: '🟡', title: '策略C', description: '低价值低风险' }] },
+        { type: 'bullet_list' as const, title: '象限4', bullets: [{ icon: '🔴', title: '策略D', description: '低价值高风险' }] },
+      ],
+      points: [],
+    };
+    const html = renderSlideToHTML(slide, 'forest_gold', 'business');
+    expect(html).toContain('四象限分析');
+    expect(html).toContain('象限1');
+    expect(html).toContain('策略A');
+    expect(html).toContain('策略D');
+  });
+
+  it('should render timeline layout', async () => {
+    const { renderSlideToHTML } = await import('../pptRenderer');
+    const slide = {
+      layout: 'timeline' as const,
+      title: '发展路线图',
+      sections: [
+        {
+          type: 'bullet_list' as const,
+          bullets: [
+            { icon: '1️⃣', title: '第一阶段', description: '基础建设' },
+            { icon: '2️⃣', title: '第二阶段', description: '快速扩张' },
+            { icon: '3️⃣', title: '第三阶段', description: '生态构建' },
+          ],
+        },
+      ],
+      points: [],
+    };
+    const html = renderSlideToHTML(slide, 'zenith_purple', 'tech');
+    expect(html).toContain('发展路线图');
+    expect(html).toContain('第一阶段');
+    expect(html).toContain('基础建设');
+  });
+
+  it('should render two_col_mixed layout', async () => {
+    const { renderSlideToHTML } = await import('../pptRenderer');
+    const slide = {
+      layout: 'two_col_mixed' as const,
+      title: '双栏布局测试',
+      sections: [
+        {
+          type: 'bullet_list' as const,
+          title: '左侧要点',
+          bullets: [
+            { icon: '📌', title: '要点一', description: '左侧内容' },
+            { icon: '📌', title: '要点二', description: '左侧内容二' },
+          ],
+        },
+        {
+          type: 'progress_block' as const,
+          chartData: {
+            type: 'progress' as const,
+            title: '右侧数据',
+            items: [
+              { label: '指标A', value: 80 },
+              { label: '指标B', value: 60 },
+            ],
+          },
+        },
+      ],
+      points: [],
+    };
+    const html = renderSlideToHTML(slide, 'deep_blue', 'business');
+    expect(html).toContain('双栏布局测试');
+    expect(html).toContain('左侧要点');
+    expect(html).toContain('右侧数据');
   });
 
   it('should apply correct color scheme', async () => {
@@ -209,6 +283,24 @@ describe('PPT Renderer V4', () => {
     };
     const html = renderSlideToHTML(slide, 'forest_gold', 'business');
     expect(html).toContain(COLOR_SCHEMES.forest_gold.bg);
+  });
+
+  it('should render generic page with multiple sections in columns', async () => {
+    const { renderSlideToHTML } = await import('../pptRenderer');
+    const slide = {
+      layout: 'unknown_layout' as any,
+      title: '通用布局',
+      sections: [
+        { type: 'bullet_list' as const, title: '列1', bullets: [{ icon: '📌', title: '内容A', description: '描述A' }] },
+        { type: 'bullet_list' as const, title: '列2', bullets: [{ icon: '📌', title: '内容B', description: '描述B' }] },
+        { type: 'bullet_list' as const, title: '列3', bullets: [{ icon: '📌', title: '内容C', description: '描述C' }] },
+      ],
+      points: [],
+    };
+    const html = renderSlideToHTML(slide, 'classic_dark', 'simple');
+    expect(html).toContain('通用布局');
+    expect(html).toContain('内容A');
+    expect(html).toContain('内容C');
   });
 });
 
