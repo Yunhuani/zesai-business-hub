@@ -49,6 +49,8 @@ export default function TextToPPT() {
   const [colorScheme, setColorScheme] = useState("zenith_purple");
   const [documentId, setDocumentId] = useState<number | null>(null);
   const [currentStatus, setCurrentStatus] = useState<GenerationStatus>("pending");
+  const [progressDetail, setProgressDetail] = useState<string>("");
+  const [progressPct, setProgressPct] = useState<number>(0);
   const [previews, setPreviews] = useState<string[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [docInfo, setDocInfo] = useState<any>(null);
@@ -77,11 +79,32 @@ export default function TextToPPT() {
       setCurrentStatus(status);
       setDocInfo(statusQuery.data);
 
+      // Parse progress detail from errorMessage piggyback during structuring
+      if (status === "structuring" && statusQuery.data.errorMessage?.includes("|")) {
+        const parts = statusQuery.data.errorMessage.split("|");
+        if (parts.length === 2) {
+          setProgressDetail(parts[0]);
+          const pct = parseInt(parts[1]);
+          if (!isNaN(pct)) setProgressPct(pct);
+        }
+      } else if (status === "rendering") {
+        setProgressDetail("正在渲染幻灯片...");
+        setProgressPct(55);
+      } else if (status === "assembling") {
+        setProgressDetail("正在组装PPT文件...");
+        setProgressPct(80);
+      } else if (status === "completed") {
+        setProgressPct(100);
+      }
+
       if (status === "completed") {
         setStep("preview");
         toast.success("PPT生成完成！");
       } else if (status === "failed") {
-        toast.error(statusQuery.data.errorMessage || "生成失败，请重试");
+        const errMsg = statusQuery.data.errorMessage;
+        // Don't show progress piggyback as error
+        const displayErr = errMsg?.includes("|") ? "生成失败，请重试" : (errMsg || "生成失败，请重试");
+        toast.error(displayErr);
       }
     }
   }, [statusQuery.data]);
@@ -328,13 +351,17 @@ export default function TextToPPT() {
               {/* Progress Bar */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-300">{STATUS_LABELS[currentStatus]}</span>
-                  <span className="text-sm text-purple-400">{STATUS_PROGRESS[currentStatus]}%</span>
+                  <span className="text-sm text-gray-300">
+                    {progressDetail || STATUS_LABELS[currentStatus]}
+                  </span>
+                  <span className="text-sm text-purple-400">
+                    {progressPct > 0 ? progressPct : STATUS_PROGRESS[currentStatus]}%
+                  </span>
                 </div>
                 <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-purple-600 to-blue-600 rounded-full transition-all duration-1000 ease-out"
-                    style={{ width: `${STATUS_PROGRESS[currentStatus]}%` }}
+                    style={{ width: `${progressPct > 0 ? progressPct : STATUS_PROGRESS[currentStatus]}%` }}
                   />
                 </div>
               </div>
@@ -374,7 +401,9 @@ export default function TextToPPT() {
 
               {currentStatus === "failed" && (
                 <div className="text-center">
-                  <p className="text-red-400 text-sm mb-4">{docInfo?.errorMessage || "生成失败"}</p>
+                  <p className="text-red-400 text-sm mb-4">
+                    {docInfo?.errorMessage?.includes("|") ? "AI服务暂时繁忙，请稍后重试" : (docInfo?.errorMessage || "生成失败")}
+                  </p>
                   <Button onClick={handleReset} variant="outline" className="border-white/20 text-gray-300">
                     重新开始
                   </Button>

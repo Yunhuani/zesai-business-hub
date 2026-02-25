@@ -9,7 +9,7 @@ import { getDb } from '../db';
 import { pptDocuments } from '../../drizzle/schema';
 import { eq, desc } from 'drizzle-orm';
 import { deductCredits, getUserCredits } from '../creditsManager';
-import { structureTextToPPTOutline } from '../pptStructurer';
+import { structureTextToPPTOutline, type ProgressCallback } from '../pptStructurer';
 import { renderAllSlidesToImages, closeBrowser } from '../pptRenderer';
 import { assemblePPT, generatePreviewBase64 } from '../pptAssembler';
 import { storageGet, storagePut } from '../storage';
@@ -225,15 +225,27 @@ async function generatePPTAsync(
   };
 
   try {
-    // Step 1: Structure text with LLM
+    // Step 1: Structure text with LLM (two-phase batch generation)
     await updateStatus('structuring');
-    console.log(`[PPT] Doc ${documentId}: Structuring text...`);
-    const outline = await structureTextToPPTOutline(inputText);
+    console.log(`[PPT] Doc ${documentId}: Structuring text (batch mode)...`);
+    
+    const onProgress: ProgressCallback = async (phase, detail, pct) => {
+      console.log(`[PPT] Doc ${documentId}: [${phase}] ${detail} (${pct}%)`);
+      // Update status with progress detail for frontend polling
+      try {
+        await updateStatus('structuring', {
+          errorMessage: `${detail}|${pct}`,  // Piggyback progress on errorMessage during structuring
+        });
+      } catch { /* ignore update errors during progress */ }
+    };
+    
+    const outline = await structureTextToPPTOutline(inputText, onProgress);
     
     await updateStatus('structuring', { 
       title: outline.presentationTitle,
       outlineJson: JSON.stringify(outline),
       slideCount: outline.slides.length,
+      errorMessage: null,  // Clear progress piggyback
     });
     console.log(`[PPT] Doc ${documentId}: Got ${outline.slides.length} slides`);
 

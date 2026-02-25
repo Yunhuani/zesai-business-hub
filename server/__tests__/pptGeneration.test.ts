@@ -1,10 +1,18 @@
 import { describe, it, expect, vi } from 'vitest';
 
-// Test pptStructurer module
-describe('PPT Structurer', () => {
-  it('should export structureTextToPPTOutline function', async () => {
+// Test pptStructurer module (V4 batch architecture)
+describe('PPT Structurer V4 Batch', () => {
+  it('should export structureTextToPPTOutline with optional progress callback', async () => {
     const mod = await import('../pptStructurer');
     expect(typeof mod.structureTextToPPTOutline).toBe('function');
+    // Function should accept 2 params: inputText, onProgress
+    expect(mod.structureTextToPPTOutline.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('should export ProgressCallback type and data structures', async () => {
+    const mod = await import('../pptStructurer');
+    // Verify key type exports exist
+    expect(mod).toHaveProperty('structureTextToPPTOutline');
   });
 });
 

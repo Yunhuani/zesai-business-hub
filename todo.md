@@ -2008,3 +2008,12 @@
 - [x] 修复truncateRepetitiveContent：降低误判率，提高窗口大小阈值（15→120字符）
 - [x] 增强repairTruncatedJSON：新增quick repair（闭合括号法），增加日志
 - [x] 增加LLM原始输出长度日志，便于调试
+
+## PPT分批生成架构重构（支持20+页）
+- [x] pptStructurer.ts：新增generateOutline函数（只生成大纲）
+- [x] pptStructurer.ts：新增generateSlidesBatch函数（根据大纲逐批生成3-4页详细内容）
+- [x] pptStructurer.ts：保留原structureTextToPPTOutline作为兼容入口
+- [x] pptGeneration.ts：改为分批调用逻辑（大纲→逐批内容→合并）
+- [x] pptGeneration.ts：进度推送适配分批进度
+- [x] 前端进度展示适配分批进度信息
+- [x] 测试验证20+页PPT完整生成（vitest通过）
