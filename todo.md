@@ -2044,3 +2044,11 @@
 ## PPT V5 Bug Fixes - Round 2
 - [x] 空白页仍然出现 — 增强空内容检测（bullets存在但为空数组也算无内容）+ per-section fallback + 渲染层防御
 - [x] bullets描述仍然过长 — 确认截断逻辑正确，用户看到的是旧缓存，重新生成即可见效
+
+## PPT V5 内容丰富度增强
+- [x] 分析Phase 2/3 LLM调用链路，定位内容稀薄根因
+- [x] 增强BATCH_SYSTEM_PROMPT要求description必须包含数据/案例/趋势
+- [x] 增强createFallbackSlide充分利用expandedContent
+- [x] 增强EXPANSION_SYSTEM_PROMPT要求enrichedPoints格式为"关键词：具体说明"
+- [x] 提升maxTokens和description截断限制到80字
+- [x] 验证端到端效果（23个vitest通过 + E2E渲染验证）

@@ -283,11 +283,13 @@ interface ExpandedPageContent {
 const EXPANSION_SYSTEM_PROMPT = `你是资深商业分析师和行业研究专家。你的任务是对PPT每页的主题进行深入分析和内容扩展。
 
 ## 核心任务
-根据原文内容和每页主题，为每页补充：
-1. enrichedPoints: 5-8个丰富的要点（每个30-60字，包含具体数据、趋势、案例引用）
+根据原文内容和每页主题，为每页补充有信息密度的内容：
+1. enrichedPoints: 5-8个丰富的要点（每个30-80字，格式为"关键词：具体说明"，必须包含具体数据/案例/趋势）
+   ✅ 好的: "数据驱动决策：McKinsey研究显示采用AI决策的企业效率提升40%，错误率降低25%"
+   ❌ 差的: "数据很重要" "需要关注数据"
 2. keyData: 2-4个关键数据点（如"全球AI市场规模2025年达1900亿美元"、"采用AI的企业效率提升40%"）
-3. caseExample: 1个相关案例（公司名+做了什么+效果，50-80字）
-4. insightSummary: 1句核心洞察（20-40字，观点鲜明）
+3. caseExample: 1个相关案例（公司名+做了什么+效果，50-100字）
+4. insightSummary: 1句核心洞察（20-50字，观点鲜明，包含具体结论）
 
 ## 重要规则
 - 数据要具体、可信（引用知名机构如McKinsey、Gartner、IDC等）
@@ -383,7 +385,7 @@ ${relevantText}
           type: 'json_schema',
           json_schema: EXPANSION_SCHEMA,
         },
-        maxTokens: Math.min(6000, contentSlides.length * 1500),
+        maxTokens: Math.min(8000, contentSlides.length * 2000),
       });
 
       const content = result.choices[0]?.message?.content;
@@ -449,9 +451,12 @@ const BATCH_SYSTEM_PROMPT = `你是顶级商业咨询PPT内容填充专家。根
 ## ★ Bullet输出格式（最重要）
 每个bullet必须是【短语式要点】：
 - title: 关键词短语，3-10字（如"核能：SMR模块化反应堆"、"数据中心电力需求激增"）
-- description: 一句话补充说明，15-40字
+- description: 一句话有信息量的补充说明，20-60字。必须包含【具体数据/案例/趋势/对比】中的至少一项。
+  ✅ 好的description: "McKinsey研究显示采用AI决策的企业效率提升40%，错误率降低25%"
+  ✅ 好的description: "如华为通过数字化转型将供应链响应时间从7天缩短至24小时"
+  ❌ 差的description: "这是一个重要的方面" "详见正文" "需要深入研究"
 - 禁止把title和description写成一整段长文！
-- 每个section必须有4-6个bullets
+- 每个section必须有4-6个bullets，每个bullet都要有实质性内容
 
 ## 区块类型及必填字段
 - text_block/bullet_list: 必填title(含emoji,8字以内), leadSentence(引导句20-35字), bullets数组(4-6个)
@@ -687,9 +692,9 @@ ${slideDescriptions}
 ${relevantText}
 ---
 
-★每个bullet的title是短语关键词(3-10字)，description是补充说明(15-40字)。
-★每个section必须有4-6个bullets。
-★充分利用【扩展研究】中的数据和案例填充内容。
+★每个bullet的title是短语关键词(3-10字)，description是有信息量的补充说明(20-60字，必须包含数据/案例/趋势)。
+★每个section必须有4-6个bullets，绝对禁止空洞描述如"详见正文""请参考报告"。
+★充分利用【扩展研究】中的数据和案例填充内容，确保每页信息密度高。
 ★section.title只写8字以内短标题（含emoji）。
 ★确保JSON完整闭合。`;
 
@@ -758,34 +763,52 @@ function createFallbackSlide(
   const expanded = expandedContent.find(e => e.slideIndex === skeletonSlide.slideIndex);
   const points = expanded?.enrichedPoints || skeletonSlide.sectionHints;
   const keyData = expanded?.keyData || [];
+  const caseInfo = expanded?.caseExample || '';
+
+  // Build high-quality bullets from enrichedPoints (which contain detailed analysis)
+  const bullets: BulletPoint[] = points.slice(0, 6).map((point, i) => {
+    const icons = ['📌', '💡', '🔑', '📊', '🎯', '🚀'];
+    // Try to split on colon for title:description pattern
+    const colonIdx = point.indexOf('：');
+    const colonIdx2 = point.indexOf(':');
+    const splitIdx = colonIdx > 0 && colonIdx < 20 ? colonIdx : (colonIdx2 > 0 && colonIdx2 < 20 ? colonIdx2 : -1);
+    if (splitIdx > 0) {
+      return {
+        icon: icons[i % 6],
+        title: point.slice(0, splitIdx).trim().slice(0, 15),
+        description: point.slice(splitIdx + 1).trim().slice(0, 80),
+      };
+    }
+    // For longer points, split at ~12 chars for title, rest as description
+    return {
+      icon: icons[i % 6],
+      title: point.slice(0, 12).trim(),
+      description: point.length > 12 ? point.slice(12, 80).trim() : point,
+    };
+  });
+
+  // If we have keyData, inject data into bullet descriptions for richer content
+  if (keyData.length > 0 && bullets.length > 0) {
+    keyData.forEach((data, idx) => {
+      if (idx < bullets.length && bullets[idx].description.length < 30) {
+        // Enrich short descriptions with data
+        bullets[idx].description = data.slice(0, 80);
+      }
+    });
+  }
 
   const sections: SlideSection[] = [
     {
       type: 'bullet_list',
       title: '📌 核心要点',
       leadSentence: expanded?.insightSummary || skeletonSlide.title,
-      bullets: points.slice(0, 6).map((point, i) => {
-        const colonIdx = point.indexOf('：');
-        const colonIdx2 = point.indexOf(':');
-        const splitIdx = colonIdx > 0 && colonIdx < 20 ? colonIdx : (colonIdx2 > 0 && colonIdx2 < 20 ? colonIdx2 : -1);
-        if (splitIdx > 0) {
-          return {
-            icon: ['📌', '💡', '🔑', '📊', '🎯', '🚀'][i % 6],
-            title: point.slice(0, splitIdx).trim().slice(0, 15),
-            description: point.slice(splitIdx + 1).trim().slice(0, 50),
-          };
-        }
-        return {
-          icon: ['📌', '💡', '🔑', '📊', '🎯', '🚀'][i % 6],
-          title: point.slice(0, 12),
-          description: point.slice(12, 60) || point,
-        };
-      }),
+      bullets,
     },
   ];
 
-  // Add stats if we have key data
+  // Add secondary section based on available data
   if (keyData.length >= 2) {
+    // Use stats block with real data
     sections.push({
       type: 'stats_block',
       stats: keyData.slice(0, 4).map((d, i) => {
@@ -793,14 +816,21 @@ function createFallbackSlide(
         return {
           icon: ['📊', '📈', '💰', '🎯'][i % 4],
           number: numMatch ? numMatch[1] : String(i + 1),
-          label: d.replace(numMatch?.[0] || '', '').trim().slice(0, 20) || '关键指标',
+          label: d.replace(numMatch?.[0] || '', '').trim().slice(0, 30) || '关键指标',
         };
       }),
+    });
+  } else if (caseInfo.length > 20) {
+    // Use insight block with case info
+    sections.push({
+      type: 'insight_block',
+      insightText: caseInfo.slice(0, 80),
+      insightLabel: '实践案例',
     });
   } else {
     sections.push({
       type: 'insight_block',
-      insightText: expanded?.insightSummary || skeletonSlide.sectionHints.join('；').slice(0, 60) || skeletonSlide.title,
+      insightText: expanded?.insightSummary || skeletonSlide.sectionHints.join('；').slice(0, 80) || skeletonSlide.title,
       insightLabel: '核心洞察',
     });
   }
@@ -1056,7 +1086,7 @@ function parseTitleToBullets(text: string): BulletPoint[] {
   return [];
 }
 
-function postProcessOutline(outline: PPTOutline): PPTOutline {
+export function postProcessOutline(outline: PPTOutline): PPTOutline {
   if (outline.slides[0]?.layout !== 'title') outline.slides[0].layout = 'title';
   if (outline.slides[outline.slides.length - 1]?.layout !== 'closing') {
     outline.slides[outline.slides.length - 1].layout = 'closing';
@@ -1228,18 +1258,20 @@ function postProcessOutline(outline: PPTOutline): PPTOutline {
     if (!hasContent) {
       console.log(`[PPT PostProcess] Slide ${slide.slideIndex} "${slide.title}" has no real content, generating fallback`);
       // Generate meaningful fallback from slide title/subtitle/quote
-      const titleWords = (slide.title || '').replace(/[，。；：！？、]/g, '|').split('|').filter(w => w.trim().length > 2);
+      // Try to extract meaningful segments from title and subtitle
+      const allText = [slide.title || '', slide.subtitle || '', slide.quote || ''].join('。');
+      const titleWords = allText.replace(/[，。；：！？、]/g, '|').split('|').filter(w => w.trim().length > 3);
       const fallbackBullets: BulletPoint[] = titleWords.length >= 3
         ? titleWords.slice(0, 5).map((w, i) => ({
             icon: ['📌', '💡', '🔑', '📊', '🎯'][i % 5],
             title: w.trim().slice(0, 12),
-            description: slide.subtitle?.slice(0, 40) || '详见正文深入分析',
+            description: titleWords[i + 1]?.trim().slice(0, 60) || slide.subtitle?.slice(0, 60) || slide.title?.slice(0, 60) || '深入分析与核心洞察',
           }))
         : [
-            { icon: '📌', title: '要点概述', description: (slide.title || '').slice(0, 40) || '详见正文分析' },
-            { icon: '💡', title: '深入分析', description: (slide.subtitle || '').slice(0, 40) || '请参考完整报告内容' },
-            { icon: '🔑', title: '关键发现', description: '基于数据和案例的核心洞察' },
-            { icon: '🎯', title: '行动建议', description: '基于以上分析制定具体行动计划' },
+            { icon: '📌', title: '核心观点', description: (slide.title || '').slice(0, 60) || '深入分析与核心洞察' },
+            { icon: '💡', title: '关键洞察', description: (slide.subtitle || slide.quote || '').slice(0, 60) || '基于行业研究和数据分析的核心发现' },
+            { icon: '🔑', title: '趋势判断', description: (slide.quote || slide.title || '').slice(0, 60) || '行业发展方向与未来展望' },
+            { icon: '🎯', title: '策略建议', description: '基于以上分析提出具体可执行的行动方案' },
           ];
 
       slide.sections = [
@@ -1263,21 +1295,25 @@ function postProcessOutline(outline: PPTOutline): PPTOutline {
     slide.sections?.forEach(sec => {
       if ((sec.type === 'bullet_list' || sec.type === 'text_block') && (!sec.bullets || sec.bullets.length === 0)) {
         console.log(`[PPT PostProcess] Slide ${slide.slideIndex} section "${sec.title}" has empty bullets, adding fallback`);
+        const secLabel = sec.title?.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '').trim() || '';
+        // Use slide-level info to generate meaningful content
+        const slideTitle = slide.title || '';
+        const slideQuote = slide.quote || '';
         sec.bullets = [
-          { icon: '📌', title: sec.title?.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '').trim().slice(0, 12) || '核心要点', description: slide.title?.slice(0, 40) || '详见正文' },
-          { icon: '💡', title: '补充说明', description: slide.subtitle?.slice(0, 40) || '请参考完整报告' },
-          { icon: '🎯', title: '关键启示', description: '基于分析得出的核心结论' },
+          { icon: '📌', title: secLabel.slice(0, 12) || '核心要点', description: slideTitle.slice(0, 60) || '深入分析与核心洞察' },
+          { icon: '💡', title: '关键发现', description: (slide.subtitle || slideQuote || '').slice(0, 60) || '基于行业研究和数据分析的核心发现' },
+          { icon: '🎯', title: '实践建议', description: '基于以上分析提出具体可执行的行动方案' },
         ];
       }
     });
   });
 
-  // ★ Truncate all bullet descriptions to 50 chars to prevent overflow
+  // ★ Truncate all bullet descriptions to 80 chars to prevent overflow while keeping info density
   outline.slides.forEach(slide => {
     slide.sections?.forEach(section => {
       section.bullets?.forEach(b => {
-        if (b.description && b.description.length > 50) {
-          b.description = b.description.slice(0, 48) + '…';
+        if (b.description && b.description.length > 80) {
+          b.description = b.description.slice(0, 78) + '…';
         }
         if (b.title && b.title.length > 15) {
           b.title = b.title.slice(0, 13) + '…';
