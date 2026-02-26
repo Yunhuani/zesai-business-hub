@@ -1244,16 +1244,18 @@ export function postProcessOutline(outline: PPTOutline): PPTOutline {
   outline.slides.forEach((slide) => {
     if (slide.layout === 'title' || slide.layout === 'closing') return;
 
-    // Check if slide has any real displayable content
-    const hasContent = slide.sections?.some(sec => {
-      if (sec.bullets && sec.bullets.length > 0 && sec.bullets.some(b => b.title && b.title.trim().length > 0)) return true;
+    // Check if slide has SUBSTANTIAL displayable content (insight_block alone is NOT enough)
+    const hasBulletContent = slide.sections?.some(sec => 
+      sec.bullets && sec.bullets.length >= 2 && sec.bullets.some(b => b.title && b.title.trim().length > 0)
+    );
+    const hasRichContent = slide.sections?.some(sec => {
       if (sec.cases && sec.cases.length > 0) return true;
       if (sec.chartData && sec.chartData.items && sec.chartData.items.length > 0) return true;
       if (sec.stats && sec.stats.length > 0) return true;
       if (sec.flowNodes && sec.flowNodes.length > 0) return true;
-      if (sec.insightText && sec.insightText.length > 0) return true;
       return false;
     });
+    const hasContent = hasBulletContent || hasRichContent;
 
     if (!hasContent) {
       console.log(`[PPT PostProcess] Slide ${slide.slideIndex} "${slide.title}" has no real content, generating fallback`);
@@ -1291,17 +1293,17 @@ export function postProcessOutline(outline: PPTOutline): PPTOutline {
       slide.layout = 'key_points';
     }
 
-    // ★ Per-section fix: any bullet_list section with 0 bullets gets fallback
+    // ★ Per-section fix: any bullet_list/text_block section with < 2 bullets gets fallback
     slide.sections?.forEach(sec => {
-      if ((sec.type === 'bullet_list' || sec.type === 'text_block') && (!sec.bullets || sec.bullets.length === 0)) {
-        console.log(`[PPT PostProcess] Slide ${slide.slideIndex} section "${sec.title}" has empty bullets, adding fallback`);
+      if ((sec.type === 'bullet_list' || sec.type === 'text_block') && (!sec.bullets || sec.bullets.length < 2 || !sec.bullets.some(b => b.title && b.title.trim().length > 0))) {
+        console.log(`[PPT PostProcess] Slide ${slide.slideIndex} section "${sec.title}" has insufficient bullets (${sec.bullets?.length || 0}), adding fallback`);
         const secLabel = sec.title?.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '').trim() || '';
-        // Use slide-level info to generate meaningful content
         const slideTitle = slide.title || '';
         const slideQuote = slide.quote || '';
         sec.bullets = [
           { icon: '📌', title: secLabel.slice(0, 12) || '核心要点', description: slideTitle.slice(0, 60) || '深入分析与核心洞察' },
           { icon: '💡', title: '关键发现', description: (slide.subtitle || slideQuote || '').slice(0, 60) || '基于行业研究和数据分析的核心发现' },
+          { icon: '🔑', title: '趋势判断', description: (slideQuote || slideTitle || '').slice(0, 60) || '行业发展方向与未来展望' },
           { icon: '🎯', title: '实践建议', description: '基于以上分析提出具体可执行的行动方案' },
         ];
       }

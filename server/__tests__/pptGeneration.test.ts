@@ -337,8 +337,9 @@ describe('PPT Renderer V5', () => {
     };
     const html = renderSlideToHTML(slide, 'forest_gold', 'business');
     expect(html).toContain('完全空白测试');
-    expect(html).toContain('没有任何内容');
-    expect(html).toContain('text-align:center');
+    // Safety net should inject fallback bullets with substantial content
+    expect(html).toContain('核心观点');
+    expect(html.length).toBeGreaterThan(800);
   });
 
   it('BugFix: bullet with empty description should not render empty div', async () => {
@@ -402,9 +403,8 @@ describe('PPT Renderer V5', () => {
     };
     const html = renderSlideToHTML(slide, 'deep_blue', 'business');
     expect(html).toContain('对比分析空内容');
-    expect(html).toContain('旧模式');
-    expect(html).toContain('新模式');
-    // Should still have substantial content (not just title + empty boxes)
+    // Safety net should detect empty bullets and inject fallback key_points layout
+    expect(html).toContain('核心观点');
     expect(html.length).toBeGreaterThan(800);
   });
 

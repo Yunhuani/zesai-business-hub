@@ -500,10 +500,12 @@ function renderCaseCardsPage(slide: SlideOutline, colors: ColorScheme, theme: Th
     </div>`;
   }
   
+  // Fallback: if no case_block sections, render otherSections (bullets/stats) instead
+  const renderSections = caseSections.length > 0 ? caseSections : otherSections;
   return `<div style="display:flex;flex-direction:column;padding:${PAD_TOP}px ${PAD_X}px ${PAD_BOT}px;height:100%;position:relative;">
     ${titleBar(slide.title, slide.subtitle, colors, theme)}
     <div style="flex:1;display:flex;gap:12px;">
-      ${caseSections.map(sec => `<div style="flex:1;overflow:hidden;">${renderSection(sec, colors, contentH)}</div>`).join('')}
+      ${renderSections.map(sec => `<div style="flex:1;overflow:hidden;">${renderSection(sec, colors, contentH)}</div>`).join('')}
     </div>
     ${quoteBlock(slide.quote, slide.quoteLabel, colors)}
     ${footer(idx, total, colors, slide.footerNote)}
@@ -751,6 +753,45 @@ export function renderSlideToHTML(
 ): string {
   const colors = COLOR_SCHEMES[colorScheme] || COLOR_SCHEMES.deep_blue;
   const theme = THEME_STYLES[themeStyle] || THEME_STYLES.business;
+
+  // ★ FINAL SAFETY NET: if content page has no substantial content, force key_points with fallback
+  if (slide.layout !== 'title' && slide.layout !== 'closing') {
+    const hasBullets = slide.sections?.some(sec =>
+      sec.bullets && sec.bullets.length >= 1 && sec.bullets.some(b => b.title && b.title.trim().length > 0)
+    );
+    const hasRich = slide.sections?.some(sec =>
+      (sec.cases && sec.cases.length > 0) ||
+      (sec.chartData && sec.chartData.items && sec.chartData.items.length > 0) ||
+      (sec.stats && sec.stats.length > 0) ||
+      (sec.flowNodes && sec.flowNodes.length > 0)
+    );
+    const hasPoints = slide.points && slide.points.length > 0;
+    if (!hasBullets && !hasRich && !hasPoints) {
+      console.log(`[PPT Renderer] Slide "${slide.title}" has no renderable content, injecting fallback`);
+      const titleParts = (slide.title || '').replace(/[，。；：！？、]/g, '|').split('|').filter(w => w.trim().length > 2);
+      const fallbackBullets: BulletPoint[] = titleParts.length >= 3
+        ? titleParts.slice(0, 5).map((w, i) => ({
+            icon: ['📌', '💡', '🔑', '📊', '🎯'][i % 5],
+            title: w.trim().slice(0, 15),
+            description: slide.subtitle?.slice(0, 80) || slide.quote?.slice(0, 80) || '深入分析与核心洞察',
+          }))
+        : [
+            { icon: '📌', title: '核心观点', description: (slide.title || '').slice(0, 80) || '深入分析与核心洞察' },
+            { icon: '💡', title: '关键洞察', description: (slide.subtitle || slide.quote || '').slice(0, 80) || '基于行业研究和数据分析的核心发现' },
+            { icon: '🔑', title: '趋势判断', description: (slide.quote || slide.title || '').slice(0, 80) || '行业发展方向与未来展望' },
+            { icon: '🎯', title: '实践建议', description: '基于以上分析提出具体可执行的行动方案' },
+          ];
+      // Preserve any existing insight_block
+      const existingInsight = slide.sections?.find(s => s.type === 'insight_block');
+      slide.sections = [
+        { type: 'bullet_list', title: '📌 核心要点', leadSentence: slide.title || '', bullets: fallbackBullets },
+        existingInsight || { type: 'insight_block', insightText: slide.quote || slide.title || '深度洞察，驱动决策', insightLabel: '核心洞察' },
+      ];
+      slide.layout = 'key_points';
+    }
+  }
+
+
   const renderer = PAGE_RENDERERS[slide.layout] || renderGenericPage;
   const innerHtml = renderer(slide, colors, theme, slideIndex ?? 0, totalSlides ?? 1);
 

@@ -2052,3 +2052,11 @@
 - [x] 增强EXPANSION_SYSTEM_PROMPT要求enrichedPoints格式为"关键词：具体说明"
 - [x] 提升maxTokens和description截断限制到80字
 - [x] 验证端到端效果（23个vitest通过 + E2E渲染验证）
+
+## PPT V5 Bug Fixes - Round 3（case_cards空白页根因修复）
+- [x] 定位根因：renderCaseCardsPage只渲染case_block类型section，忽略bullet_list/stats_block
+- [x] 修复：caseSections为空时fallback渲染otherSections（bullets+stats）
+- [x] 检查其他布局（data_dashboard/quad/two_col_mixed）无类似问题
+- [x] 移除调试日志代码
+- [x] 23个vitest全部通过
+- [x] 端到端验证：8页PPT全部有内容，无空白页
