@@ -211,14 +211,14 @@ function renderBulletSection(section: SlideSection, colors: ColorScheme, maxH: n
   const bulletPad = bulletCount > 5 ? '2px 0' : '4px 0';
   
   return `<div style="height:${maxH}px;overflow:hidden;display:flex;flex-direction:column;">
-    ${title ? `<div style="font-size:${titleFontSize};font-weight:700;color:${colors.text};margin-bottom:4px;${TEXT_WRAP}">${title}</div>` : ''}
-    ${lead ? `<div style="font-size:${leadFontSize};color:${colors.textSecondary};margin-bottom:6px;line-height:1.4;${TEXT_WRAP}">${lead}</div>` : ''}
+    ${title ? `<div style="font-size:${titleFontSize};font-weight:700;color:${colors.text};margin-bottom:4px;${TEXT_WRAP}white-space:normal;">${title}</div>` : ''}
+    ${lead ? `<div style="font-size:${leadFontSize};color:${colors.textSecondary};margin-bottom:6px;line-height:1.4;${TEXT_WRAP}white-space:normal;">${lead}</div>` : ''}
     <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;justify-content:space-evenly;">
       ${bullets.map((b, i) => `<div style="display:flex;align-items:flex-start;gap:8px;padding:${bulletPad};">
         ${coloredIcon(b.icon || '📌', i, iconSize)}
         <div style="flex:1;min-width:0;padding-top:1px;">
           <div style="font-size:${bulletTitleSize};font-weight:700;color:${colors.text};line-height:1.3;margin-bottom:1px;${TEXT_WRAP}">${b.title}${b.highlight ? `<span style="color:${colors.accent};margin-left:6px;font-weight:800;">${b.highlight}</span>` : ''}</div>
-          <div style="font-size:${bulletDescSize};color:${colors.textSecondary};line-height:1.4;${TEXT_WRAP}">${b.description}</div>
+          ${b.description ? `<div style="font-size:${bulletDescSize};color:${colors.textSecondary};line-height:1.4;${TEXT_WRAP}white-space:normal;">${b.description}</div>` : ''}
         </div>
       </div>`).join('')}
     </div>
@@ -661,6 +661,20 @@ function renderGenericPage(slide: SlideOutline, colors: ColorScheme, theme: Them
   const sections = slide.sections || [];
   if (sections.length === 0) {
     const bullets = slide.points || [];
+    // If completely empty, show title-only page with centered text
+    if (bullets.length === 0) {
+      return `<div style="display:flex;flex-direction:column;padding:${PAD_TOP}px ${PAD_X}px ${PAD_BOT}px;height:100%;position:relative;">
+        ${titleBar(slide.title, slide.subtitle, colors, theme)}
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+          <div style="text-align:center;max-width:600px;">
+            <div style="font-size:20px;font-weight:700;color:${colors.text};margin-bottom:12px;${TEXT_WRAP}">${slide.title}</div>
+            ${slide.subtitle ? `<div style="font-size:14px;color:${colors.textSecondary};line-height:1.6;${TEXT_WRAP}">${slide.subtitle}</div>` : ''}
+          </div>
+        </div>
+        ${quoteBlock(slide.quote, slide.quoteLabel, colors)}
+        ${footer(idx, total, colors, slide.footerNote)}
+      </div>`;
+    }
     return `<div style="display:flex;flex-direction:column;padding:${PAD_TOP}px ${PAD_X}px ${PAD_BOT}px;height:100%;position:relative;">
       ${titleBar(slide.title, slide.subtitle, colors, theme)}
       <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
@@ -668,7 +682,7 @@ function renderGenericPage(slide: SlideOutline, colors: ColorScheme, theme: Them
           ${coloredIcon(b.icon || '📌', i, 32)}
           <div style="flex:1;min-width:0;">
             <div style="font-size:14px;font-weight:700;color:${colors.text};margin-bottom:2px;${TEXT_WRAP}">${b.title}</div>
-            <div style="font-size:12px;color:${colors.textSecondary};line-height:1.5;${TEXT_WRAP}">${b.description}</div>
+            ${b.description ? `<div style="font-size:12px;color:${colors.textSecondary};line-height:1.5;${TEXT_WRAP}">${b.description}</div>` : ''}
           </div>
         </div>`).join('')}
       </div>

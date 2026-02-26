@@ -2031,3 +2031,12 @@
 ### 路由和前端
 - [x] 路由适配三阶段进度（大纲→扩展→填充）
 - [x] 前端进度展示适配三阶段（17项vitest测试全部通过）
+
+## PPT V5 Bug Fixes
+- [x] 修复空白页问题：postProcessOutline增加空内容检测和fallback生成
+- [x] 修复bullets未分行：增强parseTitleToBullets支持句号/分号/编号分割
+- [x] 修复描述过长截断：bullet description限制50字、title限制15字
+- [x] 修复布局单一：增加全局布局多样性检查，限制同一布局最多出现ceil(N/7)次
+- [x] 修复渲染层空描述不渲染空div
+- [x] 修复generic page完全空内容时居中显示标题
+- [x] 更新vitest测试覆盖所有修复点（22个测试全部通过）

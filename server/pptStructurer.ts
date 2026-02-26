@@ -834,23 +834,27 @@ function truncateRepetitiveContent(jsonStr: string): string {
   let cutPoint = len;
   const startCheck = Math.floor(len * 0.5);
 
-  // Detect short repetitive patterns (5-30 chars) repeated 5+ times
-  for (let windowSize = 5; windowSize <= 30; windowSize += 5) {
-    for (let pos = startCheck; pos < len - windowSize * 5; pos++) {
+  // Detect repetitive patterns - only catch true garbage repetition
+  // Use larger windows and higher thresholds to avoid false positives on normal JSON
+  for (let windowSize = 3; windowSize <= 50; windowSize++) {
+    const minRepeats = windowSize < 10 ? 50 : windowSize < 30 ? 20 : 5;
+    for (let pos = startCheck; pos < len - windowSize * minRepeats; pos++) {
       const pattern = jsonStr.slice(pos, pos + windowSize);
+      // Skip patterns that look like JSON structure
+      if (pattern.includes('"') || pattern.includes(':') || pattern.includes('{') || pattern.includes('[')) continue;
       let repeats = 0;
       let searchPos = pos;
       while (searchPos < len) {
         const nextOccurrence = jsonStr.indexOf(pattern, searchPos);
-        if (nextOccurrence >= 0 && nextOccurrence <= searchPos + windowSize + 5) {
+        if (nextOccurrence >= 0 && nextOccurrence <= searchPos + windowSize + 2) {
           repeats++;
           searchPos = nextOccurrence + windowSize;
         } else {
           break;
         }
       }
-      if (repeats >= 5) {
-        console.log(`[PPT Structurer] Short repetitive pattern (${windowSize} chars, ${repeats}x) at pos ${pos}, cutting`);
+      if (repeats >= minRepeats) {
+        console.log(`[PPT Structurer] Repetitive garbage detected: pattern="${pattern.slice(0,20)}" (${windowSize} chars, ${repeats}x) at pos ${pos}, cutting`);
         cutPoint = Math.min(cutPoint, pos);
         break;
       }
@@ -991,55 +995,65 @@ function repairJSON<T>(jsonStr: string, arrayKey: string): T | null {
 // Post-processing
 // ============================================================
 
-function parseTitleToBullets(text: string): BulletPoint[] {
-  if (!text || text.length < 20) return [];
-  const emojiSplitRegex = /(?=(?:^|\n)\s*[\p{Emoji_Presentation}\p{Extended_Pictographic}])/gu;
-  const segments = text.split(emojiSplitRegex).filter(s => s.trim().length > 10);
+function splitBulletFromText(text: string, idx: number): BulletPoint {
+  const icons = ['📌', '💡', '🔑', '📊', '🎯', '🚀'];
+  const trimmed = text.trim();
+  const emojiMatch = trimmed.match(/^([\p{Emoji_Presentation}\p{Extended_Pictographic}])\s*/u);
+  const icon = emojiMatch ? emojiMatch[1] : icons[idx % 6];
+  const rest = emojiMatch ? trimmed.slice(emojiMatch[0].length) : trimmed;
+  // Try colon split first
+  const colonIdx = rest.indexOf('：');
+  const colonIdx2 = rest.indexOf(':');
+  const splitIdx = colonIdx > 0 && colonIdx < 25 ? colonIdx : (colonIdx2 > 0 && colonIdx2 < 25 ? colonIdx2 : -1);
+  if (splitIdx > 0) {
+    const title = rest.slice(0, splitIdx).trim().slice(0, 15);
+    const desc = rest.slice(splitIdx + 1).trim().slice(0, 50);
+    const numMatch = desc.match(/(\d+[%％万亿倍x]|\$[\d.]+[BMKbmk]?)/u);
+    return { icon, title, description: desc, highlight: numMatch ? numMatch[1] : undefined };
+  }
+  // Try comma/semicolon split
+  const commaIdx = rest.indexOf('，');
+  if (commaIdx > 2 && commaIdx < 20) {
+    return { icon, title: rest.slice(0, commaIdx).trim().slice(0, 15), description: rest.slice(commaIdx + 1).trim().slice(0, 50) };
+  }
+  // Try space split
+  const spaceIdx = rest.indexOf(' ', 3);
+  if (spaceIdx > 2 && spaceIdx < 20) {
+    return { icon, title: rest.slice(0, spaceIdx).trim().slice(0, 15), description: rest.slice(spaceIdx).trim().slice(0, 50) };
+  }
+  // Fallback: first 10 chars as title, rest as description
+  return { icon, title: rest.slice(0, 10), description: rest.slice(10).slice(0, 50) || rest.slice(0, 50) };
+}
 
-  if (segments.length < 2) {
-    const lines = text.split(/\n+/).filter(l => l.trim().length > 10);
-    if (lines.length >= 2) {
-      return lines.slice(0, 6).map((line, i) => {
-        const emojiMatch = line.match(/^\s*([\p{Emoji_Presentation}\p{Extended_Pictographic}])\s*/u);
-        const icon = emojiMatch ? emojiMatch[1] : ['📌', '💡', '🔑', '📊', '🎯', '🚀'][i % 6];
-        const rest = emojiMatch ? line.slice(emojiMatch[0].length) : line;
-        const colonIdx = rest.indexOf('：');
-        const colonIdx2 = rest.indexOf(':');
-        const splitIdx = colonIdx > 0 && colonIdx < 20 ? colonIdx : (colonIdx2 > 0 && colonIdx2 < 20 ? colonIdx2 : -1);
-        if (splitIdx > 0) {
-          return { icon, title: rest.slice(0, splitIdx).trim(), description: rest.slice(splitIdx + 1).trim().slice(0, 80) };
-        }
-        const words = rest.trim();
-        const titleEnd = Math.min(words.indexOf(' ', 2), 15);
-        if (titleEnd > 2) {
-          return { icon, title: words.slice(0, titleEnd).trim(), description: words.slice(titleEnd).trim().slice(0, 80) };
-        }
-        return { icon, title: words.slice(0, 12), description: words.slice(12).slice(0, 80) };
-      });
-    }
-    return [];
+function parseTitleToBullets(text: string): BulletPoint[] {
+  if (!text || text.length < 15) return [];
+  
+  // Strategy 1: Split by emoji at line start
+  const emojiSplitRegex = /(?=(?:^|\n)\s*[\p{Emoji_Presentation}\p{Extended_Pictographic}])/gu;
+  const segments = text.split(emojiSplitRegex).filter(s => s.trim().length > 8);
+  if (segments.length >= 2) {
+    return segments.slice(0, 6).map((seg, i) => splitBulletFromText(seg, i));
   }
 
-  return segments.slice(0, 6).map((seg, i) => {
-    const trimmed = seg.trim();
-    const emojiMatch = trimmed.match(/^([\p{Emoji_Presentation}\p{Extended_Pictographic}])\s*/u);
-    const icon = emojiMatch ? emojiMatch[1] : ['📌', '💡', '🔑', '📊', '🎯', '🚀'][i % 6];
-    const rest = emojiMatch ? trimmed.slice(emojiMatch[0].length) : trimmed;
-    const colonIdx = rest.indexOf('：');
-    const colonIdx2 = rest.indexOf(':');
-    const splitIdx = colonIdx > 0 && colonIdx < 25 ? colonIdx : (colonIdx2 > 0 && colonIdx2 < 25 ? colonIdx2 : -1);
-    if (splitIdx > 0) {
-      const title = rest.slice(0, splitIdx).trim();
-      const desc = rest.slice(splitIdx + 1).trim();
-      const numMatch = desc.match(/(\d+[%％万亿倍x]|\$[\d.]+[BMKbmk]?)/u);
-      return { icon, title: title.slice(0, 20), description: desc.slice(0, 80), highlight: numMatch ? numMatch[1] : undefined };
-    }
-    const spaceIdx = rest.indexOf(' ', 4);
-    if (spaceIdx > 0 && spaceIdx < 20) {
-      return { icon, title: rest.slice(0, spaceIdx).trim(), description: rest.slice(spaceIdx).trim().slice(0, 80) };
-    }
-    return { icon, title: rest.slice(0, 15), description: rest.slice(15).slice(0, 80) };
-  });
+  // Strategy 2: Split by newlines
+  const lines = text.split(/\n+/).filter(l => l.trim().length > 8);
+  if (lines.length >= 2) {
+    return lines.slice(0, 6).map((line, i) => splitBulletFromText(line, i));
+  }
+
+  // Strategy 3: Split by Chinese semicolons/periods
+  const sentences = text.split(/[；;。]/).filter(s => s.trim().length > 8);
+  if (sentences.length >= 2) {
+    return sentences.slice(0, 6).map((s, i) => splitBulletFromText(s, i));
+  }
+
+  // Strategy 4: Split by numbered items (1. 2. 3. or ①②③)
+  const numbered = text.split(/(?=\d+[.、)]|[①②③④⑤⑥⑦⑧])/).filter(s => s.trim().length > 8);
+  if (numbered.length >= 2) {
+    return numbered.slice(0, 6).map((s, i) => splitBulletFromText(s.replace(/^\d+[.、)]|^[①②③④⑤⑥⑦⑧]/, ''), i));
+  }
+
+  return [];
 }
 
 function postProcessOutline(outline: PPTOutline): PPTOutline {
@@ -1053,8 +1067,9 @@ function postProcessOutline(outline: PPTOutline): PPTOutline {
     if (!slide.sections) slide.sections = [];
   });
 
-  // Fix consecutive same layouts
+  // Fix consecutive same layouts AND global layout diversity
   const contentLayouts: PageLayout[] = ['quad', 'two_col_mixed', 'case_cards', 'comparison', 'key_points', 'data_dashboard', 'timeline'];
+  // Pass 1: Fix consecutive same layouts
   for (let i = 1; i < outline.slides.length - 1; i++) {
     const slide = outline.slides[i];
     if (slide.layout === outline.slides[i - 1].layout && slide.layout !== 'title' && slide.layout !== 'closing') {
@@ -1063,6 +1078,30 @@ function postProcessOutline(outline: PPTOutline): PPTOutline {
       const alternatives = contentLayouts.filter(l => !usedByNeighbors.has(l));
       if (alternatives.length > 0) {
         slide.layout = alternatives[i % alternatives.length];
+      }
+    }
+  }
+  // Pass 2: Global diversity — no layout should appear more than ceil(contentSlides/layoutTypes) times
+  const layoutCount: Record<string, number> = {};
+  const contentSlideCount = outline.slides.filter(s => s.layout !== 'title' && s.layout !== 'closing').length;
+  const maxPerLayout = Math.max(2, Math.ceil(contentSlideCount / contentLayouts.length));
+  for (const s of outline.slides) {
+    if (s.layout !== 'title' && s.layout !== 'closing') {
+      layoutCount[s.layout] = (layoutCount[s.layout] || 0) + 1;
+    }
+  }
+  for (let i = 1; i < outline.slides.length - 1; i++) {
+    const slide = outline.slides[i];
+    if (slide.layout === 'title' || slide.layout === 'closing') continue;
+    if ((layoutCount[slide.layout] || 0) > maxPerLayout) {
+      const prevLayout = outline.slides[i - 1]?.layout;
+      const nextLayout = outline.slides[i + 1]?.layout;
+      const usedNeighbors = new Set([prevLayout, nextLayout]);
+      const alt = contentLayouts.filter(l => !usedNeighbors.has(l) && (layoutCount[l] || 0) < maxPerLayout);
+      if (alt.length > 0) {
+        layoutCount[slide.layout]--;
+        slide.layout = alt[i % alt.length];
+        layoutCount[slide.layout] = (layoutCount[slide.layout] || 0) + 1;
       }
     }
   }
@@ -1169,6 +1208,58 @@ function postProcessOutline(outline: PPTOutline): PPTOutline {
         }
       });
     }
+  });
+
+  // ★ Final pass: ensure no content page has empty sections (空白页修复)
+  outline.slides.forEach((slide) => {
+    if (slide.layout === 'title' || slide.layout === 'closing') return;
+    const hasContent = slide.sections?.some(sec => {
+      if (sec.bullets && sec.bullets.length > 0) return true;
+      if (sec.cases && sec.cases.length > 0) return true;
+      if (sec.chartData && sec.chartData.items && sec.chartData.items.length > 0) return true;
+      if (sec.stats && sec.stats.length > 0) return true;
+      if (sec.flowNodes && sec.flowNodes.length > 0) return true;
+      if (sec.insightText && sec.insightText.length > 0) return true;
+      return false;
+    });
+    if (!hasContent) {
+      console.log(`[PPT PostProcess] Slide ${slide.slideIndex} "${slide.title}" has no content, generating fallback`);
+      slide.sections = [
+        {
+          type: 'bullet_list',
+          title: '📌 核心要点',
+          leadSentence: slide.title || '详见正文',
+          bullets: [
+            { icon: '📌', title: '要点概述', description: slide.title?.slice(0, 40) || '详见正文分析' },
+            { icon: '💡', title: '深入分析', description: slide.subtitle?.slice(0, 40) || '请参考完整报告内容' },
+            { icon: '🎯', title: '行动建议', description: '基于以上分析制定具体行动计划' },
+          ],
+        },
+        {
+          type: 'insight_block',
+          insightText: slide.quote || slide.title || '深度洞察，驱动决策',
+          insightLabel: '核心洞察',
+        },
+      ];
+      // Also set a safe layout for fallback content
+      if (slide.layout === 'quad' || slide.layout === 'data_dashboard') {
+        slide.layout = 'key_points';
+      }
+    }
+  });
+
+  // ★ Truncate all bullet descriptions to 50 chars to prevent overflow
+  outline.slides.forEach(slide => {
+    slide.sections?.forEach(section => {
+      section.bullets?.forEach(b => {
+        if (b.description && b.description.length > 50) {
+          b.description = b.description.slice(0, 48) + '…';
+        }
+        if (b.title && b.title.length > 15) {
+          b.title = b.title.slice(0, 13) + '…';
+        }
+      });
+    });
   });
 
   // Ensure all bullets have icons + backward compat
