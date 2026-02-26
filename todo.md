@@ -2060,3 +2060,8 @@
 - [x] 移除调试日志代码
 - [x] 23个vitest全部通过
 - [x] 端到端验证：8页PPT全部有内容，无空白页
+
+## 移除备案号（网站未在阿里云备案）
+- [x] 移除Footer中的ICP备案号（Home/Pricing/About/EmailLogin）
+- [x] 移除Footer中的公安备案号（Home/Pricing/About/EmailLogin）
+- [ ] 创建检查点

@@ -413,15 +413,7 @@ export default function EmailLogin() {
           <Link href="/pricing" className="hover:text-gray-300">价格套餐</Link>
         </div>
         <p>© 2025 泽思 Zenith AI - 专业AI商业咨询平台</p>
-        <div className="flex justify-center gap-4 text-xs">
-          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" className="hover:text-gray-300">
-            沪ICP备2024048847号
-          </a>
-          <a href="https://www.beian.gov.cn/portal/registerSystemInfo?recordcode=31011502404980" target="_blank" rel="noopener noreferrer" className="hover:text-gray-300 flex items-center gap-1">
-            <img src="https://www.beian.gov.cn/img/ghs.png" alt="" className="w-3 h-3" />
-            沪公网安备31011502404980号
-          </a>
-        </div>
+
       </footer>
     </div>
   );

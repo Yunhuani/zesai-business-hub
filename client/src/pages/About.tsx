@@ -95,25 +95,7 @@ export default function About() {
       <footer className="border-t glass-effect mt-16 py-8">
         <div className="container mx-auto px-4 text-center text-sm text-gray-400 space-y-2">
           <p>© 2025 泽思 Zenith AI - 专业AI商业咨询平台</p>
-          <div className="flex justify-center items-center gap-4 flex-wrap">
-            <a
-              href="https://beian.miit.gov.cn/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-purple-600 transition-colors"
-            >
-              沪ICP备2024048847号
-            </a>
-            <a
-              href="https://beian.mps.gov.cn/#/query/webSearch?code=31011502404980"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-purple-600 transition-colors flex items-center gap-1"
-            >
-              <img src="/police-badge.png" alt="公安备案" className="w-4 h-4" />
-              沪公网安备31011502404980号
-            </a>
-          </div>
+
         </div>
       </footer>
     </div>
