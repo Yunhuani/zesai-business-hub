@@ -387,6 +387,27 @@ describe('PPT Renderer V5', () => {
     expect(html.length).toBeGreaterThan(400);
   });
 
+  it('BugFix: comparison with empty bullets should not render blank columns', async () => {
+    const { renderSlideToHTML } = await import('../pptRenderer');
+    const slide = {
+      layout: 'comparison' as const,
+      title: '对比分析空内容',
+      leftLabel: '旧模式',
+      rightLabel: '新模式',
+      sections: [
+        { type: 'bullet_list' as const, title: '旧模式', bullets: [] },
+        { type: 'bullet_list' as const, title: '新模式', bullets: [] },
+      ],
+      points: [],
+    };
+    const html = renderSlideToHTML(slide, 'deep_blue', 'business');
+    expect(html).toContain('对比分析空内容');
+    expect(html).toContain('旧模式');
+    expect(html).toContain('新模式');
+    // Should still have substantial content (not just title + empty boxes)
+    expect(html.length).toBeGreaterThan(800);
+  });
+
   it('BugFix: all layouts produce valid HTML without crash', async () => {
     const { renderSlideToHTML } = await import('../pptRenderer');
     const layouts = ['title', 'closing', 'quad', 'two_col_mixed', 'case_cards', 'comparison', 'key_points', 'data_dashboard', 'timeline'] as const;

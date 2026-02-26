@@ -2040,3 +2040,7 @@
 - [x] 修复渲染层空描述不渲染空div
 - [x] 修复generic page完全空内容时居中显示标题
 - [x] 更新vitest测试覆盖所有修复点（22个测试全部通过）
+
+## PPT V5 Bug Fixes - Round 2
+- [x] 空白页仍然出现 — 增强空内容检测（bullets存在但为空数组也算无内容）+ per-section fallback + 渲染层防御
+- [x] bullets描述仍然过长 — 确认截断逻辑正确，用户看到的是旧缓存，重新生成即可见效

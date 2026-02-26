@@ -1213,8 +1213,10 @@ function postProcessOutline(outline: PPTOutline): PPTOutline {
   // ★ Final pass: ensure no content page has empty sections (空白页修复)
   outline.slides.forEach((slide) => {
     if (slide.layout === 'title' || slide.layout === 'closing') return;
+
+    // Check if slide has any real displayable content
     const hasContent = slide.sections?.some(sec => {
-      if (sec.bullets && sec.bullets.length > 0) return true;
+      if (sec.bullets && sec.bullets.length > 0 && sec.bullets.some(b => b.title && b.title.trim().length > 0)) return true;
       if (sec.cases && sec.cases.length > 0) return true;
       if (sec.chartData && sec.chartData.items && sec.chartData.items.length > 0) return true;
       if (sec.stats && sec.stats.length > 0) return true;
@@ -1222,18 +1224,30 @@ function postProcessOutline(outline: PPTOutline): PPTOutline {
       if (sec.insightText && sec.insightText.length > 0) return true;
       return false;
     });
+
     if (!hasContent) {
-      console.log(`[PPT PostProcess] Slide ${slide.slideIndex} "${slide.title}" has no content, generating fallback`);
+      console.log(`[PPT PostProcess] Slide ${slide.slideIndex} "${slide.title}" has no real content, generating fallback`);
+      // Generate meaningful fallback from slide title/subtitle/quote
+      const titleWords = (slide.title || '').replace(/[，。；：！？、]/g, '|').split('|').filter(w => w.trim().length > 2);
+      const fallbackBullets: BulletPoint[] = titleWords.length >= 3
+        ? titleWords.slice(0, 5).map((w, i) => ({
+            icon: ['📌', '💡', '🔑', '📊', '🎯'][i % 5],
+            title: w.trim().slice(0, 12),
+            description: slide.subtitle?.slice(0, 40) || '详见正文深入分析',
+          }))
+        : [
+            { icon: '📌', title: '要点概述', description: (slide.title || '').slice(0, 40) || '详见正文分析' },
+            { icon: '💡', title: '深入分析', description: (slide.subtitle || '').slice(0, 40) || '请参考完整报告内容' },
+            { icon: '🔑', title: '关键发现', description: '基于数据和案例的核心洞察' },
+            { icon: '🎯', title: '行动建议', description: '基于以上分析制定具体行动计划' },
+          ];
+
       slide.sections = [
         {
           type: 'bullet_list',
           title: '📌 核心要点',
           leadSentence: slide.title || '详见正文',
-          bullets: [
-            { icon: '📌', title: '要点概述', description: slide.title?.slice(0, 40) || '详见正文分析' },
-            { icon: '💡', title: '深入分析', description: slide.subtitle?.slice(0, 40) || '请参考完整报告内容' },
-            { icon: '🎯', title: '行动建议', description: '基于以上分析制定具体行动计划' },
-          ],
+          bullets: fallbackBullets,
         },
         {
           type: 'insight_block',
@@ -1241,11 +1255,21 @@ function postProcessOutline(outline: PPTOutline): PPTOutline {
           insightLabel: '核心洞察',
         },
       ];
-      // Also set a safe layout for fallback content
-      if (slide.layout === 'quad' || slide.layout === 'data_dashboard') {
-        slide.layout = 'key_points';
-      }
+      // Force a safe layout that can render bullet_list + insight_block
+      slide.layout = 'key_points';
     }
+
+    // ★ Per-section fix: any bullet_list section with 0 bullets gets fallback
+    slide.sections?.forEach(sec => {
+      if ((sec.type === 'bullet_list' || sec.type === 'text_block') && (!sec.bullets || sec.bullets.length === 0)) {
+        console.log(`[PPT PostProcess] Slide ${slide.slideIndex} section "${sec.title}" has empty bullets, adding fallback`);
+        sec.bullets = [
+          { icon: '📌', title: sec.title?.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '').trim().slice(0, 12) || '核心要点', description: slide.title?.slice(0, 40) || '详见正文' },
+          { icon: '💡', title: '补充说明', description: slide.subtitle?.slice(0, 40) || '请参考完整报告' },
+          { icon: '🎯', title: '关键启示', description: '基于分析得出的核心结论' },
+        ];
+      }
+    });
   });
 
   // ★ Truncate all bullet descriptions to 50 chars to prevent overflow

@@ -526,16 +526,22 @@ function renderComparisonPage(slide: SlideOutline, colors: ColorScheme, theme: T
     const bullets = (sec?.bullets || []).slice(0, 5);
     const bulletTitleSize = bullets.length > 4 ? '12px' : '13px';
     const bulletDescSize = bullets.length > 4 ? '10px' : '11px';
-    return `<div style="flex:1;border:2px solid ${borderColor}40;border-top:3px solid ${borderColor};border-radius:6px;padding:10px 12px;height:${h}px;overflow:hidden;display:flex;flex-direction:column;">
-      <div style="font-size:15px;font-weight:700;color:${borderColor};margin-bottom:10px;text-align:center;padding-bottom:6px;border-bottom:1px solid ${colors.cardBorder};${TEXT_WRAP}">${label}</div>
-      <div style="flex:1;display:flex;flex-direction:column;justify-content:space-evenly;">
-      ${bullets.map((b, i) => `<div style="display:flex;align-items:flex-start;gap:6px;">
+    // Fallback if no bullets at all
+    const bulletsHtml = bullets.length > 0
+      ? bullets.map((b, i) => `<div style="display:flex;align-items:flex-start;gap:6px;">
         ${coloredIcon(b.icon || '📌', borderColor === colors.negative ? i + 4 : i, 26)}
         <div style="flex:1;min-width:0;padding-top:2px;">
           <div style="font-size:${bulletTitleSize};font-weight:700;color:${colors.text};margin-bottom:1px;${TEXT_WRAP}">${b.title}</div>
-          <div style="font-size:${bulletDescSize};color:${colors.textSecondary};line-height:1.3;${TEXT_WRAP}">${b.description}</div>
+          ${b.description ? `<div style="font-size:${bulletDescSize};color:${colors.textSecondary};line-height:1.3;${TEXT_WRAP}">${b.description}</div>` : ''}
         </div>
-      </div>`).join('')}
+      </div>`).join('')
+      : `<div style="flex:1;display:flex;align-items:center;justify-content:center;">
+          <div style="font-size:14px;color:${colors.textSecondary};text-align:center;${TEXT_WRAP}">${label}</div>
+        </div>`;
+    return `<div style="flex:1;border:2px solid ${borderColor}40;border-top:3px solid ${borderColor};border-radius:6px;padding:10px 12px;height:${h}px;overflow:hidden;display:flex;flex-direction:column;">
+      <div style="font-size:15px;font-weight:700;color:${borderColor};margin-bottom:10px;text-align:center;padding-bottom:6px;border-bottom:1px solid ${colors.cardBorder};${TEXT_WRAP}">${label}</div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:space-evenly;">
+      ${bulletsHtml}
     </div>
     </div>`;
   };
