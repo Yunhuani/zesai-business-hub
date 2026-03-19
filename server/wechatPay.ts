@@ -67,7 +67,7 @@ export async function createWechatJsapiPayment(params: {
       mchid: WECHAT_PAY_MCHID,
       description: params.description,
       out_trade_no: params.outTradeNo,
-      notify_url: `https://www.zesiai.com/api/wechat-pay/notify`,
+      notify_url: `https://zesiai.com/api/wechat-pay/notify`,
       amount: {
         total: params.amount,
         currency: 'CNY',
@@ -112,7 +112,7 @@ export async function createWechatH5Payment(params: {
       mchid: WECHAT_PAY_MCHID,
       description: params.description,
       out_trade_no: params.outTradeNo,
-      notify_url: `https://www.zesiai.com/api/wechat-pay/notify`,
+      notify_url: `https://zesiai.com/api/wechat-pay/notify`,
       amount: {
         total: params.amount,
         currency: 'CNY',

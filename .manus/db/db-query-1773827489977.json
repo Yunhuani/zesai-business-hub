@@ -1,0 +1,34 @@
+{
+  "query": "SELECT id, email, name, creditsPurchased, creditsSubscription, creditsResetDate FROM users WHERE id IN (9030001, 7350017, 18360001);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, email, name, creditsPurchased, creditsSubscription, creditsResetDate FROM users WHERE id IN (9030001, 7350017, 18360001);",
+  "rows": [
+    {
+      "id": "9030001",
+      "email": "1538958274@qq.com",
+      "name": "1538958274",
+      "creditsPurchased": "1010",
+      "creditsSubscription": "750",
+      "creditsResetDate": "2026-04-17 09:50:23"
+    },
+    {
+      "id": "7350017",
+      "email": "1558328644@qq.com",
+      "name": "小段",
+      "creditsPurchased": "1360",
+      "creditsSubscription": "100",
+      "creditsResetDate": "2026-04-18 09:29:51"
+    },
+    {
+      "id": "18360001",
+      "email": "dongliang.108@163.com",
+      "name": "商业智慧",
+      "creditsPurchased": "750",
+      "creditsSubscription": "750",
+      "creditsResetDate": "2026-04-17 09:50:23"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tname\tcreditsPurchased\tcreditsSubscription\tcreditsResetDate\n9030001\t1538958274@qq.com\t1538958274\t1010\t750\t2026-04-17 09:50:23\n7350017\t1558328644@qq.com\t小段\t1360\t100\t2026-04-18 09:29:51\n18360001\tdongliang.108@163.com\t商业智慧\t750\t750\t2026-04-17 09:50:23\n",
+  "stderr": "",
+  "execution_time_ms": 382
+}

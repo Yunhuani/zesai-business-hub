@@ -1,0 +1,150 @@
+{
+  "query": "SELECT outTradeNo, plan, createdAt, paidAt, TIMESTAMPDIFF(SECOND, createdAt, paidAt) as sec_diff FROM orders WHERE status='paid' AND paidAt IS NOT NULL ORDER BY sec_diff DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT outTradeNo, plan, createdAt, paidAt, TIMESTAMPDIFF(SECOND, createdAt, paidAt) as sec_diff FROM orders WHERE status='paid' AND paidAt IS NOT NULL ORDER BY sec_diff DESC LIMIT 20;",
+  "rows": [
+    {
+      "outTradeNo": "ZS177324049436618360001",
+      "plan": "basic",
+      "createdAt": "2026-03-11 14:48:14",
+      "paidAt": "2026-03-18 09:49:36",
+      "sec_diff": "586882"
+    },
+    {
+      "outTradeNo": "ZS17651719637086930017",
+      "plan": "basic",
+      "createdAt": "2025-12-08 05:32:43",
+      "paidAt": "2025-12-08 22:49:36",
+      "sec_diff": "62213"
+    },
+    {
+      "outTradeNo": "ZS17738244815499030001",
+      "plan": "basic",
+      "createdAt": "2026-03-18 09:01:21",
+      "paidAt": "2026-03-18 09:49:36",
+      "sec_diff": "2895"
+    },
+    {
+      "outTradeNo": "ZS17738244816487350017",
+      "plan": "pack_500",
+      "createdAt": "2026-03-18 09:01:21",
+      "paidAt": "2026-03-18 09:49:36",
+      "sec_diff": "2895"
+    },
+    {
+      "outTradeNo": "ZS17663932629007350017",
+      "plan": "enterprise",
+      "createdAt": "2025-12-22 08:47:42",
+      "paidAt": "2025-12-22 09:07:24",
+      "sec_diff": "1182"
+    },
+    {
+      "outTradeNo": "ZS17652520914027350017",
+      "plan": "basic",
+      "createdAt": "2025-12-09 03:48:11",
+      "paidAt": "2025-12-09 03:51:59",
+      "sec_diff": "228"
+    },
+    {
+      "outTradeNo": "ZS176761470441911670001",
+      "plan": "basic",
+      "createdAt": "2026-01-05 12:05:04",
+      "paidAt": "2026-01-05 12:07:02",
+      "sec_diff": "118"
+    },
+    {
+      "outTradeNo": "ZS176853865009014160001",
+      "plan": "basic",
+      "createdAt": "2026-01-16 04:44:10",
+      "paidAt": "2026-01-16 04:45:33",
+      "sec_diff": "83"
+    },
+    {
+      "outTradeNo": "ZS17655314077066810001",
+      "plan": "basic",
+      "createdAt": "2025-12-12 09:23:27",
+      "paidAt": "2025-12-12 09:24:41",
+      "sec_diff": "74"
+    },
+    {
+      "outTradeNo": "ZS177071079180717370001",
+      "plan": "basic",
+      "createdAt": "2026-02-10 08:06:31",
+      "paidAt": "2026-02-10 08:07:31",
+      "sec_diff": "60"
+    },
+    {
+      "outTradeNo": "ZS176742401728712390001",
+      "plan": "basic",
+      "createdAt": "2026-01-03 07:06:57",
+      "paidAt": "2026-01-03 07:07:53",
+      "sec_diff": "56"
+    },
+    {
+      "outTradeNo": "ZS176923109182915630001",
+      "plan": "basic",
+      "createdAt": "2026-01-24 05:04:51",
+      "paidAt": "2026-01-24 05:05:44",
+      "sec_diff": "53"
+    },
+    {
+      "outTradeNo": "ZS176759712691212720002",
+      "plan": "basic",
+      "createdAt": "2026-01-05 07:12:06",
+      "paidAt": "2026-01-05 07:12:49",
+      "sec_diff": "43"
+    },
+    {
+      "outTradeNo": "ZS176779310674513110001",
+      "plan": "professional",
+      "createdAt": "2026-01-07 13:38:26",
+      "paidAt": "2026-01-07 13:39:06",
+      "sec_diff": "40"
+    },
+    {
+      "outTradeNo": "ZS176836883939214070004",
+      "plan": "basic",
+      "createdAt": "2026-01-14 05:33:59",
+      "paidAt": "2026-01-14 05:34:37",
+      "sec_diff": "38"
+    },
+    {
+      "outTradeNo": "ZS176801759385313500001",
+      "plan": "basic",
+      "createdAt": "2026-01-10 03:59:53",
+      "paidAt": "2026-01-10 04:00:28",
+      "sec_diff": "35"
+    },
+    {
+      "outTradeNo": "ZS17652676297547350017",
+      "plan": "pack_1200",
+      "createdAt": "2025-12-09 08:07:09",
+      "paidAt": "2025-12-09 08:07:40",
+      "sec_diff": "31"
+    },
+    {
+      "outTradeNo": "ZS176786481759113230010",
+      "plan": "professional",
+      "createdAt": "2026-01-08 09:33:37",
+      "paidAt": "2026-01-08 09:34:08",
+      "sec_diff": "31"
+    },
+    {
+      "outTradeNo": "ZS176759293997912690001",
+      "plan": "basic",
+      "createdAt": "2026-01-05 06:02:19",
+      "paidAt": "2026-01-05 06:02:49",
+      "sec_diff": "30"
+    },
+    {
+      "outTradeNo": "ZS176897443688315150001",
+      "plan": "basic",
+      "createdAt": "2026-01-21 05:47:16",
+      "paidAt": "2026-01-21 05:47:46",
+      "sec_diff": "30"
+    }
+  ],
+  "messages": [],
+  "stdout": "outTradeNo\tplan\tcreatedAt\tpaidAt\tsec_diff\nZS177324049436618360001\tbasic\t2026-03-11 14:48:14\t2026-03-18 09:49:36\t586882\nZS17651719637086930017\tbasic\t2025-12-08 05:32:43\t2025-12-08 22:49:36\t62213\nZS17738244815499030001\tbasic\t2026-03-18 09:01:21\t2026-03-18 09:49:36\t2895\nZS17738244816487350017\tpack_500\t2026-03-18 09:01:21\t2026-03-18 09:49:36\t2895\nZS17663932629007350017\tenterprise\t2025-12-22 08:47:42\t2025-12-22 09:07:24\t1182\nZS17652520914027350017\tbasic\t2025-12-09 03:48:11\t2025-12-09 03:51:59\t228\nZS176761470441911670001\tbasic\t2026-01-05 12:05:04\t2026-01-05 12:07:02\t118\nZS176853865009014160001\tbasic\t2026-01-16 04:44:10\t2026-01-16 04:45:33\t83\nZS17655314077066810001\tbasic\t2025-12-12 09:23:27\t2025-12-12 09:24:41\t74\nZS177071079180717370001\tbasic\t2026-02-10 08:06:31\t2026-02-10 08:07:31\t60\nZS176742401728712390001\tbasic\t2026-01-03 07:06:57\t2026-01-03 07:07:53\t56\nZS176923109182915630001\tbasic\t2026-01-24 05:04:51\t2026-01-24 05:05:44\t53\nZS176759712691212720002\tbasic\t2026-01-05 07:12:06\t2026-01-05 07:12:49\t43\nZS176779310674513110001\tprofessional\t2026-01-07 13:38:26\t2026-01-07 13:39:06\t40\nZS176836883939214070004\tbasic\t2026-01-14 05:33:59\t2026-01-14 05:34:37\t38\nZS176801759385313500001\tbasic\t2026-01-10 03:59:53\t2026-01-10 04:00:28\t35\nZS17652676297547350017\tpack_1200\t2025-12-09 08:07:09\t2025-12-09 08:07:40\t31\nZS176786481759113230010\tprofessional\t2026-01-08 09:33:37\t2026-01-08 09:34:08\t31\nZS176759293997912690001\tbasic\t2026-01-05 06:02:19\t2026-01-05 06:02:49\t30\nZS176897443688315150001\tbasic\t2026-01-21 05:47:16\t2026-01-21 05:47:46\t30\n",
+  "stderr": "",
+  "execution_time_ms": 368
+}

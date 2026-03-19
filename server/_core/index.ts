@@ -270,6 +270,13 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    
+    // 启动pending订单定时补偿检查
+    import("../pendingOrderChecker").then(({ startPendingOrderChecker }) => {
+      startPendingOrderChecker();
+    }).catch((err) => {
+      console.error("[PendingChecker] Failed to start:", err);
+    });
   });
 }
 

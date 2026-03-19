@@ -94,7 +94,16 @@ export async function createAlipayQrCodePayment(params: {
  */
 export function verifyAlipayCallback(params: Record<string, any>): boolean {
   try {
-    return alipaySdk.checkNotifySign(params);
+    // 打印关键调试信息（不含完整sign以保护安全）
+    console.log('[Alipay] Verify params keys:', Object.keys(params));
+    console.log('[Alipay] sign_type:', params.sign_type);
+    console.log('[Alipay] sign length:', params.sign?.length);
+    console.log('[Alipay] alipayPublicKey configured:', !!alipaySdk['config']?.alipayPublicKey);
+    console.log('[Alipay] alipayPublicKey prefix:', alipaySdk['config']?.alipayPublicKey?.substring(0, 30));
+    
+    const result = alipaySdk.checkNotifySign(params);
+    console.log('[Alipay] checkNotifySign result:', result);
+    return result;
   } catch (error) {
     console.error('[Alipay] Verify callback error:', error);
     return false;

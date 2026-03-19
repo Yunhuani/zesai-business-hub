@@ -1,0 +1,170 @@
+{
+  "query": "SELECT outTradeNo, userId, plan, amount, paymentMethod, createdAt FROM orders WHERE status='pending' ORDER BY createdAt DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT outTradeNo, userId, plan, amount, paymentMethod, createdAt FROM orders WHERE status='pending' ORDER BY createdAt DESC LIMIT 20;",
+  "rows": [
+    {
+      "outTradeNo": "ZS17738244436207350017",
+      "userId": "7350017",
+      "plan": "pack_500",
+      "amount": "4900",
+      "paymentMethod": "alipay",
+      "createdAt": "2026-03-18 09:00:43"
+    },
+    {
+      "outTradeNo": "ZS177243201823418030001",
+      "userId": "18030001",
+      "plan": "basic",
+      "amount": "9900",
+      "paymentMethod": "alipay",
+      "createdAt": "2026-03-02 06:13:38"
+    },
+    {
+      "outTradeNo": "ZS17706241316811",
+      "userId": "1",
+      "plan": "enterprise",
+      "amount": "99900",
+      "paymentMethod": "alipay",
+      "createdAt": "2026-02-09 08:02:11"
+    },
+    {
+      "outTradeNo": "ZS17695819525581",
+      "userId": "1",
+      "plan": "enterprise",
+      "amount": "99900",
+      "paymentMethod": "alipay",
+      "createdAt": "2026-01-28 06:32:32"
+    },
+    {
+      "outTradeNo": "ZS176938709847115870001",
+      "userId": "15870001",
+      "plan": "enterprise",
+      "amount": "99900",
+      "paymentMethod": "alipay",
+      "createdAt": "2026-01-26 00:24:58"
+    },
+    {
+      "outTradeNo": "ZS176938662563915870001",
+      "userId": "15870001",
+      "plan": "basic",
+      "amount": "9900",
+      "paymentMethod": "alipay",
+      "createdAt": "2026-01-26 00:17:05"
+    },
+    {
+      "outTradeNo": "ZS176938598972915870001",
+      "userId": "15870001",
+      "plan": "basic",
+      "amount": "9900",
+      "paymentMethod": "alipay",
+      "createdAt": "2026-01-26 00:06:29"
+    },
+    {
+      "outTradeNo": "ZS176917281020514820001",
+      "userId": "14820001",
+      "plan": "basic",
+      "amount": "9900",
+      "paymentMethod": "alipay",
+      "createdAt": "2026-01-23 12:53:30"
+    },
+    {
+      "outTradeNo": "ZS176916853618815480107",
+      "userId": "15480107",
+      "plan": "basic",
+      "amount": "9900",
+      "paymentMethod": "alipay",
+      "createdAt": "2026-01-23 11:42:16"
+    },
+    {
+      "outTradeNo": "ZS17681338510771",
+      "userId": "1",
+      "plan": "enterprise",
+      "amount": "99900",
+      "paymentMethod": "alipay",
+      "createdAt": "2026-01-11 12:17:31"
+    },
+    {
+      "outTradeNo": "ZS17680555736881",
+      "userId": "1",
+      "plan": "enterprise",
+      "amount": "99900",
+      "paymentMethod": "alipay",
+      "createdAt": "2026-01-10 14:32:53"
+    },
+    {
+      "outTradeNo": "ZS176740561640812390001",
+      "userId": "12390001",
+      "plan": "basic",
+      "amount": "9900",
+      "paymentMethod": "alipay",
+      "createdAt": "2026-01-03 02:00:16"
+    },
+    {
+      "outTradeNo": "ZS176740554964312390001",
+      "userId": "12390001",
+      "plan": "basic",
+      "amount": "9900",
+      "paymentMethod": "alipay",
+      "createdAt": "2026-01-03 01:59:09"
+    },
+    {
+      "outTradeNo": "ZS176737659991012390001",
+      "userId": "12390001",
+      "plan": "basic",
+      "amount": "9900",
+      "paymentMethod": "alipay",
+      "createdAt": "2026-01-02 17:56:39"
+    },
+    {
+      "outTradeNo": "ZS176737648451612390001",
+      "userId": "12390001",
+      "plan": "basic",
+      "amount": "9900",
+      "paymentMethod": "alipay",
+      "createdAt": "2026-01-02 17:54:44"
+    },
+    {
+      "outTradeNo": "ZS176716316967311520002",
+      "userId": "11520002",
+      "plan": "basic",
+      "amount": "9900",
+      "paymentMethod": "alipay",
+      "createdAt": "2025-12-31 06:39:29"
+    },
+    {
+      "outTradeNo": "ZS17670034551311",
+      "userId": "1",
+      "plan": "enterprise",
+      "amount": "99900",
+      "paymentMethod": "stripe",
+      "createdAt": "2025-12-29 10:17:35"
+    },
+    {
+      "outTradeNo": "ZS17670034455801",
+      "userId": "1",
+      "plan": "enterprise",
+      "amount": "99900",
+      "paymentMethod": "alipay",
+      "createdAt": "2025-12-29 10:17:25"
+    },
+    {
+      "outTradeNo": "ZS17670026192831",
+      "userId": "1",
+      "plan": "enterprise",
+      "amount": "99900",
+      "paymentMethod": "stripe",
+      "createdAt": "2025-12-29 10:03:39"
+    },
+    {
+      "outTradeNo": "ZS176700252210611160018",
+      "userId": "11160018",
+      "plan": "professional",
+      "amount": "29900",
+      "paymentMethod": "stripe",
+      "createdAt": "2025-12-29 10:02:02"
+    }
+  ],
+  "messages": [],
+  "stdout": "outTradeNo\tuserId\tplan\tamount\tpaymentMethod\tcreatedAt\nZS17738244436207350017\t7350017\tpack_500\t4900\talipay\t2026-03-18 09:00:43\nZS177243201823418030001\t18030001\tbasic\t9900\talipay\t2026-03-02 06:13:38\nZS17706241316811\t1\tenterprise\t99900\talipay\t2026-02-09 08:02:11\nZS17695819525581\t1\tenterprise\t99900\talipay\t2026-01-28 06:32:32\nZS176938709847115870001\t15870001\tenterprise\t99900\talipay\t2026-01-26 00:24:58\nZS176938662563915870001\t15870001\tbasic\t9900\talipay\t2026-01-26 00:17:05\nZS176938598972915870001\t15870001\tbasic\t9900\talipay\t2026-01-26 00:06:29\nZS176917281020514820001\t14820001\tbasic\t9900\talipay\t2026-01-23 12:53:30\nZS176916853618815480107\t15480107\tbasic\t9900\talipay\t2026-01-23 11:42:16\nZS17681338510771\t1\tenterprise\t99900\talipay\t2026-01-11 12:17:31\nZS17680555736881\t1\tenterprise\t99900\talipay\t2026-01-10 14:32:53\nZS176740561640812390001\t12390001\tbasic\t9900\talipay\t2026-01-03 02:00:16\nZS176740554964312390001\t12390001\tbasic\t9900\talipay\t2026-01-03 01:59:09\nZS176737659991012390001\t12390001\tbasic\t9900\talipay\t2026-01-02 17:56:39\nZS176737648451612390001\t12390001\tbasic\t9900\talipay\t2026-01-02 17:54:44\nZS176716316967311520002\t11520002\tbasic\t9900\talipay\t2025-12-31 06:39:29\nZS17670034551311\t1\tenterprise\t99900\tstripe\t2025-12-29 10:17:35\nZS17670034455801\t1\tenterprise\t99900\talipay\t2025-12-29 10:17:25\nZS17670026192831\t1\tenterprise\t99900\tstripe\t2025-12-29 10:03:39\nZS176700252210611160018\t11160018\tprofessional\t29900\tstripe\t2025-12-29 10:02:02\n",
+  "stderr": "",
+  "execution_time_ms": 369
+}

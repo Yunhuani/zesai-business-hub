@@ -1,0 +1,100 @@
+{
+  "query": "SELECT id, userId, outTradeNo, plan, amount, status, createdAt FROM orders WHERE status = 'pending' ORDER BY createdAt DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, userId, outTradeNo, plan, amount, status, createdAt FROM orders WHERE status = 'pending' ORDER BY createdAt DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "2310002",
+      "userId": "9030001",
+      "outTradeNo": "ZS17738244815499030001",
+      "plan": "basic",
+      "amount": "9900",
+      "status": "pending",
+      "createdAt": "2026-03-18 09:01:21"
+    },
+    {
+      "id": "2310003",
+      "userId": "7350017",
+      "outTradeNo": "ZS17738244816487350017",
+      "plan": "pack_500",
+      "amount": "4900",
+      "status": "pending",
+      "createdAt": "2026-03-18 09:01:21"
+    },
+    {
+      "id": "2310001",
+      "userId": "7350017",
+      "outTradeNo": "ZS17738244436207350017",
+      "plan": "pack_500",
+      "amount": "4900",
+      "status": "pending",
+      "createdAt": "2026-03-18 09:00:43"
+    },
+    {
+      "id": "2280001",
+      "userId": "18360001",
+      "outTradeNo": "ZS177324049436618360001",
+      "plan": "basic",
+      "amount": "9900",
+      "status": "pending",
+      "createdAt": "2026-03-11 14:48:14"
+    },
+    {
+      "id": "2220001",
+      "userId": "18030001",
+      "outTradeNo": "ZS177243201823418030001",
+      "plan": "basic",
+      "amount": "9900",
+      "status": "pending",
+      "createdAt": "2026-03-02 06:13:38"
+    },
+    {
+      "id": "2070001",
+      "userId": "1",
+      "outTradeNo": "ZS17706241316811",
+      "plan": "enterprise",
+      "amount": "99900",
+      "status": "pending",
+      "createdAt": "2026-02-09 08:02:11"
+    },
+    {
+      "id": "2010001",
+      "userId": "1",
+      "outTradeNo": "ZS17695819525581",
+      "plan": "enterprise",
+      "amount": "99900",
+      "status": "pending",
+      "createdAt": "2026-01-28 06:32:32"
+    },
+    {
+      "id": "1980002",
+      "userId": "15870001",
+      "outTradeNo": "ZS176938709847115870001",
+      "plan": "enterprise",
+      "amount": "99900",
+      "status": "pending",
+      "createdAt": "2026-01-26 00:24:58"
+    },
+    {
+      "id": "1980001",
+      "userId": "15870001",
+      "outTradeNo": "ZS176938662563915870001",
+      "plan": "basic",
+      "amount": "9900",
+      "status": "pending",
+      "createdAt": "2026-01-26 00:17:05"
+    },
+    {
+      "id": "1950001",
+      "userId": "15870001",
+      "outTradeNo": "ZS176938598972915870001",
+      "plan": "basic",
+      "amount": "9900",
+      "status": "pending",
+      "createdAt": "2026-01-26 00:06:29"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserId\toutTradeNo\tplan\tamount\tstatus\tcreatedAt\n2310002\t9030001\tZS17738244815499030001\tbasic\t9900\tpending\t2026-03-18 09:01:21\n2310003\t7350017\tZS17738244816487350017\tpack_500\t4900\tpending\t2026-03-18 09:01:21\n2310001\t7350017\tZS17738244436207350017\tpack_500\t4900\tpending\t2026-03-18 09:00:43\n2280001\t18360001\tZS177324049436618360001\tbasic\t9900\tpending\t2026-03-11 14:48:14\n2220001\t18030001\tZS177243201823418030001\tbasic\t9900\tpending\t2026-03-02 06:13:38\n2070001\t1\tZS17706241316811\tenterprise\t99900\tpending\t2026-02-09 08:02:11\n2010001\t1\tZS17695819525581\tenterprise\t99900\tpending\t2026-01-28 06:32:32\n1980002\t15870001\tZS176938709847115870001\tenterprise\t99900\tpending\t2026-01-26 00:24:58\n1980001\t15870001\tZS176938662563915870001\tbasic\t9900\tpending\t2026-01-26 00:17:05\n1950001\t15870001\tZS176938598972915870001\tbasic\t9900\tpending\t2026-01-26 00:06:29\n",
+  "stderr": "",
+  "execution_time_ms": 358
+}

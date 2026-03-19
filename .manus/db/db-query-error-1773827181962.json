@@ -1,0 +1,9 @@
+{
+  "query": "\nSELECT o.*, u.email, u.purchasedCredits, u.subscriptionCredits \nFROM orders o \nLEFT JOIN users u ON o.\"userId\" = u.id\nWHERE o.\"outTradeNo\" IN ('ZS17738244816487350017', 'ZS17738244815499030001');\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute \nSELECT o.*, u.email, u.purchasedCredits, u.subscriptionCredits \nFROM orders o \nLEFT JOIN users u ON o.\"userId\" = u.id\nWHERE o.\"outTradeNo\" IN ('ZS17738244816487350017', 'ZS17738244815499030001');\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1064 (42000) at line 2: You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 3 column 32 near \"\"userId\" = u.id",
+    "WHERE o.\"outTradeNo\" IN ('ZS17738244816487350017', 'ZS17738244815499030001')\""
+  ]
+}

@@ -372,7 +372,7 @@ export async function getOrderByOutTradeNo(outTradeNo: string) {
 }
 
 export async function updateOrderStatus(outTradeNo: string, data: {
-  status: "pending" | "paid" | "cancelled" | "refunded";
+  status: "pending" | "paid" | "cancelled" | "refunded" | "closed";
   tradeNo?: string;
   paidAt?: Date;
 }) {

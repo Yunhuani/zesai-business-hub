@@ -1,0 +1,86 @@
+{
+  "query": "\nSELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'users' ORDER BY ordinal_position;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute \nSELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'users' ORDER BY ordinal_position;\n",
+  "rows": [
+    {
+      "column_name": "id",
+      "data_type": "int"
+    },
+    {
+      "column_name": "openId",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "name",
+      "data_type": "text"
+    },
+    {
+      "column_name": "email",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "loginMethod",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "role",
+      "data_type": "enum"
+    },
+    {
+      "column_name": "createdAt",
+      "data_type": "timestamp"
+    },
+    {
+      "column_name": "updatedAt",
+      "data_type": "timestamp"
+    },
+    {
+      "column_name": "lastSignedIn",
+      "data_type": "timestamp"
+    },
+    {
+      "column_name": "creditsPurchased",
+      "data_type": "int"
+    },
+    {
+      "column_name": "creditsSubscription",
+      "data_type": "int"
+    },
+    {
+      "column_name": "creditsResetDate",
+      "data_type": "timestamp"
+    },
+    {
+      "column_name": "username",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "password",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "referralCode",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "commissionBalance",
+      "data_type": "int"
+    },
+    {
+      "column_name": "phone",
+      "data_type": "varchar"
+    },
+    {
+      "column_name": "bindPhonePrompted",
+      "data_type": "int"
+    },
+    {
+      "column_name": "loginCount",
+      "data_type": "int"
+    }
+  ],
+  "messages": [],
+  "stdout": "column_name\tdata_type\nid\tint\nopenId\tvarchar\nname\ttext\nemail\tvarchar\nloginMethod\tvarchar\nrole\tenum\ncreatedAt\ttimestamp\nupdatedAt\ttimestamp\nlastSignedIn\ttimestamp\ncreditsPurchased\tint\ncreditsSubscription\tint\ncreditsResetDate\ttimestamp\nusername\tvarchar\npassword\tvarchar\nreferralCode\tvarchar\ncommissionBalance\tint\nphone\tvarchar\nbindPhonePrompted\tint\nloginCount\tint\n",
+  "stderr": "",
+  "execution_time_ms": 363
+}
