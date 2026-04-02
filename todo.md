@@ -2071,3 +2071,10 @@
 - [x] 移除Footer中的ICP备案号（Home/Pricing/About/EmailLogin）
 - [x] 移除Footer中的公安备案号（Home/Pricing/About/EmailLogin）
 - [ ] 创建检查点
+
+
+## 修复www域名301重定向导致API调用失败
+- [x] 在index.html添加www到裸域的即时跳转脚本
+- [x] 修复OG标签中的www.zesiai.com引用为zesiai.com
+- [ ] 部署并验证修复
+- [ ] 创建检查点

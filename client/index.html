@@ -2,6 +2,12 @@
 <html lang="en">
 
   <head>
+    <script>
+      // 如果用户通过www访问，立即跳转到裸域，避免301重定向导致API调用失败
+      if (window.location.hostname === 'www.zesiai.com') {
+        window.location.replace('https://zesiai.com' + window.location.pathname + window.location.search + window.location.hash);
+      }
+    </script>
     <meta charset="UTF-8" />
     <meta
       name="viewport"
@@ -16,10 +22,10 @@
     
     <!-- Open Graph / 社交分享标签 -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.zesiai.com/" />
+    <meta property="og:url" content="https://zesiai.com/" />
     <meta property="og:title" content="泽思AI - AI驱动的商业咨询平台" />
     <meta property="og:description" content="将顶级咨询公司方法论与前沿AI大模型结合，提供战略规划、商业模式、品牌营销等专业咨询服务。" />
-    <meta property="og:image" content="https://www.zesiai.com/zhesi-ai-logo.png" />
+    <meta property="og:image" content="https://zesiai.com/zhesi-ai-logo.png" />
     <meta property="og:image:width" content="1024" />
     <meta property="og:image:height" content="1024" />
     <meta property="og:site_name" content="泽思AI" />
@@ -29,7 +35,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="泽思AI - AI驱动的商业咨询平台" />
     <meta name="twitter:description" content="将顶级咨询公司方法论与前沿AI大模型结合，提供战略规划、商业模式、品牌营销等专业咨询服务。" />
-    <meta name="twitter:image" content="https://www.zesiai.com/zhesi-ai-logo.png" />
+    <meta name="twitter:image" content="https://zesiai.com/zhesi-ai-logo.png" />
     <title>泽思AI - AI驱动的商业咨询平台 | 战略规划·商业模式·融资·增长·盈利</title>
     <!-- Add Google Fonts here, example:
     <link rel="preconnect" href="https://fonts.googleapis.com" />
