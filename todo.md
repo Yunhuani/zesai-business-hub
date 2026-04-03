@@ -2076,5 +2076,15 @@
 ## 修复www域名301重定向导致API调用失败
 - [x] 在index.html添加www到裸域的即时跳转脚本
 - [x] 修复OG标签中的www.zesiai.com引用为zesiai.com
-- [ ] 部署并验证修复
-- [ ] 创建检查点
+- [x] 部署并验证修复
+- [x] 创建检查点
+
+
+## 彻底修复积分包发放问题
+- [x] 修复index.ts中alipay notify路由的积分包配置（pack_1000→pack_1200等）
+- [x] 修复wechatPayCallback.ts中的积分包配置
+- [x] 在pendingOrderChecker中添加已paid但未发放积分的补发逻辑
+- [x] 给addPurchasedCredits添加防重复机制
+- [x] 创建补发脚本并补发3笔漏发订单（yunhua.ni 3000积分 + 2个客户各500积分）
+- [x] 验证所有路径的积分包配置一致性（无残留旧配置）
+- [ ] 保存checkpoint并发布

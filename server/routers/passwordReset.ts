@@ -44,7 +44,7 @@ export const passwordResetRouter = router({
       });
       
       // 发送重置邮件
-      const resetUrl = `https://www.zesiai.com/reset-password?token=${token}`;
+      const resetUrl = `https://zesiai.com/reset-password?token=${token}`;
       
       try {
         await sendEmail({
@@ -71,7 +71,7 @@ export const passwordResetRouter = router({
               <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
               <p style="color: #999; font-size: 12px;">
                 泽思AI商业智库<br>
-                www.zesiai.com
+                zesiai.com
               </p>
             </div>
           `,

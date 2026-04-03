@@ -121,7 +121,7 @@ export const paymentRouter = router({
             productDescription = stripePack.description;
           }
           
-          const origin = ctx.req.headers.origin || "https://www.zesiai.com";
+          const origin = ctx.req.headers.origin || "https://zesiai.com";
           const { checkoutUrl } = await createStripeCheckoutSession({
             userId: ctx.user.id,
             userEmail: ctx.user.email || "",

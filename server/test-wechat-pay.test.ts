@@ -57,16 +57,16 @@ describe('微信支付功能测试', () => {
   it('应该正确配置积分包价格', () => {
     const CREDIT_PACK_CONFIG = {
       pack_500: { credits: 500, price: 4900 },
-      pack_1000: { credits: 1000, price: 9900 },
-      pack_2200: { credits: 2200, price: 19900 },
-      pack_5500: { credits: 5500, price: 39900 },
+      pack_1200: { credits: 1200, price: 9900 },
+      pack_3000: { credits: 3000, price: 19900 },
+      pack_8000: { credits: 8000, price: 39900 },
     };
 
     // 验证积分包配置
     expect(CREDIT_PACK_CONFIG.pack_500.price).toBe(4900); // 49元
-    expect(CREDIT_PACK_CONFIG.pack_1000.price).toBe(9900); // 99元
-    expect(CREDIT_PACK_CONFIG.pack_2200.price).toBe(19900); // 199元
-    expect(CREDIT_PACK_CONFIG.pack_5500.price).toBe(39900); // 399元
+    expect(CREDIT_PACK_CONFIG.pack_1200.price).toBe(9900); // 99元
+    expect(CREDIT_PACK_CONFIG.pack_3000.price).toBe(19900); // 199元
+    expect(CREDIT_PACK_CONFIG.pack_8000.price).toBe(39900); // 399元
 
     console.log('✓ 积分包价格配置正确');
   });
@@ -85,9 +85,9 @@ describe('微信支付功能测试', () => {
   });
 
   it('应该正确配置微信支付回调URL', () => {
-    const notifyUrl = 'https://www.zesiai.com/api/wechat-pay/notify';
+    const notifyUrl = 'https://zesiai.com/api/wechat-pay/notify';
     
-    expect(notifyUrl).toBe('https://www.zesiai.com/api/wechat-pay/notify');
+    expect(notifyUrl).toBe('https://zesiai.com/api/wechat-pay/notify');
     expect(notifyUrl.startsWith('https://')).toBe(true);
     expect(notifyUrl.includes('zesiai.com')).toBe(true);
 

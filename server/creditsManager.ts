@@ -141,14 +141,30 @@ export async function deductCredits(
 
 /**
  * Add purchased credits to user account
+ * Has deduplication: if orderId is provided and already has a purchase transaction, skip
  */
 export async function addPurchasedCredits(
   userId: number,
   amount: number,
   orderId?: number
-): Promise<void> {
+): Promise<boolean> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+
+  // Deduplication check: if orderId provided, check if credits already granted
+  if (orderId) {
+    const { and } = await import("drizzle-orm");
+    const existing = await db.select().from(creditsTransactions).where(
+      and(
+        eq(creditsTransactions.relatedOrderId, orderId),
+        eq(creditsTransactions.type, "purchase")
+      )
+    ).limit(1);
+    if (existing.length > 0) {
+      console.log(`[Credits] Skipping duplicate credit grant for orderId=${orderId}, already granted`);
+      return false;
+    }
+  }
 
   const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   if (!user) throw new Error("User not found");
@@ -171,6 +187,9 @@ export async function addPurchasedCredits(
     description: `购买积分: ${amount}积分`,
     relatedOrderId: orderId,
   });
+
+  console.log(`[Credits] Granted ${amount} credits to user ${userId} for order ${orderId}`);
+  return true;
 }
 
 /**

@@ -18,7 +18,7 @@ export const referralRouter = router({
    */
   getMyCode: protectedProcedure.query(async ({ ctx }) => {
     const code = await getOrCreateUserReferralCode(ctx.user.id);
-    const baseUrl = process.env.VITE_APP_URL || "https://www.zesiai.com";
+    const baseUrl = process.env.VITE_APP_URL || "https://zesiai.com";
     const url = `${baseUrl}?ref=${code}`;
 
     return {

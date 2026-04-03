@@ -126,9 +126,9 @@ async function startServer() {
         
         const CREDIT_PACK_CONFIG: Record<string, { name: string; credits: number; price: number }> = {
           pack_500: { name: "入门包", credits: 500, price: 4900 },
-          pack_1000: { name: "超值包", credits: 1000, price: 9900 },
-          pack_2200: { name: "专业包", credits: 2200, price: 19900 },
-          pack_5500: { name: "企业包", credits: 5500, price: 39900 },
+          pack_1200: { name: "超值包", credits: 1200, price: 9900 },
+          pack_3000: { name: "专业包", credits: 3000, price: 19900 },
+          pack_8000: { name: "企业包", credits: 8000, price: 39900 },
         };
         const creditPackConfig = CREDIT_PACK_CONFIG[packId];
         

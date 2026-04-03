@@ -15,9 +15,9 @@ const PLAN_CONFIG: Record<string, { monthlyCredits: number; price: number; durat
 
 const CREDIT_PACK_CONFIG: Record<string, { name: string; credits: number; price: number }> = {
   pack_500: { name: "入门包", credits: 500, price: 4900 },
-  pack_1000: { name: "超值包", credits: 1000, price: 9900 },
-  pack_2200: { name: "专业包", credits: 2200, price: 19900 },
-  pack_5500: { name: "企业包", credits: 5500, price: 39900 },
+  pack_1200: { name: "超值包", credits: 1200, price: 9900 },
+  pack_3000: { name: "专业包", credits: 3000, price: 19900 },
+  pack_8000: { name: "企业包", credits: 8000, price: 39900 },
 };
 
 const CHECK_INTERVAL = 5 * 60 * 1000; // 5分钟
@@ -148,6 +148,75 @@ async function checkAlipayOrder(order: any) {
   }
 }
 
+/**
+ * 扫描已支付但未发放积分的订单，自动补发
+ */
+async function checkPaidButUndeliveredOrders() {
+  try {
+    const db = await getDb();
+    if (!db) return;
+
+    const { orders, creditsTransactions } = await import("../drizzle/schema");
+    const { eq, and, sql, notInArray } = await import("drizzle-orm");
+
+    // 查找所有积分包类型的已支付订单
+    const paidPackOrders = await db.select().from(orders).where(
+      and(
+        eq(orders.status, "paid"),
+        sql`${orders.plan} LIKE 'pack_%'`
+      )
+    );
+
+    if (paidPackOrders.length === 0) return;
+
+    // 查找已经发放过积分的订单ID
+    const deliveredTxns = await db.select({ orderId: creditsTransactions.relatedOrderId }).from(creditsTransactions).where(
+      eq(creditsTransactions.type, "purchase")
+    );
+    const deliveredOrderIds = new Set(deliveredTxns.map(t => t.orderId).filter(Boolean));
+
+    // 找出未发放积分的订单
+    const undelivered = paidPackOrders.filter(o => !deliveredOrderIds.has(o.id));
+
+    if (undelivered.length === 0) return;
+
+    console.log(`[PendingChecker] Found ${undelivered.length} paid but undelivered credit pack orders`);
+
+    for (const order of undelivered) {
+      let packId = order.plan;
+      if (order.plan.startsWith("pack_") && order.plan.includes("_", 5)) {
+        const parts = order.plan.split("_");
+        if (parts.length >= 2) {
+          packId = `${parts[0]}_${parts[1]}`;
+        }
+      }
+      const creditPackConfig = CREDIT_PACK_CONFIG[packId];
+      if (creditPackConfig) {
+        const granted = await addPurchasedCredits(order.userId, creditPackConfig.credits, order.id);
+        if (granted) {
+          console.log(`[PendingChecker] Auto-delivered ${creditPackConfig.credits} credits for order ${order.outTradeNo} (user ${order.userId})`);
+          const user = await getUserById(order.userId);
+          if (user) {
+            await notifyAdminNewOrder({
+              orderNo: order.outTradeNo,
+              userName: user.name || "",
+              userEmail: user.email || "",
+              productName: `${creditPackConfig.name}（${creditPackConfig.credits}积分）[补发]`,
+              amount: order.amount,
+              paymentMethod: order.paymentMethod || "alipay",
+              paidAt: order.paidAt ? new Date(order.paidAt) : new Date(),
+            });
+          }
+        }
+      } else {
+        console.warn(`[PendingChecker] Unknown pack config for plan=${order.plan}, packId=${packId}`);
+      }
+    }
+  } catch (error) {
+    console.error("[PendingChecker] Error in checkPaidButUndeliveredOrders:", error);
+  }
+}
+
 let intervalId: ReturnType<typeof setInterval> | null = null;
 
 export function startPendingOrderChecker() {
@@ -161,7 +230,11 @@ export function startPendingOrderChecker() {
   // 启动后延迟30秒执行第一次检查（等数据库连接就绪）
   setTimeout(() => {
     checkPendingOrders();
-    intervalId = setInterval(checkPendingOrders, CHECK_INTERVAL);
+    checkPaidButUndeliveredOrders(); // 同时检查未发放积分的订单
+    intervalId = setInterval(() => {
+      checkPendingOrders();
+      checkPaidButUndeliveredOrders();
+    }, CHECK_INTERVAL);
   }, 30000);
 }
 
