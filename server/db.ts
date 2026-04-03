@@ -294,7 +294,14 @@ export async function getUserSubscription(userId: number) {
     .where(eq(subscriptions.userId, userId))
     .orderBy(subscriptions.createdAt)
     .limit(1);
-  return result.length > 0 ? result[0] : undefined;
+  if (result.length === 0) return undefined;
+  
+  const sub = result[0];
+  // 检查订阅是否已过期：endDate已过或status不是active
+  if (sub.status !== 'active' || new Date(sub.endDate) < new Date()) {
+    return { ...sub, plan: 'free' as const, status: 'expired' as const };
+  }
+  return sub;
 }
 
 export async function createOrUpdateSubscription(data: {

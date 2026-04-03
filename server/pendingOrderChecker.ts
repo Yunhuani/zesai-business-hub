@@ -4,7 +4,7 @@
  */
 import { queryAlipayOrder } from "./_core/alipay";
 import { getDb, updateOrderStatus, createOrUpdateSubscription, getUserById } from "./db";
-import { resetSubscriptionCredits, addPurchasedCredits } from "./creditsManager";
+import { resetSubscriptionCredits, addPurchasedCredits, clearSubscriptionCredits } from "./creditsManager";
 import { notifyAdminNewOrder } from "./orderNotification";
 
 const PLAN_CONFIG: Record<string, { monthlyCredits: number; price: number; duration: number }> = {
@@ -217,7 +217,53 @@ async function checkPaidButUndeliveredOrders() {
   }
 }
 
+/**
+ * 定时检查过期订阅，自动降级为免费版并清零订阅积分
+ */
+async function checkExpiredSubscriptions() {
+  try {
+    const db = await getDb();
+    if (!db) return;
+
+    const { subscriptions, users: usersTable } = await import("../drizzle/schema");
+    const { eq, and, sql } = await import("drizzle-orm");
+
+    // 查找所有已过期但status仍为active的订阅
+    const now = new Date().toISOString();
+    const expiredSubs = await db.select().from(subscriptions).where(
+      and(
+        eq(subscriptions.status, "active"),
+        sql`${subscriptions.endDate} < ${now}`
+      )
+    );
+
+    if (expiredSubs.length === 0) return;
+
+    console.log(`[SubscriptionChecker] Found ${expiredSubs.length} expired subscriptions`);
+
+    for (const sub of expiredSubs) {
+      try {
+        // 将订阅状态改为expired
+        await db.update(subscriptions)
+          .set({ status: "expired" })
+          .where(eq(subscriptions.id, sub.id));
+
+        // 清零该用户的订阅积分
+        await clearSubscriptionCredits(sub.userId);
+
+        console.log(`[SubscriptionChecker] User ${sub.userId} subscription expired: ${sub.plan} -> free, credits cleared`);
+      } catch (error) {
+        console.error(`[SubscriptionChecker] Error processing expired subscription for user ${sub.userId}:`, error);
+      }
+    }
+  } catch (error) {
+    console.error("[SubscriptionChecker] Error in checkExpiredSubscriptions:", error);
+  }
+}
+
+const SUBSCRIPTION_CHECK_INTERVAL = 60 * 60 * 1000; // 1小时
 let intervalId: ReturnType<typeof setInterval> | null = null;
+let subscriptionIntervalId: ReturnType<typeof setInterval> | null = null;
 
 export function startPendingOrderChecker() {
   if (intervalId) {
@@ -230,11 +276,16 @@ export function startPendingOrderChecker() {
   // 启动后延迟30秒执行第一次检查（等数据库连接就绪）
   setTimeout(() => {
     checkPendingOrders();
-    checkPaidButUndeliveredOrders(); // 同时检查未发放积分的订单
+    checkPaidButUndeliveredOrders();
+    checkExpiredSubscriptions(); // 启动时也检查一次过期订阅
     intervalId = setInterval(() => {
       checkPendingOrders();
       checkPaidButUndeliveredOrders();
     }, CHECK_INTERVAL);
+    // 过期订阅每小时检查一次
+    subscriptionIntervalId = setInterval(() => {
+      checkExpiredSubscriptions();
+    }, SUBSCRIPTION_CHECK_INTERVAL);
   }, 30000);
 }
 
@@ -242,6 +293,10 @@ export function stopPendingOrderChecker() {
   if (intervalId) {
     clearInterval(intervalId);
     intervalId = null;
-    console.log("[PendingChecker] Stopped");
   }
+  if (subscriptionIntervalId) {
+    clearInterval(subscriptionIntervalId);
+    subscriptionIntervalId = null;
+  }
+  console.log("[PendingChecker] Stopped");
 }

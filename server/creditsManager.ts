@@ -240,10 +240,51 @@ export async function checkAndResetCredits(userId: number): Promise<void> {
   const resetDate = new Date(user.creditsResetDate);
 
   if (now >= resetDate) {
-    // Get user's current subscription plan
-    // For now, assume free plan. This should be fetched from subscriptions table
-    await resetSubscriptionCredits(userId, "free");
+    // 从订阅表获取实际订阅状态
+    const { getUserSubscription } = await import("./db");
+    const subscription = await getUserSubscription(userId);
+    const plan = subscription?.plan || "free";
+    
+    if (plan === "free") {
+      // 过期用户或未订阅用户：订阅积分清零（不给100试用积分）
+      await clearSubscriptionCredits(userId);
+    } else {
+      // 付费用户：按套餐重置积分
+      await resetSubscriptionCredits(userId, plan);
+    }
   }
+}
+
+/**
+ * Clear subscription credits to zero (for expired/downgraded users)
+ */
+export async function clearSubscriptionCredits(userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  if (!user) return;
+
+  // 设置下次重置日期为1个月后
+  const nextResetDate = new Date();
+  nextResetDate.setMonth(nextResetDate.getMonth() + 1);
+
+  await db
+    .update(users)
+    .set({
+      creditsSubscription: 0,
+      creditsResetDate: nextResetDate,
+    })
+    .where(eq(users.id, userId));
+
+  await recordTransaction({
+    userId,
+    type: "subscription_grant",
+    amount: 0,
+    balancePurchased: user.creditsPurchased,
+    balanceSubscription: 0,
+    description: `订阅已过期，订阅积分清零`,
+  });
 }
 
 /**

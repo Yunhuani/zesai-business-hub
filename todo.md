@@ -2094,3 +2094,11 @@
 
 ## 下架文本转PPT功能
 - [x] 在前端隐藏首页“文本转PPT”入口
+
+## 订阅到期自动降级机制
+- [x] 新增定时任务checkExpiredSubscriptions：每小时扫描到期订阅，status改为expired，订阅积分清零
+- [x] 修改getUserSubscription：过期订阅视为free
+- [x] 修改checkAndResetCredits：过期用户积分清零而非给100
+- [x] 新增clearSubscriptionCredits函数
+- [x] 确认前端Pricing页高亮逻辑正确跟随后端返回的plan
+- [ ] 保存checkpoint并发布
