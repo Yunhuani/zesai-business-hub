@@ -304,19 +304,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* 工具卡片入口 */}
-        <div className="flex justify-center gap-4 mt-8 px-2">
-          <Link href="/text-to-ppt">
-            <div className="group flex items-center gap-3 px-6 py-3 rounded-xl bg-white/5 border border-purple-500/30 hover:bg-purple-500/15 hover:border-purple-400/60 transition-all duration-300 cursor-pointer">
-              <Icons.Presentation className="w-5 h-5 text-purple-400 group-hover:text-purple-300" />
-              <div className="text-left">
-                <div className="text-sm font-medium text-gray-200 group-hover:text-white">文本转PPT</div>
-                <div className="text-xs text-gray-500">AI生成专业演示文稿</div>
-              </div>
-              <Icons.ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-purple-400 transition" />
-            </div>
-          </Link>
-        </div>
+        {/* 工具卡片入口 - 文本转PPT功能暂时下架 */}
       </section>
 
       {/* 场景化引导胶囊 - 暂时隐藏，后续优化 */}
