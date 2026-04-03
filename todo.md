@@ -2087,4 +2087,7 @@
 - [x] 给addPurchasedCredits添加防重复机制
 - [x] 创建补发脚本并补发3笔漏发订单（yunhua.ni 3000积分 + 2个客户各500积分）
 - [x] 验证所有路径的积分包配置一致性（无残留旧配置）
-- [ ] 保存checkpoint并发布
+- [x] 保存checkpoint并发布
+
+## 支付完成跳转页面优化
+- [x] 将支付宝支付完成后return_url从/pricing改为/（首页）
