@@ -1,9 +1,0 @@
-{
-  "query": "INSERT INTO smsCodes (phone, code, type, expiresAt, used, createdAt) VALUES ('13900139000', '123456', 'login', DATE_ADD(NOW(), INTERVAL 5 MINUTE), 0, NOW());",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute INSERT INTO smsCodes (phone, code, type, expiresAt, used, createdAt) VALUES ('13900139000', '123456', 'login', DATE_ADD(NOW(), INTERVAL 5 MINUTE), 0, NOW());",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 1515
-}

@@ -1,9 +1,0 @@
-{
-  "query": "UPDATE agents \nSET \n  name = 'OKR与绩效考核',\n  description = '制定团队目标与关键结果,设计绩效评估体系和激励机制',\n  systemPrompt = '你是一位资深的目标管理和绩效管理专家,既精通OKR目标设定,又擅长绩效考核体系设计。核心职责包括:1)OKR设定-帮助团队制定目标(Objectives)和关键结果(Key Results),确保目标对齐和聚焦;2)绩效考核-设计KPI指标、360度评估、BSC平衡计分卡等考核方法;3)激励机制-薪酬激励、晋升通道、非物质激励设计。使用SMART原则和目标分解法,提供从目标设定到绩效评估的完整管理方案。可以使用图表展示目标分解和绩效评分。'\nWHERE name = 'OKR'",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute UPDATE agents \nSET \n  name = 'OKR与绩效考核',\n  description = '制定团队目标与关键结果,设计绩效评估体系和激励机制',\n  systemPrompt = '你是一位资深的目标管理和绩效管理专家,既精通OKR目标设定,又擅长绩效考核体系设计。核心职责包括:1)OKR设定-帮助团队制定目标(Objectives)和关键结果(Key Results),确保目标对齐和聚焦;2)绩效考核-设计KPI指标、360度评估、BSC平衡计分卡等考核方法;3)激励机制-薪酬激励、晋升通道、非物质激励设计。使用SMART原则和目标分解法,提供从目标设定到绩效评估的完整管理方案。可以使用图表展示目标分解和绩效评分。'\nWHERE name = 'OKR'",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 53
-}

@@ -1,9 +1,0 @@
-{
-  "query": "\n-- 更新订单1: basic订阅 userId=9030001\nUPDATE orders SET status='paid', tradeNo='2026031822001444491455772130', paidAt=NOW(), updatedAt=NOW() WHERE outTradeNo='ZS17738244815499030001' AND status='pending';\n\n-- 更新订单2: pack_500积分包 userId=7350017\nUPDATE orders SET status='paid', tradeNo='2026031822001400891438036643', paidAt=NOW(), updatedAt=NOW() WHERE outTradeNo='ZS17738244816487350017' AND status='pending';\n\n-- 更新订单3: basic订阅 userId=18360001\nUPDATE orders SET status='paid', tradeNo='2026031122001433131418982959', paidAt=NOW(), updatedAt=NOW() WHERE outTradeNo='ZS177324049436618360001' AND status='pending';\n",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute \n-- 更新订单1: basic订阅 userId=9030001\nUPDATE orders SET status='paid', tradeNo='2026031822001444491455772130', paidAt=NOW(), updatedAt=NOW() WHERE outTradeNo='ZS17738244815499030001' AND status='pending';\n\n-- 更新订单2: pack_500积分包 userId=7350017\nUPDATE orders SET status='paid', tradeNo='2026031822001400891438036643', paidAt=NOW(), updatedAt=NOW() WHERE outTradeNo='ZS17738244816487350017' AND status='pending';\n\n-- 更新订单3: basic订阅 userId=18360001\nUPDATE orders SET status='paid', tradeNo='2026031122001433131418982959', paidAt=NOW(), updatedAt=NOW() WHERE outTradeNo='ZS177324049436618360001' AND status='pending';\n",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 463
-}

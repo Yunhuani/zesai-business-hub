@@ -1,9 +1,0 @@
-{
-  "query": "SELECT c.id, c.userId, c.agentId, c.title, c.createdAt, a.name as agentName\nFROM conversations c\nLEFT JOIN agents a ON c.agentId = a.id\nWHERE c.id = 1870001;",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT c.id, c.userId, c.agentId, c.title, c.createdAt, a.name as agentName\nFROM conversations c\nLEFT JOIN agents a ON c.agentId = a.id\nWHERE c.id = 1870001;",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 1661
-}

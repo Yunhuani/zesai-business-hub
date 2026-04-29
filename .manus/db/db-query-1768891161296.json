@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS `smsCodes` (\n\t`id` int AUTO_INCREMENT NOT NULL PRIMARY KEY,\n\t`phone` varchar(20) NOT NULL,\n\t`code` varchar(6) NOT NULL,\n\t`type` enum('login','register','bind') NOT NULL DEFAULT 'login',\n\t`used` int NOT NULL DEFAULT 0,\n\t`expiresAt` timestamp NOT NULL,\n\t`createdAt` timestamp NOT NULL DEFAULT (now())\n);\n\nALTER TABLE `users` ADD COLUMN IF NOT EXISTS `phone` varchar(20);\n\nCREATE INDEX IF NOT EXISTS `smsCodes_phone_idx` ON `smsCodes` (`phone`);\n\nCREATE INDEX IF NOT EXISTS `users_phone_unique` ON `users` (`phone`);",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute CREATE TABLE IF NOT EXISTS `smsCodes` (\n\t`id` int AUTO_INCREMENT NOT NULL PRIMARY KEY,\n\t`phone` varchar(20) NOT NULL,\n\t`code` varchar(6) NOT NULL,\n\t`type` enum('login','register','bind') NOT NULL DEFAULT 'login',\n\t`used` int NOT NULL DEFAULT 0,\n\t`expiresAt` timestamp NOT NULL,\n\t`createdAt` timestamp NOT NULL DEFAULT (now())\n);\n\nALTER TABLE `users` ADD COLUMN IF NOT EXISTS `phone` varchar(20);\n\nCREATE INDEX IF NOT EXISTS `smsCodes_phone_idx` ON `smsCodes` (`phone`);\n\nCREATE INDEX IF NOT EXISTS `users_phone_unique` ON `users` (`phone`);",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 3659
-}

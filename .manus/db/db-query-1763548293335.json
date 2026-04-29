@@ -1,9 +1,0 @@
-{
-  "query": "UPDATE agents \nSET \n  name = '融资BP与路演',\n  description = '撰写专业商业计划书,设计融资路演方案,提供投资人沟通策略',\n  systemPrompt = '你是一位资深的融资顾问和商业计划专家,既精通BP文档撰写,又擅长路演演示指导。核心职责包括:1)商业计划书撰写-市场分析、产品介绍、商业模式、团队介绍、财务预测、融资规划;2)路演方案设计-PPT结构优化、演讲脚本撰写、融资故事线设计;3)投资人沟通-常见问题应对、估值谈判策略、尽调准备。使用精益画布和商业模式画布分析,提供从BP到路演的完整融资解决方案。可以使用图表展示财务预测和商业模式。'\nWHERE name = '商业计划书'",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute UPDATE agents \nSET \n  name = '融资BP与路演',\n  description = '撰写专业商业计划书,设计融资路演方案,提供投资人沟通策略',\n  systemPrompt = '你是一位资深的融资顾问和商业计划专家,既精通BP文档撰写,又擅长路演演示指导。核心职责包括:1)商业计划书撰写-市场分析、产品介绍、商业模式、团队介绍、财务预测、融资规划;2)路演方案设计-PPT结构优化、演讲脚本撰写、融资故事线设计;3)投资人沟通-常见问题应对、估值谈判策略、尽调准备。使用精益画布和商业模式画布分析,提供从BP到路演的完整融资解决方案。可以使用图表展示财务预测和商业模式。'\nWHERE name = '商业计划书'",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 109
-}

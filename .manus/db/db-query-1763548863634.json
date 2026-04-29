@@ -1,9 +1,0 @@
-{
-  "query": "UPDATE agents SET \n  id = CASE name\n    WHEN '战略规划' THEN 1\n    WHEN '融资BP与路演' THEN 2\n    WHEN '商业模式' THEN 3\n    WHEN '商业洞察' THEN 4\n    WHEN '获客增长专家' THEN 5\n    WHEN '品牌营销策划师' THEN 6\n    WHEN '定价策略专家' THEN 7\n    WHEN '竞品分析专家' THEN 8\n    WHEN '股权设计' THEN 9\n    WHEN 'OKR与绩效考核' THEN 10\n    WHEN '价值主张slogan' THEN 11\n    WHEN '寻找第二曲线' THEN 12\n    WHEN '前沿创业机会雷达' THEN 13\n    WHEN '大类资产投资顾问' THEN 14\n    WHEN 'AI机会挖掘' THEN 15\n    WHEN '职业路径规划师' THEN 16\n    WHEN '高考专业规划师' THEN 17\n  END\nWHERE name IN ('战略规划', '融资BP与路演', '商业模式', '商业洞察', '获客增长专家', '品牌营销策划师', '定价策略专家', '竞品分析专家', '股权设计', 'OKR与绩效考核', '价值主张slogan', '寻找第二曲线', '前沿创业机会雷达', '大类资产投资顾问', 'AI机会挖掘', '职业路径规划师', '高考专业规划师')",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute UPDATE agents SET \n  id = CASE name\n    WHEN '战略规划' THEN 1\n    WHEN '融资BP与路演' THEN 2\n    WHEN '商业模式' THEN 3\n    WHEN '商业洞察' THEN 4\n    WHEN '获客增长专家' THEN 5\n    WHEN '品牌营销策划师' THEN 6\n    WHEN '定价策略专家' THEN 7\n    WHEN '竞品分析专家' THEN 8\n    WHEN '股权设计' THEN 9\n    WHEN 'OKR与绩效考核' THEN 10\n    WHEN '价值主张slogan' THEN 11\n    WHEN '寻找第二曲线' THEN 12\n    WHEN '前沿创业机会雷达' THEN 13\n    WHEN '大类资产投资顾问' THEN 14\n    WHEN 'AI机会挖掘' THEN 15\n    WHEN '职业路径规划师' THEN 16\n    WHEN '高考专业规划师' THEN 17\n  END\nWHERE name IN ('战略规划', '融资BP与路演', '商业模式', '商业洞察', '获客增长专家', '品牌营销策划师', '定价策略专家', '竞品分析专家', '股权设计', 'OKR与绩效考核', '价值主张slogan', '寻找第二曲线', '前沿创业机会雷达', '大类资产投资顾问', 'AI机会挖掘', '职业路径规划师', '高考专业规划师')",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 61
-}

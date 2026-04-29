@@ -1,9 +1,0 @@
-{
-  "query": "INSERT INTO users (email, password, name, openId, loginMethod) VALUES ('bindtest@example.com', '$2b$10$dXJ3LvM3GQwvWmjLvQQh.eYzT8QZqZqZqZqZqZqZqZqZqZqZqZq', '绑定测试', 'email_bindtest@example.com', 'email');",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute INSERT INTO users (email, password, name, openId, loginMethod) VALUES ('bindtest@example.com', '$2b$10$dXJ3LvM3GQwvWmjLvQQh.eYzT8QZqZqZqZqZqZqZqZqZqZqZqZq', '绑定测试', 'email_bindtest@example.com', 'email');",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 1478
-}

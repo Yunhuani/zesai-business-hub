@@ -1,8 +1,0 @@
-{
-  "query": "SELECT id, name, isActive FROM agents WHERE isActive = 0 OR isActive = false",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VRydYSHi7gYgep.root --database fEn26P5cBLWrvAhCKkPvkZ --execute SELECT id, name, isActive FROM agents WHERE isActive = 0 OR isActive = false",
-  "returncode": 1,
-  "logs": [
-    "ERROR 1054 (42S22) at line 1: Unknown column 'isactive' in 'where clause'"
-  ]
-}
