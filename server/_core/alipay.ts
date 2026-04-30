@@ -1,17 +1,23 @@
 import { AlipaySdk } from 'alipay-sdk';
 import { ENV } from './env';
 
-/**
- * 支付宝 SDK 实例
- */
-const alipaySdk = new AlipaySdk({
-  appId: ENV.alipayAppId,
-  privateKey: ENV.alipayPrivateKey,
-  alipayPublicKey: ENV.alipayPublicKey,
-  gateway: 'https://openapi.alipay.com/gateway.do',
-  charset: 'utf-8',
-  signType: 'RSA2',
-});
+let _alipaySdk: AlipaySdk | null = null;
+
+function getAlipaySdk(): AlipaySdk {
+  if (_alipaySdk) return _alipaySdk;
+  if (!ENV.alipayAppId || !ENV.alipayPrivateKey) {
+    throw new Error('支付宝未配置：请在环境变量中设置 ALIPAY_APP_ID 和 ALIPAY_PRIVATE_KEY');
+  }
+  _alipaySdk = new AlipaySdk({
+    appId: ENV.alipayAppId,
+    privateKey: ENV.alipayPrivateKey,
+    alipayPublicKey: ENV.alipayPublicKey,
+    gateway: ENV.alipayGateway || 'https://openapi.alipay.com/gateway.do',
+    charset: 'utf-8',
+    signType: 'RSA2',
+  });
+  return _alipaySdk;
+}
 
 /**
  * 创建支付宝电脑网站支付订单
@@ -27,7 +33,7 @@ export async function createAlipayPagePayment(params: {
   notifyUrl?: string; // 异步回调地址
 }) {
   try {
-    const result = await alipaySdk.pageExec('alipay.trade.page.pay', {
+    const result = await getAlipaySdk().pageExec('alipay.trade.page.pay', {
       bizContent: {
         out_trade_no: params.outTradeNo,
         total_amount: params.totalAmount,
@@ -58,7 +64,7 @@ export async function createAlipayQrCodePayment(params: {
   notifyUrl?: string; // 异步回调地址
 }) {
   try {
-    const result = await alipaySdk.exec('alipay.trade.precreate', {
+    const result = await getAlipaySdk().exec('alipay.trade.precreate', {
       bizContent: {
         out_trade_no: params.outTradeNo,
         total_amount: params.totalAmount,
@@ -98,10 +104,11 @@ export function verifyAlipayCallback(params: Record<string, any>): boolean {
     console.log('[Alipay] Verify params keys:', Object.keys(params));
     console.log('[Alipay] sign_type:', params.sign_type);
     console.log('[Alipay] sign length:', params.sign?.length);
-    console.log('[Alipay] alipayPublicKey configured:', !!alipaySdk['config']?.alipayPublicKey);
-    console.log('[Alipay] alipayPublicKey prefix:', alipaySdk['config']?.alipayPublicKey?.substring(0, 30));
-    
-    const result = alipaySdk.checkNotifySign(params);
+    const sdk = getAlipaySdk();
+    console.log('[Alipay] alipayPublicKey configured:', !!sdk['config']?.alipayPublicKey);
+    console.log('[Alipay] alipayPublicKey prefix:', sdk['config']?.alipayPublicKey?.substring(0, 30));
+
+    const result = sdk.checkNotifySign(params);
     console.log('[Alipay] checkNotifySign result:', result);
     return result;
   } catch (error) {
@@ -117,7 +124,7 @@ export function verifyAlipayCallback(params: Record<string, any>): boolean {
  */
 export async function queryAlipayOrder(outTradeNo: string) {
   try {
-    const result = await alipaySdk.exec('alipay.trade.query', {
+    const result = await getAlipaySdk().exec('alipay.trade.query', {
       bizContent: {
         out_trade_no: outTradeNo,
       },
