@@ -22,11 +22,11 @@
 在 Railway 项目 → Variables 中添加：
 
 ```
-DATABASE_URL=postgresql://neondb_owner:npg_SZJxc3pM4GWQ@ep-steep-field-ao5nuodq-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+DATABASE_URL=postgresql://user:password@host/database?sslmode=require
 LLM_PROVIDER=openrouter
-LLM_API_KEY=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
+LLM_API_KEY=your-openrouter-api-key
 LLM_MODEL=deepseek/deepseek-chat
-JWT_SECRET=zesai-jwt-secret-2024-production
+JWT_SECRET=your-jwt-secret
 NODE_ENV=production
 PORT=3000
 FRONTEND_URL=https://zesiai.com
