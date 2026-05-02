@@ -6,11 +6,11 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://zesai-api.up.railway.app/api/$1"
+      "destination": "https://zesai-business-hub-production.up.railway.app/api/$1"
     },
     {
       "source": "/trpc/(.*)",
-      "destination": "https://zesai-api.up.railway.app/trpc/$1"
+      "destination": "https://zesai-business-hub-production.up.railway.app/trpc/$1"
     },
     {
       "source": "/(.*)",
