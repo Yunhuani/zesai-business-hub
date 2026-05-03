@@ -287,7 +287,7 @@ const normalizeResponseFormat = ({
 
 // ============== 核心调用函数 ==============
 
-function getProviderConfig(): ProviderConfig {
+export function getProviderConfig(): ProviderConfig {
   // 优先使用新的 LLM_PROVIDER 配置
   const provider = ENV.llmProvider;
 
@@ -318,7 +318,7 @@ function getProviderConfig(): ProviderConfig {
   return PROVIDER_CONFIGS.openrouter;
 }
 
-function getApiKey(): string {
+export function getApiKey(): string {
   // 优先使用新的 LLM_API_KEY
   if (ENV.llmApiKey) {
     return ENV.llmApiKey;

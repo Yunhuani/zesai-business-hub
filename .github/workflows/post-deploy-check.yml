@@ -1,0 +1,74 @@
+name: Post-Deploy Health Check
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for deployment
+        run: sleep 180
+
+      - name: Check frontend (Vercel)
+        run: |
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://zesai-business-hub.vercel.app)
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "::error::Frontend returned HTTP $HTTP_CODE"
+            FRONTEND_STATUS="FAIL (HTTP $HTTP_CODE)"
+          else
+            echo "Frontend OK (HTTP 200)"
+            FRONTEND_STATUS="OK"
+          fi
+          echo "FRONTEND_STATUS=$FRONTEND_STATUS" >> $GITHUB_ENV
+
+      - name: Check backend health (Railway)
+        run: |
+          RESPONSE=$(curl -s https://zesai-business-hub-production.up.railway.app/api/health)
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://zesai-business-hub-production.up.railway.app/api/health)
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "::error::Backend health check returned HTTP $HTTP_CODE"
+            echo "Response: $RESPONSE"
+            BACKEND_STATUS="FAIL (HTTP $HTTP_CODE)"
+          else
+            STATUS=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('status','unknown'))" 2>/dev/null || echo "parse_error")
+            if [ "$STATUS" = "ok" ]; then
+              echo "Backend OK"
+              BACKEND_STATUS="OK"
+            elif [ "$STATUS" = "degraded" ]; then
+              echo "::warning::Backend degraded: $RESPONSE"
+              BACKEND_STATUS="DEGRADED"
+            else
+              echo "::error::Backend unhealthy: $RESPONSE"
+              BACKEND_STATUS="UNHEALTHY ($STATUS)"
+            fi
+          fi
+          echo "BACKEND_STATUS=$BACKEND_STATUS" >> $GITHUB_ENV
+
+      - name: Notify via Server酱 on failure
+        if: env.FRONTEND_STATUS != 'OK' || env.BACKEND_STATUS != 'OK'
+        env:
+          SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+        run: |
+          if [ -z "$SERVERCHAN_KEY" ]; then
+            echo "SERVERCHAN_KEY not configured, skipping notification"
+            exit 0
+          fi
+
+          TITLE="🚨 部署后健康检查异常"
+          DESP="**前端**: ${FRONTEND_STATUS}\n\n**后端**: ${BACKEND_STATUS}\n\n**分支**: ${{ github.ref_name }}\n**提交**: ${{ github.sha }}\n**时间**: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+          curl -s -X POST "https://sctapi.ftqq.com/${SERVERCHAN_KEY}.send" \
+            -H "Content-Type: application/json" \
+            -d "{\"title\":\"${TITLE}\",\"desp\":\"${DESP}\"}"
+
+          echo "Notification sent"
+
+      - name: Summary
+        run: |
+          echo "## Health Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend  | ${FRONTEND_STATUS} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend   | ${BACKEND_STATUS} |" >> $GITHUB_STEP_SUMMARY

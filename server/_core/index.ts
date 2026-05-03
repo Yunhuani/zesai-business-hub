@@ -9,6 +9,8 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { initSentry } from "./sentry";
 import { logger } from "../lib/logger";
+import { getProviderConfig, getApiKey } from "./llm";
+import { fireAlert } from "./alertManager";
 
 // 初始化Sentry错误监控
 initSentry();
@@ -36,9 +38,75 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
-  // Health check endpoint (for Railway deployment)
-  app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  // Health check endpoint (for Railway deployment & monitoring)
+  app.get("/api/health", async (req, res) => {
+    const checks: Record<string, { status: string; latencyMs?: number; error?: string }> = {};
+    let overallStatus: "ok" | "degraded" | "unhealthy" = "ok";
+
+    // 1. 数据库连接检查
+    try {
+      const { getDb } = await import("../db");
+      const db = await getDb();
+      if (!db) {
+        checks.database = { status: "unhealthy", error: "Database not initialized" };
+        overallStatus = "unhealthy";
+      } else {
+        const start = Date.now();
+        await db.execute({ sql: "SELECT 1", args: [] } as any);
+        checks.database = { status: "ok", latencyMs: Date.now() - start };
+      }
+    } catch (error: any) {
+      checks.database = { status: "unhealthy", error: error.message };
+      overallStatus = "unhealthy";
+    }
+
+    // 2. LLM API 可达性检查（GET /models，不消耗 token）
+    try {
+      const provider = getProviderConfig();
+      const apiKey = getApiKey();
+      // 大多数 OpenAI 兼容 API 支持 GET /models
+      const modelsUrl = provider.baseUrl.replace(/\/chat\/completions$/, "/models");
+      const start = Date.now();
+      const llmRes = await fetch(modelsUrl, {
+        method: "GET",
+        headers: provider.getHeaders(apiKey),
+        signal: AbortSignal.timeout(5000),
+      });
+      checks.llm = {
+        status: llmRes.ok ? "ok" : "degraded",
+        latencyMs: Date.now() - start,
+        ...(llmRes.ok ? {} : { error: `HTTP ${llmRes.status}` }),
+      };
+      if (!llmRes.ok && overallStatus === "ok") overallStatus = "degraded";
+    } catch (error: any) {
+      checks.llm = { status: "degraded", error: error.message };
+      if (overallStatus === "ok") overallStatus = "degraded";
+    }
+
+    // 3. 内存使用
+    const mem = process.memoryUsage();
+    checks.memory = {
+      status: "ok",
+      ...Object.fromEntries(
+        ["rss", "heapUsed", "heapTotal"].map((k) => [k, `${Math.round((mem as any)[k] / 1024 / 1024)}MB`])
+      ),
+    };
+
+    // 异步告警（不阻塞响应）
+    if (overallStatus === "unhealthy") {
+      fireAlert({
+        category: "health",
+        title: "🚨 服务健康检查失败",
+        description: `状态: ${overallStatus}\n${JSON.stringify(checks, null, 2)}`,
+      }).catch(() => {});
+    }
+
+    const httpStatus = overallStatus === "unhealthy" ? 503 : 200;
+    res.status(httpStatus).json({
+      status: overallStatus,
+      timestamp: new Date().toISOString(),
+      checks,
+    });
   });
 
   // Stripe webhook route (MUST be before express.json() for signature verification)
