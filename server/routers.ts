@@ -262,15 +262,135 @@ export const appRouter = router({
         const { sql } = await import("drizzle-orm");
         const db = await getDb();
         if (!db) return { totalUsers: 0, totalConversations: 0, activeSubscriptions: 0 };
-        
+
         const [userCount] = await db.select({ count: sql<number>`count(*)` }).from(users);
         const [convCount] = await db.select({ count: sql<number>`count(*)` }).from(conversations);
         const [subCount] = await db.select({ count: sql<number>`count(*)` }).from(subscriptions).where(sql`status = 'active'`);
-        
+
         return {
           totalUsers: Number(userCount.count),
           totalConversations: Number(convCount.count),
           activeSubscriptions: Number(subCount.count),
+        };
+      }),
+      dashboard: adminProcedure.query(async () => {
+        const { getDb } = await import("./db");
+        const { users, conversations, subscriptions, orders } = await import("../drizzle/schema");
+        const { sql } = await import("drizzle-orm");
+        const { startOfDay, startOfWeek, startOfMonth, subDays, format } = await import("date-fns");
+        const db = await getDb();
+        if (!db) {
+          return {
+            users: { total: 0, today: 0, thisWeek: 0, thisMonth: 0, weekOverWeek: 0 },
+            conversations: { total: 0, today: 0, thisWeek: 0, thisMonth: 0, weekOverWeek: 0 },
+            revenue: { total: 0, today: 0, thisWeek: 0, thisMonth: 0, weekOverWeek: 0 },
+            subscriptions: { free: 0, basic: 0, professional: 0, enterprise: 0 },
+            dailyTrend: [],
+            revenueTrend: [],
+            conversionRate: 0,
+          };
+        }
+
+        const today = startOfDay(new Date());
+        const thisWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
+        const thisMonth = startOfMonth(new Date());
+        const lastWeekStart = startOfWeek(subDays(new Date(), 7), { weekStartsOn: 1 });
+        const lastWeekEnd = thisWeek;
+
+        const todayISO = today.toISOString();
+        const weekISO = thisWeek.toISOString();
+        const monthISO = thisMonth.toISOString();
+        const lastWeekStartISO = lastWeekStart.toISOString();
+        const lastWeekEndISO = lastWeekEnd.toISOString();
+
+        // Core metrics: users
+        const [totalUsersRow] = await db.select({ count: sql<number>`count(*)` }).from(users);
+        const usersTotal = Number(totalUsersRow.count);
+        const [usersTodayRow] = await db.select({ count: sql<number>`count(*)` }).from(users).where(sql`created_at >= ${todayISO}`);
+        const [usersWeekRow] = await db.select({ count: sql<number>`count(*)` }).from(users).where(sql`created_at >= ${weekISO}`);
+        const [usersMonthRow] = await db.select({ count: sql<number>`count(*)` }).from(users).where(sql`created_at >= ${monthISO}`);
+        const [usersLastWeekRow] = await db.select({ count: sql<number>`count(*)` }).from(users)
+          .where(sql`created_at >= ${lastWeekStartISO} and created_at < ${lastWeekEndISO}`);
+
+        // Core metrics: conversations
+        const [totalConvRow] = await db.select({ count: sql<number>`count(*)` }).from(conversations);
+        const convTotal = Number(totalConvRow.count);
+        const [convTodayRow] = await db.select({ count: sql<number>`count(*)` }).from(conversations).where(sql`created_at >= ${todayISO}`);
+        const [convWeekRow] = await db.select({ count: sql<number>`count(*)` }).from(conversations).where(sql`created_at >= ${weekISO}`);
+        const [convMonthRow] = await db.select({ count: sql<number>`count(*)` }).from(conversations).where(sql`created_at >= ${monthISO}`);
+        const [convLastWeekRow] = await db.select({ count: sql<number>`count(*)` }).from(conversations)
+          .where(sql`created_at >= ${lastWeekStartISO} and created_at < ${lastWeekEndISO}`);
+
+        // Core metrics: revenue (from paid orders, amount in cents)
+        const [revenueTotalRow] = await db.select({ sum: sql<number>`coalesce(sum(amount), 0)` }).from(orders).where(sql`status = 'paid'`);
+        const [revenueTodayRow] = await db.select({ sum: sql<number>`coalesce(sum(amount), 0)` }).from(orders).where(sql`status = 'paid' and paid_at >= ${todayISO}`);
+        const [revenueWeekRow] = await db.select({ sum: sql<number>`coalesce(sum(amount), 0)` }).from(orders).where(sql`status = 'paid' and paid_at >= ${weekISO}`);
+        const [revenueMonthRow] = await db.select({ sum: sql<number>`coalesce(sum(amount), 0)` }).from(orders).where(sql`status = 'paid' and paid_at >= ${monthISO}`);
+        const [revenueLastWeekRow] = await db.select({ sum: sql<number>`coalesce(sum(amount), 0)` }).from(orders)
+          .where(sql`status = 'paid' and paid_at >= ${lastWeekStartISO} and paid_at < ${lastWeekEndISO}`);
+
+        const revenueTotal = Number(revenueTotalRow.sum);
+        const revenueToday = Number(revenueTodayRow.sum);
+        const revenueThisWeek = Number(revenueWeekRow.sum);
+        const revenueThisMonth = Number(revenueMonthRow.sum);
+        const revenueLastWeek = Number(revenueLastWeekRow.sum);
+
+        // Week-over-week percentages
+        const usersLastWeekCount = Number(usersLastWeekRow.count);
+        const convLastWeekCount = Number(convLastWeekRow.count);
+        const usersWow = usersLastWeekCount ? Math.round(((Number(usersWeekRow.count) - usersLastWeekCount) / Math.max(usersLastWeekCount, 1)) * 100) : 0;
+        const convWow = convLastWeekCount ? Math.round(((Number(convWeekRow.count) - convLastWeekCount) / Math.max(convLastWeekCount, 1)) * 100) : 0;
+        const revenueWow = revenueLastWeek ? Math.round(((revenueThisWeek - revenueLastWeek) / Math.max(revenueLastWeek, 1)) * 100) : 0;
+
+        // Subscription distribution
+        const subDist = await db.select({ plan: subscriptions.plan, count: sql<number>`count(*)` }).from(subscriptions).where(sql`status = 'active'`).groupBy(subscriptions.plan);
+        const subMap: Record<string, number> = { free: 0, basic: 0, professional: 0, enterprise: 0 };
+        for (const row of subDist) subMap[row.plan] = Number(row.count);
+
+        // 7-day daily trend
+        const dailyTrend: Array<{ date: string; newUsers: number; conversations: number; revenue: number }> = [];
+        for (let i = 6; i >= 0; i--) {
+          const dayStart = startOfDay(subDays(new Date(), i));
+          const dayEnd = startOfDay(subDays(new Date(), i - 1));
+          const dateStr = format(dayStart, "MM/dd");
+          const dsISO = dayStart.toISOString();
+          const deISO = dayEnd.toISOString();
+
+          const [u] = await db.select({ count: sql<number>`count(*)` }).from(users).where(sql`created_at >= ${dsISO} and created_at < ${deISO}`);
+          const [c] = await db.select({ count: sql<number>`count(*)` }).from(conversations).where(sql`created_at >= ${dsISO} and created_at < ${deISO}`);
+          const [r] = await db.select({ sum: sql<number>`coalesce(sum(amount), 0)` }).from(orders)
+            .where(sql`status = 'paid' and paid_at >= ${dsISO} and paid_at < ${deISO}`);
+
+          dailyTrend.push({ date: dateStr, newUsers: Number(u.count), conversations: Number(c.count), revenue: Number(r.sum) });
+        }
+
+        // 30-day revenue trend
+        const revenueTrend: Array<{ date: string; amount: number }> = [];
+        for (let i = 29; i >= 0; i--) {
+          const dayStart = startOfDay(subDays(new Date(), i));
+          const dayEnd = startOfDay(subDays(new Date(), i - 1));
+          const dateStr = format(dayStart, "MM/dd");
+          const dsISO = dayStart.toISOString();
+          const deISO = dayEnd.toISOString();
+
+          const [r] = await db.select({ sum: sql<number>`coalesce(sum(amount), 0)` }).from(orders)
+            .where(sql`status = 'paid' and paid_at >= ${dsISO} and paid_at < ${deISO}`);
+
+          revenueTrend.push({ date: dateStr, amount: Number(r.sum) });
+        }
+
+        // Conversion rate: paid users / total users
+        const [paidUsersRow] = await db.select({ count: sql<number>`count(distinct user_id)` }).from(orders).where(sql`status = 'paid'`);
+        const conversionRate = usersTotal > 0 ? Number((Number(paidUsersRow.count) / usersTotal * 100).toFixed(1)) : 0;
+
+        return {
+          users: { total: usersTotal, today: Number(usersTodayRow.count), thisWeek: Number(usersWeekRow.count), thisMonth: Number(usersMonthRow.count), weekOverWeek: usersWow },
+          conversations: { total: convTotal, today: Number(convTodayRow.count), thisWeek: Number(convWeekRow.count), thisMonth: Number(convMonthRow.count), weekOverWeek: convWow },
+          revenue: { total: revenueTotal, today: revenueToday, thisWeek: revenueThisWeek, thisMonth: revenueThisMonth, weekOverWeek: revenueWow },
+          subscriptions: subMap,
+          dailyTrend,
+          revenueTrend,
+          conversionRate,
         };
       }),
       users: adminProcedure.query(async () => {
