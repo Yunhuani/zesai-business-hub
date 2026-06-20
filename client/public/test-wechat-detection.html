@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>微信浏览器检测测试</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    .test-result {
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      border: 2px solid #ddd;
+    }
+    .success {
+      background-color: #d4edda;
+      border-color: #c3e6cb;
+      color: #155724;
+    }
+    .warning {
+      background-color: #fff3cd;
+      border-color: #ffeaa7;
+      color: #856404;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>微信浏览器检测测试</h1>
+  
+  <div class="test-result" id="result">
+    <p>正在检测...</p>
+  </div>
+
+  <h2>当前User Agent:</h2>
+  <code id="ua" style="display: block; padding: 10px; word-break: break-all;"></code>
+
+  <h2>检测逻辑:</h2>
+  <pre><code>
+function isWeChatBrowser() {
+  const ua = navigator.userAgent.toLowerCase();
+  return /micromessenger/.test(ua);
+}
+  </code></pre>
+
+  <h2>如何测试:</h2>
+  <ol>
+    <li>在微信中打开此页面，应该显示"✅ 检测到微信浏览器"</li>
+    <li>在普通浏览器中打开，应该显示"❌ 未检测到微信浏览器"</li>
+  </ol>
+
+  <script>
+    function isWeChatBrowser() {
+      const ua = navigator.userAgent.toLowerCase();
+      return /micromessenger/.test(ua);
+    }
+
+    const resultDiv = document.getElementById('result');
+    const uaElement = document.getElementById('ua');
+    
+    uaElement.textContent = navigator.userAgent;
+    
+    if (isWeChatBrowser()) {
+      resultDiv.className = 'test-result success';
+      resultDiv.innerHTML = `
+        <h3>✅ 检测到微信浏览器</h3>
+        <p>User Agent 包含 "MicroMessenger" 关键词</p>
+        <p><strong>预期行为:</strong> 网站应该显示"请在外部浏览器打开"的提示</p>
+      `;
+    } else {
+      resultDiv.className = 'test-result warning';
+      resultDiv.innerHTML = `
+        <h3>❌ 未检测到微信浏览器</h3>
+        <p>User Agent 不包含 "MicroMessenger" 关键词</p>
+        <p><strong>预期行为:</strong> 网站正常显示，不显示任何提示</p>
+      `;
+    }
+  </script>
+</body>
+</html>

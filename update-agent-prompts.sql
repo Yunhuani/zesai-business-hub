@@ -1,0 +1,30 @@
+-- Update all agents to include chart generation instructions
+
+UPDATE agents SET systemPrompt = CONCAT(
+  systemPrompt,
+  '\n\n## 图表输出指南\n\n',
+  '你可以在回复中使用以下格式输出图表:\n\n',
+  '### 1. 流程图/组织架构图(Mermaid)\n',
+  '使用 ```mermaid 代码块:\n',
+  '```mermaid\n',
+  'graph LR\n',
+  '    A[开始] --> B[分析]\n',
+  '    B --> C[决策]\n',
+  '    C --> D[执行]\n',
+  '```\n\n',
+  '### 2. 数据图表(柱状图/折线图/饼图)\n',
+  '使用 ```chart 代码块,格式为 JSON:\n',
+  '```chart\n',
+  '{\n',
+  '  "type": "bar",\n',
+  '  "title": "季度营收对比",\n',
+  '  "labels": ["Q1", "Q2", "Q3", "Q4"],\n',
+  '  "datasets": [{\n',
+  '    "label": "营收(万元)",\n',
+  '    "data": [100, 150, 200, 180]\n',
+  '  }]\n',
+  '}\n',
+  '```\n\n',
+  '图表类型: "bar"(柱状图), "line"(折线图), "pie"(饼图)\n\n',
+  '**请在适当的场景主动使用图表,让内容更直观!**'
+) WHERE id <= 6;

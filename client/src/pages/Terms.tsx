@@ -1,0 +1,211 @@
+import { Link } from "wouter";
+import { ArrowLeft } from "lucide-react";
+import { APP_LOGO, APP_TITLE } from "@/const";
+
+export default function Terms() {
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/10">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
+          <Link href="/" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+            <span>返回首页</span>
+          </Link>
+        </div>
+      </header>
+
+      {/* Content */}
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <img src={APP_LOGO} alt={APP_TITLE} className="h-12 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold">泽思 AI 用户协议</h1>
+          <p className="text-gray-400 mt-2">版本日期：2026 年 01 月 12 日</p>
+        </div>
+
+        <div className="prose prose-invert max-w-none space-y-6 text-gray-300">
+          <p>欢迎使用 泽思 AI（以下简称"本服务"）！</p>
+          
+          <p>泽思 AI 是由 ZenithLab（以下简称"我们"）独立开发，主要提供基于语言模型的商业研究服务，通过 "Consulting Reasoning" 智能体框架分析企业现状，优化商业决策和策略制定。</p>
+          
+          <p>任何单位或个人使用本服务之前，应当认真阅读并严格遵守本协议的全部内容（尤其是<strong>加粗和/或下划线的内容</strong>）。本协议同样适用于您使用本服务任何后续升级或更新的版本。我们有权在法律范围内不定期修订本协议的内容，如果您不同意本协议的内容，您有权停止使用本服务。您一旦勾选 泽思 AI 用户协议或使用 泽思 AI，即视为您同意遵守本协议中的全部内容。</p>
+          
+          <p>若您未满 18 周岁，请在您的法定监护人陪同下阅读本协议，并在征得您法定监护人同意的前提下使用本产品。</p>
+          
+          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 my-6">
+            <p className="text-yellow-400 font-semibold mb-2">特别提醒：</p>
+            <p>您使用本服务在直接涉及个人切身利益的高风险领域提供建议、推荐意见或作出主观决策时，您应当邀请相关领域的专业人员在内容传播或决策最终确定前对其进行审查。高风险用例包括但不限于法律咨询、医疗保健、金融、保险、就业、住房、择校、专业新闻内容等。</p>
+          </div>
+
+          <h2 className="text-xl font-bold text-white mt-8 mb-4">1. 账号管理</h2>
+          
+          <h3 className="text-lg font-semibold text-white mt-6 mb-3">账号注册及登录使用</h3>
+          <ul className="list-disc pl-6 space-y-2">
+            <li>您首次使用本服务时需要按页面提示完成账号注册程序。您可以选择手机号、邮箱完成注册；我们为企业客户提供 SSO 登录配置服务。</li>
+            <li>在您完成注册程序或以其他方式使用本服务时，您应当是具备完全民事权利能力和完全民事行为能力的自然人、法人或其他组织。</li>
+            <li>您应妥善保管您的登录账号、密码、验证码等账号信息，我们不会主动问您索要您的账号登录密码、手机验证码。所有通过该账号执行的操作均视为您本人的行为，由此产生的后果（包括但不限于账号被盗、密码泄露等）由您自行承担。</li>
+            <li>通常情况下，一个用户账号对应唯一的用户 ID，您的用户 ID 是您进行一切活动的唯一身份标识，您应当对您账号项下进行的所有活动和事件负法律责任。若您为企业用户，您账号项下的全部行为视为企业的行为。</li>
+          </ul>
+
+          <h3 className="text-lg font-semibold text-white mt-6 mb-3">账号冻结、注销及申诉</h3>
+          
+          <h4 className="font-semibold text-white mt-4 mb-2">冻结</h4>
+          <p>当发生如下情况时，我们有权冻结您的账号，我们将通过邮件、网页弹窗或其他方式通知您：</p>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>您违反本协议或本服务其他协议/条款/产品使用规则的</li>
+            <li>我们根据合理分析及判断您的账户操作行为存在异常的</li>
+            <li>您的行为遭到他人投诉或举报，且对方已经提供了相关证据，您未按照我们的要求在指定期限内提供相反证据的</li>
+            <li>政府/司法机关要求进行冻结的</li>
+            <li>其他违反国家法律、法规、政策规定的</li>
+          </ul>
+
+          <h4 className="font-semibold text-white mt-4 mb-2">注销</h4>
+          <p>您可以向我们的邮箱发送账号注销申请。请您注意，一旦注销了账号，您在本服务上的全部内容（包括但不限于账号信息、历史对话等）将会被永久删除。您仍应对注销账号前使用本服务期间的行为承担相应责任。</p>
+          <p>当发生如下情况时，您的账号将被注销：</p>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>国家权力机关强制要求的</li>
+            <li>您个人申请/操作注销程序的</li>
+            <li>您违反本协议或本服务其他协议/条款/规则，您的账号被冻结，我们在向您发送书面通知后的 30 日内您未作出任何明确反馈的</li>
+            <li>您的账号已经连续 24 个月未登录，且不存在任何未到期/未使用的服务的，我们有权给您发送书面通知后的 15 个工作日内对您的账号完成注销程序</li>
+          </ul>
+
+          <h4 className="font-semibold text-white mt-4 mb-2">申诉</h4>
+          <p>发生上述账号冻结或注销情况，您应及时予以关注，若您有异议的，您可以按照本协议第十条的联系方式向我们进行申诉，为了您的账户安全，您应配合我们如实提供身份证明及相关材料，以便我们进行核实。在接到您的申诉申请后，我们将 15 个工作日内进行处理，您充分理解，我们有权按照合理的判断同意或驳回您的申诉请求。</p>
+
+          <h2 className="text-xl font-bold text-white mt-8 mb-4">2. 订阅服务</h2>
+          <p>您应当确保具备签订及履行订阅服务项下权利义务的主体资格，且始终拥有完全民事权利能力与完全民事行为能力。</p>
+          <p>您可选择您需要开通的付费内容，按页面展示价格进行支付操作。随着市场变化、业务调整、产品升级等因素，我们可能会调整服务的具体内容及相关费用，具体调整以公示信息为准。</p>
+          <p>您可按照页面展示的价格，依约支付。若您在支付后需要发票的，您可与我们单独联系。发票的抬头需要和付款主体相一致。</p>
+
+          <h3 className="text-lg font-semibold text-white mt-6 mb-3">退款政策</h3>
+          
+          <h4 className="font-semibold text-white mt-4 mb-2">退款期限</h4>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>所有购买和订阅均支持 7 天内申请退款</li>
+            <li>超过 7 天将不再接受退款申请</li>
+          </ul>
+
+          <h4 className="font-semibold text-white mt-4 mb-2">一次性购买 Tokens 退款</h4>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>购买的 tokens（包括赠送部分）在 7 天内可申请退款</li>
+            <li>退款金额将扣除已使用的 tokens 对应的费用</li>
+          </ul>
+
+          <h4 className="font-semibold text-white mt-4 mb-2">订阅会员退款</h4>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>Basic/Pro/Team 订阅在购买后 7 天内可申请退款</li>
+            <li>退款金额将扣除已使用的 tokens 和已过去的有效期对应的费用</li>
+          </ul>
+
+          <h4 className="font-semibold text-white mt-4 mb-2">团队订阅退款</h4>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>团队订阅的退款需由团队管理员发起</li>
+            <li>退款按整个团队的使用情况计算</li>
+          </ul>
+
+          <p>您应当妥善保管自己的账号和密码，不得将账号和密码泄露给第三方。如因您自身原因导致账号和密码被泄露，造成的一切损失由您自行承担。</p>
+
+          <h2 className="text-xl font-bold text-white mt-8 mb-4">3. 服务使用规范</h2>
+          <p>您在使用本服务时应遵守国家有关法律、法规和行政规章制度。您使用本服务不得侵害他人权益（包括但不限于著作权、专利权、商标权等知识产权与其他权益）。您应当保证使用本服务所提供、使用的文本内容已获得了充分、必要且有效的合法许可及授权。您不应当通过本服务生成现实生活中的特定人物、角色或品牌，因为这可能会侵犯第三方（包括但不限于自然人、公司、社会团体等）的合法权利。</p>
+          
+          <p>本服务本身不直接上传、不提供任何内容，对您传输和/或收集的内容无法做任何修改和/或编辑。我们在此郑重提请您注意，任何经由您上传的文字内容，无论系公开还是私下传送，无论是否发布及获取收益，均由内容提供者、使用者对其上传、使用的行为自行承担责任。</p>
+
+          <p>您上传、输入、发布、传输、分享或以其他方式使用的内容中不应当包含以下内容：</p>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>反对法律所确定的基本原则的</li>
+            <li>泄露国家秘密，危害国家安全的</li>
+            <li>颠覆国家政权，危害国家统一的</li>
+            <li>煽动民族仇恨、种族歧视的</li>
+            <li>歪曲、丑化英雄烈士的</li>
+            <li>宣扬恐怖主义、极端主义的</li>
+            <li>散布谣言，扰乱社会秩序的</li>
+            <li>虚假诈骗、侵犯隐私的</li>
+            <li>宣传淫秽、色情、暴力的</li>
+            <li>恶意广告、垃圾信息</li>
+            <li>非法经营活动</li>
+            <li>法律法规禁止的其他内容</li>
+          </ul>
+
+          <p className="mt-4">您不得实施以下行为：</p>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>未经授权使用他人信息，以他人名义输入内容</li>
+            <li>未经授权输入侵犯第三方权利的内容</li>
+            <li>侵犯第三方商标、商号、外观设计等</li>
+            <li>未经授权披露保密信息</li>
+            <li>未经授权将本服务接入其他软件或租赁给他人</li>
+          </ul>
+
+          <p className="mt-4">您在使用本服务时，应当特别注意，不允许实施以下行为：</p>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>删除、篡改本服务的知识产权声明</li>
+            <li>干扰本服务的正常运行</li>
+            <li>避开内容保护机制</li>
+            <li>未经同意使用我们的商标、LOGO 等</li>
+            <li>超出许可范围使用服务成果</li>
+          </ul>
+
+          <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4 my-6">
+            <p className="text-purple-400 font-semibold mb-2">特别提醒 - AI 标识义务</p>
+            <p>依据相关法律规定，为了确保 AI 内容的来源可追溯，保障 AI 内容的合规性和透明度，您通过运用本服务所生成的各类内容，无论其形式和用途如何，您应当主动声明并使用我们提供的标识功能进行标识。任何组织和个人不得恶意删除、篡改、伪造、隐匿 AI 内容标识。</p>
+          </div>
+
+          <h2 className="text-xl font-bold text-white mt-8 mb-4">4. 所有权及知识产权</h2>
+          <p>我们保留本服务产品及产品所有元素（包括但不限于商标、logo、产品界面、内容、数据、技术、算法、代码等）的所有权及知识产权（包括但不限于著作权、商标权、专利权及相关邻接权）。我们授予您对本服务的使用权，该项授权为非独占、不可转让、不可分许可的有限许可。未经我们书面许可，您不得对本服务实施任何的反向工程、反向编译或反汇编的行为，不得以任何形式对本服务产品进行出租、出借、修改、汇编、二次开发等。</p>
+
+          <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 my-6">
+            <p className="text-blue-400 font-semibold mb-2">特别提醒</p>
+            <p>您向本服务提交的文本内容合称"输入"，本服务通过 AI 等技术能力接收或响应您的输入而生成的内容合称"输出"。您基于本服务对输入和/或输出内容的使用独立承担法律责任。为避免疑问，如输入和/或输出本身包含了第三方享有知识产权或其他合法权益的内容，则前述输入和/或输出的相应权利仍由该第三方享有，不改变其权属关系。</p>
+          </div>
+
+          <h2 className="text-xl font-bold text-white mt-8 mb-4">5. 隐私信息数据保护</h2>
+          <p>本服务产品保障您传输的文件安全性、私密性。我们努力采用符合业界标准的安全防护措施，包括建立合理的制度规范、安全技术、定期进行安全漏洞扫描来防止您的信息数据遭到未经授权的访问、使用、修改，避免数据的损坏或丢失。</p>
+          <p>我们不会公开或向第三方提供您存储在本服务产品上的所有内容，除非有下列情况：</p>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>实现产品功能所需</li>
+            <li>经您书面同意</li>
+            <li>有关法律、法规规定或经政府机关依法要求公开</li>
+            <li>其他依法需要公开、披露的情况</li>
+          </ul>
+
+          <h2 className="text-xl font-bold text-white mt-8 mb-4">6. 不可抗力</h2>
+          <p>由于不能预见并且发生的后果不能克服、不可避免的不可抗力，致使一方遭受经济损失或致使本服务产品不能履行或不能完全履行时，一方对另一方的损失不承担责任。</p>
+          <p>不可抗力包括但不限于暴雨、洪水、海啸、风暴潮、风暴、台风、飓风、暴风雪、地震、火山喷发、泥石流、火灾、干旱、爆炸、雷电、瘟疫、停电、网络中断、移动网关出错、战争或武装冲突、恐怖袭击、动乱、骚乱、罢工、政府干预或政府管制、法律政策变化等自然灾害、社会异常事件和国家政府行为，以及根据适用法律或商务惯例被认为是不可抗力的其他客观情况。</p>
+
+          <h2 className="text-xl font-bold text-white mt-8 mb-4">7. 未成年人使用</h2>
+          <p>若您未满 18 周岁，请在您的法定监护人陪同下阅读本协议，并在征得您法定监护人同意的前提下使用本服务，您应当在合理范围内正确学习使用网络，避免沉迷虚拟的网络空间，养成良好上网习惯。</p>
+          
+          <h3 className="text-lg font-semibold text-white mt-6 mb-3">监护人特别提示</h3>
+          <ul className="list-disc pl-6 space-y-2">
+            <li>如您的被监护人使用本服务的，您作为监护人应指导并监督被监护人的注册和使用行为，如您的被监护人申请本服务账号，我们将有权认为其已取得您的同意。</li>
+            <li>您的被监护人在使用本服务时可能使用充值功能。您作为监护人，请保管好您的支付设备、支付账户及支付密码等，以避免被监护人在未取得您同意的情况下通过您的账号使用充值功能。</li>
+          </ul>
+
+          <h2 className="text-xl font-bold text-white mt-8 mb-4">8. 免责声明</h2>
+          <p>您理解，本服务生成的所有内容都是由人工智能模型生成，仅供您参考，我们对其生成内容的准确性、完整性和功能性不做任何保证，并且其生成的内容不代表我们的态度或观点。任何由 AI 工具或技术能力输出的结果，均无法替代您基于自身独特的经验、知识和判断力做出决策。</p>
+          <p>我们的服务来自于法律法规允许的包括但不限于公开互联网等信息积累，并已经经过不断的自动及人工敏感数据过滤，但仍不排除其中部分信息具有瑕疵、不合理或引发不快。遇有此情形的，欢迎并感谢您随时通过官方渠道反馈给我们。</p>
+
+          <h2 className="text-xl font-bold text-white mt-8 mb-4">9. 适用法律及争议解决</h2>
+          <p>为本协议目的，本协议的制定、有效性、解释、执行、修改、终止及因上述事项引起的争议受香港特别行政区法律管辖。如双方就本协议内容或其执行发生任何争议，双方应尽量友好协商解决；协商不成时，任何一方均可向香港国际仲裁中心提起仲裁。</p>
+
+          <h2 className="text-xl font-bold text-white mt-8 mb-4">10. 投诉、举报及处理</h2>
+          <p><strong>联系方式</strong></p>
+          <p>邮箱：cs@zesiai.com</p>
+          <p className="mt-4">如您发现本服务产品内存在任何违法违规或侵犯您权利的内容，您可以按照本条的联系方式书面通知我们。您应当按照我们的要求提供相关的证据/证明材料，我们将会根据法律规定及时处理您的投诉/举报。</p>
+
+          <h2 className="text-xl font-bold text-white mt-8 mb-4">11. 其他</h2>
+          <p>我们对于您所有的通知均可通过网页公告、网页弹窗、电子邮件等方式进行（联系方式以您在平台注册或预留的为准），该等通知于发送之日视为已送达收件人。</p>
+          <p>基于网络服务的及时性、复杂性、高效性等特性及响应监管要求和政策规范等原因，我们有权对本协议及相关服务规则进行调整，并通过网站公示、网站公告、网页弹窗、邮件通知、系统消息、站内信等方式中的一种或多种予以公布。若您在调整后继续使用本服务的表示您已经充分阅读、理解并接受调整后的协议及规则。如果您不同意调整后的协议及规则的，您应当停止使用本服务。</p>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-12 pt-8 border-t border-white/10 text-center text-gray-500 text-sm">
+          <p>© 2025 泽思 Zenith AI - 专业AI商业咨询平台</p>
+          <div className="mt-4 flex justify-center gap-4">
+            <Link href="/privacy" className="text-purple-500 hover:underline">隐私政策</Link>
+            <Link href="/" className="text-purple-500 hover:underline">返回首页</Link>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
