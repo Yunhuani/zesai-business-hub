@@ -110,13 +110,12 @@ export async function createDocument(data: {
 }): Promise<number> {
   const db = await getDb();
   const weight = data.weight || 'preferred';
-  const result = await db.execute(sql`
+  const [insertResult] = await db.execute(sql`
     INSERT INTO knowledge_documents (name, original_name, file_type, file_size, s3_key, agent_id, weight)
     VALUES (${data.name}, ${data.originalName}, ${data.fileType}, ${data.fileSize}, 
             ${data.s3Key ?? null}, ${data.agentId ?? null}, ${weight})
-    RETURNING id
   `);
-  return (result.rows[0] as { id: number }).id;
+  return insertResult.insertId;
 }
 
 /**
@@ -185,7 +184,7 @@ export async function createChunks(documentId: number, chunks: { content: string
     
     await db.execute(sql`
       INSERT INTO knowledge_chunks (document_id, content, chunk_index, metadata)
-      VALUES (${documentId}, ${chunk.content}, ${i}, ${metadata}::jsonb)
+      VALUES (${documentId}, ${chunk.content}, ${i}, ${metadata})
     `);
   }
 }

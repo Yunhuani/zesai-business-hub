@@ -1,5 +1,6 @@
 import { eq, and, desc, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2/promise";
 import {
   referrals,
   commissions,
@@ -9,12 +10,20 @@ import {
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
+let _client: ReturnType<typeof mysql.createPool> | null = null;
 let _db: ReturnType<typeof drizzle> | null = null;
 
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      _client = mysql.createPool({
+        uri: process.env.DATABASE_URL,
+        ssl: {
+          minVersion: "TLSv1.2",
+          rejectUnauthorized: true,
+        },
+      });
+      _db = drizzle(_client) as unknown as ReturnType<typeof drizzle>;
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;

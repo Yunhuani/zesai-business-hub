@@ -2,17 +2,23 @@ import { eq, and, desc, sql, count, exists, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 import * as schema from "../drizzle/schema";
-import { ENV } from './_core/env';
 
 let _client: ReturnType<typeof mysql.createPool> | null = null;
 let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
-  if (!_db && ENV.databaseUrl) {
+  if (!_db && process.env.DATABASE_URL) {
     try {
-      _client = mysql.createPool(ENV.databaseUrl);
-      _db = drizzle(_client, { schema, mode: "default" });
+      _client = mysql.createPool({
+        uri: process.env.DATABASE_URL,
+        ssl: {
+          minVersion: "TLSv1.2",
+          rejectUnauthorized: true,
+        },
+        connectTimeout: 15000,
+      });
+      _db = drizzle(_client, { schema, mode: "default" }) as unknown as ReturnType<typeof drizzle<typeof schema>>;
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -181,12 +187,15 @@ export async function updateAgent(id: number, data: { name?: string; description
 export async function createConversation(data: { userId: number; agentId: number; title: string }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(schema.conversations).values({
+  const [insertResult] = await db.insert(schema.conversations).values({
     ...data,
     createdAt: new Date(),
     updatedAt: new Date(),
-  }).returning();
-  return result[0];
+  });
+  const conversation = await db.query.conversations.findFirst({
+    where: eq(schema.conversations.id, insertResult.insertId),
+  });
+  return conversation!;
 }
 
 export async function getUserConversations(userId: number) {
@@ -250,10 +259,13 @@ export async function createMessage(data: { conversationId: number; role: "user"
   if (!db) throw new Error("Database not available");
 
   // Insert message
-  const result = await db.insert(schema.messages).values({
+  const [insertResult] = await db.insert(schema.messages).values({
     ...data,
     createdAt: new Date(),
-  }).returning();
+  });
+  const message = await db.query.messages.findFirst({
+    where: eq(schema.messages.id, insertResult.insertId),
+  });
 
   // Update conversation
   const updateData: { updatedAt: Date; title?: string } = { updatedAt: new Date() };
@@ -280,7 +292,7 @@ export async function createMessage(data: { conversationId: number; role: "user"
     .set(updateData)
     .where(eq(schema.conversations.id, data.conversationId));
 
-  return result[0];
+  return message!;
 }
 
 export async function getConversationMessages(conversationId: number) {
@@ -357,7 +369,7 @@ export async function createOrder(data: {
 }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(schema.orders).values({
+  const [insertResult] = await db.insert(schema.orders).values({
     userId: data.userId,
     outTradeNo: data.outTradeNo,
     plan: data.plan,
@@ -366,8 +378,11 @@ export async function createOrder(data: {
     status: "pending",
     createdAt: new Date(),
     updatedAt: new Date(),
-  }).returning();
-  return result[0];
+  });
+  const order = await db.query.orders.findFirst({
+    where: eq(schema.orders.id, insertResult.insertId),
+  });
+  return order!;
 }
 
 export async function getOrderByOutTradeNo(outTradeNo: string) {
