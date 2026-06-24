@@ -2,8 +2,9 @@ import { eq } from "drizzle-orm";
 import { diagnoses } from "../drizzle/schema";
 import { getDb } from "./db";
 import { runNbgDiagnosis } from "./nbgClient";
-import { deductCreditsOnce } from "./creditsManager";
+import { checkAndResetCredits, deductCreditsOnce } from "./creditsManager";
 import { getActionCredits } from "./pricingConfig";
+import { validateDiagnosisUnlock } from "./diagnosisUnlock";
 
 type JsonObject = Record<string, unknown>;
 
@@ -53,9 +54,7 @@ async function retryIdempotentDatabaseOperation<T>(
 
 async function processDiagnosis(
   diagnosisId: number,
-  userId: number,
-  intake: JsonObject,
-  productType: "preview" | "full"
+  intake: JsonObject
 ): Promise<void> {
   const db = await getDb();
   if (!db) {
@@ -84,22 +83,6 @@ async function processDiagnosis(
       ? scoreSummary.score_label
       : null;
 
-    let fullCreditsDeducted = 0;
-    if (productType === "full") {
-      const credits = await getActionCredits("diagnosis_full");
-      const charge = await deductCreditsOnce(
-        userId,
-        credits,
-        `完整诊断 - Diagnosis #${diagnosisId}`,
-        diagnosisId,
-        "diagnosis_full"
-      );
-      if (!charge.success) {
-        throw new Error("Insufficient credits for completed diagnosis");
-      }
-      fullCreditsDeducted = credits;
-    }
-
     await retryIdempotentDatabaseOperation(() =>
       db
         .update(diagnoses)
@@ -109,7 +92,6 @@ async function processDiagnosis(
           headline,
           overallScore,
           scoreLabel,
-          fullCreditsDeducted,
           errorMessage: null,
         })
         .where(eq(diagnoses.id, diagnosisId))
@@ -135,18 +117,17 @@ async function processDiagnosis(
 
 export async function createDiagnosis(
   userId: number,
-  intake: JsonObject,
-  productType: "preview" | "full" = "preview"
+  intake: JsonObject
 ): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
   const [insertResult] = await db
     .insert(diagnoses)
-    .values({ userId, intake, productType, status: "pending" });
+    .values({ userId, intake, productType: "preview", status: "pending" });
   const diagnosisId = insertResult.insertId;
 
-  void processDiagnosis(diagnosisId, userId, intake, productType);
+  void processDiagnosis(diagnosisId, intake);
 
   return diagnosisId;
 }
@@ -176,4 +157,42 @@ export async function markDiagnosisPdfPurchased(
       pdfCreditsDeducted: creditsDeducted,
     })
     .where(eq(diagnoses.id, diagnosisId));
+}
+
+export async function unlockDiagnosis(
+  diagnosisId: number,
+  userId: number
+) {
+  const diagnosis = await getDiagnosis(diagnosisId);
+  if (!diagnosis) throw new Error("Diagnosis not found");
+
+  const { alreadyUnlocked } = validateDiagnosisUnlock(diagnosis, userId);
+  if (alreadyUnlocked) return diagnosis;
+
+  await checkAndResetCredits(userId);
+  const credits = await getActionCredits("diagnosis_full");
+  const charge = await deductCreditsOnce(
+    userId,
+    credits,
+    `完整诊断解锁 - Diagnosis #${diagnosisId}`,
+    diagnosisId,
+    "diagnosis_full"
+  );
+  if (!charge.success) {
+    throw new Error("INSUFFICIENT_CREDITS");
+  }
+
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(diagnoses)
+    .set({
+      productType: "full",
+      fullCreditsDeducted: credits,
+    })
+    .where(eq(diagnoses.id, diagnosisId));
+
+  const unlocked = await getDiagnosis(diagnosisId);
+  if (!unlocked) throw new Error("Diagnosis not found");
+  return unlocked;
 }

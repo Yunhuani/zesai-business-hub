@@ -8,6 +8,7 @@ const result = {
   score_summary: {
     overall_score: 6.2,
     score_label: "稳健",
+    internal_note: "hidden",
   },
   dimension_outputs: [
     { dimension: "market", score: { value: 7, label: "良好" }, core_judgment: "hidden" },
@@ -30,7 +31,10 @@ const result = {
 describe("diagnosis products", () => {
   it("returns only five dimension scores and one key finding for preview", () => {
     expect(buildDiagnosisPreviewResult(result)).toEqual({
-      score_summary: result.score_summary,
+      score_summary: {
+        overall_score: 6.2,
+        score_label: "稳健",
+      },
       dimension_outputs: [
         { dimension: "market", score: { value: 7, label: "良好" } },
         { dimension: "competition", score: { value: 6, label: "稳健" } },
@@ -39,9 +43,8 @@ describe("diagnosis products", () => {
         { dimension: "finance", score: { value: 7, label: "良好" } },
       ],
       synthesis_output: {
-        headline: "增长基础尚可",
         three_key_findings: [
-          { finding_id: "F01", title: "第一个发现", why_surprising: "保留第一条摘要" },
+          { title: "第一个发现", why_surprising: "保留第一条摘要" },
         ],
       },
     });

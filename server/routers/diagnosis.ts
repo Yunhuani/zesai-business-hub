@@ -1,16 +1,15 @@
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
-import { createDiagnosis } from "../diagnosisService";
-import { getDiagnosis } from "../diagnosisService";
+import {
+  createDiagnosis,
+  getDiagnosis,
+  unlockDiagnosis,
+} from "../diagnosisService";
 import { convertQuestionnaireAnswers } from "../diagnosisIntake";
 import { TRPCError } from "@trpc/server";
 import { buildDiagnosisPreviewResult } from "../diagnosisProduct";
-import {
-  checkAndResetCredits,
-  checkCredits,
-  getUserCredits,
-} from "../creditsManager";
+import { getUserCredits } from "../creditsManager";
 import { getActionCredits } from "../pricingConfig";
 
 const answerSchema = z.union([z.string(), z.array(z.string())]);
@@ -29,11 +28,12 @@ function serializeDiagnosis(diagnosis: Awaited<ReturnType<typeof getDiagnosis>>)
     status: diagnosis.status,
     productType: diagnosis.productType,
     fullAccess,
+    pdfPurchased: diagnosis.pdfPurchased === 1,
     intake: diagnosis.intake,
     result: fullAccess
       ? diagnosis.result
       : buildDiagnosisPreviewResult(diagnosis.result),
-    headline: diagnosis.headline,
+    headline: fullAccess ? diagnosis.headline : null,
     overallScore: diagnosis.overallScore,
     scoreLabel: diagnosis.scoreLabel,
     createdAt: diagnosis.createdAt,
@@ -42,31 +42,14 @@ function serializeDiagnosis(diagnosis: Awaited<ReturnType<typeof getDiagnosis>>)
 
 async function submitDiagnosis(
   userId: number,
-  input: z.infer<typeof submitSchema>,
-  productType: "preview" | "full"
+  input: z.infer<typeof submitSchema>
 ) {
-  if (productType === "full") {
-    await checkAndResetCredits(userId);
-    const required = await getActionCredits("diagnosis_full");
-    const hasCredits = await checkCredits(userId, required);
-    if (!hasCredits) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: JSON.stringify({
-          error: "INSUFFICIENT_CREDITS",
-          credits: await getUserCredits(userId),
-          required,
-        }),
-      });
-    }
-  }
-
   const intake = convertQuestionnaireAnswers(
     input.answers,
     input.customValues
   );
-  const diagnosisId = await createDiagnosis(userId, intake, productType);
-  return { diagnosisId, productType };
+  const diagnosisId = await createDiagnosis(userId, intake);
+  return { diagnosisId, productType: "preview" as const };
 }
 
 export const diagnosisRouter = router({
@@ -97,16 +80,39 @@ export const diagnosisRouter = router({
   submitPreview: protectedProcedure
     .input(submitSchema)
     .mutation(({ ctx, input }) =>
-      submitDiagnosis(ctx.user.id, input, "preview")
+      submitDiagnosis(ctx.user.id, input)
     ),
   submitFull: protectedProcedure
-    .input(submitSchema)
-    .mutation(({ ctx, input }) =>
-      submitDiagnosis(ctx.user.id, input, "full")
-    ),
+    .input(z.object({ diagnosisId: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        return serializeDiagnosis(
+          await unlockDiagnosis(input.diagnosisId, ctx.user.id)
+        );
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        if (message === "Diagnosis not found") {
+          throw new TRPCError({ code: "NOT_FOUND" });
+        }
+        if (message === "Diagnosis is not ready") {
+          throw new TRPCError({ code: "PRECONDITION_FAILED", message });
+        }
+        if (message === "INSUFFICIENT_CREDITS") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: JSON.stringify({
+              error: "INSUFFICIENT_CREDITS",
+              credits: await getUserCredits(ctx.user.id),
+              required: await getActionCredits("diagnosis_full"),
+            }),
+          });
+        }
+        throw error;
+      }
+    }),
   submit: protectedProcedure
     .input(submitSchema)
     .mutation(({ ctx, input }) =>
-      submitDiagnosis(ctx.user.id, input, "preview")
+      submitDiagnosis(ctx.user.id, input)
     ),
 });

@@ -20,18 +20,31 @@ export function buildDiagnosisPreviewResult(result: unknown): JsonObject {
     : [];
 
   return {
-    score_summary: scoreSummary,
+    score_summary: {
+      overall_score: scoreSummary.overall_score,
+      score_label: scoreSummary.score_label,
+    },
     dimension_outputs: dimensions.slice(0, 5).flatMap(rawDimension => {
       const dimension = object(rawDimension);
       if (!dimension) return [];
+      const score = object(dimension.score) ?? {};
       return [{
         dimension: dimension.dimension,
-        score: dimension.score,
+        score: {
+          value: score.value,
+          label: score.label,
+        },
       }];
     }),
     synthesis_output: {
-      headline: synthesis.headline,
-      three_key_findings: findings.slice(0, 1),
+      three_key_findings: findings.slice(0, 1).flatMap(rawFinding => {
+        const finding = object(rawFinding);
+        if (!finding) return [];
+        return [{
+          title: finding.title,
+          why_surprising: finding.why_surprising,
+        }];
+      }),
     },
   };
 }
