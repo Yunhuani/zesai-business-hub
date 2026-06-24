@@ -302,6 +302,14 @@ export default function Home() {
               />
             </div>
           )}
+          <div className="mt-6">
+            <Link href="/diagnosis">
+              <Button size="lg" className="gap-2">
+                <Icons.Activity className="h-5 w-5" />
+                NBG 增长诊断 · 开始
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* 工具卡片入口 - 文本转PPT功能暂时下架 */}
