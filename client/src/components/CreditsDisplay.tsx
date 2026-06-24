@@ -67,7 +67,7 @@ export function CreditsDisplay() {
           onClick={() => trackCredits(CreditsEvents.CREDITS_VIEW, credits?.total || 0)}
         >
           <Icons.Sparkles className="w-4 h-4" />
-          {credits.total.toLocaleString()}
+          {credits.total.toLocaleString()} 积分
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">

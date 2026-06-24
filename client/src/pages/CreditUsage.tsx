@@ -23,6 +23,11 @@ export default function CreditUsage() {
     undefined,
     { enabled: isAuthenticated }
   );
+  const { data: transactions, isLoading: historyLoading } =
+    trpc.credits.history.useQuery(
+      { limit: 50, offset: 0 },
+      { enabled: isAuthenticated }
+    );
 
   const [timeUntilReset, setTimeUntilReset] = useState<string>("");
 
@@ -186,6 +191,58 @@ export default function CreditUsage() {
           </Card>
         )}
 
+        <Card className="overflow-hidden">
+          <div className="border-b px-6 py-5">
+            <h2 className="text-xl font-bold">积分明细</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              展示最近 50 条积分获取与消费记录
+            </p>
+          </div>
+          {historyLoading ? (
+            <div className="flex justify-center py-12">
+              <Icons.Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : transactions?.length ? (
+            <div className="divide-y">
+              {transactions.map(transaction => (
+                <div
+                  key={transaction.id}
+                  className="flex flex-col gap-2 px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div>
+                    <p className="font-medium">{transaction.description}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {formatDateTime(transaction.createdAt)}
+                    </p>
+                  </div>
+                  <div className="text-left sm:text-right">
+                    <p
+                      className={`font-mono text-base font-semibold ${
+                        transaction.amount < 0
+                          ? "text-red-600"
+                          : "text-emerald-600"
+                      }`}
+                    >
+                      {transaction.amount > 0 ? "+" : ""}
+                      {transaction.amount.toLocaleString()} 积分
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      余额{" "}
+                      {(
+                        transaction.balancePurchased +
+                        transaction.balanceSubscription
+                      ).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="px-6 py-12 text-center text-sm text-muted-foreground">
+              暂无积分流水
+            </div>
+          )}
+        </Card>
 
       </div>
     </div>
