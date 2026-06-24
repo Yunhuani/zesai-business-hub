@@ -51,19 +51,21 @@ export async function handleStreamChat(req: Request, res: Response) {
     }
 
     const { createMessage, getConversationMessages, getConversationById, getAgentByIdFull } = await import("./db");
-    const { checkCredits, deductCredits, CREDITS_COST, checkAndResetCredits, getUserCredits } = await import("./creditsManager");
+    const { checkCredits, deductCredits, checkAndResetCredits, getUserCredits } = await import("./creditsManager");
+    const { getActionCredits } = await import("./pricingConfig");
+    const chatCredits = await getActionCredits("chat");
     
     // Check and reset credits if needed
     await checkAndResetCredits(userId);
     
     // Check if user has enough credits
-    const hasCredits = await checkCredits(userId, CREDITS_COST.BASIC_CHAT);
+    const hasCredits = await checkCredits(userId, chatCredits);
     if (!hasCredits) {
       const credits = await getUserCredits(userId);
       res.status(403).json({
         error: "INSUFFICIENT_CREDITS",
         credits: credits,
-        required: CREDITS_COST.BASIC_CHAT
+        required: chatCredits
       });
       return;
     }
@@ -185,7 +187,7 @@ export async function handleStreamChat(req: Request, res: Response) {
     });
     
     // Deduct credits
-    await deductCredits(userId, CREDITS_COST.BASIC_CHAT, `基础对话 - Conversation #${conversationId}`);
+    await deductCredits(userId, chatCredits, `基础对话 - Conversation #${conversationId}`);
 
     // End stream
     res.write("data: [DONE]\n\n");

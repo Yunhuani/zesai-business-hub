@@ -7,46 +7,13 @@ import { TRPCError } from "@trpc/server";
 import { ENV } from "../_core/env";
 import { createStripeCheckoutSession } from "../_core/stripe";
 import { STRIPE_SUBSCRIPTION_PLANS, STRIPE_CREDIT_PACKS, getStripeProductMetadata } from "../stripeProducts";
-
-/**
- * 套餐配置
- */
-const PLAN_CONFIG = {
-  free: {
-    name: "免费版",
-    price: 0,
-    monthlyCredits: 100,
-    duration: 30,
-  },
-  basic: {
-    name: "基础版",
-    price: 9900, // 99元,单位:分
-    monthlyCredits: 750, // 每月750积分
-    duration: 30, // 天
-  },
-  professional: {
-    name: "专业版",
-    price: 29900, // 299元
-    monthlyCredits: 2600, // 每月2600积分
-    duration: 30,
-  },
-  enterprise: {
-    name: "企业版",
-    price: 99900, // 999元
-    monthlyCredits: 11000, // 每月11000积分
-    duration: 30,
-  },
-} as const;
-
-/**
- * 积分包配置
- */
-const CREDIT_PACK_CONFIG: Record<string, { name: string; credits: number; price: number }> = {
-  pack_500: { name: "入门包", credits: 500, price: 4900 },
-  pack_1200: { name: "超值包", credits: 1200, price: 9900 },
-  pack_3000: { name: "专业包", credits: 3000, price: 19900 },
-  pack_8000: { name: "企业包", credits: 8000, price: 39900 },
-};
+import {
+  getCreditPack,
+  getPricingConfig,
+  getSubscriptionPlan,
+  resolveCreditPack,
+  resolveSubscriptionPlan,
+} from "../pricingConfig";
 
 export const paymentRouter = router({
   /**
@@ -72,15 +39,19 @@ export const paymentRouter = router({
       let body = "";
       
       if (type === "subscription") {
-        const config = PLAN_CONFIG[planId as keyof typeof PLAN_CONFIG];
-        if (!config) {
+        let config;
+        try {
+          config = await getSubscriptionPlan(planId);
+        } catch {
           throw new TRPCError({ code: "BAD_REQUEST", message: "无效的套餐类型" });
         }
         subject = `泽思AI商业智库 - ${config.name}`;
         body = `订阅${config.name},每月${config.monthlyCredits}积分`;
       } else if (type === "credits") {
-        const config = CREDIT_PACK_CONFIG[planId];
-        if (!config) {
+        let config;
+        try {
+          config = await getCreditPack(planId);
+        } catch {
           throw new TRPCError({ code: "BAD_REQUEST", message: "无效的积分包类型" });
         }
         subject = `泽思AI商业智库 - ${config.name}`;
@@ -208,9 +179,10 @@ export const paymentRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { plan } = input;
-      const config = PLAN_CONFIG[plan];
-      
-      if (!config) {
+      let config;
+      try {
+        config = await getSubscriptionPlan(plan);
+      } catch {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "无效的套餐类型",
@@ -225,7 +197,7 @@ export const paymentRouter = router({
         userId: ctx.user.id,
         outTradeNo,
         plan,
-        amount: config.price,
+        amount: config.priceCents,
         paymentMethod: "alipay",
       });
       
@@ -236,7 +208,7 @@ export const paymentRouter = router({
       try {
         const paymentForm = await createAlipayPagePayment({
           outTradeNo,
-          totalAmount: (config.price / 100).toFixed(2), // 转换为元
+          totalAmount: (config.priceCents / 100).toFixed(2), // 转换为元
           subject: `泽思AI商业智库 - ${config.name}`,
           body: `订阅${config.name},每月${config.monthlyCredits}积分`,
           returnUrl,
@@ -246,7 +218,7 @@ export const paymentRouter = router({
         return {
           outTradeNo,
           paymentForm,
-          amount: config.price,
+          amount: config.priceCents,
           plan: config.name,
         };
       } catch (error) {
@@ -320,19 +292,26 @@ export const paymentRouter = router({
           });
           
           // Check if it's a subscription or credit pack order
-          const subscriptionConfig = PLAN_CONFIG[order.plan as keyof typeof PLAN_CONFIG];
-          const creditPackConfig = CREDIT_PACK_CONFIG[order.plan];
+          const pricing = await getPricingConfig();
+          let subscriptionConfig;
+          let creditPackConfig;
+          try {
+            subscriptionConfig = resolveSubscriptionPlan(pricing, order.plan);
+          } catch {}
+          try {
+            creditPackConfig = resolveCreditPack(pricing, order.plan);
+          } catch {}
           
           if (subscriptionConfig) {
             // Handle subscription order
             const endDate = new Date();
-            endDate.setDate(endDate.getDate() + subscriptionConfig.duration);
+            endDate.setDate(endDate.getDate() + subscriptionConfig.durationDays);
             
             await createOrUpdateSubscription({
               userId: order.userId,
               plan: order.plan as any,
               // monthlyLimit removed - using credits system now
-              price: subscriptionConfig.price,
+              price: subscriptionConfig.priceCents,
               endDate,
             });
           } else if (creditPackConfig) {
@@ -407,7 +386,11 @@ export const paymentRouter = router({
         });
         
         // Check if it's a subscription or credit pack order
-        const subscriptionConfig = PLAN_CONFIG[order.plan as keyof typeof PLAN_CONFIG];
+        const pricing = await getPricingConfig();
+        let subscriptionConfig;
+        try {
+          subscriptionConfig = resolveSubscriptionPlan(pricing, order.plan);
+        } catch {}
         
         // Extract pack ID from plan (handle both "pack_500" and "pack_500_49" formats)
         let packId = order.plan;
@@ -418,18 +401,21 @@ export const paymentRouter = router({
             packId = `${parts[0]}_${parts[1]}`; // pack_500
           }
         }
-        const creditPackConfig = CREDIT_PACK_CONFIG[packId];
+        let creditPackConfig;
+        try {
+          creditPackConfig = resolveCreditPack(pricing, packId);
+        } catch {}
         
         if (subscriptionConfig) {
           // Handle subscription order
           const endDate = new Date();
-          endDate.setDate(endDate.getDate() + subscriptionConfig.duration);
+          endDate.setDate(endDate.getDate() + subscriptionConfig.durationDays);
           
           await createOrUpdateSubscription({
             userId: order.userId,
             plan: order.plan as any,
             // monthlyLimit removed - using credits system now
-            price: subscriptionConfig.price,
+            price: subscriptionConfig.priceCents,
             endDate,
           });
           

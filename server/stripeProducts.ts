@@ -8,7 +8,7 @@ export const STRIPE_SUBSCRIPTION_PLANS = {
     name: "Basic Plan",
     price: 1900, // $19.00 in cents
     currency: "usd",
-    monthlyCredits: 750,
+    monthlyCredits: 1800,
     duration: 30,
     description: "Perfect for occasional use",
   },
@@ -16,7 +16,7 @@ export const STRIPE_SUBSCRIPTION_PLANS = {
     name: "Professional Plan",
     price: 4900, // $49.00 in cents
     currency: "usd",
-    monthlyCredits: 2600,
+    monthlyCredits: 6000,
     duration: 30,
     description: "Best for regular users",
   },
@@ -24,7 +24,7 @@ export const STRIPE_SUBSCRIPTION_PLANS = {
     name: "Enterprise Plan",
     price: 14900, // $149.00 in cents
     currency: "usd",
-    monthlyCredits: 11000,
+    monthlyCredits: 15000,
     duration: 30,
     description: "For power users and teams",
   },

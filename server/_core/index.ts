@@ -35,6 +35,8 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 async function startServer() {
+  const { seedPricingConfig } = await import("../pricingConfig");
+  await seedPricingConfig();
   const app = express();
   const server = createServer(app);
 
@@ -177,16 +179,17 @@ async function startServer() {
           paidAt: new Date(),
         });
         
-        // Update user subscription
-        const PLAN_CONFIG = {
-          free: { monthlyCredits: 100, price: 0, duration: 30 },
-          basic: { monthlyCredits: 750, price: 9900, duration: 30 },
-          professional: { monthlyCredits: 2600, price: 29900, duration: 30 },
-          enterprise: { monthlyCredits: 11000, price: 99900, duration: 30 },
-        };
-        
         // Check if it's a subscription or credit pack order
-        const subscriptionConfig = PLAN_CONFIG[order.plan as keyof typeof PLAN_CONFIG];
+        const {
+          getPricingConfig,
+          resolveCreditPack,
+          resolveSubscriptionPlan,
+        } = await import("../pricingConfig");
+        const pricing = await getPricingConfig();
+        let subscriptionConfig;
+        try {
+          subscriptionConfig = resolveSubscriptionPlan(pricing, order.plan);
+        } catch {}
         
         // Extract pack ID from plan
         let packId = order.plan;
@@ -197,23 +200,20 @@ async function startServer() {
           }
         }
         
-        const CREDIT_PACK_CONFIG: Record<string, { name: string; credits: number; price: number }> = {
-          pack_500: { name: "入门包", credits: 500, price: 4900 },
-          pack_1200: { name: "超值包", credits: 1200, price: 9900 },
-          pack_3000: { name: "专业包", credits: 3000, price: 19900 },
-          pack_8000: { name: "企业包", credits: 8000, price: 39900 },
-        };
-        const creditPackConfig = CREDIT_PACK_CONFIG[packId];
+        let creditPackConfig;
+        try {
+          creditPackConfig = resolveCreditPack(pricing, packId);
+        } catch {}
         
         if (subscriptionConfig) {
           const endDate = new Date();
-          endDate.setDate(endDate.getDate() + subscriptionConfig.duration);
+          endDate.setDate(endDate.getDate() + subscriptionConfig.durationDays);
           
           await createOrUpdateSubscription({
             userId: order.userId,
             plan: order.plan as any,
             // monthlyLimit removed - using credits system
-            price: subscriptionConfig.price,
+            price: subscriptionConfig.priceCents,
             endDate,
           });
           
@@ -228,7 +228,7 @@ async function startServer() {
               orderNo: outTradeNo,
               userName: user.name || "",
               userEmail: user.email || "",
-              productName: `${subscriptionConfig.monthlyCredits === 750 ? "基础版" : subscriptionConfig.monthlyCredits === 2600 ? "专业版" : "企业版"}套餐`,
+              productName: `${subscriptionConfig.name}套餐`,
               amount: order.amount,
               paymentMethod: "alipay",
               paidAt: new Date(),

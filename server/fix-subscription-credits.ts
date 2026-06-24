@@ -4,7 +4,8 @@
  */
 
 import { getDb } from "./db";
-import { resetSubscriptionCredits, PLAN_CREDITS } from "./creditsManager";
+import { resetSubscriptionCredits } from "./creditsManager";
+import { getSubscriptionPlan } from "./pricingConfig";
 import { eq } from "drizzle-orm";
 import { users, orders } from "../drizzle/schema";
 
@@ -51,7 +52,7 @@ async function fixSubscriptionCredits() {
         continue;
       }
 
-      const expectedCredits = PLAN_CREDITS[order.plan as keyof typeof PLAN_CREDITS];
+      const expectedCredits = (await getSubscriptionPlan(order.plan)).monthlyCredits;
       const currentCredits = user.creditsSubscription;
 
       console.log(`\n订单: ${order.outTradeNo}`);

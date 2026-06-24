@@ -6,19 +6,7 @@ import { queryAlipayOrder } from "./_core/alipay";
 import { getDb, updateOrderStatus, createOrUpdateSubscription, getUserById } from "./db";
 import { resetSubscriptionCredits, addPurchasedCredits, clearSubscriptionCredits } from "./creditsManager";
 import { notifyAdminNewOrder } from "./orderNotification";
-
-const PLAN_CONFIG: Record<string, { monthlyCredits: number; price: number; duration: number }> = {
-  basic: { monthlyCredits: 750, price: 9900, duration: 30 },
-  professional: { monthlyCredits: 2600, price: 29900, duration: 30 },
-  enterprise: { monthlyCredits: 11000, price: 99900, duration: 30 },
-};
-
-const CREDIT_PACK_CONFIG: Record<string, { name: string; credits: number; price: number }> = {
-  pack_500: { name: "入门包", credits: 500, price: 4900 },
-  pack_1200: { name: "超值包", credits: 1200, price: 9900 },
-  pack_3000: { name: "专业包", credits: 3000, price: 19900 },
-  pack_8000: { name: "企业包", credits: 8000, price: 39900 },
-};
+import { getCreditPack, getSubscriptionPlan } from "./pricingConfig";
 
 const CHECK_INTERVAL = 5 * 60 * 1000; // 5分钟
 const MAX_ORDER_AGE = 24 * 60 * 60 * 1000; // 只检查24小时内的订单
@@ -76,7 +64,10 @@ async function checkAlipayOrder(order: any) {
       });
 
       // 发放权益
-      const subscriptionConfig = PLAN_CONFIG[order.plan as keyof typeof PLAN_CONFIG];
+      let subscriptionConfig;
+      try {
+        subscriptionConfig = await getSubscriptionPlan(order.plan);
+      } catch {}
 
       let packId = order.plan;
       if (order.plan.startsWith("pack_") && order.plan.includes("_", 5)) {
@@ -85,16 +76,19 @@ async function checkAlipayOrder(order: any) {
           packId = `${parts[0]}_${parts[1]}`;
         }
       }
-      const creditPackConfig = CREDIT_PACK_CONFIG[packId];
+      let creditPackConfig;
+      try {
+        creditPackConfig = await getCreditPack(packId);
+      } catch {}
 
       if (subscriptionConfig) {
         const endDate = new Date();
-        endDate.setDate(endDate.getDate() + subscriptionConfig.duration);
+        endDate.setDate(endDate.getDate() + subscriptionConfig.durationDays);
 
         await createOrUpdateSubscription({
           userId: order.userId,
           plan: order.plan as any,
-          price: subscriptionConfig.price,
+          price: subscriptionConfig.priceCents,
           endDate,
         });
 
@@ -108,7 +102,7 @@ async function checkAlipayOrder(order: any) {
             orderNo: order.outTradeNo,
             userName: user.name || "",
             userEmail: user.email || "",
-            productName: `${subscriptionConfig.monthlyCredits === 750 ? "基础版" : subscriptionConfig.monthlyCredits === 2600 ? "专业版" : "企业版"}套餐`,
+            productName: `${subscriptionConfig.name}套餐`,
             amount: order.amount,
             paymentMethod: "alipay",
             paidAt: new Date(),
@@ -190,7 +184,10 @@ async function checkPaidButUndeliveredOrders() {
           packId = `${parts[0]}_${parts[1]}`;
         }
       }
-      const creditPackConfig = CREDIT_PACK_CONFIG[packId];
+      let creditPackConfig;
+      try {
+        creditPackConfig = await getCreditPack(packId);
+      } catch {}
       if (creditPackConfig) {
         const granted = await addPurchasedCredits(order.userId, creditPackConfig.credits, order.id);
         if (granted) {

@@ -4,46 +4,11 @@ import { TRPCError } from "@trpc/server";
 import { verifyWechatPayNotify, decryptWechatPayNotify } from "../wechatPay";
 import { getOrderByOutTradeNo, updateOrderStatus, createOrUpdateSubscription, getUserById } from "../db";
 import { notifyAdminNewOrder } from "../orderNotification";
-
-/**
- * 套餐配置
- */
-const PLAN_CONFIG = {
-  free: {
-    name: "免费版",
-    price: 0,
-    monthlyCredits: 100,
-    duration: 30,
-  },
-  basic: {
-    name: "基础版",
-    price: 9900,
-    monthlyCredits: 750,
-    duration: 30,
-  },
-  professional: {
-    name: "专业版",
-    price: 29900,
-    monthlyCredits: 2600,
-    duration: 30,
-  },
-  enterprise: {
-    name: "企业版",
-    price: 99900,
-    monthlyCredits: 11000,
-    duration: 30,
-  },
-} as const;
-
-/**
- * 积分包配置
- */
-const CREDIT_PACK_CONFIG: Record<string, { name: string; credits: number; price: number }> = {
-  pack_500: { name: "入门包", credits: 500, price: 4900 },
-  pack_1200: { name: "超值包", credits: 1200, price: 9900 },
-  pack_3000: { name: "专业包", credits: 3000, price: 19900 },
-  pack_8000: { name: "企业包", credits: 8000, price: 39900 },
-};
+import {
+  getPricingConfig,
+  resolveCreditPack,
+  resolveSubscriptionPlan,
+} from "../pricingConfig";
 
 export const wechatPayCallbackRouter = router({
   /**
@@ -117,7 +82,11 @@ export const wechatPayCallbackRouter = router({
           });
           
           // Check if it's a subscription or credit pack order
-          const subscriptionConfig = PLAN_CONFIG[order.plan as keyof typeof PLAN_CONFIG];
+          const pricing = await getPricingConfig();
+          let subscriptionConfig;
+          try {
+            subscriptionConfig = resolveSubscriptionPlan(pricing, order.plan);
+          } catch {}
           
           // Extract pack ID from plan
           let packId = order.plan;
@@ -127,17 +96,20 @@ export const wechatPayCallbackRouter = router({
               packId = `${parts[0]}_${parts[1]}`;
             }
           }
-          const creditPackConfig = CREDIT_PACK_CONFIG[packId];
+          let creditPackConfig;
+          try {
+            creditPackConfig = resolveCreditPack(pricing, packId);
+          } catch {}
           
           if (subscriptionConfig) {
             // Handle subscription order
             const endDate = new Date();
-            endDate.setDate(endDate.getDate() + subscriptionConfig.duration);
+            endDate.setDate(endDate.getDate() + subscriptionConfig.durationDays);
             
             await createOrUpdateSubscription({
               userId: order.userId,
               plan: order.plan as any,
-              price: subscriptionConfig.price,
+              price: subscriptionConfig.priceCents,
               endDate,
             });
             

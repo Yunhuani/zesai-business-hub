@@ -480,13 +480,14 @@ export const appRouter = router({
   subscription: router({
     get: protectedProcedure.query(async ({ ctx }) => {
       const { getUserSubscription } = await import("./db");
-      const { getUserCredits, PLAN_CREDITS } = await import("./creditsManager");
+      const { getUserCredits } = await import("./creditsManager");
+      const { getSubscriptionPlan } = await import("./pricingConfig");
       const subscription = await getUserSubscription(ctx.user.id);
       const credits = await getUserCredits(ctx.user.id);
       
       // Get plan credits limit
       const plan = subscription?.plan || "free";
-      const planCreditsLimit = PLAN_CREDITS[plan as keyof typeof PLAN_CREDITS] || PLAN_CREDITS.free;
+      const planCreditsLimit = (await getSubscriptionPlan(plan)).monthlyCredits;
       
       return { 
         subscription, 
@@ -508,21 +509,16 @@ export const appRouter = router({
     }).mutation(async ({ ctx, input }) => {
       const { createOrUpdateSubscription } = await import("./db");
       
-      const plans = {
-        basic: { limit: 10, price: 9900 },
-        professional: { limit: 50, price: 29900 },
-        enterprise: { limit: 0, price: 99900 },
-      };
-      
-      const plan = plans[input.plan];
+      const { getSubscriptionPlan } = await import("./pricingConfig");
+      const plan = await getSubscriptionPlan(input.plan);
       const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + 1);
+      endDate.setDate(endDate.getDate() + plan.durationDays);
       
       await createOrUpdateSubscription({
         userId: ctx.user.id,
         plan: input.plan,
         // monthlyLimit removed - using credits system
-        price: plan.price,
+        price: plan.priceCents,
         endDate,
       });
       
@@ -579,13 +575,15 @@ export const appRouter = router({
       throw new Error("Invalid input: expected { conversationId: number, content: string, userInputs?: Record<string, string> }");
     }).mutation(async ({ ctx, input }) => {
       const { createMessage, getConversationMessages, getConversationById, getAgentByIdFull } = await import("./db");
-      const { checkCredits, deductCredits, CREDITS_COST, checkAndResetCredits, getUserCredits } = await import("./creditsManager");
+      const { checkCredits, deductCredits, checkAndResetCredits, getUserCredits } = await import("./creditsManager");
+      const { getActionCredits } = await import("./pricingConfig");
+      const chatCredits = await getActionCredits("chat");
       
       // Check and reset credits if needed
       await checkAndResetCredits(ctx.user.id);
       
       // Check if user has enough credits
-      const hasCredits = await checkCredits(ctx.user.id, CREDITS_COST.BASIC_CHAT);
+      const hasCredits = await checkCredits(ctx.user.id, chatCredits);
       if (!hasCredits) {
         const credits = await getUserCredits(ctx.user.id);
         throw new TRPCError({ 
@@ -593,7 +591,7 @@ export const appRouter = router({
           message: JSON.stringify({
             error: "INSUFFICIENT_CREDITS",
             credits: credits,
-            required: CREDITS_COST.BASIC_CHAT
+            required: chatCredits
           })
         });
       }
@@ -654,7 +652,7 @@ export const appRouter = router({
       });
       
       // Deduct credits
-      await deductCredits(ctx.user.id, CREDITS_COST.BASIC_CHAT, `基础对话 - Conversation #${input.conversationId}`);
+      await deductCredits(ctx.user.id, chatCredits, `基础对话 - Conversation #${input.conversationId}`);
 
       return { content: assistantMessage };
     }),

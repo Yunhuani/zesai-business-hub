@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "./db";
 import { users, subscriptions, creditsTransactions } from "../drizzle/schema";
-import { PLAN_CREDITS } from "./creditsManager";
+import { getSubscriptionPlan } from "./pricingConfig";
 
 /**
  * Fix missing credits for users who paid but didn't receive credits
@@ -48,7 +48,7 @@ async function fixMissingCredits() {
   console.log(`📊 发现 ${usersToFix.length} 个用户需要补发积分:\n`);
 
   for (const user of usersToFix) {
-    const expectedCredits = PLAN_CREDITS[user.plan as keyof typeof PLAN_CREDITS];
+    const expectedCredits = (await getSubscriptionPlan(user.plan)).monthlyCredits;
     console.log(`用户: ${user.email || user.name || `ID:${user.userId}`}`);
     console.log(`套餐: ${user.plan}`);
     console.log(`当前积分: ${user.currentCredits}`);
@@ -64,7 +64,7 @@ async function fixMissingCredits() {
 
   for (const user of usersToFix) {
     try {
-      const expectedCredits = PLAN_CREDITS[user.plan as keyof typeof PLAN_CREDITS];
+      const expectedCredits = (await getSubscriptionPlan(user.plan)).monthlyCredits;
 
       // Calculate next reset date (1 month from subscription start)
       const nextResetDate = new Date(user.startDate);

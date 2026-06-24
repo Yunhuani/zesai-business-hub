@@ -77,6 +77,24 @@ export const orders = mysqlTable("orders", {
 	index("orders_outTradeNo_unique").on(table.outTradeNo),
 ]);
 
+export const pricingConfig = mysqlTable("pricingConfig", {
+	id: int().autoincrement().primaryKey(),
+	configKey: varchar({ length: 100 }).notNull(),
+	category: mysqlEnum(['action','subscription','credit_pack']).notNull(),
+	name: varchar({ length: 100 }).notNull(),
+	credits: int(),
+	priceCents: int(),
+	monthlyCredits: int(),
+	durationDays: int(),
+	permanent: int().default(0).notNull(),
+	enabled: int().default(1).notNull(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("pricingConfig_configKey_unique").on(table.configKey),
+]);
+
 export const passwordResetTokens = mysqlTable("passwordResetTokens", {
 	id: int().autoincrement().notNull(),
 	userId: int().notNull(),

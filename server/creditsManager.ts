@@ -1,28 +1,11 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "./db";
 import { users, creditsTransactions, type InsertCreditsTransaction } from "../drizzle/schema";
+import { getSubscriptionPlan } from "./pricingConfig";
 
 /**
  * Credits Manager - Core logic for credits system
  */
-
-// Credits cost for different operations
-export const CREDITS_COST = {
-  BASIC_CHAT: 10,
-  DEEP_CHAT: 20,
-  DOCUMENT_ANALYSIS: 30,
-  EXPORT_PPT: 50,
-  EXPORT_PDF: 30,
-  CHART_GENERATION: 20,
-} as const;
-
-// Credits included in each plan per month
-export const PLAN_CREDITS = {
-  free: 100,
-  basic: 750,
-  professional: 2600,
-  enterprise: 11000,
-} as const;
 
 /**
  * Get user's total available credits
@@ -202,7 +185,7 @@ export async function resetSubscriptionCredits(userId: number, plan: string): Pr
   const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   if (!user) throw new Error("User not found");
 
-  const planCredits = PLAN_CREDITS[plan as keyof typeof PLAN_CREDITS] || 100;
+  const planCredits = (await getSubscriptionPlan(plan)).monthlyCredits;
 
   // Calculate next reset date (1 month from now)
   const nextResetDate = new Date();

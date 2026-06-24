@@ -127,6 +127,20 @@
       "when": 1770626771402,
       "tag": "0017_abandoned_sheva_callister",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1782279000000,
+      "tag": "0018_create_diagnoses",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1782279060000,
+      "tag": "0019_create_pricing_config",
+      "breakpoints": true
     }
   ]
 }
