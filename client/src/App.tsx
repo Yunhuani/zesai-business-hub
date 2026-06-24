@@ -35,6 +35,9 @@ import About from "./pages/About";
 import TextToPPT from "./pages/TextToPPT";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import Diagnosis from "./pages/Diagnosis";
+import DiagnosisProcessing from "./pages/DiagnosisProcessing";
+import DiagnosisReport from "./pages/DiagnosisReport";
 // import ReferralCenter from "./pages/ReferralCenter"; // 推荐功能暂时隐藏
 
 function Router() {
@@ -72,6 +75,9 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
+      <Route path="/diagnosis" component={Diagnosis} />
+      <Route path="/diagnosis/:id/processing" component={DiagnosisProcessing} />
+      <Route path="/diagnosis/:id/report" component={DiagnosisReport} />
       {/* 推荐功能暂时隐藏 */}
       {/* <Route path="/referral-center" component={ReferralCenter} /> */}
       <Route path={"/404"} component={NotFound} />
