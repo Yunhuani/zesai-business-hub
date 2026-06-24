@@ -179,6 +179,12 @@ export default function Home() {
                       历史记录
                     </Button>
                   </Link>
+                  <Link href="/my-diagnoses">
+                    <Button variant="outline" className="gap-2">
+                      <Icons.ClipboardList className="w-4 h-4" />
+                      我的诊断
+                    </Button>
+                  </Link>
                   <Link href="/pricing">
                     <Button variant="outline" className="gap-2">
                       <Icons.Sparkles className="w-4 h-4" />
@@ -208,6 +214,12 @@ export default function Home() {
                         <Link href="/history" className="flex items-center cursor-pointer">
                           <Icons.History className="w-4 h-4 mr-2" />
                           历史记录
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/my-diagnoses" className="flex items-center cursor-pointer">
+                          <Icons.ClipboardList className="w-4 h-4 mr-2" />
+                          我的诊断
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>

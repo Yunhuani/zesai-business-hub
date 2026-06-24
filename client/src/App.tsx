@@ -38,6 +38,7 @@ import Privacy from "./pages/Privacy";
 import Diagnosis from "./pages/Diagnosis";
 import DiagnosisProcessing from "./pages/DiagnosisProcessing";
 import DiagnosisReport from "./pages/DiagnosisReport";
+import MyDiagnoses from "./pages/MyDiagnoses";
 // import ReferralCenter from "./pages/ReferralCenter"; // 推荐功能暂时隐藏
 
 function Router() {
@@ -78,6 +79,7 @@ function Router() {
       <Route path="/diagnosis" component={Diagnosis} />
       <Route path="/diagnosis/:id/processing" component={DiagnosisProcessing} />
       <Route path="/diagnosis/:id/report" component={DiagnosisReport} />
+      <Route path="/my-diagnoses" component={MyDiagnoses} />
       {/* 推荐功能暂时隐藏 */}
       {/* <Route path="/referral-center" component={ReferralCenter} /> */}
       <Route path={"/404"} component={NotFound} />
