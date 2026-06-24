@@ -6,14 +6,14 @@ import { createOrder, getOrderByOutTradeNo, updateOrderStatus, createOrUpdateSub
 import { TRPCError } from "@trpc/server";
 import { ENV } from "../_core/env";
 import { createStripeCheckoutSession } from "../_core/stripe";
-import { STRIPE_SUBSCRIPTION_PLANS, STRIPE_CREDIT_PACKS, getStripeProductMetadata } from "../stripeProducts";
+import { getStripeProductMetadata } from "../stripeProducts";
 import {
-  getCreditPack,
   getPricingConfig,
   getSubscriptionPlan,
   resolveCreditPack,
   resolveSubscriptionPlan,
 } from "../pricingConfig";
+import { getPaymentProduct } from "../paymentPricing";
 
 export const paymentRouter = router({
   /**
@@ -24,38 +24,22 @@ export const paymentRouter = router({
       z.object({
         type: z.enum(["subscription", "credits"]),
         planId: z.string(),
-        amount: z.number(),
+        amount: z.number().optional(),
         credits: z.number().optional(),
         paymentMethod: z.enum(["alipay", "wechat", "stripe"]).default("alipay"),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { type, planId, amount, credits, paymentMethod } = input;
+      const { type, planId, paymentMethod } = input;
       
       // 生成商户订单号
       const outTradeNo = `ZS${Date.now()}${ctx.user.id}`;
       
-      let subject = "";
-      let body = "";
-      
-      if (type === "subscription") {
-        let config;
-        try {
-          config = await getSubscriptionPlan(planId);
-        } catch {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "无效的套餐类型" });
-        }
-        subject = `泽思AI商业智库 - ${config.name}`;
-        body = `订阅${config.name},每月${config.monthlyCredits}积分`;
-      } else if (type === "credits") {
-        let config;
-        try {
-          config = await getCreditPack(planId);
-        } catch {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "无效的积分包类型" });
-        }
-        subject = `泽思AI商业智库 - ${config.name}`;
-        body = `购买${config.credits}积分`;
+      let product;
+      try {
+        product = await getPaymentProduct(type, planId);
+      } catch {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "无效的产品类型" });
       }
       
       // 创建订单记录
@@ -63,35 +47,13 @@ export const paymentRouter = router({
         userId: ctx.user.id,
         outTradeNo,
         plan: planId,
-        amount: Math.round(amount * 100), // 转换为分
+        amount: product.amountCents,
         paymentMethod,
       });
       
       try {
         if (paymentMethod === "stripe") {
           // Stripe支付（国际用户）
-          let stripeAmount: number;
-          let productName: string;
-          let productDescription: string;
-          
-          if (type === "subscription") {
-            const stripePlan = STRIPE_SUBSCRIPTION_PLANS[planId as keyof typeof STRIPE_SUBSCRIPTION_PLANS];
-            if (!stripePlan) {
-              throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid subscription plan" });
-            }
-            stripeAmount = stripePlan.price;
-            productName = `Zenith AI - ${stripePlan.name}`;
-            productDescription = stripePlan.description;
-          } else {
-            const stripePack = STRIPE_CREDIT_PACKS[planId as keyof typeof STRIPE_CREDIT_PACKS];
-            if (!stripePack) {
-              throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid credit pack" });
-            }
-            stripeAmount = stripePack.price;
-            productName = `Zenith AI - ${stripePack.name}`;
-            productDescription = stripePack.description;
-          }
-          
           const origin = ctx.req.headers.origin || "https://zesiai.com";
           const { checkoutUrl } = await createStripeCheckoutSession({
             userId: ctx.user.id,
@@ -99,10 +61,10 @@ export const paymentRouter = router({
             userName: ctx.user.name || "",
             type,
             planId,
-            amount: stripeAmount,
-            currency: "usd",
-            productName,
-            productDescription,
+            amount: product.amountCents,
+            currency: "cny",
+            productName: product.subject,
+            productDescription: product.description,
             metadata: {
               ...getStripeProductMetadata(type, planId),
               out_trade_no: outTradeNo,
@@ -129,8 +91,8 @@ export const paymentRouter = router({
           const clientIp = ctx.req.ip || ctx.req.headers['x-forwarded-for'] as string || '127.0.0.1';
           const { h5Url } = await createWechatH5Payment({
             outTradeNo,
-            amount: Math.round(amount * 100),
-            description: subject,
+            amount: product.amountCents,
+            description: product.subject,
             clientIp,
           });
           
@@ -146,9 +108,9 @@ export const paymentRouter = router({
           
           const paymentForm = await createAlipayPagePayment({
             outTradeNo,
-            totalAmount: amount.toFixed(2),
-            subject,
-            body,
+            totalAmount: (product.amountCents / 100).toFixed(2),
+            subject: product.subject,
+            body: product.description,
             returnUrl,
             notifyUrl,
           });
