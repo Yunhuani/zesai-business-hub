@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getDb } from "./db";
 import { users, creditsTransactions, type InsertCreditsTransaction } from "../drizzle/schema";
 import { getSubscriptionPlan } from "./pricingConfig";
@@ -123,6 +123,125 @@ export async function deductCredits(
       total: newPurchased + newSubscription,
     },
   };
+}
+
+export async function hasCreditCharge(
+  relatedDiagnosisId: number,
+  billingKey: string
+): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const [existing] = await db
+    .select({ id: creditsTransactions.id })
+    .from(creditsTransactions)
+    .where(
+      and(
+        eq(creditsTransactions.relatedDiagnosisId, relatedDiagnosisId),
+        eq(creditsTransactions.billingKey, billingKey),
+        eq(creditsTransactions.type, "consume")
+      )
+    )
+    .limit(1);
+
+  return Boolean(existing);
+}
+
+export async function deductCreditsOnce(
+  userId: number,
+  amount: number,
+  description: string,
+  relatedDiagnosisId: number,
+  billingKey: string
+): Promise<{
+  success: boolean;
+  charged: boolean;
+  remaining: { purchased: number; subscription: number; total: number };
+}> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return db.transaction(async tx => {
+    const [existing] = await tx
+      .select({ id: creditsTransactions.id })
+      .from(creditsTransactions)
+      .where(
+        and(
+          eq(creditsTransactions.relatedDiagnosisId, relatedDiagnosisId),
+          eq(creditsTransactions.billingKey, billingKey),
+          eq(creditsTransactions.type, "consume")
+        )
+      )
+      .limit(1);
+
+    const [user] = await tx
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+    if (!user) throw new Error("User not found");
+
+    if (existing) {
+      return {
+        success: true,
+        charged: false,
+        remaining: {
+          purchased: user.creditsPurchased,
+          subscription: user.creditsSubscription,
+          total: user.creditsPurchased + user.creditsSubscription,
+        },
+      };
+    }
+
+    if (user.creditsPurchased + user.creditsSubscription < amount) {
+      return {
+        success: false,
+        charged: false,
+        remaining: {
+          purchased: user.creditsPurchased,
+          subscription: user.creditsSubscription,
+          total: user.creditsPurchased + user.creditsSubscription,
+        },
+      };
+    }
+
+    const nextBalance = calculateCreditDeduction(
+      {
+        purchased: user.creditsPurchased,
+        subscription: user.creditsSubscription,
+      },
+      amount
+    );
+
+    await tx
+      .update(users)
+      .set({
+        creditsPurchased: nextBalance.purchased,
+        creditsSubscription: nextBalance.subscription,
+      })
+      .where(eq(users.id, userId));
+
+    await tx.insert(creditsTransactions).values({
+      userId,
+      type: "consume",
+      amount: -amount,
+      balancePurchased: nextBalance.purchased,
+      balanceSubscription: nextBalance.subscription,
+      description,
+      relatedDiagnosisId,
+      billingKey,
+    });
+
+    return {
+      success: true,
+      charged: true,
+      remaining: {
+        purchased: nextBalance.purchased,
+        subscription: nextBalance.subscription,
+        total: nextBalance.purchased + nextBalance.subscription,
+      },
+    };
+  });
 }
 
 /**

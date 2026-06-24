@@ -319,6 +319,108 @@ async function startServer() {
     }
   });
 
+  app.get("/api/diagnosis/:id/report.pdf", async (req, res) => {
+    try {
+      const diagnosisId = Number(req.params.id);
+      if (!Number.isInteger(diagnosisId) || diagnosisId <= 0) {
+        return res.status(400).json({ error: "Invalid diagnosis id" });
+      }
+
+      const preview =
+        process.env.NODE_ENV === "development" && req.query.preview === "1";
+      const { getDiagnosis } = await import("../diagnosisService");
+      const diagnosis = await getDiagnosis(diagnosisId);
+      if (!diagnosis || diagnosis.status !== "done") {
+        return res.status(404).json({ error: "Report not found" });
+      }
+
+      if (!preview) {
+        const context = await createContext({ req, res } as any);
+        if (!context.user || context.user.id !== diagnosis.userId) {
+          return res.status(404).json({ error: "Report not found" });
+        }
+        if (
+          diagnosis.productType !== "full" ||
+          diagnosis.fullCreditsDeducted <= 0
+        ) {
+          return res.status(403).json({ error: "Full diagnosis required" });
+        }
+      }
+
+      let pdfAlreadyPurchased = preview || diagnosis.pdfPurchased === 1;
+      let pdfCredits = 0;
+      if (!preview) {
+        const {
+          checkAndResetCredits,
+          checkCredits,
+          hasCreditCharge,
+        } = await import("../creditsManager");
+        const { getActionCredits } = await import("../pricingConfig");
+        pdfAlreadyPurchased =
+          pdfAlreadyPurchased ||
+          await hasCreditCharge(diagnosisId, "diagnosis_pdf");
+        if (!pdfAlreadyPurchased) {
+          await checkAndResetCredits(diagnosis.userId);
+          pdfCredits = await getActionCredits("diagnosis_pdf");
+          if (!await checkCredits(diagnosis.userId, pdfCredits)) {
+            return res.status(402).json({
+              error: "INSUFFICIENT_CREDITS",
+              required: pdfCredits,
+            });
+          }
+        }
+      }
+
+      const protocol = req.protocol;
+      const baseUrl = `${protocol}://${req.get("host")}`;
+      const authToken = req.headers.authorization?.replace(/^Bearer\s+/i, "");
+      const { renderDiagnosisReportPdf } = await import("../diagnosisReportPdf");
+      const pdf = await renderDiagnosisReportPdf({
+        baseUrl,
+        diagnosisId,
+        preview,
+        authToken,
+        cookieHeader: req.headers.cookie,
+      });
+
+      if (!preview && !pdfAlreadyPurchased) {
+        const { deductCreditsOnce } = await import("../creditsManager");
+        const charge = await deductCreditsOnce(
+          diagnosis.userId,
+          pdfCredits,
+          `诊断 PDF - Diagnosis #${diagnosisId}`,
+          diagnosisId,
+          "diagnosis_pdf"
+        );
+        if (!charge.success) {
+          return res.status(402).json({
+            error: "INSUFFICIENT_CREDITS",
+            required: pdfCredits,
+          });
+        }
+        const { markDiagnosisPdfPurchased } = await import("../diagnosisService");
+        await markDiagnosisPdfPurchased(diagnosisId, pdfCredits);
+      }
+
+      const company = diagnosis.intake && typeof diagnosis.intake === "object"
+        ? (diagnosis.intake as any).company?.name
+        : null;
+      const fileName = encodeURIComponent(
+        `${typeof company === "string" ? company : "NBG诊断"}-诊断报告-${diagnosisId}.pdf`
+      );
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename*=UTF-8''${fileName}`
+      );
+      res.setHeader("Content-Length", String(pdf.length));
+      return res.send(pdf);
+    } catch (error) {
+      console.error("[Diagnosis PDF] Generation failed:", error);
+      return res.status(500).json({ error: "PDF generation failed" });
+    }
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",

@@ -18,6 +18,7 @@ import { sentryRouter } from "./routers/sentry";
 import { agentAnalyticsRouter } from "./routers/agentAnalytics";
 import { knowledgeRouter } from "./routers/knowledge";
 import { pptGenerationRouter } from "./routers/pptGeneration";
+import { diagnosisRouter } from "./routers/diagnosis";
 
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
@@ -33,6 +34,7 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
+  diagnosis: diagnosisRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

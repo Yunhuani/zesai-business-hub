@@ -1,4 +1,4 @@
-import { mysqlTable, mysqlSchema, AnyMySqlColumn, int, varchar, text, timestamp, mysqlEnum, index } from "drizzle-orm/mysql-core"
+import { mysqlTable, mysqlSchema, AnyMySqlColumn, int, varchar, text, timestamp, mysqlEnum, index, uniqueIndex, json, decimal } from "drizzle-orm/mysql-core"
 import { sql } from "drizzle-orm"
 
 export const agents = mysqlTable("agents", {
@@ -22,6 +22,24 @@ export const conversations = mysqlTable("conversations", {
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 });
 
+export const diagnoses = mysqlTable("diagnoses", {
+	id: int().autoincrement().primaryKey(),
+	userId: int().notNull(),
+	productType: mysqlEnum(['preview','full']).default('preview').notNull(),
+	intake: json().notNull(),
+	status: mysqlEnum(['pending','running','done','error']).default('pending').notNull(),
+	result: json(),
+	headline: varchar({ length: 255 }),
+	overallScore: decimal({ precision: 5, scale: 2, mode: 'number' }),
+	scoreLabel: varchar({ length: 50 }),
+	fullCreditsDeducted: int().default(0).notNull(),
+	pdfPurchased: int().default(0).notNull(),
+	pdfCreditsDeducted: int().default(0).notNull(),
+	errorMessage: text(),
+	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+});
+
 export const creditsTransactions = mysqlTable("creditsTransactions", {
 	id: int().autoincrement().notNull(),
 	userId: int().notNull(),
@@ -31,8 +49,16 @@ export const creditsTransactions = mysqlTable("creditsTransactions", {
 	balanceSubscription: int().notNull(),
 	description: text().notNull(),
 	relatedOrderId: int(),
+	relatedDiagnosisId: int(),
+	billingKey: varchar({ length: 50 }),
 	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-});
+},
+(table) => [
+	uniqueIndex("creditsTransactions_diagnosis_billing_unique").on(
+		table.relatedDiagnosisId,
+		table.billingKey
+	),
+]);
 
 export const generatedDocuments = mysqlTable("generatedDocuments", {
 	id: int().autoincrement().notNull(),
