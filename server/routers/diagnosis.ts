@@ -4,6 +4,7 @@ import { ENV } from "../_core/env";
 import {
   createDiagnosis,
   getDiagnosis,
+  listUserDiagnoses,
   unlockDiagnosis,
 } from "../diagnosisService";
 import { convertQuestionnaireAnswers } from "../diagnosisIntake";
@@ -53,6 +54,9 @@ async function submitDiagnosis(
 }
 
 export const diagnosisRouter = router({
+  list: protectedProcedure.query(({ ctx }) =>
+    listUserDiagnoses(ctx.user.id)
+  ),
   preview: publicProcedure
     .input(z.object({ id: z.number().int().positive() }))
     .query(async ({ input }) => {

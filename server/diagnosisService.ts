@@ -1,10 +1,11 @@
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { diagnoses } from "../drizzle/schema";
 import { getDb } from "./db";
 import { runNbgDiagnosis } from "./nbgClient";
 import { checkAndResetCredits, deductCreditsOnce } from "./creditsManager";
 import { getActionCredits } from "./pricingConfig";
 import { validateDiagnosisUnlock } from "./diagnosisUnlock";
+import { serializeDiagnosisListItem } from "./diagnosisList";
 
 type JsonObject = Record<string, unknown>;
 
@@ -141,6 +142,28 @@ export async function getDiagnosis(id: number) {
       where: eq(diagnoses.id, id),
     })
   );
+}
+
+export async function listUserDiagnoses(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const rows = await db
+    .select({
+      id: diagnoses.id,
+      headline: diagnoses.headline,
+      createdAt: diagnoses.createdAt,
+      overallScore: diagnoses.overallScore,
+      scoreLabel: diagnoses.scoreLabel,
+      status: diagnoses.status,
+      productType: diagnoses.productType,
+      fullCreditsDeducted: diagnoses.fullCreditsDeducted,
+    })
+    .from(diagnoses)
+    .where(eq(diagnoses.userId, userId))
+    .orderBy(desc(diagnoses.createdAt));
+
+  return rows.map(serializeDiagnosisListItem);
 }
 
 export async function markDiagnosisPdfPurchased(
