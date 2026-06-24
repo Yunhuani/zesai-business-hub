@@ -7,6 +7,7 @@ import * as Icons from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { consumeLoginReturnPath } from "@/lib/loginReturn";
 
 export default function WechatLogin() {
   const [, setLocation] = useLocation();
@@ -23,7 +24,7 @@ export default function WechatLogin() {
   const wechatCallbackMutation = trpc.auth.wechatCallback.useMutation({
     onSuccess: () => {
       toast.success("微信登录成功!");
-      setLocation("/");
+      setLocation(consumeLoginReturnPath());
     },
     onError: (error) => {
       toast.error("微信登录失败: " + error.message);
@@ -34,7 +35,7 @@ export default function WechatLogin() {
   // Check if user is already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      setLocation("/");
+      setLocation(consumeLoginReturnPath());
     }
   }, [isAuthenticated, setLocation]);
 

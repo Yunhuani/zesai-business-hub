@@ -9,6 +9,7 @@ import { getLoginUrl } from "./const";
 import "./index.css";
 import { initSentry } from "@/lib/sentry";
 import { toast } from "sonner";
+import { rememberLoginReturnPath } from "@/lib/loginReturn";
 
 // 初始化Sentry错误监控
 initSentry();
@@ -23,6 +24,9 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
 
   if (!isUnauthorized) return;
 
+  rememberLoginReturnPath(
+    `${window.location.pathname}${window.location.search}`
+  );
   window.location.href = getLoginUrl();
 };
 

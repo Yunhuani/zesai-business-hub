@@ -11,6 +11,7 @@ import { Link } from "wouter";
 import { APP_LOGO, APP_TITLE } from "@/const";
 import { trackConversion, ConversionEvents } from "@/lib/analytics";
 import { PasswordStrengthIndicator, validatePasswordStrength } from "@/components/PasswordStrengthIndicator";
+import { consumeLoginReturnPath } from "@/lib/loginReturn";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -44,7 +45,7 @@ export default function Login() {
       }
       trackConversion(ConversionEvents.LOGIN_SUCCESS);
       toast.success("登录成功");
-      setLocation("/");
+      setLocation(consumeLoginReturnPath());
     },
     onError: (error) => {
       trackConversion(ConversionEvents.LOGIN_FAIL);
@@ -72,7 +73,7 @@ export default function Login() {
       }
       trackConversion(ConversionEvents.REGISTER_SUCCESS);
       toast.success("注册成功，已自动登录");
-      setLocation("/");
+      setLocation(consumeLoginReturnPath());
     },
     onError: (error) => {
       let errorMessage = "注册失败";
