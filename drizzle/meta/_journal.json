@@ -141,6 +141,13 @@
       "when": 1782279060000,
       "tag": "0019_create_pricing_config",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "5",
+      "when": 1782279120000,
+      "tag": "0020_fix_credit_policy",
+      "breakpoints": true
     }
   ]
 }

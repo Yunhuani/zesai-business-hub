@@ -2,6 +2,10 @@ import { eq } from "drizzle-orm";
 import { getDb } from "./db";
 import { users, creditsTransactions, type InsertCreditsTransaction } from "../drizzle/schema";
 import { getSubscriptionPlan } from "./pricingConfig";
+import {
+  calculateCreditDeduction,
+  calculateFreeTrialGrant,
+} from "./creditsPolicy";
 
 /**
  * Credits Manager - Core logic for credits system
@@ -18,6 +22,7 @@ export async function getUserCredits(userId: number): Promise<{
   resetDate: Date;
   nextResetIn: number; // seconds until next reset
 }> {
+  await ensureFreeTrialCredits(userId);
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
@@ -81,17 +86,15 @@ export async function deductCredits(
     };
   }
 
-  // Deduct from purchased credits first
-  let newPurchased = user.creditsPurchased;
-  let newSubscription = user.creditsSubscription;
-
-  if (newPurchased >= amount) {
-    newPurchased -= amount;
-  } else {
-    const remaining = amount - newPurchased;
-    newPurchased = 0;
-    newSubscription -= remaining;
-  }
+  const nextBalance = calculateCreditDeduction(
+    {
+      purchased: user.creditsPurchased,
+      subscription: user.creditsSubscription,
+    },
+    amount
+  );
+  const newPurchased = nextBalance.purchased;
+  const newSubscription = nextBalance.subscription;
 
   // Update user credits
   await db
@@ -229,13 +232,49 @@ export async function checkAndResetCredits(userId: number): Promise<void> {
     const plan = subscription?.plan || "free";
     
     if (plan === "free") {
-      // 过期用户或未订阅用户：订阅积分清零（不给100试用积分）
-      await clearSubscriptionCredits(userId);
+      // 免费用户使用一次性体验额度，不参与月度重置。
+      await ensureFreeTrialCredits(userId);
     } else {
       // 付费用户：按套餐重置积分
       await resetSubscriptionCredits(userId, plan);
     }
   }
+}
+
+export async function ensureFreeTrialCredits(userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  if (!user) throw new Error("User not found");
+  if (user.trialCreditsGranted === 1) return;
+
+  const { getUserSubscription } = await import("./db");
+  const subscription = await getUserSubscription(userId);
+  if (subscription?.plan && subscription.plan !== "free") return;
+
+  const trial = calculateFreeTrialGrant(
+    user.trialCreditsGranted === 1,
+    user.creditsSubscription
+  );
+  if (!trial.markGranted) return;
+
+  await db
+    .update(users)
+    .set({
+      creditsSubscription: trial.balance,
+      trialCreditsGranted: 1,
+    })
+    .where(eq(users.id, userId));
+
+  await recordTransaction({
+    userId,
+    type: "subscription_grant",
+    amount: trial.grant,
+    balancePurchased: user.creditsPurchased,
+    balanceSubscription: trial.balance,
+    description: "免费版一次性体验额度",
+  });
 }
 
 /**
