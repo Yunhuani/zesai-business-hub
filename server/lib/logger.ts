@@ -116,6 +116,12 @@ class Logger {
     this.writeToFile(logMessage, stackTrace);
   }
 
+  errorJson(payload: Record<string, unknown>): void {
+    const logMessage = JSON.stringify(payload);
+    console.error(logMessage);
+    this.writeToFile(logMessage);
+  }
+
   /**
    * 获取当前日志文件路径
    */

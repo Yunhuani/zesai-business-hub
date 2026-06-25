@@ -10,6 +10,7 @@ import {
 import { getActionCredits } from "./pricingConfig";
 import { validateDiagnosisUnlock } from "./diagnosisUnlock";
 import { serializeDiagnosisListItem } from "./diagnosisList";
+import { logStructuredError } from "./observability";
 
 type JsonObject = Record<string, unknown>;
 const DIAGNOSIS_TIMEOUT_MS = 15 * 60 * 1000;
@@ -105,6 +106,11 @@ async function processDiagnosis(
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
+    logStructuredError({
+      category: "engine_invocation_failed",
+      diagnosisId,
+      error,
+    });
 
     try {
       await markDiagnosisError(diagnosisId, errorMessage);
@@ -155,6 +161,12 @@ export async function recoverInterruptedDiagnoses(
     );
 
   for (const diagnosis of interrupted) {
+    logStructuredError({
+      category: "diagnosis_recovery_mark_error",
+      diagnosisId: diagnosis.id,
+      error: INTERRUPTED_DIAGNOSIS_ERROR,
+      details: { status: "pending_or_running", cutoff },
+    });
     await markDiagnosisError(diagnosis.id, INTERRUPTED_DIAGNOSIS_ERROR);
   }
 

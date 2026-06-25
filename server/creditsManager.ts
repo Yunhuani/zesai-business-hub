@@ -6,6 +6,7 @@ import {
   calculateCreditDeduction,
   calculateFreeTrialGrant,
 } from "./creditsPolicy";
+import { logStructuredError } from "./observability";
 
 /**
  * Credits Manager - Core logic for credits system
@@ -70,59 +71,69 @@ export async function deductCredits(
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  // Get current credits
-  const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-  if (!user) throw new Error("User not found");
+  try {
+    // Get current credits
+    const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    if (!user) throw new Error("User not found");
 
-  const totalCredits = user.creditsPurchased + user.creditsSubscription;
-  if (totalCredits < amount) {
-    return {
-      success: false,
-      remaining: {
+    const totalCredits = user.creditsPurchased + user.creditsSubscription;
+    if (totalCredits < amount) {
+      return {
+        success: false,
+        remaining: {
+          purchased: user.creditsPurchased,
+          subscription: user.creditsSubscription,
+          total: totalCredits,
+        },
+      };
+    }
+
+    const nextBalance = calculateCreditDeduction(
+      {
         purchased: user.creditsPurchased,
         subscription: user.creditsSubscription,
-        total: totalCredits,
+      },
+      amount
+    );
+    const newPurchased = nextBalance.purchased;
+    const newSubscription = nextBalance.subscription;
+
+    // Update user credits
+    await db
+      .update(users)
+      .set({
+        creditsPurchased: newPurchased,
+        creditsSubscription: newSubscription,
+      })
+      .where(eq(users.id, userId));
+
+    // Record transaction
+    await recordTransaction({
+      userId,
+      type: "consume",
+      amount: -amount,
+      balancePurchased: newPurchased,
+      balanceSubscription: newSubscription,
+      description,
+    });
+
+    return {
+      success: true,
+      remaining: {
+        purchased: newPurchased,
+        subscription: newSubscription,
+        total: newPurchased + newSubscription,
       },
     };
+  } catch (error) {
+    logStructuredError({
+      category: "credit_deduction_failed",
+      userId,
+      error,
+      details: { amount, description },
+    });
+    throw error;
   }
-
-  const nextBalance = calculateCreditDeduction(
-    {
-      purchased: user.creditsPurchased,
-      subscription: user.creditsSubscription,
-    },
-    amount
-  );
-  const newPurchased = nextBalance.purchased;
-  const newSubscription = nextBalance.subscription;
-
-  // Update user credits
-  await db
-    .update(users)
-    .set({
-      creditsPurchased: newPurchased,
-      creditsSubscription: newSubscription,
-    })
-    .where(eq(users.id, userId));
-
-  // Record transaction
-  await recordTransaction({
-    userId,
-    type: "consume",
-    amount: -amount,
-    balancePurchased: newPurchased,
-    balanceSubscription: newSubscription,
-    description,
-  });
-
-  return {
-    success: true,
-    remaining: {
-      purchased: newPurchased,
-      subscription: newSubscription,
-      total: newPurchased + newSubscription,
-    },
-  };
 }
 
 export async function deductCreditsWithIdempotencyKey(
@@ -138,7 +149,8 @@ export async function deductCreditsWithIdempotencyKey(
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  return db.transaction(async tx => {
+  try {
+    return await db.transaction(async tx => {
     const [existing] = await tx
       .select({ id: creditsTransactions.id })
       .from(creditsTransactions)
@@ -216,7 +228,16 @@ export async function deductCreditsWithIdempotencyKey(
         total: nextBalance.purchased + nextBalance.subscription,
       },
     };
-  });
+    });
+  } catch (error) {
+    logStructuredError({
+      category: "credit_deduction_failed",
+      userId,
+      error,
+      details: { amount, description, idempotencyKey },
+    });
+    throw error;
+  }
 }
 
 export async function hasCreditCharge(
@@ -309,6 +330,14 @@ export async function refundDiagnosisFullIfCharged(
       billingKey: "refund:diagnosis_full",
     });
 
+    logStructuredError({
+      category: "diagnosis_refund_triggered",
+      userId: charge.userId,
+      diagnosisId: relatedDiagnosisId,
+      error: "diagnosis_full refunded after diagnosis error",
+      details: { amount: refundAmount },
+    });
+
     return { refunded: true, amount: refundAmount };
   });
 }
@@ -327,7 +356,8 @@ export async function deductCreditsOnce(
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  return db.transaction(async tx => {
+  try {
+    return await db.transaction(async tx => {
     const [existing] = await tx
       .select({ id: creditsTransactions.id })
       .from(creditsTransactions)
@@ -407,7 +437,17 @@ export async function deductCreditsOnce(
         total: nextBalance.purchased + nextBalance.subscription,
       },
     };
-  });
+    });
+  } catch (error) {
+    logStructuredError({
+      category: "credit_deduction_failed",
+      userId,
+      diagnosisId: relatedDiagnosisId,
+      error,
+      details: { amount, description, billingKey },
+    });
+    throw error;
+  }
 }
 
 /**

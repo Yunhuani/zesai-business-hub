@@ -285,6 +285,13 @@ export const paymentRouter = router({
       // 验证签名
       const isValid = verifyAlipayCallback(input);
       if (!isValid) {
+        const { logStructuredError } = await import("../observability");
+        logStructuredError({
+          category: "alipay_signature_failed",
+          orderId: input.out_trade_no as string | undefined,
+          error: "Invalid Alipay signature",
+          details: { tradeStatus: input.trade_status },
+        });
         console.error("[Payment] Invalid signature");
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -299,6 +306,13 @@ export const paymentRouter = router({
       // 查询订单
       const order = await getOrderByOutTradeNo(outTradeNo);
       if (!order) {
+        const { logStructuredError } = await import("../observability");
+        logStructuredError({
+          category: "alipay_callback_failed",
+          orderId: outTradeNo,
+          error: "Order not found for Alipay callback",
+          details: { tradeStatus },
+        });
         console.error("[Payment] Order not found:", outTradeNo);
         throw new TRPCError({
           code: "NOT_FOUND",
