@@ -44,14 +44,14 @@ export async function handleStreamChat(req: Request, res: Response) {
     const userId = user.id;
 
     // Parse request body
-    const { conversationId, content, userInputs } = req.body;
+    const { conversationId, content, userInputs, requestId } = req.body;
     if (!conversationId || !content) {
       res.status(400).json({ error: "Missing conversationId or content" });
       return;
     }
 
     const { createMessage, getConversationMessages, getConversationById, getAgentByIdFull } = await import("./db");
-    const { checkCredits, deductCredits, checkAndResetCredits, getUserCredits } = await import("./creditsManager");
+    const { checkCredits, deductCreditsWithIdempotencyKey, checkAndResetCredits, getUserCredits } = await import("./creditsManager");
     const { getActionCredits } = await import("./pricingConfig");
     const chatCredits = await getActionCredits("chat");
     
@@ -88,7 +88,7 @@ export async function handleStreamChat(req: Request, res: Response) {
     }
 
     // Save user message
-    await createMessage({
+    const userMessage = await createMessage({
       conversationId,
       role: "user",
       content,
@@ -187,7 +187,15 @@ export async function handleStreamChat(req: Request, res: Response) {
     });
     
     // Deduct credits
-    await deductCredits(userId, chatCredits, `基础对话 - Conversation #${conversationId}`);
+    const chatBillingKey = typeof requestId === "string" && requestId
+      ? `chat:${userId}:${conversationId}:${requestId}`
+      : `chat-message:${userMessage.id}`;
+    await deductCreditsWithIdempotencyKey(
+      userId,
+      chatCredits,
+      `基础对话 - Conversation #${conversationId}`,
+      chatBillingKey
+    );
 
     // End stream
     res.write("data: [DONE]\n\n");

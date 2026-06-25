@@ -334,6 +334,10 @@ export default function AgentChat() {
     }
     
     const userMessage = message;
+    const requestId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     setMessage("");
     
     // 追踪发送消息事件
@@ -366,6 +370,7 @@ export default function AgentChat() {
         body: JSON.stringify({
           conversationId,
           content: userMessage,
+          requestId,
         }),
       });
       

@@ -51,12 +51,16 @@ export const creditsTransactions = mysqlTable("creditsTransactions", {
 	relatedOrderId: int(),
 	relatedDiagnosisId: int(),
 	billingKey: varchar({ length: 50 }),
+	idempotencyKey: varchar({ length: 128 }),
 	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 },
 (table) => [
 	uniqueIndex("creditsTransactions_diagnosis_billing_unique").on(
 		table.relatedDiagnosisId,
 		table.billingKey
+	),
+	uniqueIndex("creditsTransactions_idempotency_unique").on(
+		table.idempotencyKey
 	),
 ]);
 

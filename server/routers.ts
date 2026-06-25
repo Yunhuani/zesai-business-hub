@@ -569,12 +569,12 @@ export const appRouter = router({
     }),
     send: protectedProcedure.input((val: unknown) => {
       if (typeof val === "object" && val !== null && "conversationId" in val && "content" in val && typeof val.conversationId === "number" && typeof val.content === "string") {
-        return val as { conversationId: number; content: string; userInputs?: Record<string, string> };
+        return val as { conversationId: number; content: string; userInputs?: Record<string, string>; requestId?: string };
       }
-      throw new Error("Invalid input: expected { conversationId: number, content: string, userInputs?: Record<string, string> }");
+      throw new Error("Invalid input: expected { conversationId: number, content: string, userInputs?: Record<string, string>, requestId?: string }");
     }).mutation(async ({ ctx, input }) => {
       const { createMessage, getConversationMessages, getConversationById, getAgentByIdFull } = await import("./db");
-      const { checkCredits, deductCredits, checkAndResetCredits, getUserCredits } = await import("./creditsManager");
+      const { checkCredits, deductCreditsWithIdempotencyKey, checkAndResetCredits, getUserCredits } = await import("./creditsManager");
       const { getActionCredits } = await import("./pricingConfig");
       const chatCredits = await getActionCredits("chat");
       
@@ -606,7 +606,7 @@ export const appRouter = router({
       if (!agent) throw new Error("Agent not found");
 
       // Save user message
-      await createMessage({
+      const userMessage = await createMessage({
         conversationId: input.conversationId,
         role: "user",
         content: input.content,
@@ -651,7 +651,15 @@ export const appRouter = router({
       });
       
       // Deduct credits
-      await deductCredits(ctx.user.id, chatCredits, `基础对话 - Conversation #${input.conversationId}`);
+      const chatBillingKey = typeof input.requestId === "string" && input.requestId
+        ? `chat:${ctx.user.id}:${input.conversationId}:${input.requestId}`
+        : `chat-message:${userMessage.id}`;
+      await deductCreditsWithIdempotencyKey(
+        ctx.user.id,
+        chatCredits,
+        `基础对话 - Conversation #${input.conversationId}`,
+        chatBillingKey
+      );
 
       return { content: assistantMessage };
     }),

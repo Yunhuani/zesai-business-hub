@@ -125,6 +125,100 @@ export async function deductCredits(
   };
 }
 
+export async function deductCreditsWithIdempotencyKey(
+  userId: number,
+  amount: number,
+  description: string,
+  idempotencyKey: string
+): Promise<{
+  success: boolean;
+  charged: boolean;
+  remaining: { purchased: number; subscription: number; total: number };
+}> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return db.transaction(async tx => {
+    const [existing] = await tx
+      .select({ id: creditsTransactions.id })
+      .from(creditsTransactions)
+      .where(
+        and(
+          eq(creditsTransactions.idempotencyKey, idempotencyKey),
+          eq(creditsTransactions.type, "consume")
+        )
+      )
+      .limit(1);
+
+    const [user] = await tx
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+    if (!user) throw new Error("User not found");
+
+    if (existing) {
+      return {
+        success: true,
+        charged: false,
+        remaining: {
+          purchased: user.creditsPurchased,
+          subscription: user.creditsSubscription,
+          total: user.creditsPurchased + user.creditsSubscription,
+        },
+      };
+    }
+
+    if (user.creditsPurchased + user.creditsSubscription < amount) {
+      return {
+        success: false,
+        charged: false,
+        remaining: {
+          purchased: user.creditsPurchased,
+          subscription: user.creditsSubscription,
+          total: user.creditsPurchased + user.creditsSubscription,
+        },
+      };
+    }
+
+    const nextBalance = calculateCreditDeduction(
+      {
+        purchased: user.creditsPurchased,
+        subscription: user.creditsSubscription,
+      },
+      amount
+    );
+
+    await tx
+      .update(users)
+      .set({
+        creditsPurchased: nextBalance.purchased,
+        creditsSubscription: nextBalance.subscription,
+      })
+      .where(eq(users.id, userId));
+
+    await tx.insert(creditsTransactions).values({
+      userId,
+      type: "consume",
+      amount: -amount,
+      balancePurchased: nextBalance.purchased,
+      balanceSubscription: nextBalance.subscription,
+      description,
+      idempotencyKey,
+    });
+
+    return {
+      success: true,
+      charged: true,
+      remaining: {
+        purchased: nextBalance.purchased,
+        subscription: nextBalance.subscription,
+        total: nextBalance.purchased + nextBalance.subscription,
+      },
+    };
+  });
+}
+
 export async function hasCreditCharge(
   relatedDiagnosisId: number,
   billingKey: string
