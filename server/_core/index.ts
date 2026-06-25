@@ -37,6 +37,15 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const { seedPricingConfig } = await import("../pricingConfig");
   await seedPricingConfig();
+  try {
+    const { recoverInterruptedDiagnoses } = await import("../diagnosisService");
+    const recovered = await recoverInterruptedDiagnoses();
+    if (recovered > 0) {
+      console.log(`[Diagnosis Recovery] Marked ${recovered} interrupted diagnoses as error`);
+    }
+  } catch (error) {
+    console.error("[Diagnosis Recovery] Startup recovery failed:", error);
+  }
   const app = express();
   const server = createServer(app);
 

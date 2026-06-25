@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray, lt } from "drizzle-orm";
 import { diagnoses } from "../drizzle/schema";
 import { getDb } from "./db";
 import { runNbgDiagnosis } from "./nbgClient";
@@ -8,6 +8,8 @@ import { validateDiagnosisUnlock } from "./diagnosisUnlock";
 import { serializeDiagnosisListItem } from "./diagnosisList";
 
 type JsonObject = Record<string, unknown>;
+const DIAGNOSIS_TIMEOUT_MS = 15 * 60 * 1000;
+const INTERRUPTED_DIAGNOSIS_ERROR = "Diagnosis interrupted or timed out";
 
 const TRANSIENT_DATABASE_ERROR_CODES = new Set([
   "ECONNRESET",
@@ -101,12 +103,7 @@ async function processDiagnosis(
     const errorMessage = error instanceof Error ? error.message : String(error);
 
     try {
-      await retryIdempotentDatabaseOperation(() =>
-        db
-          .update(diagnoses)
-          .set({ status: "error", errorMessage })
-          .where(eq(diagnoses.id, diagnosisId))
-      );
+      await markDiagnosisError(diagnosisId, errorMessage);
     } catch (persistError) {
       console.error(
         `[Diagnosis ${diagnosisId}] Failed to persist error state:`,
@@ -114,6 +111,48 @@ async function processDiagnosis(
       );
     }
   }
+}
+
+export async function markDiagnosisError(
+  diagnosisId: number,
+  errorMessage: string
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await retryIdempotentDatabaseOperation(() =>
+    db
+      .update(diagnoses)
+      .set({ status: "error", errorMessage })
+      .where(eq(diagnoses.id, diagnosisId))
+  );
+}
+
+export async function recoverInterruptedDiagnoses(
+  now: Date = new Date()
+): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const cutoff = new Date(now.getTime() - DIAGNOSIS_TIMEOUT_MS)
+    .toISOString()
+    .slice(0, 19)
+    .replace("T", " ");
+  const interrupted = await db
+    .select({ id: diagnoses.id })
+    .from(diagnoses)
+    .where(
+      and(
+        inArray(diagnoses.status, ["pending", "running"]),
+        lt(diagnoses.updatedAt, cutoff)
+      )
+    );
+
+  for (const diagnosis of interrupted) {
+    await markDiagnosisError(diagnosis.id, INTERRUPTED_DIAGNOSIS_ERROR);
+  }
+
+  return interrupted.length;
 }
 
 export async function createDiagnosis(
