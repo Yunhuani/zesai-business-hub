@@ -25,8 +25,4 @@ export const ENV = {
   wechatAppSecret: process.env.WECHAT_APP_SECRET ?? "",
   // 微信支付开关（H5支付审核期间设置为false）
   wechatPayEnabled: process.env.WECHAT_PAY_ENABLED === "true",
-  // Stripe支付配置（国际用户）
-  stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
-  stripePublishableKey: process.env.VITE_STRIPE_PUBLISHABLE_KEY ?? "",
-  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
 };

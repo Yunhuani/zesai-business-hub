@@ -111,7 +111,7 @@ export default function Credits() {
     );
   }
 
-  // 支付方式：目前仅支持支付宝（Stripe已隐藏）
+  // Payment method: Alipay only
   const handlePurchase = (packId: string, price: number, credits: number) => {
     // 免费版用户不能购买积分包
     if (isFreeUser) {

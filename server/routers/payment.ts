@@ -5,8 +5,6 @@ import { createWechatH5Payment, createWechatJsapiPayment, queryWechatPayment } f
 import { createOrder, getOrderByOutTradeNo, updateOrderStatus, createOrUpdateSubscription } from "../db";
 import { TRPCError } from "@trpc/server";
 import { ENV } from "../_core/env";
-import { createStripeCheckoutSession } from "../_core/stripe";
-import { getStripeProductMetadata } from "../stripeProducts";
 import {
   getPricingConfig,
   getSubscriptionPlan,
@@ -26,7 +24,7 @@ export const paymentRouter = router({
         planId: z.string(),
         amount: z.number().optional(),
         credits: z.number().optional(),
-        paymentMethod: z.enum(["alipay", "wechat", "stripe"]).default("alipay"),
+        paymentMethod: z.enum(["alipay", "wechat"]).default("alipay"),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -52,33 +50,7 @@ export const paymentRouter = router({
       });
       
       try {
-        if (paymentMethod === "stripe") {
-          // Stripe支付（国际用户）
-          const origin = ctx.req.headers.origin || "https://zesiai.com";
-          const { checkoutUrl } = await createStripeCheckoutSession({
-            userId: ctx.user.id,
-            userEmail: ctx.user.email || "",
-            userName: ctx.user.name || "",
-            type,
-            planId,
-            amount: product.amountCents,
-            currency: "cny",
-            productName: product.subject,
-            productDescription: product.description,
-            metadata: {
-              ...getStripeProductMetadata(type, planId),
-              out_trade_no: outTradeNo,
-            },
-            successUrl: `${origin}/payment/result?session_id={CHECKOUT_SESSION_ID}`,
-            cancelUrl: `${origin}/pricing`,
-          });
-          
-          return {
-            orderId: outTradeNo,
-            paymentUrl: checkoutUrl,
-            paymentMethod: "stripe",
-          };
-        } else if (paymentMethod === "wechat") {
+        if (paymentMethod === "wechat") {
           // 检查微信支付是否开启
           if (!ENV.wechatPayEnabled) {
             throw new TRPCError({ 
