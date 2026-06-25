@@ -147,6 +147,78 @@ export async function hasCreditCharge(
   return Boolean(existing);
 }
 
+export async function refundDiagnosisFullIfCharged(
+  relatedDiagnosisId: number
+): Promise<{ refunded: boolean; amount: number }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return db.transaction(async tx => {
+    const [charge] = await tx
+      .select({
+        id: creditsTransactions.id,
+        userId: creditsTransactions.userId,
+        amount: creditsTransactions.amount,
+      })
+      .from(creditsTransactions)
+      .where(
+        and(
+          eq(creditsTransactions.relatedDiagnosisId, relatedDiagnosisId),
+          eq(creditsTransactions.billingKey, "diagnosis_full"),
+          eq(creditsTransactions.type, "consume")
+        )
+      )
+      .limit(1);
+
+    if (!charge) {
+      return { refunded: false, amount: 0 };
+    }
+
+    const [existingRefund] = await tx
+      .select({ id: creditsTransactions.id })
+      .from(creditsTransactions)
+      .where(
+        and(
+          eq(creditsTransactions.relatedDiagnosisId, relatedDiagnosisId),
+          eq(creditsTransactions.billingKey, "refund:diagnosis_full"),
+          eq(creditsTransactions.type, "refund")
+        )
+      )
+      .limit(1);
+
+    if (existingRefund) {
+      return { refunded: false, amount: 0 };
+    }
+
+    const refundAmount = Math.abs(charge.amount);
+    const [user] = await tx
+      .select()
+      .from(users)
+      .where(eq(users.id, charge.userId))
+      .limit(1);
+    if (!user) throw new Error("User not found");
+
+    const nextPurchased = user.creditsPurchased + refundAmount;
+    await tx
+      .update(users)
+      .set({ creditsPurchased: nextPurchased })
+      .where(eq(users.id, charge.userId));
+
+    await tx.insert(creditsTransactions).values({
+      userId: charge.userId,
+      type: "refund",
+      amount: refundAmount,
+      balancePurchased: nextPurchased,
+      balanceSubscription: user.creditsSubscription,
+      description: `诊断失败退回 - Diagnosis #${relatedDiagnosisId}`,
+      relatedDiagnosisId,
+      billingKey: "refund:diagnosis_full",
+    });
+
+    return { refunded: true, amount: refundAmount };
+  });
+}
+
 export async function deductCreditsOnce(
   userId: number,
   amount: number,

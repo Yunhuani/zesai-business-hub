@@ -2,7 +2,11 @@ import { and, desc, eq, inArray, lt } from "drizzle-orm";
 import { diagnoses } from "../drizzle/schema";
 import { getDb } from "./db";
 import { runNbgDiagnosis } from "./nbgClient";
-import { checkAndResetCredits, deductCreditsOnce } from "./creditsManager";
+import {
+  checkAndResetCredits,
+  deductCreditsOnce,
+  refundDiagnosisFullIfCharged,
+} from "./creditsManager";
 import { getActionCredits } from "./pricingConfig";
 import { validateDiagnosisUnlock } from "./diagnosisUnlock";
 import { serializeDiagnosisListItem } from "./diagnosisList";
@@ -119,6 +123,8 @@ export async function markDiagnosisError(
 ): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+
+  await refundDiagnosisFullIfCharged(diagnosisId);
 
   await retryIdempotentDatabaseOperation(() =>
     db

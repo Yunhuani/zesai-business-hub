@@ -8,6 +8,16 @@ const updates: Array<{ status: string; errorMessage: string }> = [];
 
 vi.mock("./db", () => ({
   getDb: vi.fn(async () => ({
+    transaction: async (callback: (tx: unknown) => Promise<unknown>) =>
+      callback({
+        select: () => ({
+          from: () => ({
+            where: () => ({
+              limit: async () => [],
+            }),
+          }),
+        }),
+      }),
     select: () => ({
       from: () => ({
         where: async () => staleRows,
