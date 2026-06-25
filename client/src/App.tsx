@@ -17,8 +17,6 @@ import KnowledgeBase from "./pages/admin/KnowledgeBase";
 import Payment from "./pages/Payment";
 import PaymentResult from "./pages/PaymentResult";
 import CaseExample from "./pages/CaseExample";
-import EmailLogin from "./pages/EmailLogin";
-import PasswordLogin from "./pages/PasswordLogin";
 import Credits from "./pages/Credits";
 import CreditUsage from "./pages/CreditUsage";
 import UserManagement from "./pages/UserManagement";
@@ -52,11 +50,7 @@ function Router() {
       <Route path="/admin/analytics" component={AdminAnalytics} />
       <Route path="/admin/knowledge" component={KnowledgeBase} />
 
-      <Route path="/email-login" component={EmailLogin} />
-
       <Route path="/login" component={Login} />
-
-      {/* <Route path="/login" component={PasswordLogin} /> */}
       <Route path="/payment/:plan" component={Payment} />
       <Route path="/payment/result" component={PaymentResult} />
       <Route path="/case-example" component={CaseExample} />

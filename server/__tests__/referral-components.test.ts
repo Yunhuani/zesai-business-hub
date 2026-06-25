@@ -349,7 +349,7 @@ describe("Referral Frontend Error Handling", () => {
     const error = {
       code: "UNAUTHORIZED",
       message: "请先登录",
-      redirect: "/email-login",
+      redirect: "/login",
     };
 
     expect(error.code).toBe("UNAUTHORIZED");
