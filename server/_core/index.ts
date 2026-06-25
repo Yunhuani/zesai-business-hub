@@ -151,6 +151,13 @@ async function startServer() {
           error: "Invalid Alipay signature",
           details: { tradeStatus: req.body.trade_status },
         });
+        const { notifyOps } = await import("../observability");
+        notifyOps({
+          category: "payment",
+          message: "Alipay callback signature verification failed",
+          orderId: req.body.out_trade_no,
+          details: { tradeStatus: req.body.trade_status },
+        }).catch(() => {});
         console.error("[Payment] Invalid signature");
         console.log("[Analytics] Payment callback failed:", {
           reason: "invalid_signature",
@@ -174,6 +181,13 @@ async function startServer() {
           error: "Order not found for Alipay callback",
           details: { tradeStatus },
         });
+        const { notifyOps } = await import("../observability");
+        notifyOps({
+          category: "payment",
+          message: "Alipay callback order not found",
+          orderId: outTradeNo,
+          details: { tradeStatus },
+        }).catch(() => {});
         console.error("[Payment] Order not found:", outTradeNo);
         console.log("[Analytics] Payment callback failed:", {
           reason: "order_not_found",
@@ -292,6 +306,13 @@ async function startServer() {
         error,
         details: { tradeStatus: req.body?.trade_status },
       });
+      const { notifyOps } = await import("../observability");
+      notifyOps({
+        category: "payment",
+        message: "Alipay callback failed",
+        orderId: req.body?.out_trade_no,
+        details: { tradeStatus: req.body?.trade_status },
+      }).catch(() => {});
       console.error("[Payment] Alipay notify error:", error);
       res.status(500).send("fail");
     }

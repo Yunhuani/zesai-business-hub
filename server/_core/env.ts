@@ -6,6 +6,8 @@ export const ENV = {
   oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
   isProduction: process.env.NODE_ENV === "production",
+  nbgEngineUrl: process.env.NBG_ENGINE_URL ?? "http://localhost:8000",
+  opsAlertWebhook: process.env.OPS_ALERT_WEBHOOK ?? "",
 
   // AI Provider 配置（支持多厂商切换）
   // provider: "openrouter" | "moonshot" | "anthropic" | "openai"

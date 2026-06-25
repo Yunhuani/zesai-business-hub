@@ -6,7 +6,7 @@ import {
   calculateCreditDeduction,
   calculateFreeTrialGrant,
 } from "./creditsPolicy";
-import { logStructuredError } from "./observability";
+import { logStructuredError, notifyOps } from "./observability";
 
 /**
  * Credits Manager - Core logic for credits system
@@ -337,6 +337,13 @@ export async function refundDiagnosisFullIfCharged(
       error: "diagnosis_full refunded after diagnosis error",
       details: { amount: refundAmount },
     });
+    notifyOps({
+      category: "refund",
+      message: "Diagnosis full charge refunded after diagnosis error",
+      userId: charge.userId,
+      diagnosisId: relatedDiagnosisId,
+      details: { amount: refundAmount },
+    }).catch(() => {});
 
     return { refunded: true, amount: refundAmount };
   });

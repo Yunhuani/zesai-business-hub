@@ -1,4 +1,5 @@
 import { logger } from "./lib/logger";
+import { ENV } from "./_core/env";
 
 export type StructuredErrorCategory =
   | "engine_invocation_failed"
@@ -39,4 +40,54 @@ export function buildStructuredErrorLog(
 
 export function logStructuredError(context: StructuredErrorContext): void {
   logger.errorJson(buildStructuredErrorLog(context));
+}
+
+export type OpsEvent = {
+  category: "payment" | "engine" | "refund" | "diagnosis_recovery";
+  message: string;
+  userId?: number;
+  orderId?: number | string;
+  diagnosisId?: number;
+  details?: Record<string, unknown>;
+};
+
+export async function notifyOps(
+  event: OpsEvent,
+  webhookUrl: string = ENV.opsAlertWebhook
+): Promise<{ sent: boolean }> {
+  const payload = {
+    timestamp: new Date().toISOString(),
+    ...event,
+  };
+
+  if (!webhookUrl) {
+    logger.warn("OpsAlert", JSON.stringify({ ...payload, skipped: "webhook_not_configured" }));
+    return { sent: false };
+  }
+
+  try {
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      logger.errorJson({
+        timestamp: new Date().toISOString(),
+        level: "error",
+        category: "ops_alert_failed",
+        errorMessage: `OPS_ALERT_WEBHOOK returned ${response.status}`,
+      });
+      return { sent: false };
+    }
+    return { sent: true };
+  } catch (error) {
+    logger.errorJson({
+      timestamp: new Date().toISOString(),
+      level: "error",
+      category: "ops_alert_failed",
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
+    return { sent: false };
+  }
 }

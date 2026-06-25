@@ -10,7 +10,7 @@ import {
 import { getActionCredits } from "./pricingConfig";
 import { validateDiagnosisUnlock } from "./diagnosisUnlock";
 import { serializeDiagnosisListItem } from "./diagnosisList";
-import { logStructuredError } from "./observability";
+import { logStructuredError, notifyOps } from "./observability";
 
 type JsonObject = Record<string, unknown>;
 const DIAGNOSIS_TIMEOUT_MS = 15 * 60 * 1000;
@@ -111,6 +111,12 @@ async function processDiagnosis(
       diagnosisId,
       error,
     });
+    notifyOps({
+      category: "engine",
+      message: "NBG diagnosis engine invocation failed",
+      diagnosisId,
+      details: { errorMessage },
+    }).catch(() => {});
 
     try {
       await markDiagnosisError(diagnosisId, errorMessage);
@@ -167,6 +173,12 @@ export async function recoverInterruptedDiagnoses(
       error: INTERRUPTED_DIAGNOSIS_ERROR,
       details: { status: "pending_or_running", cutoff },
     });
+    notifyOps({
+      category: "diagnosis_recovery",
+      message: "Interrupted diagnosis marked as error during startup recovery",
+      diagnosisId: diagnosis.id,
+      details: { cutoff },
+    }).catch(() => {});
     await markDiagnosisError(diagnosis.id, INTERRUPTED_DIAGNOSIS_ERROR);
   }
 
