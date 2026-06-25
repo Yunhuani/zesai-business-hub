@@ -49,6 +49,12 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
+  app.get("/health", async (_req, res) => {
+    const { getHealth } = await import("../health");
+    const health = await getHealth();
+    res.status(health.status === "ok" ? 200 : 503).json(health);
+  });
+
   // Health check endpoint (for Railway deployment & monitoring)
   app.get("/api/health", async (req, res) => {
     const checks: Record<string, { status: string; latencyMs?: number; error?: string }> = {};
