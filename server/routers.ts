@@ -7,7 +7,6 @@ import { getWechatAuthUrl, getWechatAccessToken, getWechatUserInfo } from "./wec
 import { sdk } from "./_core/sdk";
 import { z } from "zod";
 import { paymentRouter } from "./routers/payment";
-import { exportRouter } from "./routers/export";
 import { documentRouter } from "./routers/document";
 import { adminRouter } from "./routers/admin";
 import { supportRouter } from "./routers/support";
@@ -17,7 +16,6 @@ import { referralRouter } from "./routers/referral";
 import { sentryRouter } from "./routers/sentry";
 import { agentAnalyticsRouter } from "./routers/agentAnalytics";
 import { knowledgeRouter } from "./routers/knowledge";
-import { pptGenerationRouter } from "./routers/pptGeneration";
 import { diagnosisRouter } from "./routers/diagnosis";
 
 
@@ -535,7 +533,6 @@ export const appRouter = router({
   wechatPayCallback: wechatPayCallbackRouter,
 
   // Export routes
-  export: exportRouter,
   
   // Document routes
   document: documentRouter,
@@ -747,8 +744,6 @@ export const appRouter = router({
   sentry: sentryRouter,
   // Knowledge base routes
   knowledge: knowledgeRouter,
-  // PPT generation routes
-  pptGeneration: pptGenerationRouter,
 
 });
 

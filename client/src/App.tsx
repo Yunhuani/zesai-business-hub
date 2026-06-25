@@ -32,7 +32,6 @@ import ResetPassword from "./pages/ResetPassword";
 import Login from "./pages/Login";
 
 import About from "./pages/About";
-import TextToPPT from "./pages/TextToPPT";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Diagnosis from "./pages/Diagnosis";
@@ -72,7 +71,6 @@ function Router() {
       <Route path="/support" component={SupportForm} />
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
-      <Route path="/text-to-ppt" component={TextToPPT} />
       <Route path="/about" component={About} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />

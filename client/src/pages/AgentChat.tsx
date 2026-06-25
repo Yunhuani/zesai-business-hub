@@ -16,8 +16,6 @@ import * as Icons from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { Link, useParams, useLocation } from "wouter";
 import { EnhancedMessage } from "@/components/EnhancedMessage";
-import { MessageDownloadButtons } from "@/components/MessageDownloadButtons";
-import { DocumentDownloadButtons } from "@/components/chat/DocumentDownloadButtons";
 import { toast } from "sonner";
 import { InsufficientCreditsDialog } from "@/components/InsufficientCreditsDialog";
 import { LoginMethodDialog } from "@/components/LoginMethodDialog";
@@ -267,90 +265,6 @@ export default function AgentChat() {
     },
   });
 
-  const exportPDF = trpc.export.exportPDF.useMutation({
-    onSuccess: async (data) => {
-      try {
-        console.log('PDF export response:', { dataLength: data.data?.length, filename: data.filename });
-        // Convert base64 to blob
-        const binaryString = atob(data.data);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-        const blob = new Blob([bytes], { type: data.mimeType });
-        
-        // Create download link
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = data.filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        toast.success("专业PDF报告已生成！");
-      } catch (error) {
-        console.error('Export error:', error);
-        toast.error("导出失败");
-      }
-    },
-    onError: (error) => {
-      toast.error("导出失败: " + error.message);
-    },
-  });
-
-  const generatePPTMutation = trpc.export.generatePPT.useMutation({
-    onSuccess: async (data) => {
-      try {
-        // Convert base64 to blob
-        const binaryString = atob(data.data);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-        const blob = new Blob([bytes], { type: data.mimeType });
-        
-        // Create download link
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = data.filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        toast.success("专业PPT已生成！");
-      } catch (error) {
-        console.error('Export error:', error);
-        toast.error("导出失败");
-      }
-    },
-    onError: (error) => {
-      toast.error("生成失败: " + error.message);
-    },
-  });
-  
-  // Keep legacy exportPPT for compatibility
-  const exportPPT = trpc.export.exportPPT.useMutation({
-    onSuccess: (data) => {
-      const blob = new Blob([JSON.stringify(data.slides, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = data.filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast.success("导出PPT结构成功!");
-    },
-    onError: (error) => {
-      toast.error("导出失败: " + error.message);
-    },
-  });
-
   const uploadDocument = trpc.document.upload.useMutation({
     onSuccess: (data) => {
       if (data.error) {
@@ -401,17 +315,6 @@ export default function AgentChat() {
   }
 
   const IconComponent = (Icons as any)[agent.icon] || Icons.Sparkles;
-
-  // 暂时隐藏文档导出功能
-  // const handleExportPDF = () => {
-  //   if (!conversationId) return;
-  //   exportPDF.mutate({ conversationId });
-  // };
-
-  // const handleExportPPT = () => {
-  //   if (!conversationId) return;
-  //   generatePPTMutation.mutate({ conversationId });
-  // };
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
@@ -674,7 +577,6 @@ export default function AgentChat() {
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-            {/* PDF/PPT导出按钮已移至消息内容下方 */}
           </div>
         </div>
       </header>
@@ -738,22 +640,7 @@ export default function AgentChat() {
                       }`}
                     >
                       {msg.role === "assistant" ? (
-                        <>
-                          <EnhancedMessage content={msg.content} />
-                          <MessageDownloadButtons 
-                            messageId={msg.id}
-                            content={msg.content}
-                            conversationTitle={agent?.name || '商业咨询报告'}
-                          />
-                          {conversationId && (
-                            <DocumentDownloadButtons
-                              messageId={msg.id}
-                              conversationId={conversationId}
-                              agentId={agent?.id || 0}
-                              content={msg.content}
-                            />
-                          )}
-                        </>
+                        <EnhancedMessage content={msg.content} />
                       ) : (
                         <p className="whitespace-pre-wrap">{msg.content}</p>
                       )}
