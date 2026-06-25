@@ -14,7 +14,6 @@ import AdminAgents from "./pages/AdminAgents";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import KnowledgeBase from "./pages/admin/KnowledgeBase";
 
-import WechatLogin from "./pages/WechatLogin";
 import Payment from "./pages/Payment";
 import PaymentResult from "./pages/PaymentResult";
 import CaseExample from "./pages/CaseExample";
@@ -53,8 +52,6 @@ function Router() {
       <Route path="/admin/analytics" component={AdminAnalytics} />
       <Route path="/admin/knowledge" component={KnowledgeBase} />
 
-      <Route path="/wechat-login" component={WechatLogin} />
-      <Route path="/wechat-callback" component={WechatLogin} />
       <Route path="/email-login" component={EmailLogin} />
 
       <Route path="/login" component={Login} />
