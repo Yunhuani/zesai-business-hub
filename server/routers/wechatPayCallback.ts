@@ -17,8 +17,11 @@ export const wechatPayCallbackRouter = router({
   notify: publicProcedure
     .input(z.any())
     .mutation(async ({ input, ctx }) => {
-      console.log("[WechatPay] Notify received while disabled; ignoring.");
-      return { code: "SUCCESS", message: "OK" };
+      console.log("[WechatPay] Notify received:", input);
+      if (process.env.WECHAT_PAY_ENABLED !== "true") {
+        console.log("[WechatPay] Notify received while disabled; ignoring.");
+        return { code: "SUCCESS", message: "OK" };
+      }
       
       try {
         // 获取请求头
