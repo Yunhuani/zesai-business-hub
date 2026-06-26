@@ -1,6 +1,6 @@
 // 阿里云短信服务
 import * as DysmsapiModule from '@alicloud/dysmsapi20170525';
-import OpenApi from '@alicloud/openapi-client';
+import { Config } from '@alicloud/openapi-client';
 import { logger } from './logger';
 
 // 处理ESM/CJS兼容性问题
@@ -30,7 +30,7 @@ export async function sendSmsCode(
   }
 
   try {
-    const config = new OpenApi.Config({
+    const config = new Config({
       accessKeyId,
       accessKeySecret,
     });

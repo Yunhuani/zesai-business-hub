@@ -81,7 +81,7 @@ export default function ResetPassword() {
     } else {
       const strengthCheck = validatePasswordStrength(password);
       if (!strengthCheck.valid) {
-        setPasswordError(strengthCheck.message);
+        setPasswordError(strengthCheck.message ?? "");
         hasError = true;
       }
     }

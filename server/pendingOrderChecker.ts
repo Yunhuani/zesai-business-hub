@@ -8,6 +8,14 @@ import { resetSubscriptionCredits, addPurchasedCredits, clearSubscriptionCredits
 import { notifyAdminNewOrder } from "./orderNotification";
 import { getCreditPack, getSubscriptionPlan } from "./pricingConfig";
 
+function normalizePaymentMethod(paymentMethod: string | null | undefined): "alipay" | "wechat" {
+  if (paymentMethod === "wechat") return "wechat";
+  if (paymentMethod && paymentMethod !== "alipay") {
+    console.warn(`[PendingChecker] Unexpected payment method "${paymentMethod}", using alipay for notification`);
+  }
+  return "alipay";
+}
+
 const CHECK_INTERVAL = 5 * 60 * 1000; // 5分钟
 const MAX_ORDER_AGE = 24 * 60 * 60 * 1000; // 只检查24小时内的订单
 
@@ -200,7 +208,7 @@ async function checkPaidButUndeliveredOrders() {
               userEmail: user.email || "",
               productName: `${creditPackConfig.name}（${creditPackConfig.credits}积分）[补发]`,
               amount: order.amount,
-              paymentMethod: order.paymentMethod || "alipay",
+              paymentMethod: normalizePaymentMethod(order.paymentMethod),
               paidAt: order.paidAt ? new Date(order.paidAt) : new Date(),
             });
           }

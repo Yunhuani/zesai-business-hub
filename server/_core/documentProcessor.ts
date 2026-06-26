@@ -77,13 +77,17 @@ export async function processDocument(
  * Extract text from PDF
  */
 async function extractPdfText(buffer: Buffer): Promise<string> {
+  let parser: import('pdf-parse').PDFParse | undefined;
   try {
-    const pdfParse = (await import('pdf-parse')).default;
-    const data = await pdfParse(buffer);
+    const { PDFParse } = await import('pdf-parse');
+    parser = new PDFParse({ data: buffer });
+    const data = await parser.getText();
     return data.text || '';
   } catch (error) {
     console.error('PDF extraction error:', error);
     throw new Error('Failed to extract text from PDF');
+  } finally {
+    await parser?.destroy();
   }
 }
 

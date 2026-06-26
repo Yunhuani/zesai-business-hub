@@ -157,7 +157,7 @@ export default function AgentChat() {
 
   const createConversation = trpc.conversation.create.useMutation({
     onSuccess: (data) => {
-      const newConversationId = data.insertId as number;
+      const newConversationId = data.id;
       setConversationId(newConversationId);
       
       // 如果有欢迎语，立即在前端显示（不等待数据库）

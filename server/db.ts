@@ -2,6 +2,7 @@ import { eq, and, desc, sql, count, exists, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 import * as schema from "../drizzle/schema";
+import { ENV } from "./_core/env";
 
 let _client: ReturnType<typeof mysql.createPool> | null = null;
 let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
