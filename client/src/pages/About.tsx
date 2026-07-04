@@ -1,20 +1,10 @@
 import { Link } from "wouter";
-import { ArrowLeft } from "lucide-react";
+import { Footer, Navbar } from "@/components/layout";
 
 export default function About() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b glass-effect sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <Link href="/">
-            <a className="inline-flex items-center gap-2 text-gray-400 hover:text-gray-100 transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-              返回首页
-            </a>
-          </Link>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-16 max-w-4xl">
@@ -91,13 +81,7 @@ export default function About() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t glass-effect mt-16 py-8">
-        <div className="container mx-auto px-4 text-center text-sm text-gray-400 space-y-2">
-          <p>© 2025 泽思 Zenith AI - 专业AI商业咨询平台</p>
-
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

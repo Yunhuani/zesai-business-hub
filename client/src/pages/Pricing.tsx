@@ -1,14 +1,14 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import * as Icons from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { ExpertConsultationDialog } from "@/components/ExpertConsultationDialog";
 import { trackConversion, ConversionEvents } from "@/lib/analytics";
+import { Footer, Navbar } from "@/components/layout";
 
 const plans = [
   {
@@ -76,7 +76,7 @@ const plans = [
 export default function Pricing() {
   const [, setLocation] = useLocation();
   const [expertDialogOpen, setExpertDialogOpen] = useState(false);
-  const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { loading: authLoading, isAuthenticated } = useAuth();
   const { data: subscriptionData } = trpc.subscription.get.useQuery(undefined, {
     enabled: isAuthenticated,
   });
@@ -116,26 +116,7 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b glass-effect sticky top-0 z-10">
-        <div className="container py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" asChild>
-              <Link href="/">
-                <Icons.ArrowLeft className="w-5 h-5" />
-              </Link>
-            </Button>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              选择套餐
-            </h1>
-          </div>
-          {user && (
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">欢迎, {user.name}</span>
-            </div>
-          )}
-        </div>
-      </header>
+      <Navbar />
 
       <div className="container py-16">
         {/* Pricing Cards */}
@@ -238,33 +219,7 @@ export default function Pricing() {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="border-t py-8 glass-effect mt-16">
-        <div className="container text-center text-sm text-muted-foreground space-y-3">
-          <div className="flex justify-center gap-6">
-            <a 
-              href="/about" 
-              className="hover:text-foreground transition-colors"
-            >
-              关于我们
-            </a>
-            <a 
-              href="/support" 
-              className="hover:text-foreground transition-colors"
-            >
-              联系客服
-            </a>
-            <a 
-              href="/pricing" 
-              className="hover:text-foreground transition-colors"
-            >
-              价格套餐
-            </a>
-          </div>
-          <div>© 2025 泽思 Zenith AI - 专业AI商业咨询平台</div>
-
-        </div>
-      </footer>
+      <Footer />
 
       <ExpertConsultationDialog 
         open={expertDialogOpen} 

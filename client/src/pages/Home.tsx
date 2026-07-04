@@ -1,23 +1,12 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 // Version: 2024-12-30 - 统一业务营收增长专家名称
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import * as Icons from "lucide-react";
 import { useState } from "react";
 import { ExpertConsultationDialog } from "@/components/ExpertConsultationDialog";
-import { CreditsDisplay } from "@/components/CreditsDisplay";
 import { SmartAssistantSearch } from "@/components/SmartAssistantSearch";
 import { Link } from "wouter";
 import { WeChatBrowserGuide } from "@/components/WeChatBrowserGuide";
@@ -25,6 +14,7 @@ import { isWeChatBrowser } from "@/utils/wechatDetector";
 import { trackConversion, ConversionEvents, trackAgent, AgentEvents } from "@/lib/analytics";
 import { useEffect } from "react";
 import { DataWaveBackground } from "@/components/DataWaveBackground";
+import { Footer, Navbar } from "@/components/layout";
 
 
 // Agent分类配置
@@ -88,7 +78,6 @@ const AGENT_CATEGORIES = [
 ];
 
 export default function Home() {
-  const { user, loading, isAuthenticated, logout } = useAuth();
   const [isInWeChatBrowser] = useState(isWeChatBrowser());
   const { data: agents, isLoading: agentsLoading } = trpc.agent.list.useQuery();
   
@@ -147,149 +136,7 @@ export default function Home() {
       <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
         <DataWaveBackground />
       </div>
-      {/* Header */}
-      <header className="border-b glass-effect sticky top-0 z-10">
-        <div className="container py-3 md:py-4 flex items-center justify-between">
-          {/* Logo区域 */}
-          <div className="flex items-center gap-2 md:gap-3">
-            <img src="/zesi-ai-logo-seal-square.png" alt="泽思AI" className="w-8 h-8 md:w-10 md:h-10 rounded-xl" />
-            <h1 className="text-sm sm:text-xl md:text-2xl font-bold">泽思 Zenith AI</h1>
-          </div>
-          
-          {/* 右侧操作区 */}
-          <div className="flex items-center gap-2 md:gap-4">
-            {isAuthenticated && (
-              <>
-                {/* 积分显示 - 移动端简化 */}
-                <CreditsDisplay />
-                
-                {/* 桌面端显示完整按钮 */}
-                <div className="hidden md:flex items-center gap-4">
-                  {user?.role === "admin" && (
-                    <Link href="/admin">
-                      <Button variant="outline" className="gap-2">
-                        <Icons.Settings className="w-4 h-4" />
-                        管理后台
-                      </Button>
-                    </Link>
-                  )}
-                  <Link href="/history">
-                    <Button variant="outline" className="gap-2">
-                      <Icons.History className="w-4 h-4" />
-                      历史记录
-                    </Button>
-                  </Link>
-                  <Link href="/my-diagnoses">
-                    <Button variant="outline" className="gap-2">
-                      <Icons.ClipboardList className="w-4 h-4" />
-                      我的诊断
-                    </Button>
-                  </Link>
-                  <Link href="/pricing">
-                    <Button variant="outline" className="gap-2">
-                      <Icons.Sparkles className="w-4 h-4" />
-                      升级套餐
-                    </Button>
-                  </Link>
-                </div>
-                
-                {/* 移动端汉堡菜单 */}
-                <div className="md:hidden">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <Icons.Menu className="w-5 h-5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      {user?.role === "admin" && (
-                        <DropdownMenuItem asChild>
-                          <Link href="/admin" className="flex items-center cursor-pointer">
-                            <Icons.Settings className="w-4 h-4 mr-2" />
-                            管理后台
-                          </Link>
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem asChild>
-                        <Link href="/history" className="flex items-center cursor-pointer">
-                          <Icons.History className="w-4 h-4 mr-2" />
-                          历史记录
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/my-diagnoses" className="flex items-center cursor-pointer">
-                          <Icons.ClipboardList className="w-4 h-4 mr-2" />
-                          我的诊断
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/pricing" className="flex items-center cursor-pointer">
-                          <Icons.Sparkles className="w-4 h-4 mr-2" />
-                          升级套餐
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="text-red-600 focus:text-red-600"
-                        onClick={async () => {
-                          await logout();
-                          setTimeout(() => {
-                            window.location.href = '/login';
-                          }, 0);
-                        }}
-                      >
-                        <Icons.LogOut className="w-4 h-4 mr-2" />
-                        退出登录
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </>
-            )}
-            {loading ? (
-              <div className="w-6 h-6 md:w-8 md:h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-            ) : isAuthenticated ? (
-              /* 桌面端用户菜单 */
-              <div className="hidden md:block">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="gap-2">
-                      <Icons.User className="w-4 h-4" />
-                      {user?.name || user?.email || user?.username}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>我的账号</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                      {user?.email && <div>邮箱: {user.email}</div>}
-                      {user?.username && <div>用户名: {user.username}</div>}
-                    </div>
-                    <DropdownMenuSeparator />
-
-                    <DropdownMenuItem
-                      className="text-red-600 focus:text-red-600"
-                      onClick={async () => {
-                        await logout();
-                        setTimeout(() => {
-                          window.location.href = '/login';
-                        }, 0);
-                      }}
-                    >
-                      <Icons.LogOut className="w-4 h-4 mr-2" />
-                      退出登录
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            ) : (
-              <Button asChild size="sm" className="md:size-default">
-                <a href="/login">登录</a>
-              </Button>
-            )}
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="container py-10 md:py-20 text-center relative overflow-hidden">
@@ -597,33 +444,7 @@ export default function Home() {
         </Card>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t py-8 glass-effect">
-        <div className="container text-center text-sm text-muted-foreground space-y-3">
-          <div className="flex justify-center gap-6">
-            <a 
-              href="/about" 
-              className="hover:text-foreground transition-colors"
-            >
-              关于我们
-            </a>
-            <a 
-              href="/support" 
-              className="hover:text-foreground transition-colors"
-            >
-              联系客服
-            </a>
-            <a 
-              href="/pricing" 
-              className="hover:text-foreground transition-colors"
-            >
-              价格套餐
-            </a>
-          </div>
-          <div>© 2025 泽思 Zenith AI - 专业AI商业咨询平台</div>
-
-        </div>
-      </footer>
+      <Footer />
 
       <ExpertConsultationDialog 
         open={expertDialogOpen} 

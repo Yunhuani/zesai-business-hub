@@ -1,19 +1,11 @@
 import { Link } from "wouter";
-import { ArrowLeft } from "lucide-react";
 import { APP_LOGO, APP_TITLE } from "@/const";
+import { Footer, Navbar } from "@/components/layout";
 
 export default function Privacy() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-            <span>返回首页</span>
-          </Link>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-4 py-8">
@@ -206,15 +198,8 @@ export default function Privacy() {
           <p>收到您的反馈后，我们将在法律规定的时限内予以回复，并根据法律法规和本隐私政策的规定在合理时限内给予处理。</p>
         </div>
 
-        {/* Footer */}
-        <div className="mt-12 pt-8 border-t border-white/10 text-center text-gray-500 text-sm">
-          <p>© 2025 泽思 Zenith AI - 专业AI商业咨询平台</p>
-          <div className="mt-4 flex justify-center gap-4">
-            <Link href="/terms" className="text-purple-500 hover:underline">用户协议</Link>
-            <Link href="/" className="text-purple-500 hover:underline">返回首页</Link>
-          </div>
-        </div>
       </main>
+      <Footer />
     </div>
   );
 }
