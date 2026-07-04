@@ -12,6 +12,7 @@ import { APP_LOGO, APP_TITLE } from "@/const";
 import { trackConversion, ConversionEvents } from "@/lib/analytics";
 import { PasswordStrengthIndicator, validatePasswordStrength } from "@/components/PasswordStrengthIndicator";
 import { consumeLoginReturnPath } from "@/lib/loginReturn";
+import { Footer } from "@/components/layout";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -162,36 +163,41 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      {/* Logo & Title */}
-      <div className="text-center mb-8 relative z-10">
-        <Link href="/" className="flex flex-col items-center gap-4 group">
-          <div className="relative">
-            <img src={APP_LOGO} alt={APP_TITLE} className="w-20 h-20 relative z-10 drop-shadow-2xl" />
-          </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent">
-            泽思AI商业智库
-          </h1>
-        </Link>
-        <p className="text-gray-400 text-sm mt-3">专业的AI商业咨询平台</p>
-      </div>
+    <div className="min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)]">
+      <main className="flex min-h-screen flex-col items-center justify-center px-4 py-12">
+        {/* Logo & Title */}
+        <div className="relative z-10 mb-8 text-center">
+          <Link href="/" className="group flex flex-col items-center gap-4">
+            <div className="relative">
+              <img
+                src={APP_LOGO}
+                alt={APP_TITLE}
+                className="relative z-10 h-20 w-20 rounded-[var(--zs-radius-icon)] object-contain shadow-[var(--zs-shadow-card)]"
+              />
+            </div>
+            <h1 className="font-serif text-3xl font-bold text-[var(--zs-primary)]">
+              泽思AI
+            </h1>
+          </Link>
+          <p className="mt-3 text-sm text-[var(--zs-sub)]">专业的AI商业咨询平台</p>
+        </div>
 
-      {/* Main Card */}
-      <div className="w-full max-w-md relative z-10">
-        <Card className="bg-gray-800/60 border-gray-700/50 backdrop-blur-xl shadow-2xl shadow-purple-900/20">
+        {/* Main Card */}
+        <div className="relative z-10 w-full max-w-md">
+          <Card className="border-[var(--zs-line)] bg-[var(--zs-card)] shadow-[var(--zs-shadow-card)]">
           {activeTab === "login" ? (
             <form onSubmit={handleEmailLogin}>
               <CardHeader className="pb-4">
-                <div className="flex items-center justify-center gap-2 text-white">
-                  <Mail className="w-5 h-5" />
+                <div className="flex items-center justify-center gap-2 text-[var(--zs-ink)]">
+                  <Mail className="w-5 h-5 text-[var(--zs-primary)]" />
                   <span className="text-lg font-medium">邮箱登录</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-email" className="text-gray-300 font-medium">邮箱</Label>
+                  <Label htmlFor="login-email" className="font-medium text-[var(--zs-ink)]">邮箱</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--zs-sub)]" />
                     <Input
                       id="login-email"
                       type="email"
@@ -202,20 +208,20 @@ export default function Login() {
                         setLoginEmailError("");
                       }}
                       disabled={emailLoginMutation.isPending}
-                      className={`bg-gray-700/30 border-gray-600/50 text-white placeholder:text-gray-500 pl-10 h-11 focus:border-purple-500 focus:ring-purple-500/20 transition-all ${loginEmailError ? "border-red-500" : ""}`}
+                      className={`h-11 border-[var(--zs-line)] bg-white pl-10 text-[var(--zs-ink)] placeholder:text-[var(--zs-weak)] transition-all focus-visible:border-[var(--zs-primary)] focus-visible:ring-[rgba(31,61,50,.16)] ${loginEmailError ? "border-red-500" : ""}`}
                     />
                   </div>
                   {loginEmailError && <p className="text-sm text-red-500">{loginEmailError}</p>}
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="login-password" className="text-gray-300 font-medium">密码</Label>
-                    <Link href="/forgot-password" className="text-xs text-purple-400 hover:underline">
+                    <Label htmlFor="login-password" className="font-medium text-[var(--zs-ink)]">密码</Label>
+                    <Link href="/forgot-password" className="text-xs text-[var(--zs-primary)] hover:underline">
                       忘记密码？
                     </Link>
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--zs-sub)]" />
                     <Input
                       id="login-password"
                       type={showLoginPassword ? "text" : "password"}
@@ -226,12 +232,12 @@ export default function Login() {
                         setLoginPasswordError("");
                       }}
                       disabled={emailLoginMutation.isPending}
-                      className={`bg-gray-700/30 border-gray-600/50 text-white placeholder:text-gray-500 pl-10 pr-10 h-11 focus:border-purple-500 focus:ring-purple-500/20 transition-all ${loginPasswordError ? "border-red-500" : ""}`}
+                      className={`h-11 border-[var(--zs-line)] bg-white pl-10 pr-10 text-[var(--zs-ink)] placeholder:text-[var(--zs-weak)] transition-all focus-visible:border-[var(--zs-primary)] focus-visible:ring-[rgba(31,61,50,.16)] ${loginPasswordError ? "border-red-500" : ""}`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowLoginPassword(!showLoginPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--zs-sub)] hover:text-[var(--zs-ink)]"
                     >
                       {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -242,12 +248,13 @@ export default function Login() {
               <CardFooter className="flex flex-col gap-4 pt-2">
                 <Button 
                   type="submit" 
-                  className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 hover:shadow-lg hover:shadow-purple-500/25 transition-all text-base font-medium"
+                  size="lg"
+                  className="w-full"
                   disabled={emailLoginMutation.isPending}
                 >
                   {emailLoginMutation.isPending ? (
                     <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin text-white" />
                       登录中...
                     </>
                   ) : (
@@ -257,12 +264,12 @@ export default function Login() {
                     </>
                   )}
                 </Button>
-                <p className="text-sm text-gray-400 text-center">
+                <p className="text-center text-sm text-[var(--zs-sub)]">
                   还没有账号？
                   <button
                     type="button"
                     onClick={() => setActiveTab("register")}
-                    className="text-purple-400 hover:underline ml-1"
+                    className="ml-1 text-[var(--zs-primary)] hover:underline"
                   >
                     立即注册
                   </button>
@@ -272,16 +279,16 @@ export default function Login() {
           ) : (
             <form onSubmit={handleRegister}>
               <CardHeader className="pb-4">
-                <div className="flex items-center justify-center gap-2 text-white">
-                  <UserPlus className="w-5 h-5" />
+                <div className="flex items-center justify-center gap-2 text-[var(--zs-ink)]">
+                  <UserPlus className="w-5 h-5 text-[var(--zs-primary)]" />
                   <span className="text-lg font-medium">邮箱注册</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="register-email" className="text-gray-300 font-medium">邮箱</Label>
+                  <Label htmlFor="register-email" className="font-medium text-[var(--zs-ink)]">邮箱</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--zs-sub)]" />
                     <Input
                       id="register-email"
                       type="email"
@@ -292,15 +299,15 @@ export default function Login() {
                         setRegisterEmailError("");
                       }}
                       disabled={registerMutation.isPending}
-                      className={`bg-gray-700/30 border-gray-600/50 text-white placeholder:text-gray-500 pl-10 h-11 focus:border-purple-500 focus:ring-purple-500/20 transition-all ${registerEmailError ? "border-red-500" : ""}`}
+                      className={`h-11 border-[var(--zs-line)] bg-white pl-10 text-[var(--zs-ink)] placeholder:text-[var(--zs-weak)] transition-all focus-visible:border-[var(--zs-primary)] focus-visible:ring-[rgba(31,61,50,.16)] ${registerEmailError ? "border-red-500" : ""}`}
                     />
                   </div>
                   {registerEmailError && <p className="text-sm text-red-500">{registerEmailError}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="register-password" className="text-gray-300 font-medium">密码</Label>
+                  <Label htmlFor="register-password" className="font-medium text-[var(--zs-ink)]">密码</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--zs-sub)]" />
                     <Input
                       id="register-password"
                       type={showRegisterPassword ? "text" : "password"}
@@ -311,12 +318,12 @@ export default function Login() {
                         setRegisterPasswordError("");
                       }}
                       disabled={registerMutation.isPending}
-                      className={`bg-gray-700/30 border-gray-600/50 text-white placeholder:text-gray-500 pl-10 pr-10 h-11 focus:border-purple-500 focus:ring-purple-500/20 transition-all ${registerPasswordError ? "border-red-500" : ""}`}
+                      className={`h-11 border-[var(--zs-line)] bg-white pl-10 pr-10 text-[var(--zs-ink)] placeholder:text-[var(--zs-weak)] transition-all focus-visible:border-[var(--zs-primary)] focus-visible:ring-[rgba(31,61,50,.16)] ${registerPasswordError ? "border-red-500" : ""}`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowRegisterPassword(!showRegisterPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--zs-sub)] hover:text-[var(--zs-ink)]"
                     >
                       {showRegisterPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -325,9 +332,9 @@ export default function Login() {
                   {registerPassword && <PasswordStrengthIndicator password={registerPassword} />}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="register-confirm" className="text-gray-300 font-medium">确认密码</Label>
+                  <Label htmlFor="register-confirm" className="font-medium text-[var(--zs-ink)]">确认密码</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--zs-sub)]" />
                     <Input
                       id="register-confirm"
                       type={showConfirmPassword ? "text" : "password"}
@@ -338,12 +345,12 @@ export default function Login() {
                         setRegisterConfirmError("");
                       }}
                       disabled={registerMutation.isPending}
-                      className={`bg-gray-700/30 border-gray-600/50 text-white placeholder:text-gray-500 pl-10 pr-10 h-11 focus:border-purple-500 focus:ring-purple-500/20 transition-all ${registerConfirmError ? "border-red-500" : ""}`}
+                      className={`h-11 border-[var(--zs-line)] bg-white pl-10 pr-10 text-[var(--zs-ink)] placeholder:text-[var(--zs-weak)] transition-all focus-visible:border-[var(--zs-primary)] focus-visible:ring-[rgba(31,61,50,.16)] ${registerConfirmError ? "border-red-500" : ""}`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--zs-sub)] hover:text-[var(--zs-ink)]"
                     >
                       {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -351,9 +358,9 @@ export default function Login() {
                   {registerConfirmError && <p className="text-sm text-red-500">{registerConfirmError}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="register-name" className="text-gray-300 font-medium">昵称（选填）</Label>
+                  <Label htmlFor="register-name" className="font-medium text-[var(--zs-ink)]">昵称（选填）</Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--zs-sub)]" />
                     <Input
                       id="register-name"
                       type="text"
@@ -361,26 +368,27 @@ export default function Login() {
                       value={registerName}
                       onChange={(e) => setRegisterName(e.target.value)}
                       disabled={registerMutation.isPending}
-                      className="bg-gray-700/30 border-gray-600/50 text-white placeholder:text-gray-500 pl-10 h-11 focus:border-purple-500 focus:ring-purple-500/20 transition-all"
+                      className="h-11 border-[var(--zs-line)] bg-white pl-10 text-[var(--zs-ink)] placeholder:text-[var(--zs-weak)] transition-all focus-visible:border-[var(--zs-primary)] focus-visible:ring-[rgba(31,61,50,.16)]"
                     />
                   </div>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-[var(--zs-sub)]">
                   继续即表示您同意我们的{" "}
-                  <Link href="/terms" className="text-purple-400 hover:underline">用户协议</Link>
+                  <Link href="/terms" className="text-[var(--zs-primary)] hover:underline">用户协议</Link>
                   {" "}和{" "}
-                  <Link href="/privacy" className="text-purple-400 hover:underline">隐私政策</Link>。
+                  <Link href="/privacy" className="text-[var(--zs-primary)] hover:underline">隐私政策</Link>。
                 </p>
               </CardContent>
               <CardFooter className="flex flex-col gap-4 pt-2">
                 <Button 
                   type="submit" 
-                  className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 hover:shadow-lg hover:shadow-purple-500/25 transition-all text-base font-medium"
+                  size="lg"
+                  className="w-full"
                   disabled={registerMutation.isPending}
                 >
                   {registerMutation.isPending ? (
                     <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin text-white" />
                       注册中...
                     </>
                   ) : (
@@ -390,12 +398,12 @@ export default function Login() {
                     </>
                   )}
                 </Button>
-                <p className="text-sm text-gray-400 text-center">
+                <p className="text-center text-sm text-[var(--zs-sub)]">
                   已有账号？
                   <button
                     type="button"
                     onClick={() => setActiveTab("login")}
-                    className="text-purple-400 hover:underline ml-1"
+                    className="ml-1 text-[var(--zs-primary)] hover:underline"
                   >
                     立即登录
                   </button>
@@ -403,18 +411,11 @@ export default function Login() {
               </CardFooter>
             </form>
           )}
-        </Card>
-      </div>
-
-      {/* Footer */}
-      <footer className="w-full max-w-md text-center text-sm text-gray-500 py-4 space-y-2 mt-6 relative z-10">
-        <div className="flex justify-center gap-4">
-          <Link href="/about" className="hover:text-gray-300">关于我们</Link>
-          <Link href="/support" className="hover:text-gray-300">联系客服</Link>
-          <Link href="/pricing" className="hover:text-gray-300">价格套餐</Link>
+          </Card>
         </div>
-        <p>© 2025 泽思 Zenith AI - 专业AI商业咨询平台</p>
-      </footer>
+      </main>
+
+      <Footer />
     </div>
   );
 }
