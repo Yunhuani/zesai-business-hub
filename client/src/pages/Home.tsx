@@ -152,7 +152,7 @@ export default function Home() {
         <div className="container py-3 md:py-4 flex items-center justify-between">
           {/* Logo区域 */}
           <div className="flex items-center gap-2 md:gap-3">
-            <img src="/zenith-icon-only.png" alt="泽思AI" className="w-8 h-8 md:w-10 md:h-10 rounded-xl" />
+            <img src="/zesi-ai-logo-seal-square.png" alt="泽思AI" className="w-8 h-8 md:w-10 md:h-10 rounded-xl" />
             <h1 className="text-sm sm:text-xl md:text-2xl font-bold">泽思 Zenith AI</h1>
           </div>
           
