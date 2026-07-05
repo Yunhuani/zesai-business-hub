@@ -1,4 +1,6 @@
 import { trpc } from "@/lib/trpc";
+import { AppFooter } from "@/components/layout/Footer";
+import { AppHeader } from "@/components/layout/Navbar";
 import {
   AlertCircle,
   Check,
@@ -101,39 +103,40 @@ export default function DiagnosisProcessing() {
     (!previewMode && diagnosisQuery.isError);
 
   return (
-    <div className="min-h-screen bg-[#FBFAF7] px-5 text-[#24221E] [font-family:Inter,'Noto_Sans_SC','PingFang_SC',sans-serif]">
-      <header className="mx-auto flex h-20 w-full max-w-5xl items-center justify-between">
+    <div className="min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)] [font-family:var(--zs-font-sans)]">
+      <AppHeader />
+      <header className="zs-container flex h-20 items-center justify-between">
         <Link
           href="/"
-          className="text-[15px] font-semibold tracking-[-0.025em] transition hover:text-[#6E685E]"
+          className="text-[15px] font-semibold tracking-[-0.025em] text-[var(--zs-sub)] transition hover:text-[var(--zs-ink)]"
         >
           泽思 · 公司诊断
         </Link>
-        <span className="text-xs tracking-wide text-[#8B867D]">
+        <span className="text-xs tracking-wide text-[var(--zs-weak)]">
           诊断编号 {validId ? diagnosisId : "—"}
         </span>
       </header>
 
-      <main className="mx-auto w-full max-w-[780px] pb-24 pt-10 sm:pt-16">
+      <main className="zs-container max-w-[780px] pb-24 pt-10 sm:pt-16">
         {showFailure ? (
           <div className="mx-auto max-w-lg py-16 text-center sm:py-24">
-            <div className="mx-auto mb-8 flex h-14 w-14 items-center justify-center rounded-full border border-[#DFCFC7] bg-white">
-              <AlertCircle className="h-6 w-6 text-[#A45B43]" />
+            <div className="mx-auto mb-8 flex h-14 w-14 items-center justify-center rounded-full border border-[var(--zs-line)] bg-[var(--zs-card)]">
+              <AlertCircle className="h-6 w-6 text-[var(--zs-gold)]" />
             </div>
-            <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.16em] text-[#8C867C]">
+            <p className="mb-4 text-[11px] font-semibold tracking-[0.16em] text-[var(--zs-weak)]">
               Analysis interrupted
             </p>
             <h1 className="text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
               {timedOut ? "分析时间比预期更长" : "分析遇到了一点问题"}
             </h1>
-            <p className="mx-auto mt-5 max-w-md text-[15px] leading-7 text-[#736E65]">
+            <p className="mx-auto mt-5 max-w-md text-[15px] leading-7 text-[var(--zs-sub)]">
               {timedOut
                 ? "本次等待已超过十分钟。你可以稍后回来查看，或重新发起一次诊断。"
                 : "当前诊断未能顺利完成，请重新提交。你的技术错误信息不会显示在这里。"}
             </p>
             <Link
               href="/diagnosis"
-              className="mt-9 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#AE8A48] px-5 text-sm font-semibold text-white transition hover:bg-[#96753C]"
+              className="mt-9 inline-flex h-11 items-center justify-center gap-2 rounded-[var(--zs-radius-md)] bg-[var(--zs-primary)] px-5 text-sm font-semibold text-white shadow-[var(--zs-shadow-button)] transition hover:bg-[var(--zs-primary-2)]"
             >
               <RotateCcw className="h-4 w-4" />
               重新开始
@@ -141,14 +144,14 @@ export default function DiagnosisProcessing() {
           </div>
         ) : (
           <>
-            <div className="mb-12 border-l-2 border-[#AE8A48] pl-5 sm:mb-14 sm:pl-7">
-              <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.16em] text-[#837E75]">
+            <div className="mb-12 border-l-2 border-[var(--zs-gold)] pl-5 sm:mb-14 sm:pl-7">
+              <p className="mb-3 text-[11px] font-semibold tracking-[0.16em] text-[var(--zs-weak)]">
                 {status === "done" ? "Diagnosis complete" : copy.eyebrow}
               </p>
               <h1 className="text-[30px] font-semibold leading-[1.2] tracking-[-0.045em] sm:text-[40px]">
                 {status === "done" ? "五维诊断已完成" : copy.title}
               </h1>
-              <p className="mt-5 max-w-xl text-[15px] leading-7 text-[#736E65]">
+              <p className="mt-5 max-w-xl text-[15px] leading-7 text-[var(--zs-sub)]">
                 {status === "done"
                   ? "分析结果已生成，正在为你打开诊断报告。"
                   : copy.description}
@@ -158,26 +161,26 @@ export default function DiagnosisProcessing() {
             <div className="mb-12">
               <div className="mb-4 flex items-end justify-between">
                 <div>
-                  <p className="text-[17px] font-semibold tracking-[-0.02em] text-[#34312B]">
+                  <p className="text-[17px] font-semibold tracking-[-0.02em] text-[var(--zs-ink)]">
                     NBG 五维模型分析
                   </p>
-                  <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-[#918B81]">
+                  <p className="mt-1 text-[10px] font-semibold tracking-[0.14em] text-[var(--zs-weak)]">
                     Five-dimension analysis
                   </p>
                 </div>
-                <span className="font-mono text-[15px] font-medium text-[#6F695F]">
+                <span className="text-[15px] font-medium text-[var(--zs-sub)]">
                   {progress}%
                 </span>
               </div>
-              <div className="h-[3px] overflow-hidden rounded-full bg-[#E7E3DB]">
+              <div className="h-[3px] overflow-hidden rounded-full bg-[var(--zs-line)]">
                 <div
-                  className="h-full rounded-full bg-[#AE8A48] transition-[width] duration-1000 ease-out"
+                  className="h-full rounded-full bg-[var(--zs-gold)] transition-[width] duration-1000 ease-out"
                   style={{ width: `${progress}%` }}
                 />
               </div>
             </div>
 
-            <section className="overflow-hidden rounded-2xl border border-[#DEDAD2] bg-white">
+            <section className="overflow-hidden rounded-[var(--zs-radius-lg)] border border-[var(--zs-line)] bg-[var(--zs-card)] shadow-[var(--zs-shadow-card)]">
               {DIAGNOSIS_DIMENSIONS.map((dimension, index) => {
                 const dimensionStatus = dimensionStates[index];
                 const isComplete = dimensionStatus === "complete";
@@ -187,37 +190,37 @@ export default function DiagnosisProcessing() {
                   <div
                     key={dimension}
                     className={`relative flex min-h-[78px] items-center gap-4 px-5 py-4 sm:px-7 ${
-                      index === 0 ? "" : "border-t border-[#ECE9E3]"
+                      index === 0 ? "" : "border-t border-[var(--zs-line)]"
                     }`}
                   >
-                    <div className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white">
+                    <div className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--zs-card)]">
                       {isComplete ? (
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#AE8A48] text-white">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--zs-primary)] text-white">
                           <Check className="h-4 w-4" strokeWidth={2.2} />
                         </span>
                       ) : isActive ? (
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#C8AE7C] bg-[#FCFAF5] text-[#AE8A48]">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--zs-gold)] bg-[var(--zs-bg-soft)] text-[var(--zs-gold)]">
                           <LoaderCircle className="h-4 w-4 animate-spin" />
                         </span>
                       ) : (
-                        <Circle className="h-5 w-5 text-[#C9C4BA]" strokeWidth={1.4} />
+                        <Circle className="h-5 w-5 text-[var(--zs-weak)]" strokeWidth={1.4} />
                       )}
                     </div>
 
                     <div className="min-w-0 flex-1">
                       <p
                         className={`text-[16px] font-medium transition-colors ${
-                          isActive || isComplete ? "text-[#2B2823]" : "text-[#969087]"
+                          isActive || isComplete ? "text-[var(--zs-ink)]" : "text-[var(--zs-weak)]"
                         }`}
                       >
                         {dimension}
                       </p>
-                      <p className="mt-1 text-[12px] text-[#9A958C]">
+                      <p className="mt-1 text-[12px] text-[var(--zs-weak)]">
                         {isComplete ? "已完成" : isActive ? "进行中" : "等待分析"}
                       </p>
                     </div>
 
-                    <span className="font-mono text-[11px] text-[#B0AAA0]">
+                    <span className="text-[11px] text-[var(--zs-weak)]">
                       0{index + 1}
                     </span>
                   </div>
@@ -225,12 +228,13 @@ export default function DiagnosisProcessing() {
               })}
             </section>
 
-            <p className="mx-auto mt-8 max-w-lg text-center text-[13px] leading-6 text-[#8A847A]">
+            <p className="mx-auto mt-8 max-w-lg text-center text-[13px] leading-6 text-[var(--zs-sub)]">
               五维进度按预估节奏展示，最终完成状态以诊断引擎返回结果为准。
             </p>
           </>
         )}
       </main>
+      <AppFooter />
     </div>
   );
 }
