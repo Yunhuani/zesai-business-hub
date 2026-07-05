@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ExpertConsultationDialog } from "@/components/ExpertConsultationDialog";
 import { ConversionEvents, trackConversion } from "@/lib/analytics";
+import { rememberLoginReturnPath } from "@/lib/loginReturn";
 import { trpc } from "@/lib/trpc";
 import { Check, Minus, MessageCircle, Plus, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -97,32 +98,16 @@ export default function Pricing() {
   const [, setLocation] = useLocation();
   const [expertDialogOpen, setExpertDialogOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
-  const { loading: authLoading, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { data: subscriptionData } = trpc.subscription.get.useQuery(undefined, {
     enabled: isAuthenticated,
   });
-
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 0);
-    }
-  }, [authLoading, isAuthenticated]);
 
   useEffect(() => {
     if (isAuthenticated) {
       trackConversion(ConversionEvents.VIEW_PRICING);
     }
   }, [isAuthenticated]);
-
-  if (authLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--zs-bg)]">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-[var(--zs-primary)] border-t-transparent" />
-      </div>
-    );
-  }
 
   const currentPlan = subscriptionData?.subscription?.plan || "free";
 
@@ -201,12 +186,18 @@ export default function Pricing() {
                       disabled={isCurrentPlan || plan.disabled}
                       onClick={() => {
                         if (!plan.disabled && !isCurrentPlan) {
+                          const paymentPath = `/payment/${plan.id}`;
                           trackConversion(ConversionEvents.PAYMENT_START, {
                             plan_id: plan.id,
                             plan_name: plan.name,
                             plan_price: plan.price,
                           });
-                          setLocation(`/payment/${plan.id}`);
+                          if (!isAuthenticated) {
+                            rememberLoginReturnPath(paymentPath);
+                            setLocation("/login");
+                            return;
+                          }
+                          setLocation(paymentPath);
                         }
                       }}
                     >
