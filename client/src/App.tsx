@@ -9,6 +9,7 @@ import AgentChat from "./pages/AgentChat";
 import History from "./pages/History";
 import ConversationHistory from "./pages/ConversationHistory";
 import Pricing from "./pages/Pricing";
+import Toolbox from "./pages/Toolbox";
 import Admin from "./pages/Admin";
 import AdminAgents from "./pages/AdminAgents";
 import AdminAnalytics from "./pages/AdminAnalytics";
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/conversation/:id" component={AgentChat} />
       <Route path="/history" component={ConversationHistory} />
       <Route path="/pricing" component={Pricing} />
+      <Route path="/toolbox" component={Toolbox} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin/agents" component={AdminAgents} />
       <Route path="/admin/analytics" component={AdminAnalytics} />
