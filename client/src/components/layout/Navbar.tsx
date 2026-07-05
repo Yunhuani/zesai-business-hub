@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
+import { APP_LOGO_FULL, APP_TITLE, getLoginUrl } from "@/const";
 import { cn } from "@/lib/utils";
 import {
   ClipboardList,
@@ -24,9 +24,9 @@ import { Link, useLocation } from "wouter";
 
 const navLinks = [
   { href: "/", label: "首页" },
-  { href: "/pricing", label: "价格套餐" },
-  { href: "/about", label: "关于我们" },
-  { href: "/support", label: "联系客服" },
+  { href: "/toolbox", label: "AI经营工具箱" },
+  { href: "/pricing", label: "定价" },
+  { href: "/about", label: "关于" },
 ];
 
 const accountLinks = [
@@ -35,7 +35,7 @@ const accountLinks = [
   { href: "/pricing", label: "升级套餐", icon: Sparkles },
 ];
 
-export function Navbar() {
+export function AppHeader() {
   const [location] = useLocation();
   const { user, loading, isAuthenticated, logout } = useAuth();
 
@@ -47,20 +47,13 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--zs-line)] bg-[rgba(250,250,248,.86)] backdrop-blur-[12px] backdrop-saturate-150">
-      <div className="mx-auto flex h-[72px] max-w-[var(--zs-content-max)] items-center justify-between px-[var(--zs-page-x)]">
-        <Link href="/" className="flex items-center gap-3">
-          <img
-            src={APP_LOGO}
-            alt={APP_TITLE}
-            className="h-[42px] w-[42px] rounded-[var(--zs-radius-icon)] object-contain"
-          />
-          <span className="font-serif text-xl font-bold text-[var(--zs-primary)]">
-            泽思 AI
-          </span>
+    <header className="sticky top-0 z-50 border-b border-[var(--zs-line)] bg-[rgba(250,250,248,.86)] backdrop-blur-[12px] backdrop-saturate-[180%]">
+      <div className="mx-auto flex max-w-[1200px] items-center justify-between px-6 py-[15px] md:px-10">
+        <Link href="/" className="flex items-center">
+          <img src={APP_LOGO_FULL} alt={APP_TITLE} className="h-[42px] w-auto object-contain" />
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-[30px] md:flex">
           {navLinks.map((item) => (
             <Link
               key={item.href}
@@ -112,8 +105,8 @@ export function Navbar() {
                   <DropdownMenuLabel>我的账号</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                    {user?.email && <div>邮箱: {user.email}</div>}
-                    {user?.username && <div>用户名: {user.username}</div>}
+                    {user?.email && <div>邮箱：{user.email}</div>}
+                    {user?.username && <div>用户名：{user.username}</div>}
                   </div>
                   <DropdownMenuSeparator />
                   <div className="md:hidden">
@@ -156,9 +149,12 @@ export function Navbar() {
               >
                 登录
               </a>
-              <Button asChild size="sm">
-                <a href={getLoginUrl()}>注册</a>
-              </Button>
+              <a
+                href={getLoginUrl()}
+                className="inline-flex rounded-lg bg-[var(--zs-primary)] px-5 py-[9px] text-[14.5px] font-semibold text-white shadow-[var(--zs-shadow-button)] transition-colors hover:bg-[var(--zs-primary-2)]"
+              >
+                注册
+              </a>
             </>
           )}
 
@@ -168,7 +164,7 @@ export function Navbar() {
                 <Menu className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuContent align="end" className="w-48">
               {navLinks.map((item) => (
                 <DropdownMenuItem key={item.href} asChild>
                   <Link href={item.href} className="cursor-pointer">
@@ -183,3 +179,5 @@ export function Navbar() {
     </header>
   );
 }
+
+export const Navbar = AppHeader;

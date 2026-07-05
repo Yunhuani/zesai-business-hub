@@ -1,78 +1,79 @@
-import { APP_LOGO, APP_TITLE } from "@/const";
+import { APP_LOGO_FULL, APP_TITLE } from "@/const";
 import { Link } from "wouter";
 
 const footerColumns = [
   {
     title: "产品",
     links: [
-      { href: "/", label: "首页" },
-      { href: "/pricing", label: "价格套餐" },
-      { href: "/diagnosis", label: "增长诊断" },
+      { href: "/diagnosis", label: "NBG 增长诊断" },
+      { href: "/", label: "方法论" },
+      { href: "/toolbox", label: "即将上线" },
     ],
   },
   {
-    title: "支持",
+    title: "资源",
+    links: [
+      { href: "/toolbox", label: "AI经营工具箱" },
+      { href: "/", label: "行业洞察" },
+      { href: "/case-example", label: "客户案例" },
+    ],
+  },
+  {
+    title: "公司",
     links: [
       { href: "/about", label: "关于我们" },
-      { href: "/support", label: "联系客服" },
-    ],
-  },
-  {
-    title: "法律",
-    links: [
-      { href: "/terms", label: "用户协议" },
-      { href: "/privacy", label: "隐私政策" },
+      { href: "/about", label: "加入我们" },
+      { href: "/support", label: "联系我们" },
     ],
   },
 ];
 
-export function Footer() {
+export function AppFooter() {
   return (
     <footer className="border-t border-[var(--zs-line)] bg-[var(--zs-bg)]">
-      <div className="mx-auto flex max-w-[var(--zs-content-max)] flex-col gap-10 px-[var(--zs-page-x)] py-[60px] pb-[42px] md:flex-row md:justify-between">
-        <div className="max-w-sm">
-          <div className="flex items-center gap-3">
-            <img
-              src={APP_LOGO}
-              alt={APP_TITLE}
-              className="h-12 w-12 rounded-[var(--zs-radius-icon)] object-contain"
-            />
-            <span className="font-serif text-xl font-bold text-[var(--zs-primary)]">
-              泽思 AI
-            </span>
-          </div>
-          <p className="mt-4 text-[15px] leading-[var(--zs-leading-relaxed)] text-[var(--zs-sub)]">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-10 px-6 py-[60px] pb-[42px] md:flex-row md:justify-between md:gap-[60px] md:px-10">
+        <div className="max-w-[360px]">
+          <Link href="/" className="inline-flex items-center">
+            <img src={APP_LOGO_FULL} alt={APP_TITLE} className="h-[50px] w-auto object-contain" />
+          </Link>
+          <p className="mt-[22px] text-[13.5px] leading-[1.85] text-[var(--zs-sub)]">
             泽思AI，您身边的顶级商业咨询顾问。
           </p>
         </div>
 
         <div className="grid gap-8 sm:grid-cols-3 md:gap-[72px]">
           {footerColumns.map((column) => (
-            <div key={column.title}>
-              <h2 className="text-[13px] font-bold text-[var(--zs-ink)]">
-                {column.title}
-              </h2>
-              <div className="mt-4 flex flex-col gap-3">
-                {column.links.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="text-[13.5px] text-[var(--zs-sub)] transition-colors hover:text-[var(--zs-ink)]"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
+            <div key={column.title} className="flex flex-col gap-[15px]">
+              <h2 className="text-[13px] font-bold text-[var(--zs-ink)]">{column.title}</h2>
+              {column.links.map((link) => (
+                <Link
+                  key={`${column.title}-${link.label}`}
+                  href={link.href}
+                  className="text-[13.5px] text-[var(--zs-sub)] transition-colors hover:text-[var(--zs-ink)]"
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
           ))}
         </div>
       </div>
 
       <div className="border-t border-[var(--zs-line)]">
-        <div className="mx-auto max-w-[var(--zs-content-max)] px-[var(--zs-page-x)] py-5 text-[12.5px] text-[var(--zs-weak)]">
-          © 2025 泽思 AI - 专业AI商业咨询平台
+        <div className="mx-auto flex max-w-[1200px] flex-col gap-3 px-6 py-5 text-[12.5px] text-[var(--zs-weak)] md:flex-row md:items-center md:justify-between md:px-10">
+          <span>© 2026 泽思AI&nbsp; 沪ICP备2024051234号-1</span>
+          <span className="flex gap-[26px]">
+            <Link href="/privacy" className="hover:text-[var(--zs-sub)]">
+              隐私政策
+            </Link>
+            <Link href="/terms" className="hover:text-[var(--zs-sub)]">
+              服务条款
+            </Link>
+          </span>
         </div>
       </div>
     </footer>
   );
 }
+
+export const Footer = AppFooter;
