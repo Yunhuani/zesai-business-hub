@@ -3,6 +3,7 @@ import { AppFooter, AppHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ExpertConsultationDialog } from "@/components/ExpertConsultationDialog";
+import { NBG_REPORT_SAMPLE_SLIDE_COUNT, NbgReportSampleCarousel } from "@/components/NbgReportSampleCarousel";
 import { WeChatBrowserGuide } from "@/components/WeChatBrowserGuide";
 import { trackAgent, AgentEvents, trackConversion, ConversionEvents } from "@/lib/analytics";
 import { trpc } from "@/lib/trpc";
@@ -131,219 +132,6 @@ const caseCards = [
   },
 ];
 
-function polarPoint(radius: number, angle: number) {
-  const radians = (Math.PI / 180) * angle;
-  return {
-    x: Number((110 + radius * Math.cos(radians)).toFixed(2)),
-    y: Number((110 + radius * Math.sin(radians)).toFixed(2)),
-  };
-}
-
-function radarPoints(radius: number) {
-  return [0, 1, 2, 3, 4]
-    .map((item) => {
-      const point = polarPoint(radius, -90 + item * 72);
-      return `${point.x},${point.y}`;
-    })
-    .join(" ");
-}
-
-function ReportSampleCarousel({
-  activeIndex,
-  onChange,
-}: {
-  activeIndex: number;
-  onChange: (index: number) => void;
-}) {
-  const labels = ["五维健康度", "关键卡点", "行动路径", "核心结论"];
-
-  return (
-    <div className="rounded-[18px] border border-[rgba(201,162,75,.42)] bg-[linear-gradient(165deg,#1B2C24_0%,#121D18_100%)] p-[22px] text-[#EEF2ED] shadow-[0_36px_72px_-28px_rgba(15,25,20,.78)]">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="text-[15px] font-extrabold tracking-[.02em] text-[var(--zs-gold)]">
-            NBG 增长诊断报告
-          </div>
-          <div className="mt-1 text-[9.5px] tracking-[.06em] text-[#7e9085]">
-            {labels[activeIndex]} · 示例
-          </div>
-        </div>
-        <div className="rounded-md border border-[rgba(201,162,75,.35)] px-2 py-1 text-[10px] text-[var(--zs-gold)]">
-          SAMPLE
-        </div>
-      </div>
-
-      <div className="mt-5 min-h-[300px]">
-        {activeIndex === 0 && (
-          <div className="grid gap-5 md:grid-cols-[220px_1fr]">
-            <svg viewBox="0 0 220 220" className="mx-auto h-[220px] w-[220px]">
-              {[86, 64, 42].map((radius) => (
-                <polygon
-                  key={radius}
-                  points={radarPoints(radius)}
-                  fill="none"
-                  stroke="rgba(201,162,75,.24)"
-                  strokeWidth="1"
-                />
-              ))}
-              {[0, 1, 2, 3, 4].map((item) => {
-                const point = polarPoint(86, -90 + item * 72);
-                return (
-                  <line
-                    key={item}
-                    x1="110"
-                    y1="110"
-                    x2={point.x}
-                    y2={point.y}
-                    stroke="rgba(201,162,75,.16)"
-                    strokeWidth="1"
-                  />
-                );
-              })}
-              <polygon
-                points={[
-                  polarPoint(78, -90),
-                  polarPoint(73, -18),
-                  polarPoint(43, 54),
-                  polarPoint(32, 126),
-                  polarPoint(66, 198),
-                ]
-                  .map((point) => `${point.x},${point.y}`)
-                  .join(" ")}
-                fill="rgba(201,162,75,.18)"
-                stroke="var(--zs-gold)"
-                strokeWidth="3"
-              />
-              <g fill="#9fb0a6" fontSize="11" fontFamily="Inter, sans-serif">
-                <text x="110" y="18" textAnchor="middle">
-                  战略
-                </text>
-                <text x="152" y="56" textAnchor="start">
-                  产品力
-                </text>
-                <text x="132" y="150" textAnchor="start">
-                  渠道效率
-                </text>
-                <text x="48" y="150" textAnchor="end" fill="#C9A24B">
-                  定价毛利
-                </text>
-                <text x="28" y="56" textAnchor="end">
-                  组织执行
-                </text>
-              </g>
-            </svg>
-            <div className="space-y-3 self-center">
-              {[
-                ["战略", "78", "78%"],
-                ["产品力", "85", "85%"],
-                ["渠道效率", "50", "50%"],
-                ["定价毛利", "38", "38%"],
-                ["组织执行", "75", "75%"],
-              ].map(([name, score, width]) => (
-                <div key={name} className="flex items-center gap-2.5">
-                  <span
-                    className={`w-[54px] shrink-0 text-[11px] ${
-                      name === "定价毛利" ? "font-bold text-[var(--zs-gold)]" : "text-[#cdd5cf]"
-                    }`}
-                  >
-                    {name}
-                  </span>
-                  <div className="h-[7px] flex-1 overflow-hidden rounded bg-white/10">
-                    <div
-                      className={`h-full rounded ${name === "定价毛利" ? "bg-[var(--zs-gold)]" : "bg-[#3f6b54]"}`}
-                      style={{ width }}
-                    />
-                  </div>
-                  <span
-                    className={`w-[18px] text-right text-[10px] ${
-                      name === "定价毛利" ? "font-bold text-[var(--zs-gold)]" : "text-[#9fb0a6]"
-                    }`}
-                  >
-                    {score}
-                  </span>
-                </div>
-              ))}
-              <div className="mt-3 flex items-start gap-2 rounded-[9px] border border-[rgba(201,162,75,.28)] bg-[rgba(201,162,75,.1)] px-[13px] py-[11px]">
-                <span className="shrink-0 text-[11px] font-bold text-[var(--zs-gold)]">卡点</span>
-                <span className="text-[11.5px] leading-[1.55] text-[#dfe5e0]">
-                  定价毛利得分最低，是当前最该优先处理的瓶颈。
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeIndex === 1 && (
-          <div className="space-y-[13px]">
-            {[
-              ["定价与价值交付错配", "核心利润被持续稀释，客户感知价值不足。"],
-              ["老客户流失", "交付体验不稳定，复购不是获客能单独解决的问题。"],
-              ["渠道效率偏低", "动作很多，但缺少统一转化指标和复盘机制。"],
-            ].map(([title, desc]) => (
-              <div key={title} className="rounded-[12px] border border-[rgba(201,162,75,.24)] bg-white/[.04] p-4">
-                <div className="text-[13.5px] font-bold text-[#eef2ed]">{title}</div>
-                <div className="mt-2 text-[12px] leading-[1.65] text-[#9fb0a6]">{desc}</div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {activeIndex === 2 && (
-          <div className="space-y-0">
-            {[
-              ["重构定价分层", "止住利润流失，优先级最高。"],
-              ["定义核心单品", "压缩低效 SKU，把资源集中到可复制模型。"],
-              ["建立复盘指标", "每周跟踪渠道效率、毛利与复购。"],
-            ].map(([title, desc], index) => (
-              <div key={title} className="flex items-start gap-[13px]">
-                <div className="flex shrink-0 flex-col items-center">
-                  <div className="flex h-[25px] w-[25px] items-center justify-center rounded-full border border-[var(--zs-gold)] bg-[rgba(201,162,75,.16)] text-xs font-bold text-[var(--zs-gold)]">
-                    {index + 1}
-                  </div>
-                  {index < 2 && <div className="min-h-[26px] w-px flex-1 bg-[rgba(201,162,75,.3)]" />}
-                </div>
-                <div className="pb-[18px]">
-                  <div className="text-[13.5px] font-bold text-[#eef2ed]">{title}</div>
-                  <div className="mt-[3px] text-[11px] leading-[1.5] text-[#9fb0a6]">{desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {activeIndex === 3 && (
-          <div className="flex flex-col gap-[13px] pt-6">
-            {[
-              "定价与价值交付错配，是拖累利润的首要短板。",
-              "老客户流失源于交付体验，而非获客不足。",
-              "优先重构定价分层，预计毛利提升 6–8 点。",
-            ].map((item) => (
-              <div key={item} className="flex items-start gap-[9px]">
-                <span className="mt-px text-[11px] text-[var(--zs-gold)]">▸</span>
-                <span className="text-[12.5px] leading-[1.6] text-[#dfe5e0]">{item}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="mt-5 flex justify-center gap-2">
-        {labels.map((label, index) => (
-          <button
-            key={label}
-            type="button"
-            aria-label={label}
-            onClick={() => onChange(index)}
-            className={`h-1.5 rounded-full transition-all ${
-              activeIndex === index ? "w-[18px] bg-[var(--zs-gold)]" : "w-1.5 bg-[#cfd3cb]"
-            }`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export default function Home() {
   const [isInWeChatBrowser] = useState(isWeChatBrowser());
   const [expertDialogOpen, setExpertDialogOpen] = useState(false);
@@ -378,7 +166,7 @@ export default function Home() {
 
   useEffect(() => {
     const interval = window.setInterval(() => {
-      setReportSlideIndex((current) => (current + 1) % 4);
+      setReportSlideIndex((current) => (current + 1) % NBG_REPORT_SAMPLE_SLIDE_COUNT);
     }, 3500);
 
     return () => window.clearInterval(interval);
@@ -397,7 +185,7 @@ export default function Home() {
       <AppHeader />
 
       <main>
-        <section className="mx-auto max-w-[1200px] px-6 py-[88px] pb-[96px] text-center md:px-10">
+        <section className="zs-container py-[88px] pb-[96px] text-center">
           {isInWeChatBrowser && <WeChatBrowserGuide />}
 
           <h1 className="m-0 text-[48px] font-black leading-[1.14] tracking-[.01em] text-[var(--zs-ink)] md:text-[62px]">
@@ -445,7 +233,7 @@ export default function Home() {
           </form>
         </section>
 
-        <section className="mx-auto max-w-[1200px] px-6 pb-[80px] md:px-10">
+        <section className="zs-container pb-[80px]">
           <div className="mb-9 text-center">
             <h2 className="m-0 text-[34px] font-extrabold leading-[1.3]">您现在面临什么问题？</h2>
             <p className="mx-auto mt-4 max-w-[680px] text-[16px] leading-[1.8] text-[var(--zs-sub)]">
@@ -480,12 +268,12 @@ export default function Home() {
               </div>
 
               <div className="bg-[var(--zs-primary)] p-6 lg:p-7">
-                <ReportSampleCarousel activeIndex={reportSlideIndex} onChange={setReportSlideIndex} />
+                <NbgReportSampleCarousel activeIndex={reportSlideIndex} onChange={setReportSlideIndex} />
               </div>
             </CardContent>
           </Card>
 
-          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {serviceCards.map((service) => {
               const agent = agentByName.get(service.agentName);
               const Icon = service.Icon;
@@ -542,7 +330,7 @@ export default function Home() {
         </section>
 
         <section className="border-y border-[var(--zs-line)] bg-white">
-          <div className="mx-auto max-w-[1200px] px-6 py-20 md:px-10">
+          <div className="zs-container py-20">
             <div className="mb-12 text-center">
               <h2 className="m-0 text-[30px] font-bold">每一步，都是顶级咨询方法论与 AI 模型的结合</h2>
               <p className="mx-auto mt-4 max-w-[680px] text-[16px] leading-[1.8] text-[var(--zs-sub)]">
@@ -550,11 +338,11 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4 xl:gap-0">
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-0">
               {processSteps.map((step, index) => (
                 <div
                   key={step.no}
-                  className={`xl:px-[30px] ${index < processSteps.length - 1 ? "xl:border-r xl:border-[var(--zs-line)]" : ""}`}
+                  className={`lg:px-[30px] ${index < processSteps.length - 1 ? "lg:border-r lg:border-[var(--zs-line)]" : ""}`}
                 >
                   <div className="font-['Inter'] text-[14px] font-bold text-[var(--zs-gold)]">{step.no}</div>
                   <div className="mt-[14px] text-[18px] font-bold leading-[1.4]">{step.title}</div>
@@ -573,7 +361,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-[1200px] px-6 py-20 md:px-10">
+        <section className="zs-container py-20">
           <div className="mb-10 text-center">
             <h2 className="m-0 text-[34px] font-extrabold">成功客户案例</h2>
             <p className="mx-auto mt-4 max-w-[640px] text-[16px] leading-[1.8] text-[var(--zs-sub)]">
@@ -581,7 +369,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             {caseCards.map((item) => {
               const Icon = item.Icon;
               return (
@@ -613,7 +401,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-[1200px] px-6 pb-20 md:px-10">
+        <section className="zs-container pb-20">
           <div className="relative flex flex-col gap-8 overflow-hidden rounded-[22px] bg-[var(--zs-primary)] p-8 text-[#eef2ed] md:flex-row md:items-center md:justify-between md:p-[60px]">
             <div className="max-w-[680px]">
               <h2 className="m-0 text-[34px] font-extrabold leading-[1.3] text-white">
