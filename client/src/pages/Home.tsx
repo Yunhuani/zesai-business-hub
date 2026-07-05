@@ -1,454 +1,444 @@
-// Version: 2024-12-30 - 统一业务营收增长专家名称
-import React from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Card, CardContent } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
 import * as Icons from "lucide-react";
-import { useState } from "react";
 import { ExpertConsultationDialog } from "@/components/ExpertConsultationDialog";
-import { SmartAssistantSearch } from "@/components/SmartAssistantSearch";
-import { Link } from "wouter";
 import { WeChatBrowserGuide } from "@/components/WeChatBrowserGuide";
 import { isWeChatBrowser } from "@/utils/wechatDetector";
 import { trackConversion, ConversionEvents, trackAgent, AgentEvents } from "@/lib/analytics";
-import { useEffect } from "react";
-import { DataWaveBackground } from "@/components/DataWaveBackground";
 import { Footer, Navbar } from "@/components/layout";
+import { Link, useLocation } from "wouter";
 
+const skillCards = [
+  {
+    title: "想融资，但没有清晰材料",
+    description: "把商业模式、增长数据与融资故事整理成投资人能快速理解的结构。",
+    agentName: "融资商业计划书",
+    tag: "融资材料",
+    Icon: Icons.FileText,
+  },
+  {
+    title: "合伙人股权怎么分才合理",
+    description: "从贡献、风险、退出机制和长期激励出发，形成可讨论的股权框架。",
+    agentName: "股权架构师",
+    tag: "股权设计",
+    Icon: Icons.Network,
+  },
+  {
+    title: "看不清竞争对手怎么办",
+    description: "拆解竞品定位、渠道动作与差异化空间，找到真正值得投入的机会。",
+    agentName: "竞品分析专家",
+    tag: "竞争分析",
+    Icon: Icons.Search,
+  },
+  {
+    title: "团队目标定不下来",
+    description: "把战略方向拆成可执行的 OKR、关键结果与阶段复盘动作。",
+    agentName: "OKR目标管理教练",
+    tag: "组织管理",
+    Icon: Icons.ListChecks,
+  },
+];
 
-// Agent分类配置
-const AGENT_CATEGORIES = [
+const toolboxItems = ["商业计划书", "增长诊断", "股权方案", "OKR 拆解"];
+
+const processSteps = [
   {
-    id: "strategy",
-    name: "战略与规划",
-    icon: "Target",
-    description: "企业战略、商业模式、融资路演、竞品分析、一人公司",
-    agentNames: ["战略规划", "融资商业计划书", "竞品分析专家", "商业模式设计", "一人公司顾问"],
-    defaultOpen: true,
-    colors: {
-      gradient: "from-purple-600 to-blue-600",
-      iconBg: "bg-gradient-to-br from-purple-600 to-blue-600",
-      cardBorder: "hover:border-purple-500/50",
-      text: "text-purple-600",
-    },
+    title: "结构化访谈",
+    description: "从真实经营问题出发，先厘清目标、约束与关键事实。",
+    Icon: Icons.MessagesSquare,
   },
   {
-    id: "marketing",
-    name: "营销与增长",
-    icon: "TrendingUp",
-    description: "品牌营销、获客增长、营收增长、流量运营",
-    agentNames: ["品牌营销策划师", "流量增长获客专家", "业务营收增长专家", "抖音爆款操盘手", "小红书种草专家", "视频号私域增长专家"],
-    defaultOpen: false,
-    colors: {
-      gradient: "from-green-600 to-emerald-500",
-      iconBg: "bg-gradient-to-br from-green-600 to-emerald-500",
-      cardBorder: "hover:border-green-500/50",
-      text: "text-green-600",
-    },
+    title: "框架与咨询方法论",
+    description: "引入战略、增长、组织和财务模型，避免只给泛泛建议。",
+    Icon: Icons.LayoutTemplate,
   },
   {
-    id: "operation",
-    name: "运营与管理",
-    icon: "Users",
-    description: "股权架构、薪酬绩效、OKR目标管理",
-    agentNames: ["股权架构师", "薪酬绩效专家", "OKR目标管理教练"],
-    defaultOpen: false,
-    colors: {
-      gradient: "from-blue-600 to-cyan-500",
-      iconBg: "bg-gradient-to-br from-blue-600 to-cyan-500",
-      cardBorder: "hover:border-blue-500/50",
-      text: "text-blue-600",
-    },
+    title: "独家 AI Skill + Agent",
+    description: "让专用顾问完成推理、拆解与交叉验证，形成可执行判断。",
+    Icon: Icons.Bot,
   },
   {
-    id: "investment",
-    name: "投资与机会",
-    icon: "Lightbulb",
-    description: "资产配置、职业规划、高考志愿、创业商机",
-    agentNames: ["大类资产投资顾问", "职业路径规划师", "高考专业规划师", "创业商机顾问"],
-    defaultOpen: false,
-    colors: {
-      gradient: "from-orange-600 to-amber-500",
-      iconBg: "bg-gradient-to-br from-orange-600 to-amber-500",
-      cardBorder: "hover:border-orange-500/50",
-      text: "text-orange-600",
-    },
+    title: "交付解决方案",
+    description: "输出诊断报告、行动清单和下一步决策依据。",
+    Icon: Icons.PackageCheck,
+  },
+];
+
+const caseCards = [
+  {
+    industry: "消费品牌",
+    title: "新渠道增长诊断",
+    problem: "投放效率下降，团队无法判断是渠道、内容还是产品问题。",
+    result: "明确三类高优先级增长动作，试错成本下降 45%。",
+    Icon: Icons.Megaphone,
+  },
+  {
+    industry: "制造企业",
+    title: "年度战略取舍",
+    problem: "多条业务线并行，资源投入分散，管理层判断难以统一。",
+    result: "形成业务优先级矩阵，决策周期缩短 50%。",
+    Icon: Icons.Factory,
+  },
+  {
+    industry: "科技服务",
+    title: "融资 BP 重构",
+    problem: "商业逻辑表达不清，投资人反馈分散，材料反复修改。",
+    result: "重建融资叙事与数据结构，沟通效率显著提升。",
+    Icon: Icons.LineChart,
+  },
+  {
+    industry: "本地服务",
+    title: "门店经营复盘",
+    problem: "客流波动大，无法判断会员、产品和活动哪个环节拖累业绩。",
+    result: "拆出关键指标看板，月度经营复盘更稳定。",
+    Icon: Icons.Store,
   },
 ];
 
 export default function Home() {
   const [isInWeChatBrowser] = useState(isWeChatBrowser());
-  const { data: agents, isLoading: agentsLoading } = trpc.agent.list.useQuery();
-  
-  // 控制每个分类的展开/折叠状态
-  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>(
-    Object.fromEntries(AGENT_CATEGORIES.map(cat => [cat.id, cat.defaultOpen]))
-  );
   const [expertDialogOpen, setExpertDialogOpen] = useState(false);
+  const [heroQuery, setHeroQuery] = useState("公司业绩上不去怎么办？");
+  const [, setLocation] = useLocation();
+  const { data: agents, isLoading: agentsLoading } = trpc.agent.list.useQuery();
 
-  const toggleCategory = (categoryId: string) => {
-    setOpenCategories(prev => ({
-      ...prev,
-      [categoryId]: !prev[categoryId],
-    }));
-  };
+  const agentByName = useMemo(() => {
+    return new Map((agents ?? []).map((agent) => [agent.name, agent]));
+  }, [agents]);
 
-  // 场景化引导配置
-  const SCENARIO_CHIPS = [
-    { id: 'money', label: '💰 我要搞钱', targetCategory: 'strategy' },
-    { id: 'traffic', label: '📈 我要流量', targetCategory: 'marketing' },
-    { id: 'manage', label: '🏢 绩效管理', targetCategory: 'operation' },
-    { id: 'opportunity', label: '💡 寻找机会', targetCategory: 'investment' },
-  ];
+  const smartAssistantId = agentByName.get("智能AI助手")?.id ?? 0;
 
-  // 点击场景胶囊：展开对应分类并滚动
-  const handleScenarioClick = (targetCategory: string) => {
-    // 展开目标分类
-    setOpenCategories(prev => ({
-      ...prev,
-      [targetCategory]: true,
-    }));
-    // 滚动到目标分类
-    setTimeout(() => {
-      const element = document.getElementById(`category-${targetCategory}`);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
-  };
-
-  // 按分类组织agents
-  const getAgentsByCategory = (categoryAgentNames: string[]) => {
-    if (!agents) return [];
-    return agents.filter(agent => categoryAgentNames.includes(agent.name));
-  };
-
-  // 追踪首页访问
   useEffect(() => {
     trackConversion(ConversionEvents.HOME_VISIT);
   }, []);
 
-  return (
-    <div className="min-h-screen bg-background relative">
+  const handleHeroSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!smartAssistantId) return;
 
-      {/* 数据波纹背景 */}
-      <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
-        <DataWaveBackground />
-      </div>
+    const query = heroQuery.trim() || "公司业绩上不去怎么办？";
+    setLocation(`/agent/${smartAssistantId}?initial=${encodeURIComponent(query)}`);
+  };
+
+  return (
+    <div className="min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)]">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="container py-10 md:py-20 text-center relative overflow-hidden">
+      <main>
+        <section className="border-b border-[var(--zs-line)] bg-[linear-gradient(180deg,rgba(238,242,237,.75)_0%,rgba(250,250,248,0)_72%)]">
+          <div className="mx-auto max-w-[var(--zs-content-max)] px-6 pb-[var(--zs-space-20)] pt-[var(--zs-space-16)] text-center md:px-10">
+            {isInWeChatBrowser && <WeChatBrowserGuide />}
 
-        
-        {/* WeChat Browser Guide */}
-        {isInWeChatBrowser && <WeChatBrowserGuide />}
-        
-        <div className="animate-fade-in-up">
-          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-4 md:mb-8 bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent leading-tight">
-            您的AI商业顾问
-          </h2>
-          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto mb-6 md:mb-12 leading-relaxed px-2">
-            将全球顶级咨询公司的方法论，与前沿AI大模型相结合。提供麦肯锡级别的战略规划、品牌营销、增长策略、融资规划等全流程解决方案。
-          </p>
-          
-          {/* 智能搜索框 - 移至Hero区域 */}
-          {!agentsLoading && agents && (
-            <div className="max-w-2xl mx-auto px-2">
-              <SmartAssistantSearch 
-                smartAssistantId={agents.find(a => a.name === '智能AI助手')?.id || 0}
-              />
-            </div>
-          )}
-          <div className="mt-6">
-            <Link href="/diagnosis">
-              <Button size="lg" className="gap-2">
-                <Icons.Activity className="h-5 w-5" />
-                NBG 增长诊断 · 开始
-              </Button>
-            </Link>
-          </div>
-        </div>
+            <p className="mx-auto mb-[var(--zs-space-5)] w-fit rounded-[var(--zs-radius-pill)] border border-[var(--zs-line)] bg-[var(--zs-card)] px-4 py-2 text-[var(--zs-text-eyebrow-size)] font-bold tracking-[var(--zs-text-eyebrow-spacing)] text-[var(--zs-gold-ink)] shadow-[var(--zs-shadow-card)]">
+              ZESI AI BUSINESS ADVISOR
+            </p>
+            <h1 className="text-[var(--zs-text-display-size)] font-[var(--zs-text-display-weight)] leading-[var(--zs-text-display-line)] text-[var(--zs-ink)]">
+              您的AI商业顾问
+            </h1>
+            <p className="mx-auto mt-[var(--zs-space-6)] max-w-[760px] text-[var(--zs-text-lead-size)] leading-[var(--zs-text-lead-line)] text-[var(--zs-sub)]">
+              将全球顶级咨询公司的方法论，与前沿 AI 模型相结合。提供麦肯锡级别的经营解决方案。
+            </p>
 
-        {/* 工具卡片入口 - 文本转PPT功能暂时下架 */}
-      </section>
-
-      {/* 场景化引导胶囊 - 暂时隐藏，后续优化 */}
-      {/* <section className="container pb-8">
-        <div className="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto">
-          {SCENARIO_CHIPS.map((chip) => (
-            <button
-              key={chip.id}
-              onClick={() => handleScenarioClick(chip.targetCategory)}
-              className="px-5 py-2.5 rounded-full bg-white/5 border border-purple-500/30 text-sm font-medium text-gray-200 hover:bg-purple-500/20 hover:border-purple-400/60 hover:text-white hover:scale-105 transition-all duration-300 backdrop-blur-sm"
+            <form
+              onSubmit={handleHeroSubmit}
+              className="mx-auto mt-[var(--zs-space-10)] flex max-w-[960px] flex-col gap-3 rounded-[var(--zs-radius-panel)] border border-[var(--zs-line)] bg-[var(--zs-card)] p-3 text-left shadow-[var(--zs-shadow-large)] md:flex-row md:items-center md:gap-4"
             >
-              {chip.label}
-            </button>
-          ))}
-        </div>
-      </section> */}
-
-      {/* Agents by Category */}
-      <section className="container pb-20">
-        {agentsLoading ? (
-          <div className="flex justify-center py-20">
-            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              <div className="flex min-h-12 flex-1 items-center gap-3 px-2 md:px-4">
+                <Icons.MessageCircle className="h-5 w-5 shrink-0 text-[var(--zs-gold)]" />
+                <span className="hidden shrink-0 text-sm font-semibold text-[var(--zs-ink)] sm:inline">
+                  您可以问我：
+                </span>
+                <input
+                  value={heroQuery}
+                  onChange={(event) => setHeroQuery(event.target.value)}
+                  className="min-w-0 flex-1 bg-transparent text-base text-[var(--zs-ink)] outline-none placeholder:text-[var(--zs-weak)]"
+                  placeholder="公司业绩上不去怎么办？"
+                />
+              </div>
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full shrink-0 md:w-auto"
+                disabled={agentsLoading || !smartAssistantId}
+              >
+                开始
+                <Icons.ArrowRight className="h-4 w-4" />
+              </Button>
+            </form>
           </div>
-        ) : (
-          <div className="space-y-8 max-w-6xl mx-auto">
-            {AGENT_CATEGORIES.map((category, index) => {
-              const CategoryIcon = (Icons as any)[category.icon] || Icons.Folder;
-              const categoryAgents = getAgentsByCategory(category.agentNames);
-              const isOpen = openCategories[category.id];
+        </section>
 
-              return (
-                <Collapsible
-                  key={category.id}
-                  open={isOpen}
-                  onOpenChange={() => toggleCategory(category.id)}
+        <section id="services" className="mx-auto max-w-[var(--zs-content-max)] px-6 py-[var(--zs-space-20)] md:px-10">
+          <div className="mx-auto max-w-[760px] text-center">
+            <p className="text-[var(--zs-text-eyebrow-size)] font-bold tracking-[var(--zs-text-eyebrow-spacing)] text-[var(--zs-gold-ink)]">
+              START WITH THE PROBLEM
+            </p>
+            <h2 className="mt-3 text-[var(--zs-text-h2-size)] font-[var(--zs-text-h2-weight)] leading-[var(--zs-text-h2-line)]">
+              您现在面临什么问题？
+            </h2>
+            <p className="mt-4 text-[var(--zs-text-body-size)] leading-[var(--zs-text-body-line)] text-[var(--zs-sub)]">
+              从业务的现状出发，匹配对应的 AI 顾问，不再被工具入口分流。
+            </p>
+          </div>
+
+          <Card variant="feature" className="mt-[var(--zs-space-12)] overflow-hidden p-0">
+            <CardContent className="grid gap-0 p-0 lg:grid-cols-[1.05fr_.95fr]">
+              <div className="p-[var(--zs-space-8)] md:p-[var(--zs-space-12)]">
+                <div className="flex flex-wrap gap-2">
+                  {["引流获客", "经营诊断", "增长突破"].map((label) => (
+                    <span
+                      key={label}
+                      className="rounded-[var(--zs-radius-pill)] bg-[var(--zs-primary-soft)] px-3 py-1 text-xs font-bold text-[var(--zs-primary)]"
+                    >
+                      {label}
+                    </span>
+                  ))}
+                </div>
+                <h3 className="mt-[var(--zs-space-6)] text-[var(--zs-text-h3-size)] font-[var(--zs-text-h3-weight)] leading-[var(--zs-text-h3-line)]">
+                  增长卡住了，找不到突破口
+                </h3>
+                <p className="mt-4 max-w-xl text-[var(--zs-text-body-size)] leading-[var(--zs-text-body-line)] text-[var(--zs-sub)]">
+                  通过 NBG 增长诊断，把企业的获客、转化、复购和组织执行拆成可分析的经营问题，生成一份可直接开会讨论的诊断报告。
+                </p>
+                <div className="mt-[var(--zs-space-8)] flex flex-col gap-3 sm:flex-row">
+                  <Button asChild size="lg">
+                    <Link href="/diagnosis">
+                      开始诊断
+                      <Icons.ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button variant="outlineGold" size="lg" asChild>
+                    <Link href="/pricing">查看会员权益</Link>
+                  </Button>
+                </div>
+              </div>
+
+              <div className="border-t border-[var(--zs-line)] bg-[image:var(--zs-dark-panel)] p-[var(--zs-space-8)] text-[var(--zs-dark-panel-foreground)] lg:border-l lg:border-t-0">
+                <div className="rounded-[var(--zs-radius-report)] border border-[var(--zs-dark-panel-border)] bg-[rgba(255,255,255,.04)] p-5 shadow-[var(--zs-shadow-report)]">
+                  <div className="flex items-center justify-between border-b border-[rgba(201,162,75,.28)] pb-4">
+                    <div>
+                      <p className="text-xs font-bold tracking-[var(--zs-text-eyebrow-spacing)] text-[var(--zs-gold)]">
+                        NBG REPORT SAMPLE
+                      </p>
+                      <h4 className="mt-2 text-xl font-bold">增长诊断报告</h4>
+                    </div>
+                    <Icons.Activity className="h-8 w-8 text-[var(--zs-gold)]" />
+                  </div>
+                  <div className="mt-6 grid gap-5 md:grid-cols-[.9fr_1.1fr]">
+                    <div className="relative mx-auto flex aspect-square w-full max-w-[180px] items-center justify-center rounded-full border border-[rgba(201,162,75,.32)]">
+                      <div className="absolute h-[72%] w-[72%] rounded-full border border-[rgba(201,162,75,.22)]" />
+                      <div className="absolute h-[42%] w-[42%] rounded-full border border-[rgba(201,162,75,.18)]" />
+                      <div className="h-[48%] w-[66%] rotate-12 rounded-[42%] border-2 border-[var(--zs-gold)] bg-[rgba(201,162,75,.16)]" />
+                    </div>
+                    <div className="space-y-4">
+                      {[
+                        ["获客效率", "72%"],
+                        ["转化质量", "58%"],
+                        ["复购潜力", "81%"],
+                      ].map(([label, value]) => (
+                        <div key={label}>
+                          <div className="mb-2 flex justify-between text-sm">
+                            <span className="text-[var(--zs-dark-panel-muted)]">{label}</span>
+                            <span className="font-bold text-[var(--zs-gold)]">{value}</span>
+                          </div>
+                          <div className="h-2 rounded-full bg-[rgba(255,255,255,.12)]">
+                            <div
+                              className="h-2 rounded-full bg-[var(--zs-gold)]"
+                              style={{ width: value }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="mt-[var(--zs-space-6)] grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {skillCards.map((skill) => {
+              const agent = agentByName.get(skill.agentName);
+              const SkillIcon = skill.Icon;
+              const content = (
+                <Card className="h-full transition-transform hover:-translate-y-1 hover:shadow-[var(--zs-shadow-float)]">
+                  <CardContent className="flex h-full flex-col p-6">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-[var(--zs-radius-icon)] bg-[var(--zs-primary-soft)] text-[var(--zs-primary)]">
+                      <SkillIcon className="h-6 w-6" />
+                    </div>
+                    <h3 className="mt-5 text-xl font-bold leading-tight">{skill.title}</h3>
+                    <p className="mt-3 flex-1 text-sm leading-[var(--zs-text-body-line)] text-[var(--zs-sub)]">
+                      {skill.description}
+                    </p>
+                    <div className="mt-5 flex items-center justify-between border-t border-[var(--zs-line)] pt-4 text-sm font-semibold">
+                      <span className="text-[var(--zs-gold-ink)]">{skill.tag}</span>
+                      <span className="flex items-center gap-1 text-[var(--zs-primary)]">
+                        开始
+                        <Icons.ArrowRight className="h-4 w-4" />
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+
+              return agent ? (
+                <Link
+                  key={skill.title}
+                  href={`/agent/${agent.id}`}
+                  onClick={() => trackAgent(AgentEvents.AGENT_CLICK, agent.id, agent.name)}
+                  className="block h-full"
                 >
-                  <Card id={`category-${category.id}`} className="border-2 overflow-hidden scroll-mt-20">
-                    <CollapsibleTrigger className="w-full">
-                      <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className={`w-14 h-14 rounded-xl ${category.colors.iconBg} flex items-center justify-center shadow-lg`}>
-                              <CategoryIcon className="w-6 h-6 text-white" />
-                            </div>
-                            <div className="text-left">
-                              <CardTitle className="text-2xl flex items-center gap-2">
-                                {category.name}
-                                <span className="text-sm font-normal text-muted-foreground">
-                                  ({categoryAgents.length}个顾问)
-                                </span>
-                              </CardTitle>
-                              <CardDescription className="text-base mt-1">
-                                {category.description}
-                              </CardDescription>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {isOpen ? (
-                              <Icons.ChevronUp className="w-6 h-6 text-muted-foreground" />
-                            ) : (
-                              <Icons.ChevronDown className="w-6 h-6 text-muted-foreground" />
-                            )}
-                          </div>
-                        </div>
-                      </CardHeader>
-                    </CollapsibleTrigger>
-
-                    <CollapsibleContent>
-                      <CardContent className="pt-6">
-                        <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${category.id === 'investment' ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
-                          {categoryAgents.map((agent) => {
-                            const IconComponent = (Icons as any)[agent.icon] || Icons.Sparkles;
-                            return (
-                              <Card
-                                key={agent.id}
-                                className={`group card-hover-enhanced cursor-pointer border-2 ${category.colors.cardBorder} glass-effect hover:glow-border`}
-                              >
-                                <Link 
-                                  href={`/agent/${agent.id}`}
-                                  onClick={() => trackAgent(AgentEvents.AGENT_CLICK, agent.id, agent.name)}
-                                >
-                                  <CardHeader>
-                                    <div className="flex items-start gap-3">
-                                      <div className={`w-12 h-12 rounded-xl ${category.colors.iconBg} flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-md`}>
-                                        <IconComponent className="w-6 h-6 text-white" />
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <CardTitle className={`text-lg mb-2 group-hover:${category.colors.text} transition-colors`}>
-                                          {agent.name}
-                                        </CardTitle>
-                                        <CardDescription className="text-sm line-clamp-2">
-                                          {agent.description}
-                                        </CardDescription>
-                                      </div>
-                                    </div>
-                                  </CardHeader>
-                                  <CardContent>
-                                    <div className={`flex items-center text-sm ${category.colors.text} font-medium group-hover:gap-2 transition-all`}>
-                                      开始咨询
-                                      <Icons.ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                    </div>
-                                  </CardContent>
-                                </Link>
-                              </Card>
-                            );
-                          })}
-                        </div>
-                      </CardContent>
-                    </CollapsibleContent>
-                  </Card>
-                </Collapsible>
+                  {content}
+                </Link>
+              ) : (
+                <div key={skill.title} className="h-full">
+                  {content}
+                </div>
               );
             })}
           </div>
-        )}
-      </section>
 
-      {/* Customer Cases Section */}
-      <section className="py-16 bg-gradient-to-br from-slate-900/30 to-blue-900/30">
-        <div className="container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold">客户案例</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Case 1 - 融资场景 */}
-            <Card className="glass-effect hover:shadow-diffuse transition-smooth border-purple-500/30">
-              <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center mb-3">
-                  <Icons.TrendingUp className="w-6 h-6 text-white" />
-                </div>
-                <CardTitle className="text-lg">融资场景</CardTitle>
-                <CardDescription className="text-xs">科技创业公司</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">使用场景</p>
-                  <p className="text-sm">融资前商业梳理与 BP 构建</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">解决问题</p>
-                  <p className="text-sm">商业逻辑不清晰，投资人反馈分散，BP 反复修改</p>
-                </div>
-                <div className="pt-3 border-t">
-                  <p className="text-sm font-medium text-muted-foreground mb-2">关键结果</p>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-1">60%+</div>
-                  <p className="text-xs text-muted-foreground">融资成功率提升</p>
-                  <ul className="text-xs text-muted-foreground mt-2 space-y-1">
-                    <li>• BP 结构清晰度显著提升</li>
-                    <li>• 投资沟通效率明显提高</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Case 2 - 战略决策 */}
-            <Card className="glass-effect hover:shadow-diffuse transition-smooth border-blue-500/30">
-              <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center mb-3">
-                  <Icons.Target className="w-6 h-6 text-white" />
-                </div>
-                <CardTitle className="text-lg">战略决策</CardTitle>
-                <CardDescription className="text-xs">制造业企业（年营收数亿元）</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">使用场景</p>
-                  <p className="text-sm">中长期战略方向与业务取舍</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">解决问题</p>
-                  <p className="text-sm">多业务线并行，资源分散，战略判断难以统一</p>
-                </div>
-                <div className="pt-3 border-t">
-                  <p className="text-sm font-medium text-muted-foreground mb-2">关键结果</p>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-1">50%+</div>
-                  <p className="text-xs text-muted-foreground">决策周期缩短</p>
-                  <ul className="text-xs text-muted-foreground mt-2 space-y-1">
-                    <li>• 明确核心战略方向</li>
-                    <li>• 识别低效业务与优先级</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Case 3 - 增长与市场 */}
-            <Card className="glass-effect hover:shadow-diffuse transition-smooth border-green-500/30">
-              <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center mb-3">
-                  <Icons.BarChart className="w-6 h-6 text-white" />
-                </div>
-                <CardTitle className="text-lg">增长与市场</CardTitle>
-                <CardDescription className="text-xs">新消费品牌</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">使用场景</p>
-                  <p className="text-sm">市场进入与增长策略制定</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">解决问题</p>
-                  <p className="text-sm">市场判断依赖经验，增长路径不清晰</p>
-                </div>
-                <div className="pt-3 border-t">
-                  <p className="text-sm font-medium text-muted-foreground mb-2">关键结果</p>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-1">45%+</div>
-                  <p className="text-xs text-muted-foreground">试错成本降低</p>
-                  <ul className="text-xs text-muted-foreground mt-2 space-y-1">
-                    <li>• 明确目标市场与核心用户</li>
-                    <li>• 形成可执行的增长路径</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Case 4 - 一人公司 */}
-            <Card className="glass-effect hover:shadow-diffuse transition-smooth border-orange-500/30">
-              <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-orange-600 to-amber-600 flex items-center justify-center mb-3">
-                  <Icons.User className="w-6 h-6 text-white" />
-                </div>
-                <CardTitle className="text-lg">一人公司</CardTitle>
-                <CardDescription className="text-xs">自由职业创业者</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">使用场景</p>
-                  <p className="text-sm">商业模式与个人业务设计</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">解决问题</p>
-                  <p className="text-sm">缺乏系统商业视角，决策高度受限</p>
-                </div>
-                <div className="pt-3 border-t">
-                  <p className="text-sm font-medium text-muted-foreground mb-2">关键结果</p>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent mb-1">300%</div>
-                  <p className="text-xs text-muted-foreground">年度收入提升</p>
-                  <ul className="text-xs text-muted-foreground mt-2 space-y-1">
-                    <li>• 商业模式更清晰</li>
-                    <li>• 决策信心明显提升</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Expert Consultation Section */}
-      <section className="container pb-16">
-        <Card className="border-2 border-purple-500/30 glass-effect max-w-3xl mx-auto">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
-              <Icons.Users className="w-8 h-8 text-white" />
+          <div className="mt-[var(--zs-space-10)] overflow-hidden rounded-[var(--zs-radius-panel)] border border-[var(--zs-dark-panel-border)] bg-[image:var(--zs-dark-panel)] p-[var(--zs-space-8)] text-[var(--zs-dark-panel-foreground)] shadow-[var(--zs-shadow-report)] md:flex md:items-center md:justify-between md:gap-8">
+            <div>
+              <p className="text-[var(--zs-text-eyebrow-size)] font-bold tracking-[var(--zs-text-eyebrow-spacing)] text-[var(--zs-gold)]">
+                AI 经营工具箱
+              </p>
+              <h3 className="mt-3 text-2xl font-bold">每一个工具，都对应一个真实经营动作。</h3>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {toolboxItems.map((item) => (
+                  <span
+                    key={item}
+                    className="rounded-[var(--zs-radius-pill)] border border-[rgba(201,162,75,.34)] px-3 py-1 text-sm text-[var(--zs-dark-panel-muted)]"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
             </div>
-            <CardTitle className="text-2xl">需要人工专家指导？</CardTitle>
-            <CardDescription className="text-base mt-2">
-              我们的专家顾问团队随时为您提供一对一的专业咨询服务
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <Button 
-              size="lg" 
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            <Button variant="gold" size="lg" className="mt-6 md:mt-0" asChild>
+              <Link href="/pricing">
+                进入工具箱
+                <Icons.ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </section>
+
+        <section className="border-y border-[var(--zs-line)] bg-[var(--zs-card)]">
+          <div className="mx-auto max-w-[var(--zs-content-max)] px-6 py-[var(--zs-space-20)] md:px-10">
+            <div className="max-w-[760px]">
+              <p className="text-[var(--zs-text-eyebrow-size)] font-bold tracking-[var(--zs-text-eyebrow-spacing)] text-[var(--zs-gold-ink)]">
+                HOW IT WORKS
+              </p>
+              <h2 className="mt-3 text-[var(--zs-text-h2-size)] font-[var(--zs-text-h2-weight)] leading-[var(--zs-text-h2-line)]">
+                每一步，都是顶级咨询方法论与 AI 模型的结合
+              </h2>
+            </div>
+
+            <div className="mt-[var(--zs-space-12)] grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+              {processSteps.map((step, index) => {
+                const StepIcon = step.Icon;
+                return (
+                  <div key={step.title} className="border-t border-[var(--zs-line)] pt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-[var(--zs-radius-icon)] bg-[var(--zs-primary-soft)] text-[var(--zs-primary)]">
+                        <StepIcon className="h-5 w-5" />
+                      </div>
+                      <span className="font-serif text-3xl font-bold text-[var(--zs-line)]">
+                        0{index + 1}
+                      </span>
+                    </div>
+                    <h3 className="mt-5 text-xl font-bold">{step.title}</h3>
+                    <p className="mt-3 text-sm leading-[var(--zs-text-body-line)] text-[var(--zs-sub)]">
+                      {step.description}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="mt-[var(--zs-space-12)] max-w-[900px] border-l-2 border-[var(--zs-gold)] pl-5 text-[var(--zs-text-lead-size)] leading-[var(--zs-text-lead-line)] text-[var(--zs-ink-strong)]">
+              泽思AI 的价值，不在于“用了 AI”，而在于把专业咨询能力变成了一套可复制运行的业务系统。
+            </p>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-[var(--zs-content-max)] px-6 py-[var(--zs-space-20)] md:px-10">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-[var(--zs-text-eyebrow-size)] font-bold tracking-[var(--zs-text-eyebrow-spacing)] text-[var(--zs-gold-ink)]">
+                CASES
+              </p>
+              <h2 className="mt-3 text-[var(--zs-text-h2-size)] font-[var(--zs-text-h2-weight)] leading-[var(--zs-text-h2-line)]">
+                成功客户案例
+              </h2>
+            </div>
+            <p className="max-w-md text-[var(--zs-text-body-sm-size)] leading-[var(--zs-text-body-sm-line)] text-[var(--zs-sub)]">
+              覆盖增长、战略、融资和组织管理场景，帮助团队把复杂问题变成可执行的下一步。
+            </p>
+          </div>
+
+          <div className="mt-[var(--zs-space-10)] grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {caseCards.map((item) => {
+              const CaseIcon = item.Icon;
+              return (
+                <Card key={item.title} className="h-full">
+                  <CardContent className="flex h-full flex-col p-6">
+                    <div className="flex items-center justify-between">
+                      <span className="rounded-[var(--zs-radius-pill)] bg-[var(--zs-primary-soft)] px-3 py-1 text-xs font-bold text-[var(--zs-primary)]">
+                        {item.industry}
+                      </span>
+                      <CaseIcon className="h-5 w-5 text-[var(--zs-gold)]" />
+                    </div>
+                    <h3 className="mt-5 text-xl font-bold">{item.title}</h3>
+                    <div className="mt-5 space-y-4 text-sm leading-[var(--zs-text-body-line)]">
+                      <div>
+                        <p className="font-bold text-[var(--zs-ink)]">使用场景</p>
+                        <p className="mt-1 text-[var(--zs-sub)]">{item.problem}</p>
+                      </div>
+                      <div className="border-t border-[var(--zs-line)] pt-4">
+                        <p className="font-bold text-[var(--zs-ink)]">关键结果</p>
+                        <p className="mt-1 text-[var(--zs-sub)]">{item.result}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-[var(--zs-content-max)] px-6 pb-[var(--zs-space-20)] md:px-10">
+          <div className="rounded-[var(--zs-radius-panel)] border border-[var(--zs-dark-panel-border)] bg-[image:var(--zs-dark-panel)] p-[var(--zs-space-8)] text-[var(--zs-dark-panel-foreground)] shadow-[var(--zs-shadow-report)] md:flex md:items-center md:justify-between md:gap-8">
+            <div>
+              <p className="text-[var(--zs-text-eyebrow-size)] font-bold tracking-[var(--zs-text-eyebrow-spacing)] text-[var(--zs-gold)]">
+                EXPERT CONSULTING
+              </p>
+              <h2 className="mt-3 text-2xl font-bold">需要深入支持？联系我们的专家顾问。</h2>
+              <p className="mt-3 max-w-2xl text-sm leading-[var(--zs-text-body-line)] text-[var(--zs-dark-panel-muted)]">
+                当 AI 诊断之外还需要战略共创、专项访谈或高层工作坊，可以预约人工专家进一步支持。
+              </p>
+            </div>
+            <Button
+              variant="gold"
+              size="lg"
+              className="mt-6 md:mt-0"
               onClick={() => setExpertDialogOpen(true)}
             >
-              <Icons.MessageCircle className="w-5 h-5 mr-2" />
-              联系专家顾问
+              <Icons.MessageCircle className="h-4 w-4" />
+              了解人工咨询
             </Button>
-          </CardContent>
-        </Card>
-      </section>
+          </div>
+        </section>
+      </main>
 
       <Footer />
 
-      <ExpertConsultationDialog 
-        open={expertDialogOpen} 
-        onOpenChange={setExpertDialogOpen} 
+      <ExpertConsultationDialog
+        open={expertDialogOpen}
+        onOpenChange={setExpertDialogOpen}
       />
     </div>
   );
