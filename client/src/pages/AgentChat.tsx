@@ -1,4 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { AppFooter } from "@/components/layout/Footer";
+import { AppHeader } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -295,21 +297,29 @@ export default function AgentChat() {
 
   if (authLoading || agentLoading || (urlConversationId && conversationLoading)) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)]">
+        <AppHeader />
+        <main className="zs-container flex min-h-[560px] items-center justify-center py-16">
+          <div className="w-12 h-12 border-4 border-[var(--zs-primary)] border-t-transparent rounded-full animate-spin" />
+        </main>
+        <AppFooter />
       </div>
     );
   }
 
   if (!agent) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)]">
+        <AppHeader />
+        <main className="zs-container flex min-h-[560px] items-center justify-center py-16">
+          <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Agent 不存在</h2>
           <Button asChild>
             <Link href="/">返回首页</Link>
           </Button>
-        </div>
+          </div>
+        </main>
+        <AppFooter />
       </div>
     );
   }
@@ -497,10 +507,10 @@ export default function AgentChat() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex h-screen flex-col bg-[var(--zs-bg)] text-[var(--zs-ink)]">
       {/* Header */}
-      <header className="border-b glass-effect sticky top-0 z-10 flex-shrink-0">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <header className="sticky top-0 z-10 flex-shrink-0 border-b border-[var(--zs-line)] bg-[rgba(250,250,248,.86)] backdrop-blur-[12px]">
+        <div className="zs-container py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
               <Link href="/">
@@ -508,7 +518,7 @@ export default function AgentChat() {
               </Link>
             </Button>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-[var(--zs-primary)] rounded-[var(--zs-radius-md)] flex items-center justify-center">
                 <IconComponent className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -588,7 +598,7 @@ export default function AgentChat() {
 
       {/* Messages area - scrollable */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
           {/* WeChat Browser Guide */}
           {isInWeChatBrowser && (
             <div className="mb-6">
@@ -600,7 +610,7 @@ export default function AgentChat() {
             {!isAuthenticated ? (
               <div className="flex items-center justify-center h-[400px]">
                 <div className="text-center max-w-md">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <div className="w-16 h-16 bg-[var(--zs-primary)] rounded-[var(--zs-radius-lg)] flex items-center justify-center mx-auto mb-6">
                     <IconComponent className="w-10 h-10 text-white" />
                   </div>
                   <h2 className="text-2xl font-bold mb-3">欢迎使用 {agent?.name}</h2>
@@ -640,7 +650,7 @@ export default function AgentChat() {
                     <div
                       className={`max-w-[90%] text-sm md:text-base ${
                         msg.role === "user"
-                          ? "rounded-lg p-3 md:p-4 bg-gradient-to-br from-blue-600 to-purple-600 text-white"
+                          ? "rounded-[var(--zs-radius-md)] p-3 md:p-4 bg-[var(--zs-primary)] text-white"
                           : "pl-3"
                       }`}
                     >
@@ -656,7 +666,7 @@ export default function AgentChat() {
               {/* 临时用户消息（立即显示） */}
               {tempUserMessage && (
                 <div className="flex justify-end">
-                  <div className="max-w-[90%] rounded-lg p-3 md:p-4 text-sm md:text-base bg-gradient-to-br from-blue-600 to-purple-600 text-white">
+                  <div className="max-w-[90%] rounded-[var(--zs-radius-md)] p-3 md:p-4 text-sm md:text-base bg-[var(--zs-primary)] text-white">
                     <p className="whitespace-pre-wrap">{tempUserMessage}</p>
                   </div>
                 </div>
@@ -695,10 +705,10 @@ export default function AgentChat() {
       </div>
 
       {/* Input area - fixed at bottom */}
-      <div className="border-t glass-effect flex-shrink-0">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <div className="flex-shrink-0 border-t border-[var(--zs-line)] bg-[rgba(250,250,248,.9)] backdrop-blur-[12px]">
+        <div className="mx-auto max-w-3xl px-4 py-3 sm:px-6 lg:px-8">
           {/* ChatGPT风格统一输入容器 */}
-          <div className="flex items-end gap-2 bg-zinc-800/50 border border-zinc-700 rounded-2xl px-3 py-2">
+          <div className="flex items-end gap-2 rounded-[var(--zs-radius-lg)] border border-[var(--zs-line)] bg-[var(--zs-card)] px-3 py-2 shadow-[var(--zs-shadow-card)]">
             <input
               ref={fileInputRef}
               type="file"
@@ -710,7 +720,7 @@ export default function AgentChat() {
             <button
               onClick={handleFileUpload}
               title="上传文档"
-              className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-zinc-700"
+              className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-[var(--zs-sub)] hover:text-[var(--zs-ink)] transition-colors rounded-[var(--zs-radius-sm)] hover:bg-[var(--zs-bg-soft)]"
             >
               <Icons.Plus className="w-5 h-5" />
             </button>
@@ -740,7 +750,7 @@ export default function AgentChat() {
             <button
               onClick={handleSendMessage}
               disabled={!isAuthenticated || !message.trim() || sendMessage.isPending || !conversationId}
-              className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white text-black rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-200 transition-colors"
+              className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-[var(--zs-primary)] text-white rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--zs-primary-2)] transition-colors"
             >
               {sendMessage.isPending ? (
                 <Icons.Loader2 className="w-4 h-4 animate-spin" />
