@@ -1,16 +1,28 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { ExpertConsultationDialog } from "@/components/ExpertConsultationDialog";
 import { AppFooter, AppHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ExpertConsultationDialog } from "@/components/ExpertConsultationDialog";
 import { ConversionEvents, trackConversion } from "@/lib/analytics";
 import { rememberLoginReturnPath } from "@/lib/loginReturn";
 import { trpc } from "@/lib/trpc";
-import { Check, Minus, MessageCircle, Plus, Sparkles } from "lucide-react";
+import { Check, Minus, MessageCircle, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 
-const plans = [
+type Plan = {
+  id: "free" | "basic" | "professional" | "enterprise";
+  name: string;
+  price: string;
+  period: string;
+  tagline: string;
+  usage: string;
+  rows: Array<{ label: string; enabled: boolean; highlight?: boolean }>;
+  button: string;
+  recommended?: boolean;
+};
+
+const plans: Plan[] = [
   {
     id: "free",
     name: "免费体验",
@@ -19,14 +31,13 @@ const plans = [
     tagline: "体验泽思AI商业顾问",
     usage: "若干次 AI 顾问对话",
     rows: [
-      { label: "体验基础商业AI咨询模型", enabled: true },
-      { label: "浏览示例报告", enabled: true },
-      { label: "核心 AI 顾问试用", enabled: true },
+      { label: "完整报告在线查看", enabled: false },
       { label: "下载报告", enabled: false },
+      { label: "优先生成队列", enabled: false },
       { label: "人工咨询折扣", enabled: false },
+      { label: "抢先体验新 AI 顾问", enabled: false },
     ],
-    button: "免费使用",
-    disabled: true,
+    button: "免费开始",
   },
   {
     id: "basic",
@@ -34,12 +45,12 @@ const plans = [
     price: "¥99",
     period: "/月",
     tagline: "把一位 AI 商业顾问请回家",
-    usage: "可以完成少量咨询，AI顾问对话与轻量分析",
+    usage: "可完成少量咨询，AI顾问可对话与轻量分析",
     rows: [
       { label: "使用基础商业AI咨询模型", enabled: true },
       { label: "浏览初级报告", enabled: true },
       { label: "核心 AI 顾问可用", enabled: true },
-      { label: "少量报告下载", enabled: true },
+      { label: "优先生成队列", enabled: false },
       { label: "人工咨询折扣", enabled: false },
     ],
     button: "选择基础版",
@@ -55,7 +66,8 @@ const plans = [
       { label: "可使用专业商业AI咨询模型", enabled: true },
       { label: "完整报告在线查看", enabled: true },
       { label: "下载报告", enabled: true },
-      { label: "更多 AI 顾问可用", enabled: true },
+      { label: "优先生成队列（繁忙时优先）", enabled: true, highlight: true },
+      { label: "人工咨询 9 折", enabled: true, highlight: true },
       { label: "抢先体验新 AI 顾问", enabled: false },
     ],
     button: "选择专业版",
@@ -67,16 +79,24 @@ const plans = [
     price: "¥699",
     period: "/月",
     tagline: "高频、多成品、机构级使用",
-    usage: "大额度 · 多次诊断与多 AI 顾问混合使用",
+    usage: "大额度 · 多次诊断与多AI顾问混合使用",
     rows: [
-      { label: "旗舰级商业AI咨询模型", enabled: true },
-      { label: "完整报告与下载", enabled: true },
-      { label: "全量 AI 顾问可用", enabled: true },
-      { label: "更高月度额度", enabled: true },
+      { label: "可使用高级商业AI咨询模型", enabled: true },
+      { label: "完整报告 + 完整下载", enabled: true },
+      { label: "优先生成队列", enabled: true },
+      { label: "人工咨询 8 折", enabled: true, highlight: true },
+      { label: "抢先体验即将上线的新 AI 顾问", enabled: true },
       { label: "专属客户成功支持", enabled: true },
     ],
     button: "选择旗舰版",
   },
+];
+
+const creditPacks = [
+  { id: "pack_500", credits: "500", price: "¥49", tag: "永久有效" },
+  { id: "pack_1200", credits: "1,200", price: "¥99", tag: "永久有效" },
+  { id: "pack_3000", credits: "3,000", price: "¥199", tag: "永久有效", badge: "超值" },
+  { id: "pack_8000", credits: "8,000", price: "¥399", tag: "永久有效", badge: "超值" },
 ];
 
 const faqs = [
@@ -111,6 +131,38 @@ export default function Pricing() {
 
   const currentPlan = subscriptionData?.subscription?.plan || "free";
 
+  function goToPayment(plan: Plan) {
+    if (plan.id === "free") {
+      setLocation("/toolbox");
+      return;
+    }
+
+    const paymentPath = `/payment/${plan.id}`;
+    trackConversion(ConversionEvents.PAYMENT_START, {
+      plan_id: plan.id,
+      plan_name: plan.name,
+      plan_price: plan.price,
+    });
+
+    if (!isAuthenticated) {
+      rememberLoginReturnPath(paymentPath);
+      setLocation("/login");
+      return;
+    }
+
+    setLocation(paymentPath);
+  }
+
+  function goToCredits() {
+    if (!isAuthenticated) {
+      rememberLoginReturnPath("/credits");
+      setLocation("/login");
+      return;
+    }
+
+    setLocation("/credits");
+  }
+
   return (
     <div className="min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)]">
       <AppHeader />
@@ -121,26 +173,26 @@ export default function Pricing() {
             选择适合你的套餐
           </h1>
           <p className="mx-auto mt-[22px] max-w-[640px] text-[19px] leading-[1.75] text-[var(--zs-sub)]">
-            过去一份专业咨询动辄 <span className="font-bold text-[var(--zs-ink)]">几十万</span>
-            。现在，从每月 <span className="font-bold text-[var(--zs-primary)]">99 元</span> 开始。
+            过去一份专业咨询动辄 <span className="font-bold text-[var(--zs-ink)]">几十万</span>。现在，从每月{" "}
+            <span className="font-bold text-[var(--zs-primary)]">99 元</span> 开始。
           </p>
         </section>
 
         <section className="mx-auto max-w-[1200px] px-6 pb-16 md:px-10">
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {plans.map((plan) => {
-              const isCurrentPlan = currentPlan === plan.id;
+              const isCurrentPlan = isAuthenticated && currentPlan === plan.id;
               return (
                 <Card
                   key={plan.id}
                   className={`relative h-full rounded-[20px] border bg-white ${
                     plan.recommended
-                      ? "border-[var(--zs-primary)] shadow-[0_30px_64px_-42px_rgba(31,61,50,.32)]"
+                      ? "border-[var(--zs-gold)] shadow-[0_30px_64px_-42px_rgba(31,61,50,.32)]"
                       : "border-[var(--zs-line)]"
                   }`}
                 >
                   {plan.recommended && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[var(--zs-primary)] px-4 py-1.5 text-xs font-bold text-white">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[var(--zs-gold)] px-4 py-1.5 text-xs font-bold text-[var(--zs-primary)]">
                       推荐
                     </div>
                   )}
@@ -150,26 +202,27 @@ export default function Pricing() {
                     </div>
                   )}
                   <CardContent className="flex h-full flex-col p-7">
-                    <div className="flex h-[46px] w-[46px] items-center justify-center rounded-[12px] bg-[var(--zs-primary-soft)] text-[var(--zs-primary)]">
-                      <Sparkles className="h-[22px] w-[22px]" strokeWidth={1.7} />
-                    </div>
-                    <h2 className="mt-5 text-[24px] font-extrabold">{plan.name}</h2>
-                    <p className="mt-2 text-[14px] leading-[1.65] text-[var(--zs-sub)]">{plan.tagline}</p>
-                    <div className="mt-6 flex items-end gap-1">
+                    <h2 className="text-[18px] font-extrabold">{plan.name}</h2>
+                    <div className="mt-5 flex items-end gap-1">
                       <span className="font-['Inter'] text-[42px] font-black leading-none">{plan.price}</span>
                       <span className="pb-1 text-[14px] text-[var(--zs-sub)]">{plan.period}</span>
                     </div>
-                    <p className="mt-4 min-h-[44px] text-[13.5px] leading-[1.6] text-[var(--zs-sub)]">
-                      {plan.usage}
+                    <p className="mt-4 min-h-[36px] text-[13.5px] leading-[1.6] text-[var(--zs-sub)]">
+                      {plan.tagline}
                     </p>
+                    <div className="mt-5 rounded-[10px] border border-[var(--zs-line)] bg-[var(--zs-bg)] px-4 py-3 text-[13px] font-bold leading-[1.55]">
+                      {plan.usage}
+                    </div>
 
-                    <div className="my-6 h-px bg-[var(--zs-line)]" />
-
-                    <ul className="flex-1 space-y-3">
+                    <ul className="mt-5 flex-1 space-y-3">
                       {plan.rows.map((row) => (
                         <li key={row.label} className="flex items-start gap-2.5 text-[14px] leading-[1.6]">
                           {row.enabled ? (
-                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--zs-primary)]" />
+                            <Check
+                              className={`mt-0.5 h-4 w-4 shrink-0 ${
+                                row.highlight ? "text-[var(--zs-gold)]" : "text-[var(--zs-primary)]"
+                              }`}
+                            />
                           ) : (
                             <Minus className="mt-0.5 h-4 w-4 shrink-0 text-[var(--zs-weak)]" />
                           )}
@@ -183,23 +236,8 @@ export default function Pricing() {
                     <Button
                       className="mt-7 w-full"
                       variant={plan.recommended ? "default" : "secondary"}
-                      disabled={isCurrentPlan || plan.disabled}
-                      onClick={() => {
-                        if (!plan.disabled && !isCurrentPlan) {
-                          const paymentPath = `/payment/${plan.id}`;
-                          trackConversion(ConversionEvents.PAYMENT_START, {
-                            plan_id: plan.id,
-                            plan_name: plan.name,
-                            plan_price: plan.price,
-                          });
-                          if (!isAuthenticated) {
-                            rememberLoginReturnPath(paymentPath);
-                            setLocation("/login");
-                            return;
-                          }
-                          setLocation(paymentPath);
-                        }
-                      }}
+                      disabled={isCurrentPlan}
+                      onClick={() => goToPayment(plan)}
                     >
                       {isCurrentPlan ? "当前套餐" : plan.button}
                     </Button>
@@ -207,6 +245,36 @@ export default function Pricing() {
                 </Card>
               );
             })}
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-[1200px] px-6 pb-16 text-center md:px-10">
+          <h2 className="text-[30px] font-extrabold leading-[1.3]">额度不够？随时加购，永久有效</h2>
+          <p className="mx-auto mt-4 max-w-[620px] text-[15px] leading-[1.8] text-[var(--zs-sub)]">
+            订阅额度用完后，可随时购买加油包补充。加油包积分永久有效、不过期、不浪费——与按月重置的订阅额度不同。
+          </p>
+
+          <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {creditPacks.map((pack) => (
+              <Card key={pack.id} className="rounded-[16px] border-[var(--zs-line)] bg-white text-left">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <span className="rounded-md bg-[var(--zs-primary-soft)] px-2.5 py-1 text-[11px] font-bold text-[var(--zs-primary)]">
+                      {pack.tag}
+                    </span>
+                    {pack.badge && <span className="text-[12px] font-bold text-[var(--zs-gold)]">{pack.badge}</span>}
+                  </div>
+                  <div className="mt-5">
+                    <span className="font-['Inter'] text-[32px] font-black leading-none">{pack.credits}</span>
+                    <span className="ml-1 text-[14px] text-[var(--zs-sub)]">积分</span>
+                  </div>
+                  <div className="mt-2 font-['Inter'] text-[17px] font-bold text-[var(--zs-primary)]">{pack.price}</div>
+                  <Button variant="secondary" className="mt-5 w-full" onClick={goToCredits}>
+                    购买
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </section>
 
@@ -227,7 +295,7 @@ export default function Pricing() {
             </div>
             <Button variant="gold" size="lg" onClick={() => setExpertDialogOpen(true)}>
               <MessageCircle className="h-5 w-5" />
-              联系专家顾问
+              了解人工咨询 →
             </Button>
           </div>
         </section>
