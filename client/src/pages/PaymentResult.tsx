@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import { AppFooter } from "@/components/layout/Footer";
+import { AppHeader } from "@/components/layout/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
@@ -21,8 +23,10 @@ export default function PaymentResult() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-lg">
+    <div className="min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)]">
+      <AppHeader />
+      <main className="zs-container flex min-h-[560px] items-center justify-center py-16">
+        <Card className="w-full max-w-md border-[var(--zs-line)] bg-[var(--zs-card)] shadow-[var(--zs-shadow-card)]">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl">
             {status === "success" && "支付成功"}
@@ -39,8 +43,8 @@ export default function PaymentResult() {
         <CardContent className="flex flex-col items-center gap-6 py-8">
           {status === "success" && (
             <div className="flex flex-col items-center gap-4">
-              <div className="rounded-full bg-green-100 p-4">
-                <CheckCircle2 className="h-16 w-16 text-green-600" />
+              <div className="rounded-full bg-[var(--zs-primary)]/10 p-4">
+                <CheckCircle2 className="h-16 w-16 text-[var(--zs-primary)]" />
               </div>
               <div className="text-center space-y-4">
                 <p className="text-muted-foreground">
@@ -60,8 +64,8 @@ export default function PaymentResult() {
 
           {status === "failed" && (
             <div className="flex flex-col items-center gap-4">
-              <div className="rounded-full bg-red-100 p-4">
-                <XCircle className="h-16 w-16 text-red-600" />
+              <div className="rounded-full bg-[var(--zs-gold)]/15 p-4">
+                <XCircle className="h-16 w-16 text-[var(--zs-gold)]" />
               </div>
               <div className="text-center space-y-4">
                 <p className="text-muted-foreground">
@@ -81,12 +85,14 @@ export default function PaymentResult() {
 
           {status === "pending" && (
             <div className="flex flex-col items-center gap-4">
-              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+              <Loader2 className="h-12 w-12 animate-spin text-[var(--zs-primary)]" />
               <p className="text-muted-foreground">请稍候...</p>
             </div>
           )}
         </CardContent>
-      </Card>
+        </Card>
+      </main>
+      <AppFooter />
     </div>
   );
 }
