@@ -13,6 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppFooter } from "@/components/layout/Footer";
+import { AppHeader } from "@/components/layout/Navbar";
 import { toast } from "sonner";
 import { Loader2, CheckCircle } from "lucide-react";
 
@@ -77,11 +79,13 @@ export default function SupportForm() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
+      <div className="min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)]">
+        <AppHeader />
+        <main className="zs-container flex min-h-[560px] items-center justify-center py-16">
+          <Card className="w-full max-w-md border-[var(--zs-line)] bg-[var(--zs-card)] shadow-[var(--zs-shadow-card)]">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <CheckCircle className="h-8 w-8 text-green-600" />
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--zs-primary)]/10">
+              <CheckCircle className="h-8 w-8 text-[var(--zs-primary)]" />
             </div>
             <CardTitle className="text-2xl">提交成功！</CardTitle>
             <CardDescription>
@@ -95,15 +99,18 @@ export default function SupportForm() {
               返回首页
             </Button>
           </CardContent>
-        </Card>
+          </Card>
+        </main>
+        <AppFooter />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 py-12">
-      <div className="container max-w-2xl">
-        <Card>
+    <div className="min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)]">
+      <AppHeader />
+      <main className="zs-container max-w-2xl py-16">
+        <Card className="border-[var(--zs-line)] bg-[var(--zs-card)] shadow-[var(--zs-shadow-card)]">
           <CardHeader>
             <CardTitle className="text-2xl">联系客服</CardTitle>
             <CardDescription>
@@ -212,7 +219,8 @@ export default function SupportForm() {
             </form>
           </CardContent>
         </Card>
-      </div>
+      </main>
+      <AppFooter />
     </div>
   );
 }
