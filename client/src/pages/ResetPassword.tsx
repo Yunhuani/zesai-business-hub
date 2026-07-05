@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { AppFooter } from "@/components/layout/Footer";
+import { AppHeader } from "@/components/layout/Navbar";
 import { Input } from "@/components/ui/input";
 import { APP_LOGO, APP_TITLE } from "@/const";
 import { trpc } from "@/lib/trpc";
@@ -101,18 +103,24 @@ export default function ResetPassword() {
 
   if (verifying) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)]">
+        <AppHeader />
+        <main className="zs-container flex min-h-[560px] items-center justify-center py-16">
         <div className="text-center">
-          <Icons.Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <Icons.Loader2 className="w-12 h-12 animate-spin text-[var(--zs-primary)] mx-auto mb-4" />
           <p className="text-muted-foreground">验证重置链接...</p>
         </div>
+        </main>
+        <AppFooter />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md p-8">
+    <div className="min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)]">
+      <AppHeader />
+      <main className="zs-container flex min-h-[560px] items-center justify-center py-16">
+        <Card className="w-full max-w-md border-[var(--zs-line)] bg-[var(--zs-card)] p-8 shadow-[var(--zs-shadow-card)]">
         <div className="flex flex-col items-center mb-8">
           <img src={APP_LOGO} alt={APP_TITLE} className="h-12 mb-4" />
           <h1 className="text-2xl font-bold">重置密码</h1>
@@ -196,15 +204,15 @@ export default function ResetPassword() {
             </Button>
 
             <div className="text-center text-sm">
-              <Link href="/login" className="text-blue-600 hover:underline">
+              <Link href="/login" className="text-[var(--zs-primary)] hover:underline">
                 返回登录
               </Link>
             </div>
           </form>
         ) : (
           <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-              <Icons.Check className="w-8 h-8 text-green-600" />
+            <div className="w-16 h-16 bg-[var(--zs-primary)]/10 rounded-full flex items-center justify-center mx-auto">
+              <Icons.Check className="w-8 h-8 text-[var(--zs-primary)]" />
             </div>
             <div>
               <h3 className="font-bold mb-2">密码重置成功</h3>
@@ -219,7 +227,9 @@ export default function ResetPassword() {
             </Link>
           </div>
         )}
-      </Card>
+        </Card>
+      </main>
+      <AppFooter />
     </div>
   );
 }
