@@ -267,7 +267,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="bg-[var(--zs-primary)] p-6 lg:p-7">
+              <div className="flex items-center justify-center bg-[radial-gradient(circle_at_50%_46%,rgba(31,61,50,.18),transparent_58%)] px-6 py-9 lg:px-8">
                 <NbgReportSampleCarousel activeIndex={reportSlideIndex} onChange={setReportSlideIndex} />
               </div>
             </CardContent>
