@@ -1,4 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { AppFooter } from "@/components/layout/Footer";
+import { AppHeader } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -30,16 +32,21 @@ export default function MyDiagnoses() {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Icons.Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+      <div className="min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)]">
+        <AppHeader />
+        <main className="zs-container flex min-h-[560px] items-center justify-center py-16">
+          <Icons.Loader2 className="h-10 w-10 animate-spin text-[var(--zs-primary)]" />
+        </main>
+        <AppFooter />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 border-b glass-effect">
-        <div className="container flex items-center gap-4 py-4">
+    <div className="min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)]">
+      <AppHeader />
+      <header className="border-b border-[var(--zs-line)] bg-[var(--zs-bg)]">
+        <div className="zs-container flex items-center gap-4 py-4">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/">
               <Icons.ArrowLeft className="h-5 w-5" />
@@ -54,10 +61,10 @@ export default function MyDiagnoses() {
         </div>
       </header>
 
-      <main className="container max-w-4xl py-8">
+      <main className="zs-container max-w-4xl py-8">
         {isLoading ? (
           <div className="flex justify-center py-20">
-            <Icons.Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+            <Icons.Loader2 className="h-10 w-10 animate-spin text-[var(--zs-primary)]" />
           </div>
         ) : diagnoses?.length ? (
           <div className="space-y-4">
@@ -69,7 +76,7 @@ export default function MyDiagnoses() {
 
               return (
                 <Link key={diagnosis.id} href={destination}>
-                  <Card className="cursor-pointer transition-shadow hover:shadow-lg">
+                  <Card className="cursor-pointer border-[var(--zs-line)] bg-[var(--zs-card)] transition-shadow hover:shadow-[var(--zs-shadow-card)]">
                     <CardHeader>
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
@@ -124,6 +131,7 @@ export default function MyDiagnoses() {
           </Card>
         )}
       </main>
+      <AppFooter />
     </div>
   );
 }
