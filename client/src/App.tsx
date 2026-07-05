@@ -68,6 +68,7 @@ function Router() {
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/diagnosis" component={Diagnosis} />
+      <Route path="/diagnosis/new" component={Diagnosis} />
       <Route path="/diagnosis/:id/processing" component={DiagnosisProcessing} />
       <Route path="/diagnosis/:id/report" component={DiagnosisReport} />
       <Route path="/my-diagnoses" component={MyDiagnoses} />

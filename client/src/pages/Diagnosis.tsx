@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 import { ArrowLeft, ArrowRight, Check, FileSpreadsheet, LockKeyhole } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { APP_LOGO_FULL } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
@@ -56,38 +58,63 @@ function ChoiceCards({
   };
 
   return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-        {question.options.map(option => {
-          const active = Array.isArray(selected)
-            ? selected.includes(option)
-            : selected === option;
+    <div className="space-y-[11px]">
+      {question.options.map(option => {
+        const active = Array.isArray(selected)
+          ? selected.includes(option)
+          : selected === option;
 
-          return (
-            <button
-              key={option}
-              type="button"
-              aria-pressed={active}
-              onClick={() => toggleOption(option)}
-              className={[
-                "flex min-h-12 items-center justify-between rounded-xl border px-4 py-3 text-left text-[15px] font-medium transition-all",
-                active
-                  ? "border-[#AE8A48] bg-[#FCFAF5] text-[#24221E] shadow-[0_0_0_1px_rgba(174,138,72,0.18)]"
-                  : "border-[#DFDCD5] bg-white text-[#45423D] hover:border-[#BDB7AB] hover:bg-[#FDFCF9]",
-              ].join(" ")}
+        return (
+          <button
+            key={option}
+            type="button"
+            aria-pressed={active}
+            onClick={() => toggleOption(option)}
+            className="flex w-full items-center gap-3.5 rounded-[13px] border px-[18px] py-4 text-left text-[15.5px] font-medium transition-colors hover:border-[#b9c4bd]"
+            style={{
+              background: active ? "var(--zs-primary-soft)" : "#fff",
+              borderColor: active ? "var(--zs-primary)" : "var(--zs-line)",
+              color: "var(--zs-ink)",
+            }}
+          >
+            <span
+              className="flex h-[22px] w-[22px] shrink-0 items-center justify-center"
+              style={
+                isMulti
+                  ? {
+                      borderRadius: 7,
+                      background: active ? "var(--zs-primary)" : "#fff",
+                      border: active ? "0" : "1.6px solid #cfd3c9",
+                      color: "#fff",
+                      fontSize: 13,
+                      fontWeight: 700,
+                    }
+                  : {
+                      borderRadius: 999,
+                      background: "#fff",
+                      border: active
+                        ? "6.5px solid var(--zs-primary)"
+                        : "1.6px solid #cfd3c9",
+                    }
+              }
             >
-              <span>{option}</span>
-              {active ? <Check className="h-4 w-4 text-[#AE8A48]" strokeWidth={2} /> : null}
-            </button>
-          );
-        })}
-      </div>
+              {isMulti && active ? "✓" : ""}
+            </span>
+            <span className="flex-1">{option}</span>
+          </button>
+        );
+      })}
       <input
         type="text"
         value={customValues[question.field] ?? ""}
         onChange={event => onCustomValue(question.field, event.target.value)}
         placeholder={question.customPlaceholder}
-        className="h-12 w-full rounded-xl border border-[#DFDCD5] bg-white px-4 text-[15px] text-[#24221E] outline-none transition placeholder:text-[#A6A198] focus:border-[#AE8A48] focus:ring-4 focus:ring-[#AE8A48]/10"
+        className="mt-[11px] h-12 w-full rounded-[11px] border bg-white px-[15px] text-[15px] outline-none transition placeholder:text-[#b4b9b1] focus:ring-4"
+        style={{
+          borderColor: "var(--zs-line)",
+          color: "var(--zs-ink)",
+          "--tw-ring-color": "rgba(31,61,50,.12)",
+        } as CSSProperties}
       />
     </div>
   );
@@ -102,17 +129,23 @@ function TextAnswer({
   value: Answer | undefined;
   onChange: (field: string, value: string) => void;
 }) {
-  const sharedClassName =
-    "w-full rounded-xl border border-[#DFDCD5] bg-white px-4 text-[15px] leading-7 text-[#24221E] outline-none transition placeholder:text-[#A6A198] focus:border-[#AE8A48] focus:ring-4 focus:ring-[#AE8A48]/10";
+  const inputClassName =
+    "w-full rounded-xl border bg-white px-4 text-base leading-7 outline-none transition placeholder:text-[#b4b9b1] focus:ring-4";
+  const inputStyle = {
+    borderColor: "var(--zs-line)",
+    color: "var(--zs-ink)",
+    "--tw-ring-color": "rgba(31,61,50,.12)",
+  } as CSSProperties;
 
   if (question.type === "textarea") {
     return (
       <textarea
-        rows={4}
+        rows={5}
         value={typeof value === "string" ? value : ""}
         onChange={event => onChange(question.field, event.target.value)}
         placeholder={question.placeholder}
-        className={`${sharedClassName} min-h-28 resize-none py-3`}
+        className={`${inputClassName} min-h-32 resize-y py-[15px]`}
+        style={inputStyle}
       />
     );
   }
@@ -127,16 +160,22 @@ function TextAnswer({
           value={typeof value === "string" ? value : ""}
           onChange={event => onChange(question.field, event.target.value)}
           placeholder={question.placeholder}
-          className={`${sharedClassName} h-12 ${question.unit ? "pr-24" : ""}`}
+          className={`${inputClassName} h-[52px] ${question.unit ? "pr-24" : ""}`}
+          style={inputStyle}
         />
         {question.unit ? (
-          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[#78736A]">
+          <span
+            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm"
+            style={{ color: "var(--zs-sub)" }}
+          >
             {question.unit}
           </span>
         ) : null}
       </div>
       {question.helperText ? (
-        <p className="text-[13px] leading-6 text-[#817B71]">{question.helperText}</p>
+        <p className="text-[13px] leading-6" style={{ color: "var(--zs-sub)" }}>
+          {question.helperText}
+        </p>
       ) : null}
     </div>
   );
@@ -156,16 +195,29 @@ function MatrixAnswer({
   onCustomValue: (field: string, value: string) => void;
 }) {
   return (
-    <div className="space-y-3">
-      <div className="overflow-hidden rounded-xl border border-[#DFDCD5] bg-white">
-        {question.items.map((item, index) => (
+    <div className="space-y-[13px]">
+      <div className="overflow-hidden rounded-[14px] border bg-white" style={{ borderColor: "var(--zs-line)" }}>
+        <div className="grid grid-cols-[minmax(0,1fr)_repeat(3,68px)] items-center px-[18px] pb-[7px] pt-[11px] max-sm:grid-cols-[minmax(0,1fr)_repeat(3,48px)]">
+          <span />
+          {question.options.map(option => (
+            <span
+              key={option}
+              className="text-center text-[12.5px] font-bold"
+              style={{ color: "var(--zs-sub)" }}
+            >
+              {option}
+            </span>
+          ))}
+        </div>
+        {question.items.map(item => (
           <div
             key={item.field}
-            className={`grid grid-cols-[minmax(88px,1fr)_repeat(3,58px)] items-center gap-2 px-4 py-3 ${
-              index === 0 ? "" : "border-t border-[#ECE9E3]"
-            }`}
+            className="grid grid-cols-[minmax(0,1fr)_repeat(3,68px)] items-center border-t px-[18px] py-[13px] max-sm:grid-cols-[minmax(0,1fr)_repeat(3,48px)]"
+            style={{ borderColor: "var(--zs-line)" }}
           >
-            <span className="text-sm font-medium text-[#45423D]">{item.label}</span>
+            <span className="text-[15px] font-semibold" style={{ color: "var(--zs-ink)" }}>
+              {item.label}
+            </span>
             {question.options.map(option => {
               const active = answers[item.field] === option;
               return (
@@ -174,25 +226,32 @@ function MatrixAnswer({
                   type="button"
                   aria-pressed={active}
                   onClick={() => onAnswer(item.field, option)}
-                  className={`h-8 rounded-lg border text-xs font-medium transition ${
-                    active
-                      ? "border-[#AE8A48] bg-[#FCFAF5] text-[#8A6A31]"
-                      : "border-[#E2DED7] text-[#777168] hover:border-[#BDB7AB]"
-                  }`}
+                  className="flex justify-center"
                 >
-                  {option}
+                  <span
+                    className="h-[22px] w-[22px] rounded-full bg-white"
+                    style={{
+                      border: active
+                        ? "6.5px solid var(--zs-primary)"
+                        : "1.6px solid #cfd3c9",
+                    }}
+                  />
                 </button>
               );
             })}
           </div>
         ))}
       </div>
-      <input
-        type="text"
+      <textarea
         value={customValue}
         onChange={event => onCustomValue(question.id, event.target.value)}
         placeholder={question.customPlaceholder}
-        className="h-12 w-full rounded-xl border border-[#DFDCD5] bg-white px-4 text-[15px] text-[#24221E] outline-none transition placeholder:text-[#A6A198] focus:border-[#AE8A48] focus:ring-4 focus:ring-[#AE8A48]/10"
+        className="min-h-[62px] w-full resize-y rounded-[11px] border bg-white px-[15px] py-[13px] text-[14.5px] leading-6 outline-none transition placeholder:text-[#b4b9b1] focus:ring-4"
+        style={{
+          borderColor: "var(--zs-line)",
+          color: "var(--zs-ink)",
+          "--tw-ring-color": "rgba(31,61,50,.12)",
+        } as CSSProperties}
       />
     </div>
   );
@@ -215,12 +274,16 @@ function QuestionBlock({
 }) {
   return (
     <section className="space-y-4">
-      <div className="flex items-baseline gap-3">
-        <span className="font-mono text-[11px] text-[#9A958C]">0{index + 1}</span>
-        <h2 className="text-[19px] font-semibold leading-8 tracking-[-0.02em] text-[#24221E]">
+      <div className="space-y-2">
+        <p className="font-mono text-[11px] font-semibold tracking-[0.16em]" style={{ color: "var(--zs-gold)" }}>
+          {String(index + 1).padStart(2, "0")}
+        </p>
+        <h2 className="text-[25px] font-extrabold leading-[1.42] tracking-[0.01em]" style={{ color: "var(--zs-ink)" }}>
           {question.label}
           {"optional" in question && question.optional ? (
-            <span className="ml-2 align-middle text-xs font-normal text-[#9A958C]">选填，可跳过</span>
+            <span className="ml-2 align-middle text-xs font-normal" style={{ color: "var(--zs-sub)" }}>
+              选填，可跳过
+            </span>
           ) : null}
         </h2>
       </div>
@@ -254,35 +317,23 @@ function QuestionBlock({
 
 function FinanceUploadTeaser() {
   return (
-    <section className="rounded-2xl border border-[#D9CFBB] bg-[#FCFAF5] p-5 sm:p-6">
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#D8C8A8] bg-white text-[#9A783D]">
-            <FileSpreadsheet className="h-5 w-5" strokeWidth={1.7} />
-          </div>
-          <div>
-            <div className="mb-1.5 flex items-center gap-2">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9A783D]">
-                Advanced
-              </span>
-              <LockKeyhole className="h-3.5 w-3.5 text-[#A89470]" />
-            </div>
-            <h2 className="text-[17px] font-semibold tracking-[-0.02em] text-[#2C2924]">
-              上传财务明细，解锁精确测算
-            </h2>
-            <p className="mt-1.5 text-[13px] leading-6 text-[#777065]">
-              可进一步测算产品利润、客户集中度与现金风险。
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          disabled
-          className="h-10 shrink-0 cursor-not-allowed rounded-xl border border-[#D8CDB8] bg-white px-4 text-sm font-medium text-[#9A8F7D]"
-        >
-          敬请期待
-        </button>
+    <section className="flex cursor-not-allowed items-center gap-4 rounded-[14px] border border-dashed bg-[#f7f7f3] px-[22px] py-[19px] max-sm:flex-col max-sm:items-start">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[11px] bg-[#eceee9] text-[#9aa39c]">
+        <FileSpreadsheet className="h-[22px] w-[22px]" strokeWidth={1.7} />
       </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[15px] font-bold text-[#4a504a]">上传财务明细，解锁精确测算</span>
+          <span className="rounded-[5px] bg-[rgba(201,162,75,.22)] px-2 py-1 text-[10.5px] font-bold tracking-[.06em] text-[#5a4516]">
+            ADVANCED
+          </span>
+        </div>
+        <p className="mt-1 text-[12.5px] leading-6" style={{ color: "var(--zs-sub)" }}>
+          上传利润表 / 资产负债表后，诊断将给出更精确的财务测算与行业对标。
+          <span className="text-[#9aa39c]">即将开放</span>
+        </p>
+      </div>
+      <LockKeyhole className="h-[18px] w-[18px] shrink-0 text-[#b4bbb2]" />
     </section>
   );
 }
@@ -310,7 +361,7 @@ export default function Diagnosis() {
 
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = "公司诊断问卷 · 泽思";
+    document.title = "增长诊断问卷 · 泽思AI";
     return () => {
       document.title = previousTitle;
     };
@@ -349,90 +400,118 @@ export default function Diagnosis() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FBFAF7] text-[#24221E] [font-family:Inter,'Noto_Sans_SC','PingFang_SC',sans-serif]">
-      <header className="mx-auto flex h-20 w-full max-w-5xl items-center justify-between px-5 sm:px-8">
-        <Link
-          href="/"
-          className="text-[15px] font-semibold tracking-[-0.025em] text-[#24221E] transition hover:text-[#6E685E]"
-        >
-          泽思 · 公司诊断
-        </Link>
-        <span className="text-xs tracking-wide text-[#8B867D]">提交后将开始生成诊断</span>
+    <div className="min-h-screen [font-family:'Noto_Sans_SC','Inter',sans-serif]" style={{ background: "var(--zs-bg)", color: "var(--zs-ink)" }}>
+      <header className="sticky top-0 z-50 border-b bg-[rgba(250,250,248,.86)] backdrop-blur-xl backdrop-saturate-150" style={{ borderColor: "var(--zs-line)" }}>
+        <div className="mx-auto flex max-w-[980px] items-center justify-between px-8 py-[13px] max-sm:px-5">
+          <Link href="/" aria-label="泽思AI 首页">
+            <img src={APP_LOGO_FULL} alt="泽思AI" className="h-[38px] w-auto" />
+          </Link>
+          <div className="flex items-center gap-[9px] text-[13px] font-semibold tracking-[.01em]" style={{ color: "var(--zs-sub)" }}>
+            <span className="h-[7px] w-[7px] rounded-full shadow-[0_0_0_3px_rgba(201,162,75,.18)]" style={{ background: "var(--zs-gold)" }} />
+            泽思AI · 增长诊断
+          </div>
+        </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[780px] px-5 pb-20 pt-5 sm:px-8 sm:pt-10">
-        <>
-            <div className="mb-12 sm:mb-16">
-              <div className="mb-4 flex items-center justify-between text-[11px] font-medium tracking-[0.08em] text-[#837E75]">
-                <span>STEP {String(stepIndex + 1).padStart(2, "0")} / {String(DIAGNOSIS_STEPS.length).padStart(2, "0")}</span>
-                <span>{Math.round(progress)}% 完成</span>
-              </div>
-              <div className="h-[3px] overflow-hidden rounded-full bg-[#E7E3DB]">
-                <div
-                  className="h-full rounded-full bg-[#AE8A48] transition-[width] duration-500 ease-out"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
+      <main className="mx-auto w-full max-w-[720px] px-8 pb-[92px] pt-[46px] max-sm:px-5">
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-baseline gap-[13px]">
+            <span className="font-mono text-[13px] font-bold tracking-[.16em]" style={{ color: "var(--zs-gold)" }}>
+              STEP {String(stepIndex + 1).padStart(2, "0")} / {String(DIAGNOSIS_STEPS.length).padStart(2, "0")}
+            </span>
+            <span className="text-[12.5px] font-medium" style={{ color: "var(--zs-sub)" }}>
+              {step.dimension}
+            </span>
+          </div>
+          <span className="font-mono text-[13px] font-semibold" style={{ color: "var(--zs-sub)" }}>
+            {Math.round(progress)}%
+          </span>
+        </div>
+        <div className="h-[5px] overflow-hidden rounded-[3px] bg-[#eceadf]">
+          <div
+            className="h-full rounded-[3px] transition-[width] duration-500 ease-out"
+            style={{ width: `${progress}%`, background: "var(--zs-primary)" }}
+          />
+        </div>
 
-            <div className="mb-10 border-l-2 border-[#AE8A48] pl-5 sm:mb-12 sm:pl-7">
-              <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.16em] text-[#837E75]">
-                {step.dimension}
-              </p>
-              <h1 className="max-w-2xl text-[30px] font-semibold leading-[1.2] tracking-[-0.045em] text-[#24221E] sm:text-[38px]">
+        <div className="mt-[26px] rounded-[20px] border bg-white px-[38px] pb-[34px] pt-[38px] shadow-[0_30px_64px_-42px_rgba(31,61,50,.32)] max-sm:px-5 max-sm:py-6" style={{ borderColor: "var(--zs-line)" }}>
+          <div className="flex items-start gap-3.5">
+            <div className="flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-xl bg-[#16231d] shadow-[inset_0_0_0_1px_rgba(201,162,75,.5)]">
+              <span className="font-serif text-[23px] font-bold leading-none text-[#e8dcba]">泽</span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="mb-[7px] flex items-center gap-2.5">
+                <span className="text-[13px] font-bold" style={{ color: "var(--zs-ink)" }}>
+                  泽思 · AI 增长顾问
+                </span>
+                <span className="inline-flex items-center gap-[5px] text-[11px] font-semibold" style={{ color: "var(--zs-gold)" }}>
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--zs-gold)" }} />
+                  访谈中
+                </span>
+              </div>
+              <div className="rounded-[4px_13px_13px_13px] px-4 py-3 text-sm leading-[1.65] text-[#33433b]" style={{ background: "var(--zs-primary-soft)" }}>
                 {step.title}
-              </h1>
+              </div>
             </div>
+          </div>
 
-            <div className="space-y-10 sm:space-y-12">
-              {step.questions.map((question, index) => (
-                <QuestionBlock
-                  key={question.id}
-                  question={question}
-                  index={index}
-                  answers={answers}
-                  customValues={customValues}
-                  onAnswer={updateAnswer}
-                  onCustomValue={updateCustomValue}
-                />
-              ))}
-              {step.showFinanceUpload ? <FinanceUploadTeaser /> : null}
-            </div>
+          <div className="mt-6 space-y-10">
+            {step.questions.map((question, index) => (
+              <QuestionBlock
+                key={question.id}
+                question={question}
+                index={index}
+                answers={answers}
+                customValues={customValues}
+                onAnswer={updateAnswer}
+                onCustomValue={updateCustomValue}
+              />
+            ))}
+            {step.showFinanceUpload ? <FinanceUploadTeaser /> : null}
+          </div>
+        </div>
 
-            <div className="mt-14 flex items-center justify-between border-t border-[#E3E0D9] pt-6 sm:mt-16">
-              <button
-                type="button"
-                onClick={goBack}
-                disabled={stepIndex === 0}
-                className="inline-flex h-11 items-center gap-2 rounded-xl px-1 text-sm font-medium text-[#6F6A62] transition hover:text-[#24221E] disabled:pointer-events-none disabled:opacity-0"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                上一步
-              </button>
-              <button
-                type="button"
-                onClick={goNext}
-                disabled={submitDiagnosis.isPending}
-                className="inline-flex h-11 min-w-28 items-center justify-center gap-2 rounded-xl bg-[#AE8A48] px-5 text-sm font-semibold text-white shadow-[0_8px_24px_rgba(174,138,72,0.18)] transition hover:-translate-y-0.5 hover:bg-[#96753C] hover:shadow-[0_12px_28px_rgba(174,138,72,0.24)] focus:outline-none focus:ring-4 focus:ring-[#AE8A48]/20 disabled:pointer-events-none disabled:opacity-60"
-              >
-                {stepIndex === DIAGNOSIS_STEPS.length - 1
-                  ? submitDiagnosis.isPending
-                    ? "正在提交"
-                    : "完成填写"
-                  : "下一步"}
-                {stepIndex === DIAGNOSIS_STEPS.length - 1 ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <ArrowRight className="h-4 w-4" />
-                )}
-              </button>
-            </div>
-            {submitDiagnosis.error ? (
-              <p className="mt-4 text-right text-sm text-red-700">
-                提交失败：{submitDiagnosis.error.message}
-              </p>
-            ) : null}
-        </>
+        <div className="mt-[22px] flex items-center gap-3.5">
+          <button
+            type="button"
+            onClick={goBack}
+            disabled={stepIndex === 0}
+            className="mr-auto inline-flex items-center gap-2 rounded-[11px] border bg-white px-[22px] py-3 text-[15px] font-semibold transition disabled:pointer-events-none disabled:opacity-0"
+            style={{ borderColor: "var(--zs-line)", color: "var(--zs-sub)" }}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            上一步
+          </button>
+          <button
+            type="button"
+            onClick={goNext}
+            disabled={submitDiagnosis.isPending}
+            className="ml-auto inline-flex items-center gap-[9px] rounded-[11px] px-8 py-[13px] text-[15.5px] font-semibold text-white shadow-[0_18px_38px_-20px_rgba(31,61,50,.6)] transition hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-60"
+            style={{ background: "var(--zs-primary)" }}
+          >
+            {stepIndex === DIAGNOSIS_STEPS.length - 1
+              ? submitDiagnosis.isPending
+                ? "正在提交"
+                : "完成填写，生成诊断"
+              : "下一步"}
+            {stepIndex === DIAGNOSIS_STEPS.length - 1 ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              <ArrowRight className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+
+        <div className="mt-5 flex items-center justify-center gap-[7px] text-[12.5px] text-[#a7aca4]">
+          <Check className="h-3.5 w-3.5" />
+          回答已自动保存 · 可随时离开，下次回来继续
+        </div>
+
+        {submitDiagnosis.error ? (
+          <p className="mt-4 text-right text-sm text-red-700">
+            提交失败：{submitDiagnosis.error.message}
+          </p>
+        ) : null}
       </main>
     </div>
   );
