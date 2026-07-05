@@ -23,7 +23,7 @@ export default function CreditUsage() {
     undefined,
     { enabled: isAuthenticated }
   );
-  const { data: transactions, isLoading: historyLoading } =
+  const { data: transactions, isLoading: historyLoading, error: historyError } =
     trpc.credits.history.useQuery(
       { limit: 50, offset: 0 },
       { enabled: isAuthenticated }
@@ -64,7 +64,7 @@ export default function CreditUsage() {
   if (authLoading || creditsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-[var(--zs-primary)] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -147,7 +147,7 @@ export default function CreditUsage() {
               {/* Total Credits */}
               <div className="flex items-center justify-between pb-4 border-b">
                 <div className="flex items-center gap-2">
-                  <Icons.Sparkles className="w-5 h-5 text-blue-600" />
+                  <Icons.Sparkles className="w-5 h-5 text-[var(--zs-primary)]" />
                   <span className="font-semibold">积分</span>
                   <Icons.HelpCircle className="w-4 h-4 text-muted-foreground" />
                 </div>
@@ -201,6 +201,10 @@ export default function CreditUsage() {
           {historyLoading ? (
             <div className="flex justify-center py-12">
               <Icons.Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : historyError ? (
+            <div className="px-6 py-12 text-center text-sm text-muted-foreground">
+              积分明细暂时无法加载，请稍后重试。
             </div>
           ) : transactions?.length ? (
             <div className="divide-y">
