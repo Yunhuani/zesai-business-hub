@@ -100,6 +100,19 @@ jspm_packages/
 # Temporary folders
 tmp/
 temp/
+.tmp-design-package-stage2/
+
+# Local UI validation artifacts
+screenshots-ui-stage1/
+screenshots-ui-stage2/
+screenshots-validation/
+
+# Local diagnosis/NBG debug artifacts
+nbg-openapi.json
+test-nbg-client.mjs
+sample-diagnosis-*.pdf
+probe.mjs
+verify-db-fix.mjs
 
 # Database
 *.db
