@@ -32,9 +32,35 @@ import {
   getRecommendedSkillHref,
   type RecommendedSkill,
 } from "@shared/recommendedSkill";
+import {
+  ANONYMOUS_ADVISOR_LIMIT,
+  ANONYMOUS_REGISTER_GUIDANCE,
+  appendAnonymousGuidance,
+  getNextAnonymousTurnState,
+} from "@shared/anonymousAdvisor";
 
 const ZESAI_ADVISOR_AGENT_NAME = "泽思AI顾问";
 const CHAT_CREDIT_COST = 10;
+const ANONYMOUS_ADVISOR_TURNS_KEY = "zesai_advisor_anonymous_turns";
+
+type AnonymousChatMessage = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+};
+
+function readAnonymousTurns() {
+  if (typeof window === "undefined") return 0;
+  const value = Number.parseInt(window.localStorage.getItem(ANONYMOUS_ADVISOR_TURNS_KEY) || "0", 10);
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(ANONYMOUS_ADVISOR_LIMIT, value));
+}
+
+function createClientMessageId() {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
 
 export default function AgentChat() {
   const params = useParams();
@@ -62,6 +88,7 @@ export default function AgentChat() {
     { id: effectiveAgentId },
     { enabled: !!effectiveAgentId }
   );
+  const isZesaiAdvisorAgent = agent?.name === ZESAI_ADVISOR_AGENT_NAME;
   
   // Get latest conversation for this agent
   const { data: latestConversation } = trpc.conversation.getLatestByAgent.useQuery(
@@ -88,6 +115,14 @@ export default function AgentChat() {
   const [tempUserMessage, setTempUserMessage] = useState<string | null>(null);
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const waitingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [anonymousTurns, setAnonymousTurns] = useState(readAnonymousTurns);
+  const [anonymousMessages, setAnonymousMessages] = useState<AnonymousChatMessage[]>([]);
+
+  const persistAnonymousTurns = (turns: number) => {
+    const safeTurns = Math.max(0, Math.min(ANONYMOUS_ADVISOR_LIMIT, turns));
+    setAnonymousTurns(safeTurns);
+    window.localStorage.setItem(ANONYMOUS_ADVISOR_TURNS_KEY, String(safeTurns));
+  };
 
   const { data: messages, refetch: refetchMessages } = trpc.message.list.useQuery(
     { conversationId: conversationId! },
@@ -133,6 +168,13 @@ export default function AgentChat() {
       trackAgent(AgentEvents.AGENT_CONVERSATION_START, agent.id, agent.name);
     }
   }, [agent, isAuthenticated]);
+
+  useEffect(() => {
+    if (!authLoading && agent && isZesaiAdvisorAgent && !isAuthenticated && initialMessage && !hasProcessedInitialMessage) {
+      setMessage(initialMessage);
+      setHasProcessedInitialMessage(true);
+    }
+  }, [authLoading, agent, isZesaiAdvisorAgent, isAuthenticated, initialMessage, hasProcessedInitialMessage]);
 
   // Load conversation from URL if present
   useEffect(() => {
@@ -337,6 +379,11 @@ export default function AgentChat() {
   const IconComponent = (Icons as any)[agent.icon] || Icons.Sparkles;
   const isZesaiAdvisor = agent.name === ZESAI_ADVISOR_AGENT_NAME;
   const credits = subscriptionData?.credits;
+  const isAnonymousAdvisorMode = !isAuthenticated && isZesaiAdvisor;
+  const anonymousLimitReached = isAnonymousAdvisorMode && anonymousTurns >= ANONYMOUS_ADVISOR_LIMIT;
+  const inputDisabled = isAuthenticated
+    ? sendMessage.isPending || !conversationId
+    : !isAnonymousAdvisorMode || anonymousLimitReached || isStreaming || isWaitingForResponse;
 
   const renderAssistantContent = (content: string) => {
     const { displayContent, recommendedSkill } = extractRecommendedSkill(content);
@@ -349,10 +396,124 @@ export default function AgentChat() {
     );
   };
 
+  const sendAnonymousAdvisorMessage = async (rawMessage: string) => {
+    const userMessage = rawMessage.trim();
+    if (!userMessage) return;
+
+    const turnState = getNextAnonymousTurnState(anonymousTurns);
+    if (!turnState.allowed) {
+      setShowLoginDialog(true);
+      toast.info("注册后继续深入对话");
+      return;
+    }
+
+    const previousMessages = anonymousMessages;
+    setAnonymousMessages((current) => [
+      ...current,
+      { id: createClientMessageId(), role: "user", content: userMessage },
+    ]);
+    setMessage("");
+    setTempUserMessage(null);
+    setIsStreaming(false);
+    setStreamingMessage("");
+
+    waitingTimeoutRef.current = setTimeout(() => {
+      setIsWaitingForResponse(true);
+    }, 300);
+
+    try {
+      const response = await fetch("/api/chat/anonymous", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: userMessage,
+          history: previousMessages.slice(-6).map((item) => ({
+            role: item.role,
+            content: item.content,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Anonymous stream failed");
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No reader available");
+
+      const decoder = new TextDecoder();
+      let fullContent = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6);
+          if (data === "[DONE]") continue;
+
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.delta) {
+              if (waitingTimeoutRef.current) {
+                clearTimeout(waitingTimeoutRef.current);
+                waitingTimeoutRef.current = null;
+              }
+              setIsWaitingForResponse(false);
+              setIsStreaming(true);
+              fullContent += parsed.delta;
+              setStreamingMessage(fullContent);
+            }
+          } catch {
+            // Skip invalid SSE chunks.
+          }
+        }
+      }
+
+      const assistantContent = turnState.shouldAppendGuidance
+        ? appendAnonymousGuidance(fullContent || ANONYMOUS_REGISTER_GUIDANCE)
+        : fullContent;
+      setAnonymousMessages((current) => [
+        ...current,
+        {
+          id: createClientMessageId(),
+          role: "assistant",
+          content: assistantContent || "抱歉，我暂时无法生成回复。",
+        },
+      ]);
+      persistAnonymousTurns(turnState.nextTurns);
+      setIsStreaming(false);
+      setStreamingMessage("");
+    } catch (error: any) {
+      console.error("Anonymous advisor stream error:", error);
+      toast.error("发送消息失败: " + error.message);
+      setAnonymousMessages(previousMessages);
+      setMessage(userMessage);
+      setIsStreaming(false);
+      setStreamingMessage("");
+    } finally {
+      if (waitingTimeoutRef.current) {
+        clearTimeout(waitingTimeoutRef.current);
+        waitingTimeoutRef.current = null;
+      }
+      setIsWaitingForResponse(false);
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!message.trim()) return;
     
     // 检查登录状态，未登录则显示登录选择对话框
+    if (!isAuthenticated && isZesaiAdvisor) {
+      await sendAnonymousAdvisorMessage(message);
+      return;
+    }
+
     if (!isAuthenticated) {
       setShowLoginDialog(true);
       return;
@@ -632,7 +793,80 @@ export default function AgentChat() {
           )}
           
           <div className="space-y-4">
-            {!isAuthenticated ? (
+            {isAnonymousAdvisorMode ? (
+              <>
+                <div className="mb-5 rounded-[var(--zs-radius-lg)] border border-[var(--zs-line)] bg-[var(--zs-card)] px-4 py-3 shadow-[var(--zs-shadow-card)]">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-2">
+                      <Icons.Sparkles className="h-4 w-4 text-[var(--zs-gold)]" />
+                      <span className="text-sm font-semibold text-[var(--zs-ink)]">泽思AI顾问</span>
+                      <Badge variant="outline" className="border-[var(--zs-line)] text-[var(--zs-sub)]">
+                        未注册体验
+                      </Badge>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--zs-sub)]">
+                      <span>已用 {anonymousTurns}/{ANONYMOUS_ADVISOR_LIMIT} 轮</span>
+                      <button
+                        type="button"
+                        onClick={() => setShowLoginDialog(true)}
+                        className="font-semibold text-[var(--zs-primary)] hover:underline"
+                      >
+                        注册后继续
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {anonymousMessages.length === 0 && (
+                  <div className="flex justify-start">
+                    <div className="max-w-[90%] text-sm md:text-base pl-3">
+                      <EnhancedMessage content="我是泽思AI顾问。你可以直接描述当前最棘手的经营问题，我会先给一个轻诊断判断，再推荐适合继续深入的能力入口。" />
+                    </div>
+                  </div>
+                )}
+
+                {anonymousMessages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`max-w-[90%] text-sm md:text-base ${
+                        msg.role === "user"
+                          ? "rounded-[var(--zs-radius-md)] p-3 md:p-4 bg-[var(--zs-primary)] text-white"
+                          : "pl-3"
+                      }`}
+                    >
+                      {msg.role === "assistant" ? (
+                        renderAssistantContent(msg.content)
+                      ) : (
+                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {isStreaming && streamingMessage && (
+                  <div className="flex justify-start">
+                    <div className="max-w-[90%] text-sm md:text-base pl-3">
+                      {renderAssistantContent(streamingMessage)}
+                    </div>
+                  </div>
+                )}
+
+                {anonymousLimitReached && (
+                  <Card className="rounded-[var(--zs-radius-lg)] border-[var(--zs-line)] bg-[var(--zs-card)] p-4 shadow-[var(--zs-shadow-card)]">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="text-sm leading-6 text-[var(--zs-sub)]">{ANONYMOUS_REGISTER_GUIDANCE}</p>
+                      <Button onClick={() => setShowLoginDialog(true)} className="shrink-0 gap-2">
+                        <Icons.LogIn className="h-4 w-4" />
+                        注册 / 登录
+                      </Button>
+                    </div>
+                  </Card>
+                )}
+              </>
+            ) : !isAuthenticated ? (
               <div className="flex items-center justify-center h-[400px]">
                 <div className="text-center max-w-md">
                   <div className="w-16 h-16 bg-[var(--zs-primary)] rounded-[var(--zs-radius-lg)] flex items-center justify-center mx-auto mb-6">
@@ -759,6 +993,12 @@ export default function AgentChat() {
               <span>本轮对话将消耗 {CHAT_CREDIT_COST} 积分</span>
             </div>
           )}
+          {isAnonymousAdvisorMode && (
+            <div className="mb-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-[var(--zs-sub)]">
+              <span>未注册体验 {anonymousTurns}/{ANONYMOUS_ADVISOR_LIMIT} 轮</span>
+              <span>注册后使用现有积分额度继续对话</span>
+            </div>
+          )}
           <div className="flex items-end gap-2 rounded-[var(--zs-radius-lg)] border border-[var(--zs-line)] bg-[var(--zs-card)] px-3 py-2 shadow-[var(--zs-shadow-card)]">
             <input
               ref={fileInputRef}
@@ -770,18 +1010,27 @@ export default function AgentChat() {
             {/* 附件按钮 - 内部左侧 */}
             <button
               onClick={handleFileUpload}
+              disabled={!isAuthenticated}
               title="上传文档"
-              className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-[var(--zs-sub)] hover:text-[var(--zs-ink)] transition-colors rounded-[var(--zs-radius-sm)] hover:bg-[var(--zs-bg-soft)]"
+              className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-[var(--zs-sub)] hover:text-[var(--zs-ink)] transition-colors rounded-[var(--zs-radius-sm)] hover:bg-[var(--zs-bg-soft)] disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Icons.Plus className="w-5 h-5" />
             </button>
             {/* 输入框 */}
             <Textarea
-              placeholder={!isAuthenticated ? "请先登录后开始咨询..." : "请输入您的信息或问题..."}
+              placeholder={
+                anonymousLimitReached
+                  ? "注册后继续深入对话"
+                  : isAnonymousAdvisorMode
+                    ? "直接描述你的经营问题，未注册可体验 3 轮..."
+                    : !isAuthenticated
+                      ? "请先登录后开始咨询..."
+                      : "请输入您的信息或问题..."
+              }
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              disabled={!isAuthenticated || sendMessage.isPending || !conversationId}
+              disabled={inputDisabled}
               className="flex-1 min-h-[24px] max-h-[200px] resize-none text-sm sm:text-base bg-transparent border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 px-0 py-1"
               rows={1}
               style={{
@@ -800,10 +1049,10 @@ export default function AgentChat() {
             {/* 发送按钮 - 内部右侧 */}
             <button
               onClick={handleSendMessage}
-              disabled={!isAuthenticated || !message.trim() || sendMessage.isPending || !conversationId}
+              disabled={!message.trim() || inputDisabled}
               className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-[var(--zs-primary)] text-white rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--zs-primary-2)] transition-colors"
             >
-              {sendMessage.isPending ? (
+              {sendMessage.isPending || (isAnonymousAdvisorMode && (isStreaming || isWaitingForResponse)) ? (
                 <Icons.Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Icons.ArrowUp className="w-4 h-4" />

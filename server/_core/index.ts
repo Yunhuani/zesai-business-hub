@@ -138,6 +138,10 @@ async function startServer() {
     const { handleStreamChat } = await import("../streamChat");
     await handleStreamChat(req, res);
   });
+  app.post("/api/chat/anonymous", async (req, res) => {
+    const { handleAnonymousAdvisorChat } = await import("../anonymousAdvisor");
+    await handleAnonymousAdvisorChat(req, res);
+  });
   
   // Alipay callback route (must be before tRPC middleware)
   app.post("/api/payment/alipay/notify", async (req, res) => {
