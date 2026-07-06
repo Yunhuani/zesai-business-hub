@@ -146,7 +146,8 @@ export default function Home() {
     return new Map((agents ?? []).map((agent) => [agent.name, agent]));
   }, [agents]);
 
-  const smartAssistantId = agentByName.get("智能AI助手")?.id ?? 0;
+  const advisorAgentId =
+    agentByName.get("泽思AI顾问")?.id ?? agentByName.get("智能AI助手")?.id ?? 0;
 
   useEffect(() => {
     trackConversion(ConversionEvents.HOME_VISIT);
@@ -174,10 +175,10 @@ export default function Home() {
 
   const handleHeroSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!smartAssistantId) return;
+    if (!advisorAgentId) return;
 
     const query = heroQuery.trim() || placeholderQuestions[placeholderIndex];
-    setLocation(`/agent/${smartAssistantId}?initial=${encodeURIComponent(query)}`);
+    setLocation(`/agent/${advisorAgentId}?initial=${encodeURIComponent(query)}`);
   };
 
   return (
@@ -226,7 +227,7 @@ export default function Home() {
               type="submit"
               size="lg"
               className="h-[54px] shrink-0 px-[34px] text-[16px] md:h-[60px]"
-              disabled={agentsLoading || !smartAssistantId}
+              disabled={agentsLoading || !advisorAgentId}
             >
               开始 →
             </Button>

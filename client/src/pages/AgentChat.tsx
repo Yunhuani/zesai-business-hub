@@ -1,6 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { AppFooter } from "@/components/layout/Footer";
 import { AppHeader } from "@/components/layout/Navbar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -25,6 +26,15 @@ import { WeChatBrowserGuide } from "@/components/WeChatBrowserGuide";
 import { isWeChatBrowser } from "@/utils/wechatDetector";
 import { formatToBeijingTimeShort } from "@/utils/formatTime";
 import { trackAgent, AgentEvents } from "@/lib/analytics";
+import {
+  extractRecommendedSkill,
+  getRecommendedSkillCta,
+  getRecommendedSkillHref,
+  type RecommendedSkill,
+} from "@shared/recommendedSkill";
+
+const ZESAI_ADVISOR_AGENT_NAME = "泽思AI顾问";
+const CHAT_CREDIT_COST = 10;
 
 export default function AgentChat() {
   const params = useParams();
@@ -325,6 +335,19 @@ export default function AgentChat() {
   }
 
   const IconComponent = (Icons as any)[agent.icon] || Icons.Sparkles;
+  const isZesaiAdvisor = agent.name === ZESAI_ADVISOR_AGENT_NAME;
+  const credits = subscriptionData?.credits;
+
+  const renderAssistantContent = (content: string) => {
+    const { displayContent, recommendedSkill } = extractRecommendedSkill(content);
+
+    return (
+      <div className="space-y-3">
+        {displayContent ? <EnhancedMessage content={displayContent} /> : null}
+        {recommendedSkill ? <RecommendedSkillCard skill={recommendedSkill} /> : null}
+      </div>
+    );
+  };
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
@@ -523,7 +546,9 @@ export default function AgentChat() {
               </div>
               <div>
                 <h1 className="text-lg md:text-xl font-bold">{agent.name}</h1>
-                <p className="text-sm text-muted-foreground hidden md:block">{agent.description}</p>
+                <p className="text-sm text-muted-foreground hidden md:block">
+                  {isZesaiAdvisor ? "泽思AI顾问团队 · 商业问题诊断与工具推荐" : agent.description}
+                </p>
               </div>
             </div>
           </div>
@@ -634,11 +659,31 @@ export default function AgentChat() {
               </div>
             ) : (
               <>
+                {isZesaiAdvisor && (
+                  <div className="mb-5 rounded-[var(--zs-radius-lg)] border border-[var(--zs-line)] bg-[var(--zs-card)] px-4 py-3 shadow-[var(--zs-shadow-card)]">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex items-center gap-2">
+                        <Icons.Sparkles className="h-4 w-4 text-[var(--zs-gold)]" />
+                        <span className="text-sm font-semibold text-[var(--zs-ink)]">泽思AI顾问</span>
+                        <Badge variant="outline" className="border-[var(--zs-line)] text-[var(--zs-sub)]">
+                          团队顾问
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--zs-sub)]">
+                        <span>剩余额度 {credits ? credits.total.toLocaleString() : "..."} 积分</span>
+                        <span>每轮对话 {CHAT_CREDIT_COST} 积分</span>
+                        <Link href="/credits" className="font-semibold text-[var(--zs-primary)] hover:underline">
+                          获取额度
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {/* 临时欢迎消息（在数据库保存完成前显示） */}
                 {tempWelcomeMessage && (
                   <div className="flex justify-start">
                     <div className="max-w-[90%] text-sm md:text-base pl-3">
-                      <EnhancedMessage content={tempWelcomeMessage} />
+                      {renderAssistantContent(tempWelcomeMessage)}
                     </div>
                   </div>
                 )}
@@ -655,7 +700,7 @@ export default function AgentChat() {
                       }`}
                     >
                       {msg.role === "assistant" ? (
-                        <EnhancedMessage content={msg.content} />
+                        renderAssistantContent(msg.content)
                       ) : (
                         <p className="whitespace-pre-wrap">{msg.content}</p>
                       )}
@@ -677,7 +722,7 @@ export default function AgentChat() {
               {isStreaming && streamingMessage && (
                 <div className="flex justify-start">
                   <div className="max-w-[90%] text-sm md:text-base pl-3">
-                    <EnhancedMessage content={streamingMessage} />
+                    {renderAssistantContent(streamingMessage)}
                   </div>
                 </div>
               )}
@@ -708,6 +753,12 @@ export default function AgentChat() {
       <div className="flex-shrink-0 border-t border-[var(--zs-line)] bg-[rgba(250,250,248,.9)] backdrop-blur-[12px]">
         <div className="mx-auto max-w-3xl px-4 py-3 sm:px-6 lg:px-8">
           {/* ChatGPT风格统一输入容器 */}
+          {isAuthenticated && (
+            <div className="mb-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-[var(--zs-sub)]">
+              <span>剩余额度 {credits ? credits.total.toLocaleString() : "..."} 积分</span>
+              <span>本轮对话将消耗 {CHAT_CREDIT_COST} 积分</span>
+            </div>
+          )}
           <div className="flex items-end gap-2 rounded-[var(--zs-radius-lg)] border border-[var(--zs-line)] bg-[var(--zs-card)] px-3 py-2 shadow-[var(--zs-shadow-card)]">
             <input
               ref={fileInputRef}
@@ -776,5 +827,42 @@ export default function AgentChat() {
         onOpenChange={setShowLoginDialog}
       />
     </div>
+  );
+}
+
+function RecommendedSkillCard({ skill }: { skill: RecommendedSkill }) {
+  const href = getRecommendedSkillHref(skill);
+  const cta = getRecommendedSkillCta(skill);
+  const isAvailable = skill.status === "available";
+
+  return (
+    <Card className="max-w-xl rounded-[var(--zs-radius-lg)] border-[var(--zs-line)] bg-[var(--zs-card)] p-4 shadow-[var(--zs-shadow-card)]">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-bold text-[var(--zs-ink)]">{skill.name}</span>
+            <Badge
+              variant="outline"
+              className={
+                isAvailable
+                  ? "border-[rgba(31,61,50,.22)] bg-[var(--zs-primary-soft)] text-[var(--zs-primary)]"
+                  : "border-[rgba(201,162,75,.32)] bg-[rgba(201,162,75,.16)] text-[#6f551d]"
+              }
+            >
+              {isAvailable ? "available" : "coming_soon"}
+            </Badge>
+          </div>
+          {skill.reason ? (
+            <p className="mt-2 text-sm leading-6 text-[var(--zs-sub)]">{skill.reason}</p>
+          ) : null}
+        </div>
+        <Button asChild variant={isAvailable ? "default" : "outline"} className="shrink-0 gap-2">
+          <Link href={href}>
+            {cta}
+            {isAvailable ? <Icons.ArrowRight className="h-4 w-4" /> : <Icons.Bell className="h-4 w-4" />}
+          </Link>
+        </Button>
+      </div>
+    </Card>
   );
 }
