@@ -37,6 +37,8 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const { seedPricingConfig } = await import("../pricingConfig");
   await seedPricingConfig();
+  const { ensureZesaiAdvisorAgent } = await import("../zesaiAdvisor");
+  await ensureZesaiAdvisorAgent();
   try {
     const { recoverInterruptedDiagnoses } = await import("../diagnosisService");
     const recovered = await recoverInterruptedDiagnoses();
