@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { createAnonymousRateLimiter, normalizeAnonymousHistory } from "./anonymousAdvisor";
+import {
+  ANONYMOUS_ADVISOR_GLOBAL_DAILY_LIMIT,
+  createAnonymousDailyLimiter,
+  createAnonymousRateLimiter,
+  normalizeAnonymousHistory,
+} from "./anonymousAdvisor";
 
 describe("anonymous advisor backend helpers", () => {
   it("limits repeated requests within the same window", () => {
@@ -36,5 +41,31 @@ describe("anonymous advisor backend helpers", () => {
       { role: "user", content: "six" },
       { role: "assistant", content: "seven" },
     ]);
+  });
+
+  it("limits total anonymous requests for each UTC day", () => {
+    const limiter = createAnonymousDailyLimiter({ maxRequests: 2 });
+
+    expect(limiter.check(Date.UTC(2026, 6, 6, 0, 0, 0))).toMatchObject({
+      allowed: true,
+      remaining: 1,
+    });
+    expect(limiter.check(Date.UTC(2026, 6, 6, 12, 0, 0))).toMatchObject({
+      allowed: true,
+      remaining: 0,
+    });
+    expect(limiter.check(Date.UTC(2026, 6, 6, 23, 0, 0))).toMatchObject({
+      allowed: false,
+      remaining: 0,
+    });
+    expect(limiter.check(Date.UTC(2026, 6, 7, 0, 0, 0))).toMatchObject({
+      allowed: true,
+      remaining: 1,
+    });
+  });
+
+  it("uses a bounded default global daily limit", () => {
+    expect(ANONYMOUS_ADVISOR_GLOBAL_DAILY_LIMIT).toBeGreaterThan(0);
+    expect(ANONYMOUS_ADVISOR_GLOBAL_DAILY_LIMIT).toBeLessThanOrEqual(1000);
   });
 });

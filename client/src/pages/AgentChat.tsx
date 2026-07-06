@@ -436,6 +436,20 @@ export default function AgentChat() {
 
       if (!response.ok) {
         const errorData = await response.json();
+        if (response.status === 429 && errorData.message) {
+          setAnonymousMessages((current) => [
+            ...current,
+            {
+              id: createClientMessageId(),
+              role: "assistant",
+              content: errorData.message,
+            },
+          ]);
+          toast.info(errorData.message);
+          setIsStreaming(false);
+          setStreamingMessage("");
+          return;
+        }
         throw new Error(errorData.error || "Anonymous stream failed");
       }
 

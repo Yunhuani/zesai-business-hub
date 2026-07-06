@@ -13,6 +13,10 @@ type RateLimitBucket = {
   count: number;
 };
 
+export const ANONYMOUS_ADVISOR_PER_IP_LIMIT = 12;
+export const ANONYMOUS_ADVISOR_PER_IP_WINDOW_MS = 10 * 60 * 1000;
+export const ANONYMOUS_ADVISOR_GLOBAL_DAILY_LIMIT = 300;
+
 export function createAnonymousRateLimiter({
   maxRequests,
   windowMs,
@@ -48,6 +52,46 @@ export function createAnonymousRateLimiter({
   };
 }
 
+function getUtcDayKey(now: number) {
+  return new Date(now).toISOString().slice(0, 10);
+}
+
+function getRetryAfterNextUtcDay(now: number) {
+  const date = new Date(now);
+  const nextDay = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1);
+  return Math.max(0, nextDay - now);
+}
+
+export function createAnonymousDailyLimiter({ maxRequests }: { maxRequests: number }) {
+  let dayKey = "";
+  let count = 0;
+
+  return {
+    check(now = Date.now()) {
+      const currentDayKey = getUtcDayKey(now);
+      if (currentDayKey !== dayKey) {
+        dayKey = currentDayKey;
+        count = 0;
+      }
+
+      if (count >= maxRequests) {
+        return {
+          allowed: false,
+          remaining: 0,
+          retryAfterMs: getRetryAfterNextUtcDay(now),
+        };
+      }
+
+      count += 1;
+      return {
+        allowed: true,
+        remaining: Math.max(0, maxRequests - count),
+        retryAfterMs: 0,
+      };
+    },
+  };
+}
+
 export function normalizeAnonymousHistory(input: unknown): AnonymousHistoryMessage[] {
   if (!Array.isArray(input)) return [];
 
@@ -65,8 +109,12 @@ export function normalizeAnonymousHistory(input: unknown): AnonymousHistoryMessa
 }
 
 const anonymousAdvisorLimiter = createAnonymousRateLimiter({
-  maxRequests: 12,
-  windowMs: 10 * 60 * 1000,
+  maxRequests: ANONYMOUS_ADVISOR_PER_IP_LIMIT,
+  windowMs: ANONYMOUS_ADVISOR_PER_IP_WINDOW_MS,
+});
+
+const anonymousAdvisorDailyLimiter = createAnonymousDailyLimiter({
+  maxRequests: ANONYMOUS_ADVISOR_GLOBAL_DAILY_LIMIT,
 });
 
 function getRateLimitKey(req: Request) {
@@ -82,7 +130,8 @@ export async function handleAnonymousAdvisorChat(req: Request, res: Response) {
     const rateLimit = anonymousAdvisorLimiter.check(getRateLimitKey(req));
     if (!rateLimit.allowed) {
       res.status(429).json({
-        error: "RATE_LIMITED",
+        error: "ANONYMOUS_RATE_LIMITED",
+        message: "匿名顾问请求过于频繁，请稍后再试，或注册登录后继续使用。",
         retryAfterMs: rateLimit.retryAfterMs,
       });
       return;
@@ -95,6 +144,16 @@ export async function handleAnonymousAdvisorChat(req: Request, res: Response) {
     }
     if (content.length > 2000) {
       res.status(400).json({ error: "Content too long" });
+      return;
+    }
+
+    const dailyLimit = anonymousAdvisorDailyLimiter.check();
+    if (!dailyLimit.allowed) {
+      res.status(429).json({
+        error: "ANONYMOUS_DAILY_LIMIT_REACHED",
+        message: "匿名顾问今日体验额度已用完，请注册或登录后继续对话。",
+        retryAfterMs: dailyLimit.retryAfterMs,
+      });
       return;
     }
 
