@@ -168,7 +168,7 @@ export default function Pricing() {
       <AppHeader />
 
       <main>
-        <section className="mx-auto max-w-[1200px] px-6 pb-[52px] pt-20 text-center md:px-10">
+        <section className="zs-container pb-[52px] pt-20 text-center">
           <h1 className="m-0 text-[44px] font-black leading-[1.16] tracking-[.01em] md:text-[52px]">
             选择适合你的套餐
           </h1>
@@ -178,8 +178,8 @@ export default function Pricing() {
           </p>
         </section>
 
-        <section className="mx-auto max-w-[1200px] px-6 pb-16 md:px-10">
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <section className="zs-container pb-16">
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             {plans.map((plan) => {
               const isCurrentPlan = isAuthenticated && currentPlan === plan.id;
               return (
@@ -248,13 +248,13 @@ export default function Pricing() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-[1200px] px-6 pb-16 text-center md:px-10">
+        <section className="zs-container pb-16 text-center">
           <h2 className="text-[30px] font-extrabold leading-[1.3]">额度不够？随时加购，永久有效</h2>
           <p className="mx-auto mt-4 max-w-[620px] text-[15px] leading-[1.8] text-[var(--zs-sub)]">
             订阅额度用完后，可随时购买加油包补充。加油包积分永久有效、不过期、不浪费——与按月重置的订阅额度不同。
           </p>
 
-          <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             {creditPacks.map((pack) => (
               <Card key={pack.id} className="rounded-[16px] border-[var(--zs-line)] bg-white text-left">
                 <CardContent className="p-6">
@@ -278,7 +278,7 @@ export default function Pricing() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-[1200px] px-6 pb-6 md:px-10">
+        <section className="zs-container pb-6">
           <div className="flex flex-col gap-8 rounded-[22px] bg-[var(--zs-primary)] p-8 text-[#eef2ed] md:flex-row md:items-center md:justify-between md:p-10">
             <div className="max-w-[680px]">
               <div className="inline-flex items-center gap-2 text-xs font-bold tracking-[.06em] text-[var(--zs-gold)]">
@@ -300,7 +300,7 @@ export default function Pricing() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-[860px] px-6 py-20 pb-[92px] md:px-10">
+        <section className="zs-container max-w-[860px] py-20 pb-[92px]">
           <h2 className="mb-8 text-center text-[30px] font-extrabold">常见疑问</h2>
           <div className="flex flex-col gap-[14px]">
             {faqs.map((faq, index) => {

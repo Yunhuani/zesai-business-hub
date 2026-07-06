@@ -191,7 +191,7 @@ export default function Toolbox() {
       <AppHeader />
 
       <main>
-        <section className="mx-auto max-w-[1200px] px-6 pb-16 pt-[84px] text-center md:px-10">
+        <section className="zs-container pb-16 pt-[84px] text-center">
           <div className="inline-flex items-center gap-2 rounded-[7px] bg-[rgba(201,162,75,.2)] px-[13px] py-1.5 text-xs font-bold tracking-[.08em] text-[#5a4516]">
             <Sparkles className="h-3.5 w-3.5" />
             AI 顾问矩阵
@@ -207,7 +207,7 @@ export default function Toolbox() {
           </p>
         </section>
 
-        <section className="mx-auto max-w-[1200px] px-6 pb-20 md:px-10">
+        <section className="zs-container pb-20">
           <div className="space-y-12">
             {skillGroups.map((group) => (
               <section key={group.category}>

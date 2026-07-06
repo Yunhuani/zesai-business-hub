@@ -48,7 +48,7 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--zs-line)] bg-[rgba(250,250,248,.86)] backdrop-blur-[12px] backdrop-saturate-[180%]">
-      <div className="mx-auto flex max-w-[1200px] items-center justify-between px-6 py-[15px] md:px-10">
+      <div className="zs-container flex items-center justify-between py-[15px]">
         <Link href="/" className="flex items-center">
           <img src={APP_LOGO_FULL} alt={APP_TITLE} className="h-[42px] w-auto object-contain" />
         </Link>

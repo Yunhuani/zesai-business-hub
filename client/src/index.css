@@ -234,12 +234,14 @@
   /**
    * Custom container utility that centers content and adds responsive padding.
    */
-  .container {
+  .container,
+  .zs-container {
     width: 100%;
+    max-width: var(--zs-content-max);
     margin-left: auto;
     margin-right: auto;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
   }
 
   .flex {
@@ -248,17 +250,18 @@
   }
 
   @media (min-width: 640px) {
-    .container {
+    .container,
+    .zs-container {
       padding-left: 1.5rem;
       padding-right: 1.5rem;
     }
   }
 
-  @media (min-width: 1024px) {
-    .container {
+  @media (min-width: 768px) {
+    .container,
+    .zs-container {
       padding-left: var(--zs-space-10);
       padding-right: var(--zs-space-10);
-      max-width: var(--zs-content-max);
     }
   }
 }

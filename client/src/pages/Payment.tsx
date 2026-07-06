@@ -155,28 +155,35 @@ export default function Payment() {
                       setPaymentMethod(value as "alipay" | "wechat")
                     }
                   >
-                    <button
-                      type="button"
+                    <div
+                      role="button"
+                      tabIndex={0}
                       className="flex w-full items-center gap-4 rounded-[var(--zs-radius-card)] border border-[var(--zs-primary)] bg-white p-4 text-left shadow-[var(--zs-shadow-soft)] transition-colors hover:bg-[var(--zs-primary-soft)]"
                       onClick={() => setPaymentMethod("alipay")}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          setPaymentMethod("alipay");
+                        }
+                      }}
                     >
                       <RadioGroupItem value="alipay" id="alipay" />
-                      <Label htmlFor="alipay" className="flex-1 cursor-pointer">
-                        <div className="flex items-center gap-3">
+                      <Label htmlFor="alipay" className="min-w-0 flex-1 cursor-pointer">
+                        <div className="flex min-w-0 items-center gap-3">
                           <span className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-[var(--zs-primary-soft)] text-[var(--zs-primary)]">
                             <WalletCards className="h-6 w-6" />
                           </span>
-                          <span>
-                            <span className="block font-semibold text-[var(--zs-ink)]">
+                          <span className="inline-flex min-w-0 items-center gap-2 whitespace-nowrap">
+                            <span className="font-semibold text-[var(--zs-ink)]">
                               支付宝
                             </span>
-                            <span className="block text-sm text-[var(--zs-sub)]">
+                            <span className="text-sm text-[var(--zs-sub)]">
                               推荐使用
                             </span>
                           </span>
                         </div>
                       </Label>
-                    </button>
+                    </div>
                   </RadioGroup>
                 </div>
 

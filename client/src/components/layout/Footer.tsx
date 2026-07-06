@@ -31,7 +31,7 @@ const footerColumns = [
 export function AppFooter() {
   return (
     <footer className="border-t border-[var(--zs-line)] bg-[var(--zs-bg)]">
-      <div className="mx-auto flex max-w-[1200px] flex-col gap-10 px-6 py-[60px] pb-[42px] md:flex-row md:justify-between md:gap-[60px] md:px-10">
+      <div className="zs-container flex flex-col gap-10 py-[60px] pb-[42px] md:flex-row md:justify-between md:gap-[60px]">
         <div className="max-w-[360px]">
           <Link href="/" className="inline-flex items-center">
             <img src={APP_LOGO_FULL} alt={APP_TITLE} className="h-[50px] w-auto object-contain" />
@@ -60,7 +60,7 @@ export function AppFooter() {
       </div>
 
       <div className="border-t border-[var(--zs-line)]">
-        <div className="mx-auto flex max-w-[1200px] flex-col gap-3 px-6 py-5 text-[12.5px] text-[var(--zs-weak)] md:flex-row md:items-center md:justify-between md:px-10">
+        <div className="zs-container flex flex-col gap-3 py-5 text-[12.5px] text-[var(--zs-weak)] md:flex-row md:items-center md:justify-between">
           <span>© 2026 泽思AI&nbsp; 沪ICP备2024051234号-1</span>
           <span className="flex gap-[26px]">
             <Link href="/privacy" className="hover:text-[var(--zs-sub)]">
