@@ -15,7 +15,7 @@ export type HealthResponse = {
   checks: {
     service: HealthCheck;
     database: HealthCheck;
-    nbgEngine: HealthCheck;
+    nbgEngine?: HealthCheck;
   };
 };
 
@@ -73,9 +73,14 @@ async function checkNbgEngine(): Promise<HealthCheck> {
 }
 
 export async function getHealth(): Promise<HealthResponse> {
-  return buildHealthResponse({
+  const checks: HealthResponse["checks"] = {
     service: { status: "ok" },
     database: await checkDatabase(),
-    nbgEngine: await checkNbgEngine(),
-  });
+  };
+
+  if (process.env.NBG_HEALTH_REQUIRED === "true") {
+    checks.nbgEngine = await checkNbgEngine();
+  }
+
+  return buildHealthResponse(checks);
 }

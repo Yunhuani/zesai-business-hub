@@ -13,15 +13,21 @@ import { ENV } from "./_core/env";
 let _client: ReturnType<typeof mysql.createPool> | null = null;
 let _db: ReturnType<typeof drizzle> | null = null;
 
+function getSslConfig() {
+  return process.env.DATABASE_SSL === "false"
+    ? undefined
+    : {
+        minVersion: "TLSv1.2" as const,
+        rejectUnauthorized: true,
+      };
+}
+
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
       _client = mysql.createPool({
         uri: process.env.DATABASE_URL,
-        ssl: {
-          minVersion: "TLSv1.2",
-          rejectUnauthorized: true,
-        },
+        ssl: getSslConfig(),
       });
       _db = drizzle(_client) as unknown as ReturnType<typeof drizzle>;
     } catch (error) {

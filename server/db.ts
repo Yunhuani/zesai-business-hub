@@ -7,16 +7,22 @@ import { ENV } from "./_core/env";
 let _client: ReturnType<typeof mysql.createPool> | null = null;
 let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
+function getSslConfig() {
+  return process.env.DATABASE_SSL === "false"
+    ? undefined
+    : {
+        minVersion: "TLSv1.2" as const,
+        rejectUnauthorized: true,
+      };
+}
+
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
       _client = mysql.createPool({
         uri: process.env.DATABASE_URL,
-        ssl: {
-          minVersion: "TLSv1.2",
-          rejectUnauthorized: true,
-        },
+        ssl: getSslConfig(),
         connectTimeout: 15000,
       });
       _db = drizzle(_client, { schema, mode: "default" }) as unknown as ReturnType<typeof drizzle<typeof schema>>;
