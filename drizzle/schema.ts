@@ -2,24 +2,24 @@ import { mysqlTable, mysqlSchema, AnyMySqlColumn, int, varchar, text, timestamp,
 import { sql } from "drizzle-orm"
 
 export const agents = mysqlTable("agents", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey(),
 	name: varchar({ length: 100 }).notNull(),
 	description: text().notNull(),
 	icon: varchar({ length: 50 }).notNull(),
 	systemPrompt: text().notNull(),
 	inputFields: text().notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
 	welcomeMessage: text(),
 });
 
 export const conversations = mysqlTable("conversations", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey(),
 	userId: int().notNull(),
 	agentId: int().notNull(),
 	title: varchar({ length: 200 }).notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
 });
 
 export const diagnoses = mysqlTable("diagnoses", {
@@ -36,12 +36,12 @@ export const diagnoses = mysqlTable("diagnoses", {
 	pdfPurchased: int().default(0).notNull(),
 	pdfCreditsDeducted: int().default(0).notNull(),
 	errorMessage: text(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
 });
 
 export const creditsTransactions = mysqlTable("creditsTransactions", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey(),
 	userId: int().notNull(),
 	type: mysqlEnum(['consume','purchase','subscription_grant','refund']).notNull(),
 	amount: int().notNull(),
@@ -52,7 +52,7 @@ export const creditsTransactions = mysqlTable("creditsTransactions", {
 	relatedDiagnosisId: int(),
 	billingKey: varchar({ length: 50 }),
 	idempotencyKey: varchar({ length: 128 }),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 },
 (table) => [
 	uniqueIndex("creditsTransactions_diagnosis_billing_unique").on(
@@ -65,7 +65,7 @@ export const creditsTransactions = mysqlTable("creditsTransactions", {
 ]);
 
 export const generatedDocuments = mysqlTable("generatedDocuments", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey(),
 	userId: int().notNull(),
 	conversationId: int().notNull(),
 	agentId: int().notNull(),
@@ -78,20 +78,20 @@ export const generatedDocuments = mysqlTable("generatedDocuments", {
 	status: mysqlEnum(['pending','generating','completed','failed']).default('pending').notNull(),
 	creditsDeducted: int().notNull(),
 	expiresAt: timestamp({ mode: 'string' }).notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
 });
 
 export const messages = mysqlTable("messages", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey(),
 	conversationId: int().notNull(),
 	role: mysqlEnum(['user','assistant','system']).notNull(),
 	content: text().notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const orders = mysqlTable("orders", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey(),
 	userId: int().notNull(),
 	outTradeNo: varchar({ length: 64 }).notNull(),
 	tradeNo: varchar({ length: 64 }),
@@ -100,8 +100,8 @@ export const orders = mysqlTable("orders", {
 	status: mysqlEnum(['pending','paid','cancelled','refunded']).default('pending').notNull(),
 	paymentMethod: varchar({ length: 20 }).default('alipay').notNull(),
 	paidAt: timestamp({ mode: 'string' }),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
 },
 (table) => [
 	index("orders_outTradeNo_unique").on(table.outTradeNo),
@@ -118,40 +118,40 @@ export const pricingConfig = mysqlTable("pricingConfig", {
 	durationDays: int(),
 	permanent: int().default(0).notNull(),
 	enabled: int().default(1).notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
 },
 (table) => [
 	index("pricingConfig_configKey_unique").on(table.configKey),
 ]);
 
 export const passwordResetTokens = mysqlTable("passwordResetTokens", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey(),
 	userId: int().notNull(),
 	token: varchar({ length: 64 }).notNull(),
 	expiresAt: timestamp({ mode: 'string' }).notNull(),
 	used: int().default(0).notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 },
 (table) => [
 	index("token").on(table.token),
 ]);
 
 export const subscriptions = mysqlTable("subscriptions", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey(),
 	userId: int().notNull(),
 	plan: mysqlEnum(['free','basic','professional','enterprise']).default('free').notNull(),
 	monthlyLimit: int().default(0).notNull(),
 	price: int().default(0).notNull(),
 	status: mysqlEnum(['active','expired','cancelled']).default('active').notNull(),
-	startDate: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	startDate: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	endDate: timestamp({ mode: 'string' }).notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
 });
 
 export const supportTickets = mysqlTable("supportTickets", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey(),
 	userId: int(),
 	userName: varchar({ length: 100 }).notNull(),
 	userEmail: varchar({ length: 320 }).notNull(),
@@ -161,35 +161,35 @@ export const supportTickets = mysqlTable("supportTickets", {
 	status: mysqlEnum(['pending','resolved']).default('pending').notNull(),
 	internalNotes: text(),
 	resolvedAt: timestamp({ mode: 'string' }),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
 	wechat: varchar({ length: 100 }).default('').notNull(),
 });
 
 export const usageRecords = mysqlTable("usageRecords", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey(),
 	userId: int().notNull(),
 	month: varchar({ length: 7 }).notNull(),
 	usageCount: int().default(0).notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
 });
 
 export const users = mysqlTable("users", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey(),
 	openId: varchar({ length: 64 }),
 	name: text(),
 	email: varchar({ length: 320 }),
 	phone: varchar({ length: 20 }),
 	loginMethod: varchar({ length: 64 }),
 	role: mysqlEnum(['user','admin']).default('user').notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
-	lastSignedIn: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
+	lastSignedIn: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	creditsPurchased: int().default(0).notNull(),
 	creditsSubscription: int().default(0).notNull(),
 	trialCreditsGranted: int().default(0).notNull(),
-	creditsResetDate: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	creditsResetDate: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	username: varchar({ length: 64 }),
 	password: varchar({ length: 255 }),
 	referralCode: varchar({ length: 20 }),
@@ -208,12 +208,12 @@ export const users = mysqlTable("users", {
  * System configuration table - stores system-wide settings
  */
 export const systemConfig = mysqlTable("systemConfig", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey(),
 	key: varchar({ length: 100 }).notNull(),
 	value: text().notNull(),
 	description: text(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
 },
 (table) => [
 	index("systemConfig_key_unique").on(table.key),
@@ -223,15 +223,15 @@ export const systemConfig = mysqlTable("systemConfig", {
  * Referrals table - stores referral relationships between users
  */
 export const referrals = mysqlTable("referrals", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey(),
 	referrerId: int().notNull(),
 	refereeId: int().notNull(),
 	referralCode: varchar({ length: 20 }).notNull(),
 	referrerCreditsRewarded: int().default(0).notNull(),
 	refereeCreditsRewarded: int().default(0).notNull(),
 	status: mysqlEnum(['pending','completed']).default('pending').notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
 },
 (table) => [
 	index("referrals_refereeId_unique").on(table.refereeId),
@@ -241,7 +241,7 @@ export const referrals = mysqlTable("referrals", {
  * Commissions table - stores referral commission records
  */
 export const commissions = mysqlTable("commissions", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey(),
 	referrerId: int().notNull(),
 	refereeId: int().notNull(),
 	orderId: varchar({ length: 64 }).notNull(),
@@ -253,8 +253,8 @@ export const commissions = mysqlTable("commissions", {
 	confirmedAt: timestamp({ mode: 'string' }),
 	availableAt: timestamp({ mode: 'string' }),
 	paidAt: timestamp({ mode: 'string' }),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
 });
 
 /**
@@ -264,7 +264,7 @@ export const commissions = mysqlTable("commissions", {
  * SMS logs table - stores SMS sending records and tracking
  */
 export const smsLogs = mysqlTable("smsLogs", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey(),
 	phone: varchar({ length: 20 }).notNull(),
 	type: mysqlEnum(['login','register','bind']).default('login').notNull(),
 	code: varchar({ length: 6 }).notNull(),
@@ -272,9 +272,9 @@ export const smsLogs = mysqlTable("smsLogs", {
 	aliyunCode: varchar({ length: 20 }),
 	aliyunMessage: text(),
 	errorReason: text(),
-	requestedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	requestedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	respondedAt: timestamp({ mode: 'string' }),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 },
 (table) => [
 	index("smsLogs_phone_idx").on(table.phone),
@@ -285,20 +285,20 @@ export const smsLogs = mysqlTable("smsLogs", {
  * SMS verification codes table - stores phone verification codes
  */
 export const smsCodes = mysqlTable("smsCodes", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey(),
 	phone: varchar({ length: 20 }).notNull(),
 	code: varchar({ length: 6 }).notNull(),
 	type: mysqlEnum(['login','register','bind']).default('login').notNull(),
 	used: int().default(0).notNull(),
 	expiresAt: timestamp({ mode: 'string' }).notNull(),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 },
 (table) => [
 	index("smsCodes_phone_idx").on(table.phone),
 ]);
 
 export const withdrawals = mysqlTable("withdrawals", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey(),
 	userId: int().notNull(),
 	amount: int().notNull(),
 	method: mysqlEnum(['bank']).default('bank').notNull(),
@@ -311,15 +311,15 @@ export const withdrawals = mysqlTable("withdrawals", {
 	quarter: varchar({ length: 10 }),
 	adminNote: text(),
 	completedAt: timestamp({ mode: 'string' }),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
 });
 
 /**
  * PPT Documents table - stores text-to-PPT generation tasks
  */
 export const pptDocuments = mysqlTable("pptDocuments", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey(),
 	userId: int().notNull(),
 	title: varchar({ length: 255 }).notNull(),
 	inputText: text().notNull(),
@@ -333,8 +333,8 @@ export const pptDocuments = mysqlTable("pptDocuments", {
 	creditsDeducted: int().default(0).notNull(),
 	outlineJson: text(),
 	expiresAt: timestamp({ mode: 'string' }),
-	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
 },
 (table) => [
 	index("pptDocuments_userId_idx").on(table.userId),
