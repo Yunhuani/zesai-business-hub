@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "./db";
 import { users, subscriptions, creditsTransactions } from "../drizzle/schema";
 import { getSubscriptionPlan } from "./pricingConfig";
+import { toMySqlTimestamp } from "./lib/mysqlTimestamp";
 
 /**
  * Fix missing credits for users who paid but didn't receive credits
@@ -75,7 +76,7 @@ async function fixMissingCredits() {
         .update(users)
         .set({
           creditsSubscription: expectedCredits,
-          creditsResetDate: nextResetDate,
+          creditsResetDate: toMySqlTimestamp(nextResetDate),
         })
         .where(eq(users.id, user.userId));
 
@@ -87,7 +88,6 @@ async function fixMissingCredits() {
         balancePurchased: 0, // Assuming 0 purchased credits
         balanceSubscription: expectedCredits,
         description: `补发订阅积分: ${user.plan} 套餐 (系统修复)`,
-        createdAt: new Date(),
       });
 
       console.log(`✅ 成功补发: ${user.email || user.name} - ${expectedCredits}积分`);

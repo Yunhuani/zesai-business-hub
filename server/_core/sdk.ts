@@ -6,6 +6,7 @@ import type { Request } from "express";
 import { SignJWT, jwtVerify } from "jose";
 import type { User } from "../../drizzle/schema";
 import * as db from "../db";
+import { toMySqlTimestamp } from "../lib/mysqlTimestamp";
 import { ENV } from "./env";
 import type {
   ExchangeTokenRequest,
@@ -267,7 +268,7 @@ class SDKServer {
     }
 
     const sessionUserId = session.openId;
-    const signedInAt = new Date();
+    const signedInAt = toMySqlTimestamp();
     
     // Check if this is an email login user (openId starts with "email_")
     if (sessionUserId.startsWith("email_")) {

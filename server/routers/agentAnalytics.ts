@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
 import { agents, conversations, messages, users } from "../../drizzle/schema";
 import { eq, sql, and, gte, desc, count, countDistinct } from "drizzle-orm";
+import { toMySqlTimestamp } from "../lib/mysqlTimestamp";
 
 // Admin-only middleware
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -59,7 +60,7 @@ export const agentAnalyticsRouter = router({
 
       // 构建查询条件
       const dateCondition = startDate
-        ? gte(conversations.createdAt, startDate.toISOString())
+        ? gte(conversations.createdAt, toMySqlTimestamp(startDate))
         : sql`1=1`;
 
       // 获取每个顾问的对话统计
@@ -177,7 +178,7 @@ export const agentAnalyticsRouter = router({
         count: count(conversations.id),
       })
       .from(conversations)
-      .where(gte(conversations.createdAt, sevenDaysAgo.toISOString()))
+      .where(gte(conversations.createdAt, toMySqlTimestamp(sevenDaysAgo)))
       .groupBy(conversations.agentId, sql`DATE(${conversations.createdAt})`);
 
     // 构建趋势数据
@@ -270,7 +271,7 @@ export const agentAnalyticsRouter = router({
         .where(
           and(
             eq(conversations.agentId, input.agentId),
-            gte(conversations.createdAt, today.toISOString())
+            gte(conversations.createdAt, toMySqlTimestamp(today))
           )
         );
 
@@ -285,7 +286,7 @@ export const agentAnalyticsRouter = router({
         .where(
           and(
             eq(conversations.agentId, input.agentId),
-            gte(conversations.createdAt, weekAgo.toISOString())
+            gte(conversations.createdAt, toMySqlTimestamp(weekAgo))
           )
         );
 
@@ -300,7 +301,7 @@ export const agentAnalyticsRouter = router({
         .where(
           and(
             eq(conversations.agentId, input.agentId),
-            gte(conversations.createdAt, monthAgo.toISOString())
+            gte(conversations.createdAt, toMySqlTimestamp(monthAgo))
           )
         );
 

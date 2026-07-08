@@ -17,6 +17,7 @@ import { sentryRouter } from "./routers/sentry";
 import { agentAnalyticsRouter } from "./routers/agentAnalytics";
 import { knowledgeRouter } from "./routers/knowledge";
 import { diagnosisRouter } from "./routers/diagnosis";
+import { toMySqlTimestamp } from "./lib/mysqlTimestamp";
 
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
@@ -65,7 +66,7 @@ export const appRouter = router({
             openId: wechatOpenId,
             name: userInfo.nickname,
             loginMethod: "wechat",
-            lastSignedIn: new Date(),
+            lastSignedIn: toMySqlTimestamp(),
           });
           
           // Get user from database
@@ -297,11 +298,11 @@ export const appRouter = router({
         const lastWeekStart = startOfWeek(subDays(new Date(), 7), { weekStartsOn: 1 });
         const lastWeekEnd = thisWeek;
 
-        const todayISO = today.toISOString();
-        const weekISO = thisWeek.toISOString();
-        const monthISO = thisMonth.toISOString();
-        const lastWeekStartISO = lastWeekStart.toISOString();
-        const lastWeekEndISO = lastWeekEnd.toISOString();
+        const todayISO = toMySqlTimestamp(today);
+        const weekISO = toMySqlTimestamp(thisWeek);
+        const monthISO = toMySqlTimestamp(thisMonth);
+        const lastWeekStartISO = toMySqlTimestamp(lastWeekStart);
+        const lastWeekEndISO = toMySqlTimestamp(lastWeekEnd);
 
         // Core metrics: users
         const [totalUsersRow] = await db.select({ count: sql<number>`count(*)` }).from(users);
@@ -353,8 +354,8 @@ export const appRouter = router({
           const dayStart = startOfDay(subDays(new Date(), i));
           const dayEnd = startOfDay(subDays(new Date(), i - 1));
           const dateStr = format(dayStart, "MM/dd");
-          const dsISO = dayStart.toISOString();
-          const deISO = dayEnd.toISOString();
+          const dsISO = toMySqlTimestamp(dayStart);
+          const deISO = toMySqlTimestamp(dayEnd);
 
           const [u] = await db.select({ count: sql<number>`count(*)` }).from(users).where(sql`created_at >= ${dsISO} and created_at < ${deISO}`);
           const [c] = await db.select({ count: sql<number>`count(*)` }).from(conversations).where(sql`created_at >= ${dsISO} and created_at < ${deISO}`);
@@ -370,8 +371,8 @@ export const appRouter = router({
           const dayStart = startOfDay(subDays(new Date(), i));
           const dayEnd = startOfDay(subDays(new Date(), i - 1));
           const dateStr = format(dayStart, "MM/dd");
-          const dsISO = dayStart.toISOString();
-          const deISO = dayEnd.toISOString();
+          const dsISO = toMySqlTimestamp(dayStart);
+          const deISO = toMySqlTimestamp(dayEnd);
 
           const [r] = await db.select({ sum: sql<number>`coalesce(sum(amount), 0)` }).from(orders)
             .where(sql`status = 'paid' and paid_at >= ${dsISO} and paid_at < ${deISO}`);
@@ -799,7 +800,7 @@ const smsLogsRouter = router({
         count: count(sdk.smsLogs.id),
       })
       .from(sdk.smsLogs)
-      .where(gte(sdk.smsLogs.createdAt, today.toISOString()))
+      .where(gte(sdk.smsLogs.createdAt, toMySqlTimestamp(today)))
       .groupBy(sdk.smsLogs.status);
     
     return stats;

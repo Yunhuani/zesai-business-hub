@@ -1,6 +1,9 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "./db";
-import { users, InsertUser } from "../drizzle/schema";
+import { users } from "../drizzle/schema";
+import { toMySqlTimestamp } from "./lib/mysqlTimestamp";
+
+type InsertUser = typeof users.$inferInsert;
 
 /**
  * 通过邮箱查找用户
@@ -39,7 +42,7 @@ export async function upsertEmailUser(email: string, name?: string) {
       await db
         .update(users)
         .set({
-          lastSignedIn: new Date(),
+          lastSignedIn: toMySqlTimestamp(),
           ...(name && { name }),
         })
         .where(eq(users.email, email));
@@ -52,7 +55,7 @@ export async function upsertEmailUser(email: string, name?: string) {
         email,
         name: name || email.split("@")[0], // 如果没有提供名字，使用邮箱前缀
         loginMethod: "email",
-        lastSignedIn: new Date(),
+        lastSignedIn: toMySqlTimestamp(),
       };
 
       await db.insert(users).values(insertData);

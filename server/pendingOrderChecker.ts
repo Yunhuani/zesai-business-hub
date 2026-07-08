@@ -7,6 +7,7 @@ import { getDb, updateOrderStatus, createOrUpdateSubscription, getUserById } fro
 import { resetSubscriptionCredits, addPurchasedCredits, clearSubscriptionCredits } from "./creditsManager";
 import { notifyAdminNewOrder } from "./orderNotification";
 import { getCreditPack, getSubscriptionPlan } from "./pricingConfig";
+import { toMySqlTimestamp } from "./lib/mysqlTimestamp";
 
 function normalizePaymentMethod(paymentMethod: string | null | undefined): "alipay" | "wechat" {
   if (paymentMethod === "wechat") return "wechat";
@@ -34,7 +35,7 @@ async function checkPendingOrders() {
     const pendingOrders = await db.select().from(orders).where(
       and(
         eq(orders.status, "pending"),
-        sql`${orders.createdAt} > ${cutoff.toISOString()}`
+        sql`${orders.createdAt} > ${toMySqlTimestamp(cutoff)}`
       )
     );
 
@@ -136,7 +137,7 @@ async function checkAlipayOrder(order: any) {
     } else if (result.tradeStatus === "TRADE_CLOSED") {
       // 交易已关闭，更新订单状态
       await updateOrderStatus(order.outTradeNo, {
-        status: "closed",
+        status: "cancelled",
       });
       console.log(`[PendingChecker] Order ${order.outTradeNo} closed`);
     }
@@ -234,7 +235,7 @@ async function checkExpiredSubscriptions() {
     const { eq, and, sql } = await import("drizzle-orm");
 
     // 查找所有已过期但status仍为active的订阅
-    const now = new Date().toISOString();
+    const now = toMySqlTimestamp();
     const expiredSubs = await db.select().from(subscriptions).where(
       and(
         eq(subscriptions.status, "active"),

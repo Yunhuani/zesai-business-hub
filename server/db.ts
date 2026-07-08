@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 import * as schema from "../drizzle/schema";
 import { ENV } from "./_core/env";
+import { toMySqlTimestamp } from "./lib/mysqlTimestamp";
 
 let _client: ReturnType<typeof mysql.createPool> | null = null;
 let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
@@ -75,7 +76,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     }
 
     if (user.lastSignedIn !== undefined) {
-      values.lastSignedIn = user.lastSignedIn;
+      values.lastSignedIn = toMySqlTimestamp(user.lastSignedIn);
     }
     if (user.role !== undefined) {
       values.role = user.role;
@@ -84,21 +85,17 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     }
 
     if (!values.lastSignedIn) {
-      values.lastSignedIn = new Date();
+      values.lastSignedIn = toMySqlTimestamp();
     }
 
     if (existing) {
       // Update existing user
       await db.update(schema.users)
-        .set({ ...values, updatedAt: new Date() })
+        .set({ ...values, updatedAt: sql`CURRENT_TIMESTAMP` })
         .where(eq(schema.users.id, existing.id));
     } else {
       // Insert new user
-      await db.insert(schema.users).values({
-        ...values,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as InsertUser);
+      await db.insert(schema.users).values(values as InsertUser);
     }
   } catch (error) {
     console.error("[Database] Failed to upsert user:", error);
@@ -187,7 +184,7 @@ export async function getAgentByIdFull(id: number) {
 export async function updateAgent(id: number, data: { name?: string; description?: string; icon?: string; systemPrompt?: string; inputFields?: string }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.update(schema.agents).set({ ...data, updatedAt: new Date() }).where(eq(schema.agents.id, id));
+  await db.update(schema.agents).set({ ...data, updatedAt: sql`CURRENT_TIMESTAMP` }).where(eq(schema.agents.id, id));
 }
 
 // Conversation queries
@@ -196,8 +193,6 @@ export async function createConversation(data: { userId: number; agentId: number
   if (!db) throw new Error("Database not available");
   const [insertResult] = await db.insert(schema.conversations).values({
     ...data,
-    createdAt: new Date(),
-    updatedAt: new Date(),
   });
   const conversation = await db.query.conversations.findFirst({
     where: eq(schema.conversations.id, insertResult.insertId),
@@ -266,16 +261,13 @@ export async function createMessage(data: { conversationId: number; role: "user"
   if (!db) throw new Error("Database not available");
 
   // Insert message
-  const [insertResult] = await db.insert(schema.messages).values({
-    ...data,
-    createdAt: new Date(),
-  });
+  const [insertResult] = await db.insert(schema.messages).values(data);
   const message = await db.query.messages.findFirst({
     where: eq(schema.messages.id, insertResult.insertId),
   });
 
   // Update conversation
-  const updateData: { updatedAt: Date; title?: string } = { updatedAt: new Date() };
+  const updateData: { updatedAt: ReturnType<typeof sql>; title?: string } = { updatedAt: sql`CURRENT_TIMESTAMP` };
 
   // If user message, check if need to update title
   if (data.role === "user") {
@@ -347,9 +339,9 @@ export async function createOrUpdateSubscription(data: {
         plan: data.plan,
         price: data.price,
         status: "active",
-        startDate: new Date(),
-        endDate: data.endDate,
-        updatedAt: new Date(),
+        startDate: sql`CURRENT_TIMESTAMP`,
+        endDate: toMySqlTimestamp(data.endDate),
+        updatedAt: sql`CURRENT_TIMESTAMP`,
       })
       .where(eq(schema.subscriptions.userId, data.userId));
   } else {
@@ -358,10 +350,7 @@ export async function createOrUpdateSubscription(data: {
       plan: data.plan,
       price: data.price,
       status: "active",
-      startDate: new Date(),
-      endDate: data.endDate,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      endDate: toMySqlTimestamp(data.endDate),
     });
   }
 }
@@ -383,8 +372,6 @@ export async function createOrder(data: {
     amount: data.amount,
     paymentMethod: data.paymentMethod || "alipay",
     status: "pending",
-    createdAt: new Date(),
-    updatedAt: new Date(),
   });
   const order = await db.query.orders.findFirst({
     where: eq(schema.orders.id, insertResult.insertId),
@@ -401,15 +388,20 @@ export async function getOrderByOutTradeNo(outTradeNo: string) {
 }
 
 export async function updateOrderStatus(outTradeNo: string, data: {
-  status: "pending" | "paid" | "cancelled" | "refunded" | "closed";
+  status: "pending" | "paid" | "cancelled" | "refunded";
   tradeNo?: string;
   paidAt?: Date;
 }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  const { paidAt, ...rest } = data;
+  const values = {
+    ...rest,
+    ...(paidAt ? { paidAt: toMySqlTimestamp(paidAt) } : {}),
+    updatedAt: sql`CURRENT_TIMESTAMP`,
+  };
   await db.update(schema.orders).set({
-    ...data,
-    updatedAt: new Date(),
+    ...values,
   }).where(eq(schema.orders.outTradeNo, outTradeNo));
 }
 
@@ -452,7 +444,7 @@ export async function getFailedOrders(timeRange?: { start: Date; end: Date }) {
   let query = db.select().from(schema.orders).where(
     and(
       eq(schema.orders.status, "pending"),
-      sql`${schema.orders.createdAt} < ${thirtyMinutesAgo.toISOString()}`
+      sql`${schema.orders.createdAt} < ${toMySqlTimestamp(thirtyMinutesAgo)}`
     )
   );
 
@@ -460,8 +452,8 @@ export async function getFailedOrders(timeRange?: { start: Date; end: Date }) {
     query = db.select().from(schema.orders).where(
       and(
         eq(schema.orders.status, "pending"),
-        sql`${schema.orders.createdAt} >= ${timeRange.start.toISOString()}`,
-        sql`${schema.orders.createdAt} <= ${timeRange.end.toISOString()}`
+        sql`${schema.orders.createdAt} >= ${toMySqlTimestamp(timeRange.start)}`,
+        sql`${schema.orders.createdAt} <= ${toMySqlTimestamp(timeRange.end)}`
       )
     );
   }
@@ -479,8 +471,8 @@ export async function createPasswordResetToken(data: {
   if (!db) throw new Error("Database not available");
   await db.insert(schema.passwordResetTokens).values({
     ...data,
+    expiresAt: toMySqlTimestamp(data.expiresAt),
     used: 0,
-    createdAt: new Date(),
   });
 }
 
@@ -506,7 +498,7 @@ export async function updateUserPassword(userId: number, passwordHash: string) {
   if (!db) throw new Error("Database not available");
   await db
     .update(schema.users)
-    .set({ password: passwordHash, updatedAt: new Date() })
+    .set({ password: passwordHash, updatedAt: sql`CURRENT_TIMESTAMP` })
     .where(eq(schema.users.id, userId));
 }
 

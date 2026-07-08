@@ -1,12 +1,15 @@
 import { and, eq } from "drizzle-orm";
 import { getDb } from "./db";
-import { users, creditsTransactions, type InsertCreditsTransaction } from "../drizzle/schema";
+import { toMySqlTimestamp } from "./lib/mysqlTimestamp";
+import { users, creditsTransactions } from "../drizzle/schema";
 import { getSubscriptionPlan } from "./pricingConfig";
 import {
   calculateCreditDeduction,
   calculateFreeTrialGrant,
 } from "./creditsPolicy";
 import { logStructuredError, notifyOps } from "./observability";
+
+type InsertCreditsTransaction = typeof creditsTransactions.$inferInsert;
 
 /**
  * Credits Manager - Core logic for credits system
@@ -43,7 +46,7 @@ export async function getUserCredits(userId: number): Promise<{
     subscription: user.creditsSubscription,
     total: user.creditsPurchased + user.creditsSubscription + freeCredits,
     free: freeCredits,
-    resetDate: user.creditsResetDate,
+    resetDate,
     nextResetIn,
   };
 }
@@ -530,7 +533,7 @@ export async function resetSubscriptionCredits(userId: number, plan: string): Pr
     .update(users)
     .set({
       creditsSubscription: planCredits,
-      creditsResetDate: nextResetDate,
+      creditsResetDate: toMySqlTimestamp(nextResetDate),
     })
     .where(eq(users.id, userId));
 
@@ -627,7 +630,7 @@ export async function clearSubscriptionCredits(userId: number): Promise<void> {
     .update(users)
     .set({
       creditsSubscription: 0,
-      creditsResetDate: nextResetDate,
+      creditsResetDate: toMySqlTimestamp(nextResetDate),
     })
     .where(eq(users.id, userId));
 

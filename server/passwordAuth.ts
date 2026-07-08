@@ -4,6 +4,7 @@ import { getDb } from "./db";
 import { users } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { ENV } from "./_core/env";
+import { toMySqlTimestamp } from "./lib/mysqlTimestamp";
 
 const SALT_ROUNDS = 10;
 
@@ -64,7 +65,7 @@ export async function registerUser(username: string, password: string, name?: st
     password: hashedPassword,
     name: name || username,
     loginMethod: "password",
-    lastSignedIn: new Date(),
+    lastSignedIn: toMySqlTimestamp(),
   });
 
   // Get the created user
@@ -113,7 +114,7 @@ export async function loginUser(username: string, password: string) {
   // Update last signed in
   await db
     .update(users)
-    .set({ lastSignedIn: new Date() })
+    .set({ lastSignedIn: toMySqlTimestamp() })
     .where(eq(users.id, user.id));
 
   // Generate JWT token
@@ -201,7 +202,7 @@ export async function registerUserWithEmail(
     password: hashedPassword,
     name: name || email.split('@')[0], // Use email prefix as default name
     loginMethod: "password",
-    lastSignedIn: new Date(),
+    lastSignedIn: toMySqlTimestamp(),
   });
 
   // Get the created user
@@ -263,7 +264,7 @@ export async function loginUserWithEmail(email: string, password: string) {
   await db
     .update(users)
     .set({ 
-      lastSignedIn: new Date(),
+      lastSignedIn: toMySqlTimestamp(),
       loginCount: (user.loginCount || 0) + 1
     })
     .where(eq(users.id, user.id));

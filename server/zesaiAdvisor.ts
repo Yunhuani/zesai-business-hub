@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 import { agents } from "../drizzle/schema";
 import { getDb } from "./db";
@@ -320,19 +320,17 @@ export async function ensureZesaiAdvisorAgent(): Promise<void> {
     .where(eq(agents.name, ZESAI_ADVISOR_AGENT_NAME))
     .limit(1);
 
-  const now = new Date().toISOString();
   const values = {
     ...ZESAI_ADVISOR_AGENT,
-    updatedAt: now,
   };
 
   if (existing) {
-    await db.update(agents).set(values).where(eq(agents.id, existing.id));
+    await db
+      .update(agents)
+      .set({ ...values, updatedAt: sql`CURRENT_TIMESTAMP` })
+      .where(eq(agents.id, existing.id));
     return;
   }
 
-  await db.insert(agents).values({
-    ...values,
-    createdAt: now,
-  });
+  await db.insert(agents).values(values);
 }

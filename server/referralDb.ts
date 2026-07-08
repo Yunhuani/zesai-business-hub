@@ -9,6 +9,7 @@ import {
   users,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
+import { toMySqlTimestamp } from "./lib/mysqlTimestamp";
 
 let _client: ReturnType<typeof mysql.createPool> | null = null;
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -152,7 +153,6 @@ export async function createCommission(data: {
     commissionAmount: data.commissionAmount.toString(),
     commissionRate: data.commissionRate.toString(),
     status: "pending",
-    createdAt: new Date(),
   });
 }
 
@@ -288,15 +288,13 @@ export async function setSystemConfig(key: string, value: string, description?: 
   if (existing.length > 0) {
     await db
       .update(systemConfig)
-      .set({ value, description, updatedAt: new Date() })
+      .set({ value, description, updatedAt: sql`CURRENT_TIMESTAMP` })
       .where(eq(systemConfig.key, key));
   } else {
     await db.insert(systemConfig).values({
       key,
       value,
       description,
-      createdAt: new Date(),
-      updatedAt: new Date(),
     });
   }
 }
@@ -325,7 +323,7 @@ export async function confirmPendingCommissions() {
     .where(
       and(
         eq(commissions.status, "pending"),
-        sql`${commissions.createdAt} < ${sevenDaysAgo}`
+        sql`${commissions.createdAt} < ${toMySqlTimestamp(sevenDaysAgo)}`
       )
     );
 
@@ -338,9 +336,9 @@ export async function confirmPendingCommissions() {
       .update(commissions)
       .set({
         status: "confirmed",
-        confirmedAt,
-        availableAt,
-        updatedAt: new Date(),
+        confirmedAt: toMySqlTimestamp(confirmedAt),
+        availableAt: toMySqlTimestamp(availableAt),
+        updatedAt: sql`CURRENT_TIMESTAMP`,
       })
       .where(eq(commissions.id, commission.id));
 
@@ -388,7 +386,6 @@ export async function createWithdrawal(data: {
     realName: data.realName,
     idCard: data.idCard,
     status: "pending",
-    createdAt: new Date(),
   });
 }
 
@@ -449,7 +446,7 @@ export async function processWithdrawal(
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const completedAt = status === "completed" ? new Date() : null;
+  const completedAt = status === "completed" ? toMySqlTimestamp() : null;
 
   await db
     .update(withdrawals)
@@ -457,7 +454,7 @@ export async function processWithdrawal(
       status,
       adminNote,
       completedAt,
-      updatedAt: new Date(),
+      updatedAt: sql`CURRENT_TIMESTAMP`,
     })
     .where(eq(withdrawals.id, withdrawalId));
 }
@@ -478,7 +475,7 @@ export async function cancelCommission(orderId: string) {
   if (commission.length > 0) {
     await db
       .update(commissions)
-      .set({ status: "cancelled", updatedAt: new Date() })
+      .set({ status: "cancelled", updatedAt: sql`CURRENT_TIMESTAMP` })
       .where(eq(commissions.orderId, orderId));
 
     // 如果已经确认，需要从用户余额中扣除
@@ -556,8 +553,6 @@ export async function createReferralRelationship(
     referrerCreditsRewarded: 200,
     refereeCreditsRewarded: 0,
     status: 'completed',
-    createdAt: new Date(),
-    updatedAt: new Date(),
   });
 
   // 4. 发放推荐人奖励（200积分）

@@ -5,6 +5,7 @@ import { getDb } from "../db";
 import { supportTickets } from "../../drizzle/schema";
 import { eq, desc, and, sql } from "drizzle-orm";
 import { sendEmail } from "../_core/email";
+import { toMySqlTimestamp } from "../lib/mysqlTimestamp";
 
 const SUPPORT_EMAIL = "cs@zesiai.com";
 
@@ -201,7 +202,7 @@ export const supportRouter = router({
         }
 
         if (input.status === "resolved") {
-          updateData.resolvedAt = new Date();
+          updateData.resolvedAt = toMySqlTimestamp();
         }
 
         await db
@@ -258,8 +259,8 @@ export const supportRouter = router({
         .from(supportTickets)
         .where(
           and(
-            sql`${supportTickets.createdAt} >= ${today}`,
-            sql`${supportTickets.createdAt} < ${tomorrow}`
+            sql`${supportTickets.createdAt} >= ${toMySqlTimestamp(today)}`,
+            sql`${supportTickets.createdAt} < ${toMySqlTimestamp(tomorrow)}`
           )
         );
 
