@@ -23,6 +23,8 @@ function serializeDiagnosis(diagnosis: Awaited<ReturnType<typeof getDiagnosis>>)
   if (!diagnosis) return null;
   const fullAccess =
     diagnosis.productType === "full" && diagnosis.fullCreditsDeducted > 0;
+  const failedStatus =
+    diagnosis.status === "error" || String(diagnosis.status) === "failed";
 
   return {
     id: diagnosis.id,
@@ -38,6 +40,7 @@ function serializeDiagnosis(diagnosis: Awaited<ReturnType<typeof getDiagnosis>>)
     overallScore: diagnosis.overallScore,
     scoreLabel: diagnosis.scoreLabel,
     createdAt: diagnosis.createdAt,
+    ...(failedStatus ? { errorMessage: diagnosis.errorMessage } : {}),
   };
 }
 

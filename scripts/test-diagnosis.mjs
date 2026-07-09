@@ -174,7 +174,7 @@ function buildFailurePayload(diagnosis) {
   return {
     diagnosis,
     note:
-      "Current diagnosis.get serialization does not expose diagnoses.errorMessage. If engine redline details are missing here, expose errorMessage in the backend API or check server logs/database.",
+      "diagnosis.get should include errorMessage for failed diagnoses. If redline details are missing, check server logs/database.",
   };
 }
 
@@ -191,8 +191,11 @@ async function pollDiagnosis(token, diagnosisId) {
       return;
     }
 
-    if (status === "error") {
-      console.error(`FAIL\n${formatJson(buildFailurePayload(diagnosis))}`);
+    if (status === "error" || status === "failed") {
+      const errorMessage = diagnosis?.errorMessage;
+      console.error(
+        `FAIL\n${errorMessage ? `${errorMessage}\n` : ""}${formatJson(buildFailurePayload(diagnosis))}`
+      );
       process.exitCode = 1;
       return;
     }
