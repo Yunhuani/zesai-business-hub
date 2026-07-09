@@ -181,14 +181,14 @@ export default function DiagnosisReport() {
   const pdfPurchased = query.data?.pdfPurchased === true;
 
   return (
-    <div className="diagnosis-report min-h-screen overflow-hidden bg-[#121317] text-[#EAEDF3] [font-family:'Noto_Sans_SC','Microsoft_YaHei',sans-serif]">
+    <div className="diagnosis-report min-h-screen overflow-hidden bg-[#121317] text-[#EAEDF3] [font-family:'Noto_Sans_SC',sans-serif]">
       <style>{`
         @media print {
           @page { size: A4; margin: 0; }
           html, body { background: #121317 !important; }
           .diagnosis-report { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
           .diagnosis-report, .diagnosis-report * {
-            font-family: "Microsoft YaHei", "PingFang SC", sans-serif !important;
+            font-family: 'Noto Sans SC', sans-serif !important;
           }
           .report-cover, .report-health, .report-dimension, .report-findings, .report-closing {
             break-before: page;
