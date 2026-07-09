@@ -3,6 +3,19 @@ export type QuestionnaireAnswers = Record<string, QuestionnaireAnswer>;
 export type QuestionnaireCustomValues = Record<string, string>;
 
 type StringMap = Record<string, string>;
+type JsonObject = Record<string, unknown>;
+
+const PLUS_FIELDS = [
+  "competition.self_scores",
+  "competition.unique_assets",
+  "business_model.revenue_mix",
+  "capability.digital_keyperson",
+  "finance.product_lines",
+  "finance.customers",
+  "finance.ar",
+] as const;
+
+type PlusField = typeof PLUS_FIELDS[number];
 
 export type DiagnosisIntake = {
   company: {
@@ -42,7 +55,7 @@ export type DiagnosisIntake = {
     cash: number | null;
     monthly_fixed: number | null;
   };
-  finance_plus: null;
+  finance_plus: JsonObject | null;
   availability_map: {
     plus_present: string[];
     plus_missing: string[];
@@ -125,6 +138,59 @@ function matrixValues(
   return result;
 }
 
+function isObject(value: unknown): value is JsonObject {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function isPresent(value: unknown): boolean {
+  if (value === null || value === undefined) return false;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === "string") return value.trim().length > 0;
+  if (isObject(value)) return Object.values(value).some(isPresent);
+  return true;
+}
+
+function getPlusFieldValue(intake: DiagnosisIntake, field: PlusField): unknown {
+  const financePlus = isObject(intake.finance_plus) ? intake.finance_plus : {};
+
+  switch (field) {
+    case "competition.self_scores":
+      return intake.competition.self_scores;
+    case "competition.unique_assets":
+      return intake.competition.unique_assets;
+    case "business_model.revenue_mix":
+      return intake.business_model.revenue_mix;
+    case "capability.digital_keyperson":
+      return intake.capability.digital_keyperson;
+    case "finance.product_lines":
+      return financePlus.product_lines;
+    case "finance.customers":
+      return financePlus.customers;
+    case "finance.ar": {
+      const ar = isObject(financePlus.ar) ? financePlus.ar : null;
+      return ar && isPresent(ar.balance) && isPresent(ar.days) ? ar : null;
+    }
+  }
+}
+
+function buildAvailabilityMap(intake: DiagnosisIntake): DiagnosisIntake["availability_map"] {
+  const plusPresent: string[] = [];
+  const plusMissing: string[] = [];
+
+  for (const field of PLUS_FIELDS) {
+    if (isPresent(getPlusFieldValue(intake, field))) {
+      plusPresent.push(field);
+    } else {
+      plusMissing.push(field);
+    }
+  }
+
+  return {
+    plus_present: plusPresent,
+    plus_missing: plusMissing,
+  };
+}
+
 export function convertQuestionnaireAnswers(
   answers: QuestionnaireAnswers,
   customValues: QuestionnaireCustomValues
@@ -132,17 +198,8 @@ export function convertQuestionnaireAnswers(
   const uniqueAssets = splitList(
     getString(answers, "competition.unique_assets")
   );
-  const plusPresent = uniqueAssets.length > 0
-    ? ["competition.unique_assets"]
-    : [];
-  const plusMissing = [
-    "finance.product_lines",
-    "competition.self_scores",
-    "finance.customers",
-    ...(uniqueAssets.length > 0 ? [] : ["competition.unique_assets"]),
-  ];
 
-  return {
+  const intake: DiagnosisIntake = {
     company: {
       name: getString(answers, "company.name"),
       industry_sub: getString(answers, "company.industry_sub"),
@@ -231,8 +288,13 @@ export function convertQuestionnaireAnswers(
     },
     finance_plus: null,
     availability_map: {
-      plus_present: plusPresent,
-      plus_missing: plusMissing,
+      plus_present: [],
+      plus_missing: [],
     },
+  };
+
+  return {
+    ...intake,
+    availability_map: buildAvailabilityMap(intake),
   };
 }

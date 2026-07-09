@@ -62,9 +62,12 @@ describe("convertQuestionnaireAnswers", () => {
     expect(intake.availability_map).toEqual({
       plus_present: ["competition.unique_assets"],
       plus_missing: [
-        "finance.product_lines",
         "competition.self_scores",
+        "business_model.revenue_mix",
+        "capability.digital_keyperson",
+        "finance.product_lines",
         "finance.customers",
+        "finance.ar",
       ],
     });
   });
@@ -86,6 +89,44 @@ describe("convertQuestionnaireAnswers", () => {
     expect(intake.availability_map.plus_missing).toContain(
       "competition.unique_assets"
     );
+  });
+
+  it("marks all uncollected plus fields missing when finance_plus and fixed plus fields are null", () => {
+    const intake = convertQuestionnaireAnswers(yonghuiAnswers, {});
+
+    expect(intake.finance_plus).toBeNull();
+    expect(intake.business_model.revenue_mix).toBeNull();
+    expect(intake.capability.digital_keyperson).toBeNull();
+
+    expect(intake.availability_map.plus_missing).toEqual([
+      "competition.self_scores",
+      "business_model.revenue_mix",
+      "capability.digital_keyperson",
+      "finance.product_lines",
+      "finance.customers",
+      "finance.ar",
+    ]);
+    expect(intake.availability_map.plus_present).toEqual([
+      "competition.unique_assets",
+    ]);
+
+    const allPlusFields = [
+      ...intake.availability_map.plus_present,
+      ...intake.availability_map.plus_missing,
+    ];
+    expect(new Set(allPlusFields).size).toBe(allPlusFields.length);
+    expect(allPlusFields).toEqual(
+      expect.arrayContaining([
+        "competition.self_scores",
+        "competition.unique_assets",
+        "business_model.revenue_mix",
+        "capability.digital_keyperson",
+        "finance.product_lines",
+        "finance.customers",
+        "finance.ar",
+      ])
+    );
+    expect(allPlusFields).toHaveLength(7);
   });
 
   it("merges free-text alternatives without losing preset answers", () => {
