@@ -215,6 +215,14 @@ export async function renderDiagnosisReportPdf({
         .report-about {
           min-height: auto !important;
         }
+        @media print {
+          .report-dimension > .grid {
+            display: block !important;
+          }
+          .report-dimension > .grid > div {
+            width: 100% !important;
+          }
+        }
       `,
     });
     const bodyPdf = await page.pdf({
