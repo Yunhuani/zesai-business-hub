@@ -213,7 +213,6 @@ export default function DiagnosisReport() {
             break-after: page;
             min-height: 297mm;
           }
-          .report-about { min-height: calc(297mm - 29mm); }
           .report-executive, .report-dimension, .report-findings > div, .report-closing {
             padding-top: 8mm !important;
             padding-bottom: 8mm !important;
@@ -221,7 +220,7 @@ export default function DiagnosisReport() {
           .report-dimension {
             break-inside: auto;
           }
-          .report-dimension-heading, .report-heading, .report-card, .report-reason, .report-degradation {
+          .report-dimension-heading, .report-heading, .report-judgment, .report-card, .report-reason, .report-degradation {
             break-inside: avoid;
           }
           .report-heading { break-after: avoid; }
@@ -506,7 +505,7 @@ export default function DiagnosisReport() {
 
               <div>
                 {dimension.judgment ? (
-                  <h3 className="max-w-3xl text-[27px] font-semibold leading-[1.45] tracking-[-0.035em] sm:text-[34px]">
+                  <h3 className="report-judgment max-w-3xl text-[27px] font-semibold leading-[1.45] tracking-[-0.035em] sm:text-[34px]">
                     {dimension.judgment}
                   </h3>
                 ) : null}

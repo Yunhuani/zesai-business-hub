@@ -176,7 +176,13 @@ export async function renderDiagnosisReportPdf({
         @page { margin: 0 !important; }
         .diagnosis-report {
           min-height: 0 !important;
+        }
+        .diagnosis-report,
+        .diagnosis-report * {
           overflow: visible !important;
+        }
+        .diagnosis-report > main > :not(.report-cover) {
+          display: none !important;
         }
       `,
     });
@@ -184,7 +190,6 @@ export async function renderDiagnosisReportPdf({
       format: "A4",
       printBackground: true,
       preferCSSPageSize: true,
-      pageRanges: "1",
       margin: {
         top: "0",
         right: "0",
@@ -199,7 +204,16 @@ export async function renderDiagnosisReportPdf({
         @page { margin: 20mm 0 18mm 0 !important; }
         .diagnosis-report {
           min-height: 0 !important;
+        }
+        .diagnosis-report,
+        .diagnosis-report * {
           overflow: visible !important;
+        }
+        .report-cover {
+          display: none !important;
+        }
+        .report-about {
+          min-height: auto !important;
         }
       `,
     });
@@ -230,7 +244,6 @@ export async function renderDiagnosisReportPdf({
         bottom: "18mm",
         left: "0",
       },
-      pageRanges: "2-1000",
     });
     const pdf = await mergePdfBuffers([
       Buffer.from(coverPdf),
