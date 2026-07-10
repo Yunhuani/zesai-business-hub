@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { readFile, unlink, writeFile } from "node:fs/promises";
+import { PDFDocument } from "pdf-lib";
 import puppeteer from "puppeteer";
 
 const execFileAsync = promisify(execFile);
@@ -41,6 +42,20 @@ function escapeHtml(value: string) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+async function mergePdfBuffers(parts: Buffer[]): Promise<Buffer> {
+  const merged = await PDFDocument.create();
+
+  for (const part of parts) {
+    const source = await PDFDocument.load(part);
+    const pages = await merged.copyPages(source, source.getPageIndices());
+    for (const page of pages) {
+      merged.addPage(page);
+    }
+  }
+
+  return Buffer.from(await merged.save());
 }
 
 async function removeTempFile(file: string) {
@@ -156,32 +171,54 @@ export async function renderDiagnosisReportPdf({
     ).catch(() => "企业");
     const safeCompanyName = escapeHtml(companyName);
 
-    const pdf = await page.pdf({
+    const coverPdf = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      preferCSSPageSize: true,
+      pageRanges: "1",
+      margin: {
+        top: "0",
+        right: "0",
+        bottom: "0",
+        left: "0",
+      },
+    });
+
+    const bodyPdf = await page.pdf({
       format: "A4",
       printBackground: true,
       preferCSSPageSize: true,
       displayHeaderFooter: true,
       headerTemplate: `
-        <div style="box-sizing:border-box;width:100%;height:14mm;padding:5mm 14mm 0;font-family:'Noto Sans SC',sans-serif;font-size:8px;color:#7f8592;background:#121317;display:flex;align-items:flex-start;justify-content:space-between;">
-          <span>${safeCompanyName}</span>
-          <span style="letter-spacing:.08em;color:#d4a83e;">NBG 增长诊断</span>
+        <div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box;width:100%;height:100%;margin:0;background:#121317;font-family:'Noto Sans SC',sans-serif;color:#7f8592;">
+          <div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box;width:100%;height:12mm;margin:0;padding:5mm 14mm 0;background:#121317;display:flex;align-items:flex-start;justify-content:space-between;font-size:8px;">
+            <span>${safeCompanyName}</span>
+            <span style="letter-spacing:.08em;color:#d4a83e;">NBG 增长诊断</span>
+          </div>
         </div>
       `,
       footerTemplate: `
-        <div style="box-sizing:border-box;width:100%;height:15mm;padding:0 14mm 5mm;font-family:'Noto Sans SC',sans-serif;font-size:8px;color:#7f8592;background:#121317;display:flex;align-items:flex-end;justify-content:space-between;">
-          <span>泽思AI · zesai.com</span>
-          <span><span class="pageNumber"></span> / <span class="totalPages"></span></span>
+        <div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box;width:100%;height:100%;margin:0;background:#121317;font-family:'Noto Sans SC',sans-serif;color:#7f8592;">
+          <div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box;width:100%;height:10mm;margin:0;padding:0 14mm 4mm;background:#121317;display:flex;align-items:flex-end;justify-content:space-between;font-size:8px;">
+            <span>泽思AI · zesai.com</span>
+            <span><span class="pageNumber"></span> / <span class="totalPages"></span></span>
+          </div>
         </div>
       `,
       margin: {
-        top: "14mm",
+        top: "20mm",
         right: "0",
-        bottom: "15mm",
+        bottom: "18mm",
         left: "0",
       },
+      pageRanges: "2-1000",
     });
+    const pdf = await mergePdfBuffers([
+      Buffer.from(coverPdf),
+      Buffer.from(bodyPdf),
+    ]);
 
-    return compressPdfWithGhostscript(Buffer.from(pdf), diagnosisId);
+    return compressPdfWithGhostscript(pdf, diagnosisId);
   } finally {
     await browser.close();
   }

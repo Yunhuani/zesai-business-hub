@@ -205,7 +205,7 @@ export default function DiagnosisReport() {
           .diagnosis-report, .diagnosis-report * {
             font-family: 'Noto Sans SC', sans-serif !important;
           }
-          .report-cover, .report-dimension, .report-findings, .report-closing, .report-about {
+          .report-cover, .report-about {
             break-before: page;
           }
           .report-cover {
@@ -214,7 +214,14 @@ export default function DiagnosisReport() {
             min-height: calc(297mm - 29mm);
           }
           .report-about { min-height: calc(297mm - 29mm); }
-          .report-heading, .report-card, .report-reason, .report-degradation {
+          .report-executive, .report-dimension, .report-findings > div, .report-closing {
+            padding-top: 18mm !important;
+            padding-bottom: 18mm !important;
+          }
+          .report-dimension, .report-card, .report-reason {
+            break-inside: auto;
+          }
+          .report-heading, .report-degradation {
             break-inside: avoid;
           }
           .report-heading { break-after: avoid; }
@@ -333,7 +340,7 @@ export default function DiagnosisReport() {
         </section>
 
         <section className="report-body-intro border-b border-white/[0.08] bg-[#121317]">
-          <div className="mx-auto grid max-w-6xl gap-8 px-5 py-14 sm:px-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
+          <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#E8B84B]">
                 Client report
@@ -341,17 +348,7 @@ export default function DiagnosisReport() {
               <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">
                 {report.companyName}增长诊断报告
               </h1>
-              {report.headline ? (
-                <p className="mt-6 max-w-3xl text-[18px] leading-8 text-[#D6D8DE]">
-                  {report.headline}
-                </p>
-              ) : null}
             </div>
-            {report.overallJudgment ? (
-              <p className="border-l border-[#E8B84B]/70 pl-6 text-sm leading-7 text-[#9DA4B3]">
-                {report.overallJudgment}
-              </p>
-            ) : null}
           </div>
         </section>
 
