@@ -1,4 +1,13 @@
+import { execFile } from "node:child_process";
+import { randomUUID } from "node:crypto";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { promisify } from "node:util";
+import { readFile, unlink, writeFile } from "node:fs/promises";
 import puppeteer from "puppeteer";
+
+const execFileAsync = promisify(execFile);
+const GHOSTSCRIPT_TIMEOUT_MS = 30_000;
 
 type RenderDiagnosisReportPdfOptions = {
   baseUrl: string;
@@ -23,6 +32,60 @@ function parseCookies(cookieHeader: string, baseUrl: string) {
         url: baseUrl,
       }];
     });
+}
+
+async function removeTempFile(file: string) {
+  try {
+    await unlink(file);
+  } catch {
+    // Best-effort cleanup. Compression must never fail the PDF download.
+  }
+}
+
+export async function compressPdfWithGhostscript(
+  pdf: Buffer,
+  diagnosisId: number
+): Promise<Buffer> {
+  const id = `diagnosis-${diagnosisId}-${randomUUID()}`;
+  const inputFile = join(tmpdir(), `${id}.pdf`);
+  const outputFile = join(tmpdir(), `${id}.compressed.pdf`);
+
+  try {
+    await writeFile(inputFile, pdf);
+    await execFileAsync(
+      "gs",
+      [
+        "-sDEVICE=pdfwrite",
+        "-dCompatibilityLevel=1.5",
+        "-dPDFSETTINGS=/printer",
+        "-dNOPAUSE",
+        "-dQUIET",
+        "-dBATCH",
+        `-sOutputFile=${outputFile}`,
+        inputFile,
+      ],
+      { timeout: GHOSTSCRIPT_TIMEOUT_MS }
+    );
+
+    const compressed = await readFile(outputFile);
+    console.log(
+      `[Diagnosis PDF] Ghostscript compressed diagnosis ${diagnosisId}: ` +
+        `${pdf.length} -> ${compressed.length} bytes`
+    );
+    return compressed;
+  } catch (error) {
+    console.warn(
+      `[Diagnosis PDF] Ghostscript compression failed for diagnosis ${diagnosisId}; ` +
+        `returning original ${pdf.length} byte PDF.`,
+      error
+    );
+    return pdf;
+  } finally {
+    await Promise.all([
+      removeTempFile(inputFile),
+      removeTempFile(outputFile),
+    ]);
+  }
 }
 
 export async function renderDiagnosisReportPdf({
@@ -91,7 +154,7 @@ export async function renderDiagnosisReportPdf({
       },
     });
 
-    return Buffer.from(pdf);
+    return compressPdfWithGhostscript(Buffer.from(pdf), diagnosisId);
   } finally {
     await browser.close();
   }
