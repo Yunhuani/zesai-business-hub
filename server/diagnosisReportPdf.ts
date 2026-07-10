@@ -34,6 +34,15 @@ function parseCookies(cookieHeader: string, baseUrl: string) {
     });
 }
 
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 async function removeTempFile(file: string) {
   try {
     await unlink(file);
@@ -141,15 +150,33 @@ export async function renderDiagnosisReportPdf({
     });
     await page.evaluate(() => document.fonts.ready);
     await page.emulateMediaType("print");
+    const companyName = await page.$eval(
+      ".diagnosis-report",
+      element => element.getAttribute("data-report-company") || "企业"
+    ).catch(() => "企业");
+    const safeCompanyName = escapeHtml(companyName);
 
     const pdf = await page.pdf({
       format: "A4",
       printBackground: true,
       preferCSSPageSize: true,
+      displayHeaderFooter: true,
+      headerTemplate: `
+        <div style="box-sizing:border-box;width:100%;height:14mm;padding:5mm 14mm 0;font-family:'Noto Sans SC',sans-serif;font-size:8px;color:#7f8592;background:#121317;display:flex;align-items:flex-start;justify-content:space-between;">
+          <span>${safeCompanyName}</span>
+          <span style="letter-spacing:.08em;color:#d4a83e;">NBG 增长诊断</span>
+        </div>
+      `,
+      footerTemplate: `
+        <div style="box-sizing:border-box;width:100%;height:15mm;padding:0 14mm 5mm;font-family:'Noto Sans SC',sans-serif;font-size:8px;color:#7f8592;background:#121317;display:flex;align-items:flex-end;justify-content:space-between;">
+          <span>泽思AI · zesai.com</span>
+          <span><span class="pageNumber"></span> / <span class="totalPages"></span></span>
+        </div>
+      `,
       margin: {
-        top: "0",
+        top: "14mm",
         right: "0",
-        bottom: "0",
+        bottom: "15mm",
         left: "0",
       },
     });

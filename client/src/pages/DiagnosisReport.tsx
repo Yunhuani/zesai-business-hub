@@ -10,10 +10,21 @@ import {
 import { useEffect, useState } from "react";
 import { Link, useParams } from "wouter";
 import { toast } from "sonner";
+import { APP_LOGO_FULL } from "@/const";
 import {
   buildDiagnosisReport,
   type DiagnosisReportDimension,
 } from "./diagnosisReportData";
+
+function formatReportDate(value: string | null): string {
+  const date = value ? new Date(value) : new Date();
+  const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
+  return safeDate.toLocaleDateString("zh-CN", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
 
 function ScoreBar({ dimension }: { dimension: DiagnosisReportDimension }) {
   const width = dimension.score === null
@@ -179,9 +190,13 @@ export default function DiagnosisReport() {
   );
   const fullAccess = query.data?.fullAccess === true;
   const pdfPurchased = query.data?.pdfPurchased === true;
+  const reportDate = formatReportDate(report.createdAt);
 
   return (
-    <div className="diagnosis-report min-h-screen overflow-hidden bg-[#121317] text-[#EAEDF3] [font-family:'Noto_Sans_SC',sans-serif]">
+    <div
+      className="diagnosis-report min-h-screen overflow-hidden bg-[#121317] text-[#EAEDF3] [font-family:'Noto_Sans_SC',sans-serif]"
+      data-report-company={report.companyName}
+    >
       <style>{`
         @media print {
           @page { size: A4; margin: 0; }
@@ -190,10 +205,15 @@ export default function DiagnosisReport() {
           .diagnosis-report, .diagnosis-report * {
             font-family: 'Noto Sans SC', sans-serif !important;
           }
-          .report-cover, .report-health, .report-dimension, .report-findings, .report-closing {
+          .report-cover, .report-dimension, .report-findings, .report-closing, .report-about {
             break-before: page;
           }
-          .report-cover { break-before: auto; min-height: 100vh; }
+          .report-cover {
+            break-before: auto;
+            break-after: page;
+            min-height: calc(297mm - 29mm);
+          }
+          .report-about { min-height: calc(297mm - 29mm); }
           .report-heading, .report-card, .report-reason, .report-degradation {
             break-inside: avoid;
           }
@@ -250,7 +270,92 @@ export default function DiagnosisReport() {
             </div>
           </div>
         ) : null}
-        <section className="report-cover mx-auto grid max-w-6xl gap-14 px-5 pb-24 pt-16 sm:px-8 sm:pt-24 lg:grid-cols-[1.45fr_0.55fr] lg:gap-20 lg:pb-32">
+        <section className="report-cover relative mx-auto flex max-w-6xl flex-col justify-between px-5 pb-12 pt-12 sm:px-8 sm:pt-16">
+          <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-[#E8B84B]/55 to-transparent sm:inset-x-8" />
+          <div className="flex items-start justify-between gap-8">
+            <img
+              src={APP_LOGO_FULL}
+              alt="泽思AI"
+              className="h-12 w-auto object-contain brightness-110 sm:h-16"
+            />
+            <div className="text-right font-mono text-[10px] uppercase tracking-[0.18em] text-[#6E7180]">
+              <p>Confidential Report</p>
+              <p className="mt-1 text-[#E8B84B]">NO. {report.id}</p>
+            </div>
+          </div>
+
+          <div className="grid gap-12 py-16 lg:grid-cols-[1.25fr_0.75fr] lg:items-end lg:py-20">
+            <div>
+              <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-[#E8B84B]">
+                NBG Growth Diagnosis
+              </p>
+              <h1 className="mt-8 max-w-4xl text-[46px] font-semibold leading-[1.08] tracking-[-0.06em] sm:text-[72px] lg:text-[88px]">
+                NBG 增长诊断报告
+              </h1>
+              <div className="mt-10 h-px max-w-xl bg-gradient-to-r from-[#E8B84B] to-transparent" />
+              <p className="mt-8 text-xl font-medium text-[#F5F0E5] sm:text-2xl">
+                {report.companyName}
+              </p>
+              <p className="mt-4 text-sm text-[#9DA4B3]">
+                报告生成日期：{reportDate}
+              </p>
+            </div>
+            <div className="border border-[#E8B84B]/35 bg-[#17160F] p-7 shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#6E7180]">
+                Growth health score
+              </p>
+              <div className="mt-5 flex items-end gap-3">
+                <span className="text-[72px] font-light leading-none tracking-[-0.08em] text-[#FFD166] sm:text-[88px]">
+                  {report.overallScore === null
+                    ? "—"
+                    : report.overallScore.toFixed(1)}
+                </span>
+                <span className="mb-2 text-sm text-[#6E7180]">/ 10</span>
+              </div>
+              {report.scoreLabel ? (
+                <span className="mt-5 inline-flex border border-[#E0A05A]/60 bg-[#E0A05A]/10 px-3 py-1.5 text-xs tracking-[0.12em] text-[#E8B84B]">
+                  {report.scoreLabel}
+                </span>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-white/[0.08] pt-7 text-sm text-[#9DA4B3] sm:flex-row sm:items-end sm:justify-between">
+            <p className="max-w-xl leading-7">
+              泽思AI 咨询交付中心
+              <br />
+              基于 NBG 增长解码体系
+            </p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#6E7180]">
+              ZESAI.COM
+            </p>
+          </div>
+        </section>
+
+        <section className="report-body-intro border-b border-white/[0.08] bg-[#121317]">
+          <div className="mx-auto grid max-w-6xl gap-8 px-5 py-14 sm:px-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#E8B84B]">
+                Client report
+              </p>
+              <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">
+                {report.companyName}增长诊断报告
+              </h1>
+              {report.headline ? (
+                <p className="mt-6 max-w-3xl text-[18px] leading-8 text-[#D6D8DE]">
+                  {report.headline}
+                </p>
+              ) : null}
+            </div>
+            {report.overallJudgment ? (
+              <p className="border-l border-[#E8B84B]/70 pl-6 text-sm leading-7 text-[#9DA4B3]">
+                {report.overallJudgment}
+              </p>
+            ) : null}
+          </div>
+        </section>
+
+        <section className="report-executive mx-auto grid max-w-6xl gap-14 px-5 pb-24 pt-16 sm:px-8 sm:pt-24 lg:grid-cols-[1.45fr_0.55fr] lg:gap-20 lg:pb-32">
           <div>
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#E8B84B]">
               NBG Growth Diagnosis
@@ -555,6 +660,59 @@ export default function DiagnosisReport() {
           </p>
         </section>
         ) : null}
+
+        <section className="report-about bg-[#0E0F13]">
+          <div className="mx-auto flex max-w-6xl flex-col justify-between px-5 py-16 sm:px-8 sm:py-20">
+            <div className="flex items-start justify-between gap-8 border-b border-white/[0.08] pb-8">
+              <img
+                src={APP_LOGO_FULL}
+                alt="泽思AI"
+                className="h-12 w-auto object-contain brightness-110"
+              />
+              <p className="text-right font-mono text-[10px] uppercase tracking-[0.18em] text-[#6E7180]">
+                Methodology Note
+              </p>
+            </div>
+            <div className="grid gap-12 py-14 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#E8B84B]">
+                  About Zesai AI
+                </p>
+                <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] sm:text-5xl">
+                  关于泽思AI
+                </h2>
+              </div>
+              <div className="space-y-7 text-[15px] leading-8 text-[#B5BAC5]">
+                <p>
+                  泽思AI 是面向企业经营者的 AI 商业咨询交付平台，聚焦增长诊断、经营分析与决策支持。我们将咨询公司的结构化方法论与大模型分析能力结合，帮助企业把复杂经营问题转化为可讨论、可决策、可推进的报告成果。
+                </p>
+                <p>
+                  NBG 增长解码体系从市场机会、竞争格局、商业模式、内部能力与财务健康五个维度观察企业增长状态，用于识别限制增长的关键环节，而不是只罗列表面问题。
+                </p>
+                <p>
+                  本报告由 AI 基于问卷信息、结构化模型和 NBG 方法论生成，适合作为经营复盘和顾问沟通的起点。报告不构成投资、法律、财税或人事决策的最终意见，建议结合企业真实经营数据、行业信息和管理层判断进一步校准。
+                </p>
+              </div>
+            </div>
+            <div className="grid gap-5 border-t border-[#E8B84B]/25 pt-8 text-sm text-[#9DA4B3] sm:grid-cols-3">
+              <p>
+                官网
+                <br />
+                <span className="font-mono text-[#F5F0E5]">zesai.com</span>
+              </p>
+              <p>
+                报告类型
+                <br />
+                <span className="text-[#F5F0E5]">NBG 增长诊断</span>
+              </p>
+              <p>
+                品牌署名
+                <br />
+                <span className="text-[#F5F0E5]">泽思AI 咨询交付中心</span>
+              </p>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );
