@@ -218,10 +218,10 @@ export default function DiagnosisReport() {
             padding-top: 18mm !important;
             padding-bottom: 18mm !important;
           }
-          .report-dimension, .report-card, .report-reason {
+          .report-dimension {
             break-inside: auto;
           }
-          .report-heading, .report-degradation {
+          .report-dimension-heading, .report-heading, .report-card, .report-reason, .report-degradation {
             break-inside: avoid;
           }
           .report-heading { break-after: avoid; }
@@ -357,7 +357,6 @@ export default function DiagnosisReport() {
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#E8B84B]">
               NBG Growth Diagnosis
             </p>
-            <p className="mt-7 text-sm text-[#9DA4B3]">{report.companyName}</p>
             {report.headline ? (
               <h1 className="mt-5 max-w-3xl text-[42px] font-semibold leading-[1.13] tracking-[-0.055em] sm:text-[58px] lg:text-[66px]">
                 {report.headline}
@@ -476,7 +475,7 @@ export default function DiagnosisReport() {
             className="report-dimension mx-auto max-w-6xl border-b border-white/[0.08] px-5 py-20 sm:px-8 sm:py-28"
           >
             <div className="grid gap-12 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-20">
-              <div className="break-keep [word-break:keep-all]">
+              <div className="report-dimension-heading break-keep [word-break:keep-all]">
                 <span className="font-mono text-xs text-[#E8B84B]">
                   0{index + 1}
                 </span>
@@ -597,7 +596,7 @@ export default function DiagnosisReport() {
                 {report.keyFindings.map((finding, index) => (
                   <article
                     key={finding.id ?? finding.title}
-                    className="report-card min-h-[310px] bg-[#121317] p-7 sm:p-9"
+                    className="report-card bg-[#121317] p-7 sm:p-9"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-xs text-[#E8B84B]">
