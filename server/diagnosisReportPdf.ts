@@ -171,6 +171,15 @@ export async function renderDiagnosisReportPdf({
     ).catch(() => "企业");
     const safeCompanyName = escapeHtml(companyName);
 
+    const coverPrintStyle = await page.addStyleTag({
+      content: `
+        @page { margin: 0 !important; }
+        .diagnosis-report {
+          min-height: 0 !important;
+          overflow: visible !important;
+        }
+      `,
+    });
     const coverPdf = await page.pdf({
       format: "A4",
       printBackground: true,
@@ -183,7 +192,17 @@ export async function renderDiagnosisReportPdf({
         left: "0",
       },
     });
+    await coverPrintStyle.evaluate(element => element.remove());
 
+    await page.addStyleTag({
+      content: `
+        @page { margin: 20mm 0 18mm 0 !important; }
+        .diagnosis-report {
+          min-height: 0 !important;
+          overflow: visible !important;
+        }
+      `,
+    });
     const bodyPdf = await page.pdf({
       format: "A4",
       printBackground: true,

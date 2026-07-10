@@ -211,12 +211,12 @@ export default function DiagnosisReport() {
           .report-cover {
             break-before: auto;
             break-after: page;
-            min-height: calc(297mm - 29mm);
+            min-height: 297mm;
           }
           .report-about { min-height: calc(297mm - 29mm); }
           .report-executive, .report-dimension, .report-findings > div, .report-closing {
-            padding-top: 18mm !important;
-            padding-bottom: 18mm !important;
+            padding-top: 8mm !important;
+            padding-bottom: 8mm !important;
           }
           .report-dimension {
             break-inside: auto;
