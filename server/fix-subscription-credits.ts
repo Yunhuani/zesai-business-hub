@@ -56,7 +56,7 @@ async function fixSubscriptionCredits() {
       const currentCredits = user.creditsSubscription;
 
       console.log(`\n订单: ${order.outTradeNo}`);
-      console.log(`用户: ${user.email || user.name || `ID:${user.id}`}`);
+      console.log(`用户ID: ${user.id}`);
       console.log(`套餐: ${order.plan}`);
       console.log(`当前积分: ${currentCredits}`);
       console.log(`应有积分: ${expectedCredits}`);

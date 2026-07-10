@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { maskEmail, sanitizeForLog } from "../lib/logSanitizer";
 
 /**
  * Send email using configured SMTP server
@@ -29,9 +30,9 @@ export async function sendEmail(options: {
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log(`[Email] Sent to ${options.to}: ${options.subject}`);
+    console.log(`[Email] Sent to ${maskEmail(options.to)}: ${options.subject}`);
   } catch (error) {
-    console.error("[Email] Failed to send email:", error);
+    console.error("[Email] Failed to send email:", sanitizeForLog(error));
     throw new Error("Failed to send email");
   }
 }

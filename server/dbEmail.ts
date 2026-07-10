@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "./db";
 import { users } from "../drizzle/schema";
 import { toMySqlTimestamp } from "./lib/mysqlTimestamp";
+import { sanitizeForLog } from "./lib/logSanitizer";
 
 type InsertUser = typeof users.$inferInsert;
 
@@ -62,7 +63,7 @@ export async function upsertEmailUser(email: string, name?: string) {
       return await getUserByEmail(email);
     }
   } catch (error) {
-    console.error("[Database] Failed to upsert email user:", error);
+    console.error("[Database] Failed to upsert email user:", sanitizeForLog(error));
     throw error;
   }
 }

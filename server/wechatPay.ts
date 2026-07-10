@@ -1,5 +1,6 @@
 import Wechatpay from 'wechatpay-node-v3';
 import { ENV } from './_core/env';
+import { sanitizeForLog } from './lib/logSanitizer';
 
 // 微信支付配置
 const WECHAT_PAY_MCHID = process.env.WECHAT_PAY_MCHID || '';
@@ -10,8 +11,6 @@ console.log('[WechatPay] Configuration:', {
   hasAppId: !!WECHAT_APP_ID,
   hasMchid: !!WECHAT_PAY_MCHID,
   hasApiKey: !!WECHAT_PAY_API_V3_KEY,
-  appId: WECHAT_APP_ID ? `${WECHAT_APP_ID.substring(0, 8)}...` : 'missing',
-  mchid: WECHAT_PAY_MCHID || 'missing',
 });
 
 if (!WECHAT_PAY_MCHID || !WECHAT_PAY_API_V3_KEY) {
@@ -101,7 +100,7 @@ export async function createWechatH5Payment(params: {
     outTradeNo: params.outTradeNo,
     amount: params.amount,
     description: params.description,
-    clientIp: params.clientIp,
+    hasClientIp: !!params.clientIp,
   });
   
   try {
@@ -126,14 +125,17 @@ export async function createWechatH5Payment(params: {
       },
     };
     
-    console.log('[WechatPay] Calling transactions_h5 with:', JSON.stringify(paymentParams, null, 2));
+    console.log('[WechatPay] Calling transactions_h5 with:', {
+      outTradeNo: params.outTradeNo,
+      amount: params.amount,
+      hasClientIp: !!params.clientIp,
+    });
     
     const result = await pay.transactions_h5(paymentParams);
     
     console.log('[WechatPay] API response:', {
       status: result.status,
       hasH5Url: !!result.data?.h5_url,
-      data: result.data,
     });
     
     if (result.status === 200 && result.data.h5_url) {
@@ -141,13 +143,12 @@ export async function createWechatH5Payment(params: {
       return { h5Url: result.data.h5_url };
     }
     
-    console.error('[WechatPay] Invalid response from WeChat API:', result);
+    console.error('[WechatPay] Invalid response from WeChat API:', sanitizeForLog(result));
     throw new Error('Failed to create wechat payment - invalid response');
   } catch (error: any) {
     console.error('[WechatPay] Create H5 payment error:', {
       message: error.message,
-      response: error.response?.data,
-      stack: error.stack,
+      response: sanitizeForLog(error.response?.data),
     });
     throw error;
   }
@@ -185,7 +186,7 @@ export async function verifyWechatPayNotify(
     const pay = getWechatPayInstance();
     return await pay.verifySign({ timestamp, nonce, body, signature, serial });
   } catch (error) {
-    console.error('[WechatPay] Verify signature error:', error);
+    console.error('[WechatPay] Verify signature error:', sanitizeForLog(error));
     return false;
   }
 }
@@ -202,7 +203,7 @@ export function decryptWechatPayNotify(
     const pay = getWechatPayInstance();
     return pay.decipher_gcm(ciphertext, associatedData, nonce, WECHAT_PAY_API_V3_KEY);
   } catch (error) {
-    console.error('[WechatPay] Decrypt notify error:', error);
+    console.error('[WechatPay] Decrypt notify error:', sanitizeForLog(error));
     throw error;
   }
 }

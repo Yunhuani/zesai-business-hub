@@ -151,7 +151,11 @@ async function startServer() {
       const { resetSubscriptionCredits } = await import("../creditsManager");
       const { notifyAdminNewOrder } = await import("../orderNotification");
       
-      console.log("[Payment] Alipay notify received:", req.body);
+      console.log("[Payment] Alipay notify received:", {
+        outTradeNo: req.body?.out_trade_no,
+        tradeStatus: req.body?.trade_status,
+        hasSign: !!req.body?.sign,
+      });
       
       // Verify signature
       const isValid = verifyAlipayCallback(req.body);

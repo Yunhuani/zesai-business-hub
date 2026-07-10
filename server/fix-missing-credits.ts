@@ -50,7 +50,7 @@ async function fixMissingCredits() {
 
   for (const user of usersToFix) {
     const expectedCredits = (await getSubscriptionPlan(user.plan)).monthlyCredits;
-    console.log(`用户: ${user.email || user.name || `ID:${user.userId}`}`);
+    console.log(`用户ID: ${user.userId}`);
     console.log(`套餐: ${user.plan}`);
     console.log(`当前积分: ${user.currentCredits}`);
     console.log(`应有积分: ${expectedCredits}`);
@@ -90,10 +90,10 @@ async function fixMissingCredits() {
         description: `补发订阅积分: ${user.plan} 套餐 (系统修复)`,
       });
 
-      console.log(`✅ 成功补发: ${user.email || user.name} - ${expectedCredits}积分`);
+      console.log(`✅ 成功补发: userId=${user.userId} - ${expectedCredits}积分`);
       successCount++;
     } catch (error) {
-      console.error(`❌ 失败: ${user.email || user.name}`, error);
+      console.error(`❌ 失败: userId=${user.userId}`, error);
       failCount++;
     }
   }

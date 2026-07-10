@@ -74,7 +74,11 @@ export async function createAlipayQrCodePayment(params: {
       notifyUrl: params.notifyUrl,
     });
     
-    console.log('[Alipay] API response:', JSON.stringify(result, null, 2));
+    console.log('[Alipay] API response:', {
+      code: result.code,
+      hasQrCode: !!result.qrCode,
+      subCode: result.subCode,
+    });
     
     if (result.code === '10000' && result.qrCode) {
       return result.qrCode;
@@ -101,12 +105,13 @@ export async function createAlipayQrCodePayment(params: {
 export function verifyAlipayCallback(params: Record<string, any>): boolean {
   try {
     // 打印关键调试信息（不含完整sign以保护安全）
-    console.log('[Alipay] Verify params keys:', Object.keys(params));
-    console.log('[Alipay] sign_type:', params.sign_type);
-    console.log('[Alipay] sign length:', params.sign?.length);
+    console.log('[Alipay] Verify callback:', {
+      keys: Object.keys(params),
+      signType: params.sign_type,
+      hasSign: !!params.sign,
+    });
     const sdk = getAlipaySdk();
     console.log('[Alipay] alipayPublicKey configured:', !!sdk['config']?.alipayPublicKey);
-    console.log('[Alipay] alipayPublicKey prefix:', sdk['config']?.alipayPublicKey?.substring(0, 30));
 
     const result = sdk.checkNotifySign(params);
     console.log('[Alipay] checkNotifySign result:', result);

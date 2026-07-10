@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { sdk } from "./sdk";
 import { ENV } from "./env";
 import { getUserByOpenId } from "../db";
+import { sanitizeForLog } from "../lib/logSanitizer";
 
 export type TrpcContext = {
   req: CreateExpressContextOptions["req"];
@@ -23,12 +24,12 @@ export async function createContext(
       const token = authHeader.substring(7);
       try {
         const decoded = jwt.verify(token, ENV.jwtSecret) as { userId: number; openId: string };
-        console.log('[Auth] JWT decoded:', decoded);
+        console.log('[Auth] JWT verified:', { userId: decoded.userId });
         const fetchedUser = await getUserByOpenId(decoded.openId);
-        console.log('[Auth] getUserByOpenId result:', fetchedUser);
+        console.log('[Auth] getUserByOpenId result:', fetchedUser ? { userId: fetchedUser.id } : null);
         user = fetchedUser || null;
       } catch (jwtError) {
-        console.error('[Auth] JWT verification failed:', jwtError);
+        console.error('[Auth] JWT verification failed:', sanitizeForLog(jwtError));
         user = null;
       }
     }

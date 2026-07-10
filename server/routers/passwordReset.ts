@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { sendEmail } from "../_core/email";
+import { sanitizeForLog } from "../lib/logSanitizer";
 
 /**
  * 密码重置路由
@@ -77,7 +78,7 @@ export const passwordResetRouter = router({
           `,
         });
       } catch (error) {
-        console.error("[PasswordReset] Failed to send email:", error);
+        console.error("[PasswordReset] Failed to send email:", sanitizeForLog(error));
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "发送重置邮件失败，请稍后重试",

@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { sanitizeForLog, sanitizeLogString } from './logSanitizer';
 
 type LogLevel = 'INFO' | 'WARN' | 'ERROR';
 
@@ -58,7 +59,7 @@ class Logger {
    * 格式化日志消息
    */
   private formatLogMessage(level: LogLevel, module: string, message: string): string {
-    return `[${this.getFormattedTimestamp()}] [${level}] [${module}] ${message}`;
+    return `[${this.getFormattedTimestamp()}] [${level}] [${module}] ${sanitizeLogString(message)}`;
   }
 
   /**
@@ -105,11 +106,11 @@ class Logger {
     let stackTrace = '';
     if (error) {
       if (error instanceof Error) {
-        stackTrace = `Stack trace: ${error.stack}`;
+        stackTrace = `Stack trace: ${sanitizeLogString(error.stack || error.message)}`;
       } else if (typeof error === 'object') {
-        stackTrace = `Error details: ${JSON.stringify(error, null, 2)}`;
+        stackTrace = `Error details: ${JSON.stringify(sanitizeForLog(error), null, 2)}`;
       } else {
-        stackTrace = `Error: ${String(error)}`;
+        stackTrace = `Error: ${sanitizeLogString(String(error))}`;
       }
     }
     
@@ -117,7 +118,7 @@ class Logger {
   }
 
   errorJson(payload: Record<string, unknown>): void {
-    const logMessage = JSON.stringify(payload);
+    const logMessage = JSON.stringify(sanitizeForLog(payload));
     console.error(logMessage);
     this.writeToFile(logMessage);
   }

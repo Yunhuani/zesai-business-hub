@@ -280,7 +280,11 @@ export const paymentRouter = router({
   alipayNotify: publicProcedure
     .input(z.record(z.string(), z.any()))
     .mutation(async ({ input }) => {
-      console.log("[Payment] Alipay notify received:", input);
+      console.log("[Payment] Alipay notify received:", {
+        outTradeNo: input.out_trade_no,
+        tradeStatus: input.trade_status,
+        hasSign: !!input.sign,
+      });
       
       // 验证签名
       const isValid = verifyAlipayCallback(input);

@@ -2,6 +2,7 @@
 import * as DysmsapiModule from '@alicloud/dysmsapi20170525';
 import { Config } from '@alicloud/openapi-client';
 import { logger } from './logger';
+import { maskPhone } from './logSanitizer';
 
 // 处理ESM/CJS兼容性问题
 const Dysmsapi = (DysmsapiModule.default as any)?.default || DysmsapiModule.default;
@@ -45,19 +46,19 @@ export async function sendSmsCode(
       templateParam: JSON.stringify({ code }),
     });
 
-    logger.info('SMS', `Sending SMS to ${phone.substring(0, 3)}****${phone.substring(7)} (type: ${type})`);
+    logger.info('SMS', `Sending SMS to ${maskPhone(phone)} (type: ${type})`);
     
     const response = await client.sendSms(sendSmsRequest);
     
     if (response.body.code === 'OK') {
-      logger.info('SMS', `Successfully sent code to ${phone.substring(0, 3)}****${phone.substring(7)}`);
+      logger.info('SMS', `Successfully sent code to ${maskPhone(phone)}`);
       return { success: true, message: '验证码已发送' };
     } else {
       logger.error('SMS', `Failed to send: ${response.body.code} - ${response.body.message}`);
       return { success: false, message: response.body.message || '发送失败' };
     }
   } catch (error: any) {
-    logger.error('SMS', `Error sending SMS to ${phone}`, error);
+    logger.error('SMS', `Error sending SMS to ${maskPhone(phone)}`, error);
     return { success: false, message: '短信发送失败，请稍后重试' };
   }
 }

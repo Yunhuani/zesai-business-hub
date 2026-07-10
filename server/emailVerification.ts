@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { maskEmail, sanitizeForLog } from "./lib/logSanitizer";
 
 // 验证码存储（生产环境应该用Redis）
 const verificationCodes = new Map<string, { code: string; expiresAt: number; attempts: number }>();
@@ -147,9 +148,9 @@ export async function sendVerificationEmail(email: string, code: string): Promis
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log(`[Email] Verification code sent to ${email}`);
+    console.log(`[Email] Verification code sent to ${maskEmail(email)}`);
   } catch (error) {
-    console.error(`[Email] Failed to send verification code to ${email}:`, error);
+    console.error(`[Email] Failed to send verification code to ${maskEmail(email)}:`, sanitizeForLog(error));
     throw new Error("发送验证码失败,请稍后重试");
   }
 }
