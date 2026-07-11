@@ -222,6 +222,9 @@ export async function renderDiagnosisReportPdf({
           .report-dimension > .grid > div {
             width: 100% !important;
           }
+          .report-judgment {
+            break-inside: auto !important;
+          }
         }
       `,
     });
