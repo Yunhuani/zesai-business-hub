@@ -27,7 +27,24 @@ export type MatrixQuestion = {
   customPlaceholder: string;
 };
 
-export type DiagnosisQuestion = TextQuestion | ChoiceQuestion | MatrixQuestion;
+export type FinanceTableQuestion = {
+  id: string;
+  field: string;
+  label: string;
+  type: "finance-table";
+  columns: Array<{
+    key: string;
+    label: string;
+    inputType: "text" | "number";
+    unit?: string;
+  }>;
+  minRows?: number;
+  maxRows?: number;
+  addButtonLabel: string;
+  helperText?: string;
+};
+
+export type DiagnosisQuestion = TextQuestion | ChoiceQuestion | MatrixQuestion | FinanceTableQuestion;
 
 export type DiagnosisStep = {
   id: string;
@@ -145,6 +162,7 @@ export const DIAGNOSIS_STEPS: DiagnosisStep[] = [
         label: "有没有想拓展的方向？",
         type: "text",
         placeholder: "例如：欧洲、东南亚，或新的客户群体",
+        optional: true,
       },
     ],
   },
@@ -181,6 +199,7 @@ export const DIAGNOSIS_STEPS: DiagnosisStep[] = [
         label: "你有哪些别人没有的资质、认证或独有能力？",
         type: "textarea",
         placeholder: "可填写多项，如行业认证、专利、独家渠道、特殊工艺或长期客户关系",
+        optional: true,
       },
     ],
   },
@@ -206,6 +225,41 @@ export const DIAGNOSIS_STEPS: DiagnosisStep[] = [
     ],
   },
   {
+    id: "business-model-plus",
+    dimension: "Business model",
+    title: "产品线与客户结构",
+    questions: [
+      {
+        id: "finance-product-lines",
+        field: "finance_plus.product_lines",
+        label: "主要产品线的收入与成本明细",
+        type: "finance-table",
+        maxRows: 6,
+        addButtonLabel: "添加产品线",
+        helperText: "填写后可计算产品线毛利结构；没有明细可留空。",
+        columns: [
+          { key: "name", label: "产品线名", inputType: "text" },
+          { key: "revenue", label: "年收入", inputType: "number", unit: "万元" },
+          { key: "direct_cost", label: "直接成本", inputType: "number", unit: "万元" },
+          { key: "allocated", label: "分摊费用", inputType: "number", unit: "万元" },
+        ],
+      },
+      {
+        id: "finance-customers",
+        field: "finance_plus.customers",
+        label: "前三大客户收入占比",
+        type: "finance-table",
+        maxRows: 3,
+        addButtonLabel: "添加客户",
+        helperText: "最多填写前三大客户，用于判断客户集中度风险；没有明细可留空。",
+        columns: [
+          { key: "name", label: "客户名", inputType: "text" },
+          { key: "pct", label: "收入占比", inputType: "number", unit: "%" },
+        ],
+      },
+    ],
+  },
+  {
     id: "capability",
     dimension: "Capability",
     title: "支撑业务的团队与能力",
@@ -220,7 +274,7 @@ export const DIAGNOSIS_STEPS: DiagnosisStep[] = [
           { label: "销售", field: "capability.team_structure.销售" },
           { label: "职能", field: "capability.team_structure.职能" },
         ],
-        options: ["弱", "中", "强"],
+        options: ["不适用", "弱", "中", "强"],
         customPlaceholder: "其他团队情况 / 补充说明",
       },
       {
@@ -234,7 +288,7 @@ export const DIAGNOSIS_STEPS: DiagnosisStep[] = [
           { label: "营销", field: "capability.function_strength.marketing" },
           { label: "财务管理", field: "capability.function_strength.finance" },
         ],
-        options: ["弱", "中", "强"],
+        options: ["不适用", "弱", "中", "强"],
         customPlaceholder: "其他能力情况 / 补充说明",
       },
     ],
@@ -286,6 +340,33 @@ export const DIAGNOSIS_STEPS: DiagnosisStep[] = [
         unit: "万元 / 月",
         optional: true,
         helperText: "填写后可更准确估算公司的现金跑道；不填我们仍会给出完整诊断。",
+      },
+    ],
+  },
+  {
+    id: "finance-plus-ar",
+    dimension: "Financial health",
+    title: "应收账款情况",
+    questions: [
+      {
+        id: "ar-balance",
+        field: "finance_plus.ar.balance",
+        label: "当前应收账款余额大约有多少？",
+        type: "number",
+        placeholder: "请输入金额",
+        unit: "万元",
+        optional: true,
+        helperText: "填写后可判断回款压力；若填写余额，请同时填写账期。",
+      },
+      {
+        id: "ar-days",
+        field: "finance_plus.ar.days",
+        label: "平均账期大约是多少天？",
+        type: "number",
+        placeholder: "请输入天数",
+        unit: "天",
+        optional: true,
+        helperText: "填写后可估算应收账款周转压力；若填写账期，请同时填写余额。",
       },
     ],
   },

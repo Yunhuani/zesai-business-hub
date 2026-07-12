@@ -1,6 +1,9 @@
+export type FinanceRowAnswer = Record<string, string | number | null>;
+export type DiagnosisDraftAnswer = string | string[] | FinanceRowAnswer[];
+
 export type DiagnosisDraft = {
   stepIndex: number;
-  answers: Record<string, string | string[]>;
+  answers: Record<string, DiagnosisDraftAnswer>;
   customValues: Record<string, string>;
 };
 

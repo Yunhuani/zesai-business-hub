@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { DIAGNOSIS_STEPS } from "../client/src/pages/diagnosisQuestionnaire";
 
 describe("diagnosis questionnaire structure", () => {
-  it("groups the intake into eleven progressive steps with accurate dimension labels", () => {
-    expect(DIAGNOSIS_STEPS).toHaveLength(11);
+  it("groups the intake into progressive steps with accurate dimension labels", () => {
+    expect(DIAGNOSIS_STEPS).toHaveLength(13);
     expect(DIAGNOSIS_STEPS.map(step => step.dimension)).toEqual([
       "Company identity",
       "Scale & markets",
@@ -13,9 +13,26 @@ describe("diagnosis questionnaire structure", () => {
       "Competition",
       "Competitive assets",
       "Business model",
+      "Business model",
       "Capability",
       "Financial health",
       "Financial health",
+      "Financial health",
+    ]);
+    expect(DIAGNOSIS_STEPS.map(step => step.id)).toEqual([
+      "company-basics",
+      "company-scale",
+      "company-trend",
+      "company-channel-anxiety",
+      "market",
+      "competition",
+      "competitive-assets",
+      "business-model",
+      "business-model-plus",
+      "capability",
+      "finance-model",
+      "finance-cash",
+      "finance-plus-ar",
     ]);
     expect(DIAGNOSIS_STEPS.every(step => step.questions.length >= 1 && step.questions.length <= 2)).toBe(true);
   });
@@ -58,7 +75,65 @@ describe("diagnosis questionnaire structure", () => {
       "finance_basic.cost_structure",
       "finance_basic.cash",
       "finance_basic.monthly_fixed",
+      "finance_plus.product_lines",
+      "finance_plus.customers",
+      "finance_plus.ar.balance",
+      "finance_plus.ar.days",
     ]));
+  });
+
+  it("defines finance plus table questions with engine-aligned fields", () => {
+    const questions = DIAGNOSIS_STEPS.flatMap(step => step.questions);
+    const productLines = questions.find(question => question.id === "finance-product-lines");
+    const customers = questions.find(question => question.id === "finance-customers");
+    const businessModelPlusStep = DIAGNOSIS_STEPS.find(step => step.id === "business-model-plus");
+
+    expect(businessModelPlusStep?.dimension).toBe("Business model");
+    expect(businessModelPlusStep?.questions.map(question => question.id)).toEqual([
+      "finance-product-lines",
+      "finance-customers",
+    ]);
+
+    expect(productLines).toMatchObject({
+      type: "finance-table",
+      field: "finance_plus.product_lines",
+      maxRows: 6,
+    });
+    expect(productLines && "columns" in productLines ? productLines.columns.map(column => column.key) : []).toEqual([
+      "name",
+      "revenue",
+      "direct_cost",
+      "allocated",
+    ]);
+
+    expect(customers).toMatchObject({
+      type: "finance-table",
+      field: "finance_plus.customers",
+      maxRows: 3,
+    });
+    expect(customers && "columns" in customers ? customers.columns.map(column => column.key) : []).toEqual([
+      "name",
+      "pct",
+    ]);
+  });
+
+  it("lets capability matrix questions use not-applicable as a valid required answer", () => {
+    const questions = DIAGNOSIS_STEPS.flatMap(step => step.questions);
+    const teamStructure = questions.find(question => question.id === "team-structure");
+    const functionStrength = questions.find(question => question.id === "function-strength");
+
+    expect(teamStructure && "options" in teamStructure ? teamStructure.options : []).toEqual([
+      "不适用",
+      "弱",
+      "中",
+      "强",
+    ]);
+    expect(functionStrength && "options" in functionStrength ? functionStrength.options : []).toEqual([
+      "不适用",
+      "弱",
+      "中",
+      "强",
+    ]);
   });
 
   it("gives every preset choice question a free-text alternative", () => {
@@ -87,12 +162,9 @@ describe("diagnosis questionnaire structure", () => {
       "你的成本主要花在哪些地方？（如原材料、人工、房租、推广等）"
     );
 
-    for (const id of ["cash", "monthly-fixed"]) {
+    for (const id of ["expansion-intent", "unique-assets", "cash", "monthly-fixed", "ar-balance", "ar-days"]) {
       const question = byId.get(id);
       expect(question && "optional" in question ? question.optional : false).toBe(true);
-      expect(question && "helperText" in question ? question.helperText : "").toContain(
-        "不填我们仍会给出完整诊断"
-      );
     }
 
     expect(DIAGNOSIS_STEPS.find(step => step.id === "finance-cash")?.showFinanceUpload).toBe(true);

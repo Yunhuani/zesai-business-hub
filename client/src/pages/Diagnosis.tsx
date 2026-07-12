@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
-import { ArrowLeft, ArrowRight, Check, FileSpreadsheet, LockKeyhole } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, FileSpreadsheet, LockKeyhole, Plus, Trash2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { APP_LOGO_FULL } from "@/const";
 import { trpc } from "@/lib/trpc";
@@ -9,21 +9,28 @@ import {
   clearDiagnosisDraft,
   loadDiagnosisDraft,
   saveDiagnosisDraft,
+  type DiagnosisDraftAnswer,
+  type FinanceRowAnswer,
 } from "@/lib/diagnosisDraft";
 import { rememberLoginReturnPath } from "@/lib/loginReturn";
 import {
   DIAGNOSIS_STEPS,
   type ChoiceQuestion,
   type DiagnosisQuestion,
+  type FinanceTableQuestion,
   type MatrixQuestion,
   type TextQuestion,
 } from "./diagnosisQuestionnaire";
 
-type Answer = string | string[];
+type Answer = DiagnosisDraftAnswer;
 type Answers = Record<string, Answer>;
 
 function isChoiceQuestion(question: DiagnosisQuestion): question is ChoiceQuestion {
   return question.type === "single" || question.type === "multi";
+}
+
+function getStringArrayAnswer(value: Answer | undefined): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
 
 function ChoiceCards({
@@ -48,7 +55,7 @@ function ChoiceCards({
       return;
     }
 
-    const current = Array.isArray(selected) ? selected : [];
+    const current = getStringArrayAnswer(selected);
     onAnswer(
       question.field,
       current.includes(option)
@@ -60,9 +67,8 @@ function ChoiceCards({
   return (
     <div className="space-y-[11px]">
       {question.options.map(option => {
-        const active = Array.isArray(selected)
-          ? selected.includes(option)
-          : selected === option;
+        const selectedValues = getStringArrayAnswer(selected);
+        const active = selectedValues.length > 0 ? selectedValues.includes(option) : selected === option;
 
         return (
           <button
@@ -181,6 +187,120 @@ function TextAnswer({
   );
 }
 
+function getFinanceRows(value: Answer | undefined): FinanceRowAnswer[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is FinanceRowAnswer => typeof item === "object" && item !== null && !Array.isArray(item))
+    : [];
+}
+
+function createEmptyFinanceRow(question: FinanceTableQuestion): FinanceRowAnswer {
+  return Object.fromEntries(question.columns.map(column => [column.key, ""]));
+}
+
+function FinanceTableAnswer({
+  question,
+  value,
+  onChange,
+}: {
+  question: FinanceTableQuestion;
+  value: Answer | undefined;
+  onChange: (field: string, value: FinanceRowAnswer[]) => void;
+}) {
+  const rows = getFinanceRows(value);
+  const visibleRows = rows.length > 0 ? rows : [createEmptyFinanceRow(question)];
+  const canAddRow = !question.maxRows || visibleRows.length < question.maxRows;
+
+  const updateCell = (rowIndex: number, key: string, cellValue: string) => {
+    const nextRows = visibleRows.map((row, index) =>
+      index === rowIndex ? { ...row, [key]: cellValue } : row
+    );
+    onChange(question.field, nextRows);
+  };
+
+  const addRow = () => {
+    if (!canAddRow) return;
+    onChange(question.field, [...visibleRows, createEmptyFinanceRow(question)]);
+  };
+
+  const removeRow = (rowIndex: number) => {
+    const nextRows = visibleRows.filter((_, index) => index !== rowIndex);
+    onChange(question.field, nextRows.length > 0 ? nextRows : [createEmptyFinanceRow(question)]);
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="overflow-x-auto rounded-[14px] border bg-white" style={{ borderColor: "var(--zs-line)" }}>
+        <div
+          className="grid min-w-[620px] items-center gap-2 border-b px-4 py-3 text-[12px] font-bold"
+          style={{
+            borderColor: "var(--zs-line)",
+            color: "var(--zs-sub)",
+            gridTemplateColumns: `repeat(${question.columns.length}, minmax(120px, 1fr)) 44px`,
+          }}
+        >
+          {question.columns.map(column => (
+            <span key={column.key}>{column.label}{column.unit ? ` / ${column.unit}` : ""}</span>
+          ))}
+          <span />
+        </div>
+        {visibleRows.map((row, rowIndex) => (
+          <div
+            key={rowIndex}
+            className="grid min-w-[620px] items-center gap-2 border-b px-4 py-3 last:border-b-0"
+            style={{
+              borderColor: "var(--zs-line)",
+              gridTemplateColumns: `repeat(${question.columns.length}, minmax(120px, 1fr)) 44px`,
+            }}
+          >
+            {question.columns.map(column => (
+              <input
+                key={column.key}
+                type={column.inputType}
+                inputMode={column.inputType === "number" ? "decimal" : undefined}
+                min={column.inputType === "number" ? 0 : undefined}
+                value={String(row[column.key] ?? "")}
+                onChange={event => updateCell(rowIndex, column.key, event.target.value)}
+                placeholder={column.label}
+                className="h-11 w-full rounded-[10px] border bg-white px-3 text-[14px] outline-none transition placeholder:text-[#b4b9b1] focus:ring-4"
+                style={{
+                  borderColor: "var(--zs-line)",
+                  color: "var(--zs-ink)",
+                  "--tw-ring-color": "rgba(31,61,50,.12)",
+                } as CSSProperties}
+              />
+            ))}
+            <button
+              type="button"
+              onClick={() => removeRow(rowIndex)}
+              aria-label="删除这一行"
+              className="flex h-10 w-10 items-center justify-center rounded-[10px] text-[#8d968f] transition hover:bg-[#f1f2ee] hover:text-red-700"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {question.helperText ? (
+          <p className="text-[13px] leading-6" style={{ color: "var(--zs-sub)" }}>
+            {question.helperText}
+          </p>
+        ) : <span />}
+        <button
+          type="button"
+          onClick={addRow}
+          disabled={!canAddRow}
+          className="inline-flex items-center gap-2 rounded-[10px] border bg-white px-4 py-2 text-[13px] font-semibold transition disabled:pointer-events-none disabled:opacity-45"
+          style={{ borderColor: "var(--zs-line)", color: "var(--zs-primary)" }}
+        >
+          <Plus className="h-4 w-4" />
+          {question.addButtonLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function MatrixAnswer({
   question,
   answers,
@@ -194,15 +314,20 @@ function MatrixAnswer({
   onAnswer: (field: string, value: string) => void;
   onCustomValue: (field: string, value: string) => void;
 }) {
+  const gridTemplateColumns = `minmax(0,1fr) repeat(${question.options.length}, minmax(54px, 68px))`;
+
   return (
     <div className="space-y-[13px]">
       <div className="overflow-hidden rounded-[14px] border bg-white" style={{ borderColor: "var(--zs-line)" }}>
-        <div className="grid grid-cols-[minmax(0,1fr)_repeat(3,68px)] items-center px-[18px] pb-[7px] pt-[11px] max-sm:grid-cols-[minmax(0,1fr)_repeat(3,48px)]">
+        <div
+          className="grid items-center px-[18px] pb-[7px] pt-[11px] max-sm:px-3"
+          style={{ gridTemplateColumns }}
+        >
           <span />
           {question.options.map(option => (
             <span
               key={option}
-              className="text-center text-[12.5px] font-bold"
+              className="text-center text-[12px] font-bold"
               style={{ color: "var(--zs-sub)" }}
             >
               {option}
@@ -212,8 +337,8 @@ function MatrixAnswer({
         {question.items.map(item => (
           <div
             key={item.field}
-            className="grid grid-cols-[minmax(0,1fr)_repeat(3,68px)] items-center border-t px-[18px] py-[13px] max-sm:grid-cols-[minmax(0,1fr)_repeat(3,48px)]"
-            style={{ borderColor: "var(--zs-line)" }}
+            className="grid items-center border-t px-[18px] py-[13px] max-sm:px-3"
+            style={{ borderColor: "var(--zs-line)", gridTemplateColumns }}
           >
             <span className="text-[15px] font-semibold" style={{ color: "var(--zs-ink)" }}>
               {item.label}
@@ -304,6 +429,12 @@ function QuestionBlock({
           onAnswer={(field, value) => onAnswer(field, value)}
           onCustomValue={onCustomValue}
         />
+      ) : question.type === "finance-table" ? (
+        <FinanceTableAnswer
+          question={question}
+          value={answers[question.field]}
+          onChange={(field, value) => onAnswer(field, value)}
+        />
       ) : (
         <TextAnswer
           question={question}
@@ -338,6 +469,123 @@ function FinanceUploadTeaser() {
   );
 }
 
+function isBlankCell(value: unknown): boolean {
+  return value == null || (typeof value === "string" && value.trim().length === 0);
+}
+
+function isBlankFinanceRow(row: FinanceRowAnswer, question: FinanceTableQuestion): boolean {
+  return question.columns.every(column => isBlankCell(row[column.key]));
+}
+
+function getStringAnswer(answers: Answers, field: string): string {
+  const value = answers[field];
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function getCustomAnswer(customValues: Record<string, string>, field: string): string {
+  return customValues[field]?.trim() ?? "";
+}
+
+function validateFinanceTableQuestion(question: FinanceTableQuestion, answers: Answers): string | null {
+  const rows = getFinanceRows(answers[question.field]);
+  const filledRows = rows.filter(row => !isBlankFinanceRow(row, question));
+
+  if (question.maxRows && filledRows.length > question.maxRows) {
+    return `${question.label}最多填写 ${question.maxRows} 行`;
+  }
+
+  for (const [index, row] of filledRows.entries()) {
+    for (const column of question.columns) {
+      const value = row[column.key];
+      if (isBlankCell(value)) {
+        return `${question.label}第 ${index + 1} 行请填写完整`;
+      }
+      if (column.inputType === "number") {
+        const parsed = typeof value === "number" ? value : Number(String(value).trim());
+        if (!Number.isFinite(parsed) || parsed < 0) {
+          return `${question.label}第 ${index + 1} 行的${column.label}请输入非负数字`;
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+function validateRequiredQuestion(
+  question: DiagnosisQuestion,
+  answers: Answers,
+  customValues: Record<string, string>
+): string | null {
+  if (question.type === "finance-table") {
+    return null;
+  }
+
+  if (question.type === "matrix") {
+    const missingItem = question.items.find(item => !getStringAnswer(answers, item.field));
+    return missingItem ? `请完成「${question.label}」里的「${missingItem.label}」` : null;
+  }
+
+  if ("optional" in question && question.optional) {
+    return null;
+  }
+
+  if (isChoiceQuestion(question)) {
+    const selected = answers[question.field];
+    const hasPreset = question.type === "multi"
+      ? getStringArrayAnswer(selected).length > 0
+      : getStringAnswer(answers, question.field).length > 0;
+    const hasCustom = getCustomAnswer(customValues, question.field).length > 0;
+    return hasPreset || hasCustom ? null : `请填写或选择「${question.label}」`;
+  }
+
+  return getStringAnswer(answers, question.field) ? null : `请填写「${question.label}」`;
+}
+
+function validateCurrentStep(
+  step: typeof DIAGNOSIS_STEPS[number],
+  answers: Answers,
+  customValues: Record<string, string>
+): string | null {
+  for (const question of step.questions) {
+    const requiredError = validateRequiredQuestion(question, answers, customValues);
+    if (requiredError) return requiredError;
+  }
+
+  for (const question of step.questions) {
+    if (question.type === "finance-table") {
+      const error = validateFinanceTableQuestion(question, answers);
+      if (error) return error;
+    }
+  }
+
+  const checksArFields = step.questions.some(
+    question => "field" in question && question.field.startsWith("finance_plus.ar.")
+  );
+  if (!checksArFields) {
+    return null;
+  }
+
+  const arBalance = getStringAnswer(answers, "finance_plus.ar.balance");
+  const arDays = getStringAnswer(answers, "finance_plus.ar.days");
+  if ((arBalance && !arDays) || (!arBalance && arDays)) {
+    return "应收账款余额和账期需要同时填写，或都不填";
+  }
+  for (const [field, label] of [
+    ["finance_plus.ar.balance", "应收账款余额"],
+    ["finance_plus.ar.days", "平均账期"],
+  ] as const) {
+    const value = getStringAnswer(answers, field);
+    if (!value) continue;
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      return `${label}请输入非负数字`;
+    }
+  }
+
+  return null;
+}
+
 export default function Diagnosis() {
   const [, setLocation] = useLocation();
   const { isAuthenticated, loading: authLoading } = useAuth();
@@ -349,6 +597,7 @@ export default function Diagnosis() {
   const [customValues, setCustomValues] = useState<Record<string, string>>(
     () => draft?.customValues ?? {}
   );
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const step = DIAGNOSIS_STEPS[stepIndex];
   const progress = ((stepIndex + 1) / DIAGNOSIS_STEPS.length) * 100;
@@ -372,14 +621,22 @@ export default function Diagnosis() {
   }, [answers, customValues, stepIndex]);
 
   const updateAnswer = (field: string, value: Answer) => {
+    setValidationError(null);
     setAnswers(current => ({ ...current, [field]: value }));
   };
 
   const updateCustomValue = (field: string, value: string) => {
+    setValidationError(null);
     setCustomValues(current => ({ ...current, [field]: value }));
   };
 
   const goNext = () => {
+    const validationMessage = validateCurrentStep(step, answers, customValues);
+    if (validationMessage) {
+      setValidationError(validationMessage);
+      return;
+    }
+
     if (stepIndex === DIAGNOSIS_STEPS.length - 1) {
       if (authLoading) return;
       if (!isAuthenticated) {
@@ -501,6 +758,12 @@ export default function Diagnosis() {
             )}
           </button>
         </div>
+
+        {validationError ? (
+          <p className="mt-4 text-right text-sm text-red-700">
+            {validationError}
+          </p>
+        ) : null}
 
         <div className="mt-5 flex items-center justify-center gap-[7px] text-[12.5px] text-[#a7aca4]">
           <Check className="h-3.5 w-3.5" />
