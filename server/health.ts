@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { ENV } from "./_core/env";
 import { getDb } from "./db";
 
@@ -45,7 +46,7 @@ async function checkDatabase(): Promise<HealthCheck> {
     if (!db) {
       return { status: "unhealthy", error: "Database not initialized" };
     }
-    await db.execute({ sql: "SELECT 1", args: [] } as any);
+    await db.execute(sql`SELECT 1`);
     return { status: "ok", latencyMs: Date.now() - startedAt };
   } catch (error) {
     return { status: "unhealthy", error: getErrorMessage(error) };

@@ -3,6 +3,7 @@ import express from "express";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import { sql } from "drizzle-orm";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
@@ -71,7 +72,7 @@ async function startServer() {
         overallStatus = "unhealthy";
       } else {
         const start = Date.now();
-        await db.execute({ sql: "SELECT 1", args: [] } as any);
+        await db.execute(sql`SELECT 1`);
         checks.database = { status: "ok", latencyMs: Date.now() - start };
       }
     } catch (error: any) {
