@@ -1,9 +1,17 @@
-export type QuestionnaireAnswer = string | string[];
+type FinanceRowAnswer = Record<string, string | number | null | undefined>;
+
+export type QuestionnaireAnswer = string | string[] | FinanceRowAnswer[];
 export type QuestionnaireAnswers = Record<string, QuestionnaireAnswer>;
 export type QuestionnaireCustomValues = Record<string, string>;
 
 type StringMap = Record<string, string>;
 type JsonObject = Record<string, unknown>;
+
+type FinancePlus = {
+  product_lines: Array<{ name: string; revenue: number; direct_cost: number; allocated: number }> | null;
+  customers: Array<{ name: string; pct: number }> | null;
+  ar: { balance: number; days: number } | null;
+} | null;
 
 const PLUS_FIELDS = [
   "competition.self_scores",
@@ -55,7 +63,7 @@ export type DiagnosisIntake = {
     cash: number | null;
     monthly_fixed: number | null;
   };
-  finance_plus: JsonObject | null;
+  finance_plus: FinancePlus;
   availability_map: {
     plus_present: string[];
     plus_missing: string[];
@@ -87,7 +95,10 @@ function getStrings(
 ): string[] {
   const value = answers[field];
   const preset = Array.isArray(value)
-    ? value.map(item => item.trim()).filter(Boolean)
+    ? value
+        .filter((item): item is string => typeof item === "string")
+        .map(item => item.trim())
+        .filter(Boolean)
     : typeof value === "string" && value.trim()
       ? [value.trim()]
       : [];
@@ -118,6 +129,96 @@ function optionalNumber(value: string, label: string): number | null {
     throw new Error(`${label}必须是数字`);
   }
   return parsed;
+}
+
+function isBlankValue(value: unknown): boolean {
+  return value == null || (typeof value === "string" && value.trim().length === 0);
+}
+
+function optionalNumberValue(value: unknown, label: string): number | null {
+  if (isBlankValue(value)) return null;
+  const parsed = typeof value === "number" ? value : typeof value === "string" ? Number(value.trim()) : NaN;
+  if (!Number.isFinite(parsed)) {
+    throw new Error(`${label}必须是数字`);
+  }
+  return parsed;
+}
+
+function requiredNumberValue(value: unknown, label: string): number {
+  const parsed = optionalNumberValue(value, label);
+  if (parsed === null) {
+    throw new Error(`${label}不能为空`);
+  }
+  return parsed;
+}
+
+function requiredStringValue(value: unknown, label: string): string {
+  if (typeof value !== "string" || !value.trim()) {
+    throw new Error(`${label}不能为空`);
+  }
+  return value.trim();
+}
+
+function getRowAnswers(answers: QuestionnaireAnswers, field: string): FinanceRowAnswer[] {
+  const value = answers[field];
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.filter((item): item is FinanceRowAnswer => isObject(item));
+}
+
+function isBlankRow(row: FinanceRowAnswer, fields: string[]): boolean {
+  return fields.every(field => isBlankValue(row[field]));
+}
+
+function buildFinanceProductLines(
+  answers: QuestionnaireAnswers
+): NonNullable<FinancePlus>["product_lines"] {
+  const rows = getRowAnswers(answers, "finance_plus.product_lines");
+  const productLines = rows.flatMap((row, index) => {
+    if (isBlankRow(row, ["name", "revenue", "direct_cost", "allocated"])) {
+      return [];
+    }
+    const rowLabel = `产品线明细第${index + 1}行`;
+    return [{
+      name: requiredStringValue(row.name, `${rowLabel}名称`),
+      revenue: requiredNumberValue(row.revenue, `${rowLabel}收入`),
+      direct_cost: requiredNumberValue(row.direct_cost, `${rowLabel}直接成本`),
+      allocated: requiredNumberValue(row.allocated, `${rowLabel}分摊成本`),
+    }];
+  });
+  return productLines.length ? productLines : null;
+}
+
+function buildFinanceCustomers(answers: QuestionnaireAnswers): NonNullable<FinancePlus>["customers"] {
+  const rows = getRowAnswers(answers, "finance_plus.customers");
+  const customers = rows.flatMap((row, index) => {
+    if (isBlankRow(row, ["name", "pct"])) {
+      return [];
+    }
+    const rowLabel = `客户收入占比第${index + 1}行`;
+    return [{
+      name: requiredStringValue(row.name, `${rowLabel}名称`),
+      pct: requiredNumberValue(row.pct, `${rowLabel}占比`),
+    }];
+  });
+  return customers.length ? customers : null;
+}
+
+function buildFinanceAr(answers: QuestionnaireAnswers): NonNullable<FinancePlus>["ar"] {
+  const balance = optionalNumberValue(answers["finance_plus.ar.balance"], "应收账款余额");
+  const days = optionalNumberValue(answers["finance_plus.ar.days"], "应收账款账期");
+  return balance !== null && days !== null ? { balance, days } : null;
+}
+
+function buildFinancePlus(answers: QuestionnaireAnswers): FinancePlus {
+  const financePlus: NonNullable<FinancePlus> = {
+    product_lines: buildFinanceProductLines(answers),
+    customers: buildFinanceCustomers(answers),
+    ar: buildFinanceAr(answers),
+  };
+
+  return financePlus.product_lines || financePlus.customers || financePlus.ar ? financePlus : null;
 }
 
 function matrixValues(
@@ -151,7 +252,7 @@ function isPresent(value: unknown): boolean {
 }
 
 function getPlusFieldValue(intake: DiagnosisIntake, field: PlusField): unknown {
-  const financePlus = isObject(intake.finance_plus) ? intake.finance_plus : {};
+  const financePlus = intake.finance_plus;
 
   switch (field) {
     case "competition.self_scores":
@@ -163,11 +264,11 @@ function getPlusFieldValue(intake: DiagnosisIntake, field: PlusField): unknown {
     case "capability.digital_keyperson":
       return intake.capability.digital_keyperson;
     case "finance.product_lines":
-      return financePlus.product_lines;
+      return financePlus?.product_lines;
     case "finance.customers":
-      return financePlus.customers;
+      return financePlus?.customers;
     case "finance.ar": {
-      const ar = isObject(financePlus.ar) ? financePlus.ar : null;
+      const ar = financePlus?.ar ?? null;
       return ar && isPresent(ar.balance) && isPresent(ar.days) ? ar : null;
     }
   }
@@ -198,6 +299,7 @@ export function convertQuestionnaireAnswers(
   const uniqueAssets = splitList(
     getString(answers, "competition.unique_assets")
   );
+  const financePlus = buildFinancePlus(answers);
 
   const intake: DiagnosisIntake = {
     company: {
@@ -286,7 +388,7 @@ export function convertQuestionnaireAnswers(
         "每月刚性支出"
       ),
     },
-    finance_plus: null,
+    finance_plus: financePlus,
     availability_map: {
       plus_present: [],
       plus_missing: [],

@@ -129,6 +129,63 @@ describe("convertQuestionnaireAnswers", () => {
     expect(allPlusFields).toHaveLength(7);
   });
 
+  it("maps finance_plus rows, filters empty rows, and marks collected fields present", () => {
+    const intake = convertQuestionnaireAnswers(
+      {
+        ...yonghuiAnswers,
+        "finance_plus.product_lines": [
+          {
+            name: "精密阀体",
+            revenue: "3200",
+            direct_cost: "1980",
+            allocated: "420",
+          },
+          { name: "", revenue: "", direct_cost: "", allocated: "" },
+        ],
+        "finance_plus.customers": [
+          { name: "北美渠道A", pct: "38" },
+          { name: "", pct: "" },
+        ],
+        "finance_plus.ar.balance": "860",
+        "finance_plus.ar.days": "76",
+      },
+      {}
+    );
+
+    expect(intake.finance_plus).toEqual({
+      product_lines: [
+        { name: "精密阀体", revenue: 3200, direct_cost: 1980, allocated: 420 },
+      ],
+      customers: [{ name: "北美渠道A", pct: 38 }],
+      ar: { balance: 860, days: 76 },
+    });
+    expect(intake.availability_map.plus_present).toEqual(
+      expect.arrayContaining([
+        "competition.unique_assets",
+        "finance.product_lines",
+        "finance.customers",
+        "finance.ar",
+      ])
+    );
+    expect(intake.availability_map.plus_missing).not.toContain("finance.product_lines");
+    expect(intake.availability_map.plus_missing).not.toContain("finance.customers");
+    expect(intake.availability_map.plus_missing).not.toContain("finance.ar");
+  });
+
+  it("sets finance_plus.ar to null when only one AR field is filled", () => {
+    const intake = convertQuestionnaireAnswers(
+      {
+        ...yonghuiAnswers,
+        "finance_plus.ar.balance": "860",
+        "finance_plus.ar.days": "",
+      },
+      {}
+    );
+
+    expect(intake.finance_plus).toBeNull();
+    expect(intake.availability_map.plus_missing).toContain("finance.ar");
+  });
+
   it("merges free-text alternatives without losing preset answers", () => {
     const intake = convertQuestionnaireAnswers(yonghuiAnswers, {
       "company.region": "中东",

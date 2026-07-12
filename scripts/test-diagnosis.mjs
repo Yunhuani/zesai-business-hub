@@ -58,6 +58,18 @@ const questionnaireInput = {
       "原材料约45%，人工约18%，外协加工约12%，物流和认证费用约8%，销售费用约7%。",
     "finance_basic.cash": "420",
     "finance_basic.monthly_fixed": "95",
+    "finance_plus.product_lines": [
+      { name: "不锈钢阀体", revenue: "3200", direct_cost: "1980", allocated: "420" },
+      { name: "精密接头", revenue: "1800", direct_cost: "1080", allocated: "260" },
+      { name: "流体控制模块", revenue: "950", direct_cost: "520", allocated: "160" },
+    ],
+    "finance_plus.customers": [
+      { name: "北美渠道A", pct: "32" },
+      { name: "欧洲OEM客户B", pct: "18" },
+      { name: "华东集成商C", pct: "12" },
+    ],
+    "finance_plus.ar.balance": "860",
+    "finance_plus.ar.days": "76",
   },
   customValues: {},
 };

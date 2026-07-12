@@ -13,7 +13,15 @@ import { buildDiagnosisPreviewResult } from "../diagnosisProduct";
 import { getUserCredits } from "../creditsManager";
 import { getActionCredits } from "../pricingConfig";
 
-const answerSchema = z.union([z.string(), z.array(z.string())]);
+const financeRowAnswerSchema = z.record(
+  z.string(),
+  z.union([z.string(), z.number(), z.null()])
+);
+const answerSchema = z.union([
+  z.string(),
+  z.array(z.string()),
+  z.array(financeRowAnswerSchema),
+]);
 const submitSchema = z.object({
   answers: z.record(z.string(), answerSchema),
   customValues: z.record(z.string(), z.string()),
