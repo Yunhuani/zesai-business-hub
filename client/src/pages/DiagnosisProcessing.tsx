@@ -41,6 +41,7 @@ export default function DiagnosisProcessing() {
   const startedAt = useRef(Date.now());
   const [elapsedMs, setElapsedMs] = useState(0);
   const [timedOut, setTimedOut] = useState(false);
+  const [retryError, setRetryError] = useState("");
 
   const diagnosisQuery = trpc.diagnosis.get.useQuery(
     { id: diagnosisId },
@@ -56,6 +57,22 @@ export default function DiagnosisProcessing() {
       retry: 2,
     }
   );
+  const retryDiagnosis = trpc.diagnosis.retry.useMutation({
+    onSuccess: async () => {
+      startedAt.current = Date.now();
+      setElapsedMs(0);
+      setTimedOut(false);
+      setRetryError("");
+      await diagnosisQuery.refetch();
+    },
+    onError: error => {
+      if (error.message.includes("Diagnosis retry limit reached")) {
+        setRetryError("已达到重新诊断次数上限，请联系客服处理，本次不会扣费。");
+        return;
+      }
+      setRetryError("重新诊断未能发起，请稍后再试。本次不会扣费。");
+    },
+  });
 
   const status = (
     previewMode ? "running" : diagnosisQuery.data?.status ?? "pending"
@@ -101,6 +118,16 @@ export default function DiagnosisProcessing() {
     terminalError ||
     timedOut ||
     (!previewMode && diagnosisQuery.isError);
+  const failureTitle = timedOut
+    ? "分析时间比预期更长"
+    : terminalError
+      ? "本次分析未成功完成"
+      : "分析遇到了一点问题";
+  const failureDescription = timedOut
+    ? "本次等待已超过十分钟。你可以稍后回来查看，或重新发起一次诊断。"
+    : terminalError
+      ? "本次诊断没有生成可预览的报告。如本次过程已扣除积分，系统已自动退还。你可以重新诊断。"
+      : "当前诊断未能顺利完成，请重新提交。你的技术错误信息不会显示在这里。";
 
   return (
     <div className="min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)] [font-family:var(--zs-font-sans)]">
@@ -127,20 +154,32 @@ export default function DiagnosisProcessing() {
               Analysis interrupted
             </p>
             <h1 className="text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
-              {timedOut ? "分析时间比预期更长" : "分析遇到了一点问题"}
+              {failureTitle}
             </h1>
             <p className="mx-auto mt-5 max-w-md text-[15px] leading-7 text-[var(--zs-sub)]">
-              {timedOut
-                ? "本次等待已超过十分钟。你可以稍后回来查看，或重新发起一次诊断。"
-                : "当前诊断未能顺利完成，请重新提交。你的技术错误信息不会显示在这里。"}
+              {failureDescription}
             </p>
-            <Link
-              href="/diagnosis"
+            <button
+              type="button"
+              onClick={() => {
+                setRetryError("");
+                if (terminalError && validId) {
+                  retryDiagnosis.mutate({ diagnosisId });
+                  return;
+                }
+                window.location.href = "/diagnosis";
+              }}
+              disabled={retryDiagnosis.isPending}
               className="mt-9 inline-flex h-11 items-center justify-center gap-2 rounded-[var(--zs-radius-md)] bg-[var(--zs-primary)] px-5 text-sm font-semibold text-white shadow-[var(--zs-shadow-button)] transition hover:bg-[var(--zs-primary-2)]"
             >
               <RotateCcw className="h-4 w-4" />
-              重新开始
-            </Link>
+              {retryDiagnosis.isPending ? "正在重新诊断" : "重新诊断"}
+            </button>
+            {retryError && (
+              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-red-500">
+                {retryError}
+              </p>
+            )}
           </div>
         ) : (
           <>

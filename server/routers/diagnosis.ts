@@ -5,6 +5,7 @@ import {
   createDiagnosis,
   getDiagnosis,
   listUserDiagnoses,
+  retryDiagnosis,
   unlockDiagnosis,
 } from "../diagnosisService";
 import { convertQuestionnaireAnswers } from "../diagnosisIntake";
@@ -121,6 +122,28 @@ export const diagnosisRouter = router({
               required: await getActionCredits("diagnosis_full"),
             }),
           });
+        }
+        throw error;
+      }
+    }),
+  retry: protectedProcedure
+    .input(z.object({ diagnosisId: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        return await retryDiagnosis(input.diagnosisId, ctx.user.id);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        if (message === "Diagnosis not found") {
+          throw new TRPCError({ code: "NOT_FOUND" });
+        }
+        if (message === "Diagnosis retry limit reached") {
+          throw new TRPCError({ code: "TOO_MANY_REQUESTS", message });
+        }
+        if (
+          message === "Diagnosis is not retryable" ||
+          message === "Diagnosis intake is invalid"
+        ) {
+          throw new TRPCError({ code: "PRECONDITION_FAILED", message });
         }
         throw error;
       }

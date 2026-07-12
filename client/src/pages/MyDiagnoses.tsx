@@ -69,10 +69,16 @@ export default function MyDiagnoses() {
         ) : diagnoses?.length ? (
           <div className="space-y-4">
             {diagnoses.map(diagnosis => {
+              const isError = diagnosis.status === "error";
               const destination =
                 diagnosis.status === "done"
                   ? `/diagnosis/${diagnosis.id}/report`
                   : `/diagnosis/${diagnosis.id}/processing`;
+              const accessLabel = isError
+                ? "诊断失败"
+                : diagnosis.fullAccess
+                  ? "完整报告已解锁"
+                  : "免费预览";
 
               return (
                 <Link key={diagnosis.id} href={destination}>
@@ -107,9 +113,7 @@ export default function MyDiagnoses() {
                         状态：
                         {STATUS_LABELS[diagnosis.status] || diagnosis.status}
                       </span>
-                      <span>
-                        {diagnosis.fullAccess ? "完整报告已解锁" : "免费预览"}
-                      </span>
+                      <span>{accessLabel}</span>
                     </CardContent>
                   </Card>
                 </Link>

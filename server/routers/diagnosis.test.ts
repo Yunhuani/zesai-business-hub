@@ -4,13 +4,15 @@ vi.mock("../diagnosisService", () => ({
   createDiagnosis: vi.fn(),
   getDiagnosis: vi.fn(),
   listUserDiagnoses: vi.fn(),
+  retryDiagnosis: vi.fn(),
   unlockDiagnosis: vi.fn(),
 }));
 
-import { getDiagnosis } from "../diagnosisService";
+import { getDiagnosis, retryDiagnosis } from "../diagnosisService";
 import { diagnosisRouter } from "./diagnosis";
 
 const mockedGetDiagnosis = vi.mocked(getDiagnosis);
+const mockedRetryDiagnosis = vi.mocked(retryDiagnosis);
 
 function createCaller() {
   return diagnosisRouter.createCaller({
@@ -65,5 +67,30 @@ describe("diagnosis router serialization", () => {
 
     expect(successResult.status).toBe("done");
     expect(successResult).not.toHaveProperty("errorMessage");
+  });
+
+  it("retries a failed diagnosis through the protected retry mutation", async () => {
+    mockedRetryDiagnosis.mockResolvedValueOnce({
+      diagnosisId: 42,
+      status: "pending",
+    });
+
+    await expect(createCaller().retry({ diagnosisId: 42 })).resolves.toEqual({
+      diagnosisId: 42,
+      status: "pending",
+    });
+
+    expect(mockedRetryDiagnosis).toHaveBeenCalledWith(42, 7);
+  });
+
+  it("returns a retry limit error when the diagnosis has been retried too often", async () => {
+    mockedRetryDiagnosis.mockRejectedValueOnce(
+      new Error("Diagnosis retry limit reached")
+    );
+
+    await expect(createCaller().retry({ diagnosisId: 42 })).rejects.toMatchObject({
+      code: "TOO_MANY_REQUESTS",
+      message: "Diagnosis retry limit reached",
+    });
   });
 });

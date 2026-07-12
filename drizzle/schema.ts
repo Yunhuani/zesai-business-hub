@@ -35,6 +35,7 @@ export const diagnoses = mysqlTable("diagnoses", {
 	fullCreditsDeducted: int().default(0).notNull(),
 	pdfPurchased: int().default(0).notNull(),
 	pdfCreditsDeducted: int().default(0).notNull(),
+	retryCount: int().default(0).notNull(),
 	errorMessage: text(),
 	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),

@@ -15,6 +15,7 @@ import { logStructuredError, notifyOps } from "./observability";
 type JsonObject = Record<string, unknown>;
 const DIAGNOSIS_TIMEOUT_MS = 15 * 60 * 1000;
 const INTERRUPTED_DIAGNOSIS_ERROR = "Diagnosis interrupted or timed out";
+const MAX_DIAGNOSIS_RETRY_COUNT = 3;
 
 const TRANSIENT_DATABASE_ERROR_CODES = new Set([
   "ECONNRESET",
@@ -200,6 +201,55 @@ export async function createDiagnosis(
   void processDiagnosis(diagnosisId, intake);
 
   return diagnosisId;
+}
+
+export async function retryDiagnosis(
+  diagnosisId: number,
+  userId: number
+): Promise<{ diagnosisId: number; status: "pending" }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const diagnosis = await getDiagnosis(diagnosisId);
+  if (!diagnosis || diagnosis.userId !== userId) {
+    throw new Error("Diagnosis not found");
+  }
+  if (diagnosis.status !== "error") {
+    throw new Error("Diagnosis is not retryable");
+  }
+
+  const retryCount = diagnosis.retryCount ?? 0;
+  if (retryCount >= MAX_DIAGNOSIS_RETRY_COUNT) {
+    throw new Error("Diagnosis retry limit reached");
+  }
+
+  const intake = getObject(diagnosis.intake);
+  if (!intake) {
+    throw new Error("Diagnosis intake is invalid");
+  }
+
+  await db.transaction(async tx => {
+    await tx
+      .update(diagnoses)
+      .set({
+        status: "pending",
+        errorMessage: null,
+        result: null,
+        headline: null,
+        overallScore: null,
+        scoreLabel: null,
+        productType: "preview",
+        fullCreditsDeducted: 0,
+        pdfPurchased: 0,
+        pdfCreditsDeducted: 0,
+        retryCount: retryCount + 1,
+      })
+      .where(eq(diagnoses.id, diagnosisId));
+  });
+
+  void processDiagnosis(diagnosisId, intake);
+
+  return { diagnosisId, status: "pending" };
 }
 
 export async function getDiagnosis(id: number) {
