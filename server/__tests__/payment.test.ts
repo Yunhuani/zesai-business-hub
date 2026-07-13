@@ -63,7 +63,7 @@ describe('Alipay Payment Integration', () => {
   it('should validate plan configurations', () => {
     const PLAN_CONFIG = {
       basic: { monthlyLimit: 20, price: 9900, duration: 30 },
-      professional: { monthlyLimit: 100, price: 29900, duration: 30 },
+      professional: { monthlyLimit: 100, price: 49900, duration: 30 },
       enterprise: { monthlyLimit: 0, price: 99900, duration: 30 },
     };
 
@@ -72,7 +72,7 @@ describe('Alipay Payment Integration', () => {
     expect(PLAN_CONFIG.basic.monthlyLimit).toBe(20);
 
     // Verify professional plan
-    expect(PLAN_CONFIG.professional.price).toBe(29900); // ¥299
+    expect(PLAN_CONFIG.professional.price).toBe(49900); // ¥499
     expect(PLAN_CONFIG.professional.monthlyLimit).toBe(100);
 
     // Verify enterprise plan

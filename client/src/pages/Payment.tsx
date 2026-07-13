@@ -22,13 +22,13 @@ const PLAN_NAMES = {
 
 const PLAN_PRICES = {
   basic: "¥99",
-  professional: "¥299",
+  professional: "¥499",
   enterprise: "¥999",
 };
 
 const PLAN_AMOUNTS = {
   basic: 99,
-  professional: 299,
+  professional: 499,
   enterprise: 999,
 };
 

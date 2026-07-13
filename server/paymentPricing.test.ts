@@ -11,7 +11,7 @@ describe("payment pricing", () => {
         "enterprise"
       )
     ).toMatchObject({
-      amountCents: 69900,
+      amountCents: 99900,
       credits: 15000,
     });
   });
