@@ -1,3 +1,4 @@
+import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
@@ -48,6 +49,7 @@ function ScoreBar({ dimension }: { dimension: DiagnosisReportDimension }) {
 }
 
 export default function DiagnosisReport() {
+  const { isAuthenticated } = useAuth();
   const { id } = useParams<{ id: string }>();
   const diagnosisId = Number(id);
   const validId = Number.isInteger(diagnosisId) && diagnosisId > 0;
@@ -77,6 +79,7 @@ export default function DiagnosisReport() {
   const unlockDiagnosis = trpc.diagnosis.submitFull.useMutation({
     onSuccess: data => {
       utils.diagnosis.get.setData({ id: diagnosisId }, data);
+      void utils.credits.get.invalidate();
       toast.success("完整诊断已解锁");
     },
     onError: error => {
@@ -91,6 +94,20 @@ export default function DiagnosisReport() {
   const report = query.data
     ? buildDiagnosisReport(query.data)
     : null;
+  const fullAccess = query.data?.fullAccess === true;
+  const requiredUnlockCredits = 1500;
+  const creditsQuery = trpc.credits.get.useQuery(undefined, {
+    enabled: isAuthenticated && validId && !previewMode && !fullAccess,
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
+  const currentCredits = creditsQuery.data?.total ?? 0;
+  const missingCredits = Math.max(0, requiredUnlockCredits - currentCredits);
+  const hasEnoughCredits =
+    creditsQuery.data ? currentCredits >= requiredUnlockCredits : false;
+  const shouldDisableUnlock =
+    unlockDiagnosis.isPending ||
+    (creditsQuery.data ? !hasEnoughCredits : false);
 
   useEffect(() => {
     if (report) {
@@ -188,7 +205,6 @@ export default function DiagnosisReport() {
   const degradedDimensions = report.dimensions.filter(
     dimension => dimension.degraded
   );
-  const fullAccess = query.data?.fullAccess === true;
   const pdfPurchased = query.data?.pdfPurchased === true;
   const reportDate = formatReportDate(report.createdAt);
 
@@ -443,10 +459,19 @@ export default function DiagnosisReport() {
               <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-[#9DA4B3]">
                 查看完整五维分析、证据链、风险判断和行动建议。解锁基于本次已生成结果，不会重新等待分析。
               </p>
+              <p className="mt-5 text-sm text-[#B5BAC5]">
+                {creditsQuery.isLoading
+                  ? "正在读取积分…"
+                  : creditsQuery.isError
+                    ? "余额暂时无法读取，点击后将再次校验"
+                    : hasEnoughCredits
+                      ? `当前积分:${currentCredits.toLocaleString()} / 需要 1,500,可立即解锁`
+                      : `当前积分:${currentCredits.toLocaleString()} / 需要 1,500,还差 ${missingCredits.toLocaleString()} 积分`}
+              </p>
               <button
                 type="button"
                 onClick={() => unlockDiagnosis.mutate({ diagnosisId })}
-                disabled={unlockDiagnosis.isPending}
+                disabled={shouldDisableUnlock}
                 className="mt-8 inline-flex h-12 items-center gap-2 bg-[#E8B84B] px-6 text-sm font-semibold text-[#121317] transition hover:bg-[#FFD166] disabled:opacity-60"
               >
                 {unlockDiagnosis.isPending ? (
@@ -456,9 +481,16 @@ export default function DiagnosisReport() {
                 )}
                 {unlockDiagnosis.isPending
                   ? "正在解锁"
-                  : "解锁完整报告 · 1500 积分"}
+                  : creditsQuery.data && !hasEnoughCredits
+                    ? `积分不足,差 ${missingCredits.toLocaleString()} 积分`
+                    : "解锁完整报告 · 1500 积分"}
               </button>
-              {unlockDiagnosis.error?.message.includes("INSUFFICIENT_CREDITS") ? (
+              {creditsQuery.data && !hasEnoughCredits ? (
+                <div className="mt-5 flex justify-center gap-5 text-sm">
+                  <Link href="/credits" className="text-[#FFD166]">购买积分</Link>
+                  <Link href="/pricing" className="text-[#FFD166]">查看套餐</Link>
+                </div>
+              ) : unlockDiagnosis.error?.message.includes("INSUFFICIENT_CREDITS") ? (
                 <div className="mt-5 flex justify-center gap-5 text-sm">
                   <Link href="/credits" className="text-[#FFD166]">购买积分</Link>
                   <Link href="/pricing" className="text-[#FFD166]">查看套餐</Link>
