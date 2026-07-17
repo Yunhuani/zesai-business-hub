@@ -474,6 +474,12 @@ async function startServer() {
     }).catch((err) => {
       console.error("[PendingChecker] Failed to start:", err);
     });
+
+    import("../diagnosisRecoveryScheduler").then(({ startDiagnosisRecoveryScheduler }) => {
+      startDiagnosisRecoveryScheduler();
+    }).catch((err) => {
+      console.error("[DiagnosisRecoveryScheduler] Failed to start:", err);
+    });
   });
 }
 

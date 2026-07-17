@@ -13,6 +13,8 @@ import { serializeDiagnosisListItem } from "./diagnosisList";
 import { logStructuredError, notifyOps } from "./observability";
 
 type JsonObject = Record<string, unknown>;
+// Stale recovery threshold. This depends on the diagnosis engine's 10 minute
+// timeout; if the engine timeout is increased, update this threshold together.
 const DIAGNOSIS_TIMEOUT_MS = 15 * 60 * 1000;
 const INTERRUPTED_DIAGNOSIS_ERROR = "Diagnosis interrupted or timed out";
 const MAX_DIAGNOSIS_RETRY_COUNT = 3;
