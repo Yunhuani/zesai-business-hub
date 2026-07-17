@@ -10,6 +10,10 @@ import {
 import { logStructuredError, notifyOps } from "./observability";
 
 type InsertCreditsTransaction = typeof creditsTransactions.$inferInsert;
+type Db = NonNullable<Awaited<ReturnType<typeof getDb>>>;
+type DbTransaction = Parameters<Db["transaction"]>[0] extends (tx: infer Tx) => unknown
+  ? Tx
+  : never;
 
 /**
  * Credits Manager - Core logic for credits system
@@ -367,7 +371,40 @@ export async function deductCreditsOnce(
   if (!db) throw new Error("Database not available");
 
   try {
-    return await db.transaction(async tx => {
+    return await db.transaction(tx =>
+      deductCreditsOnceInTx(
+        tx,
+        userId,
+        amount,
+        description,
+        relatedDiagnosisId,
+        billingKey
+      )
+    );
+  } catch (error) {
+    logStructuredError({
+      category: "credit_deduction_failed",
+      userId,
+      diagnosisId: relatedDiagnosisId,
+      error,
+      details: { amount, description, billingKey },
+    });
+    throw error;
+  }
+}
+
+export async function deductCreditsOnceInTx(
+  tx: DbTransaction,
+  userId: number,
+  amount: number,
+  description: string,
+  relatedDiagnosisId: number,
+  billingKey: string
+): Promise<{
+  success: boolean;
+  charged: boolean;
+  remaining: { purchased: number; subscription: number; total: number };
+}> {
     const [existing] = await tx
       .select({ id: creditsTransactions.id })
       .from(creditsTransactions)
@@ -447,17 +484,6 @@ export async function deductCreditsOnce(
         total: nextBalance.purchased + nextBalance.subscription,
       },
     };
-    });
-  } catch (error) {
-    logStructuredError({
-      category: "credit_deduction_failed",
-      userId,
-      diagnosisId: relatedDiagnosisId,
-      error,
-      details: { amount, description, billingKey },
-    });
-    throw error;
-  }
 }
 
 /**

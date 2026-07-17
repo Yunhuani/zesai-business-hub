@@ -4,7 +4,7 @@ import { getDb } from "./db";
 import { runNbgDiagnosis } from "./nbgClient";
 import {
   checkAndResetCredits,
-  deductCreditsOnce,
+  deductCreditsOnceInTx,
   refundDiagnosisFullIfCharged,
 } from "./creditsManager";
 import { getActionCredits } from "./pricingConfig";
@@ -315,26 +315,30 @@ export async function unlockDiagnosis(
 
   await checkAndResetCredits(userId);
   const credits = await getActionCredits("diagnosis_full");
-  const charge = await deductCreditsOnce(
-    userId,
-    credits,
-    `完整诊断解锁 - Diagnosis #${diagnosisId}`,
-    diagnosisId,
-    "diagnosis_full"
-  );
-  if (!charge.success) {
-    throw new Error("INSUFFICIENT_CREDITS");
-  }
 
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db
-    .update(diagnoses)
-    .set({
-      productType: "full",
-      fullCreditsDeducted: credits,
-    })
-    .where(eq(diagnoses.id, diagnosisId));
+  await db.transaction(async tx => {
+    const charge = await deductCreditsOnceInTx(
+      tx,
+      userId,
+      credits,
+      `完整诊断解锁 - Diagnosis #${diagnosisId}`,
+      diagnosisId,
+      "diagnosis_full"
+    );
+    if (!charge.success) {
+      throw new Error("INSUFFICIENT_CREDITS");
+    }
+
+    await tx
+      .update(diagnoses)
+      .set({
+        productType: "full",
+        fullCreditsDeducted: credits,
+      })
+      .where(eq(diagnoses.id, diagnosisId));
+  });
 
   const unlocked = await getDiagnosis(diagnosisId);
   if (!unlocked) throw new Error("Diagnosis not found");
