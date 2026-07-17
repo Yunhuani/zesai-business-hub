@@ -43,24 +43,28 @@ function ReportCardChrome({
   };
 
   return (
-    <div className="relative mx-auto w-full max-w-[360px] pb-7">
+    <div className="relative mx-auto w-full max-w-[300px] pb-8 pt-1">
+      <p className="mb-3 text-center text-[10.5px] font-semibold tracking-[.03em] text-[var(--zs-weak)]">
+        你会得到一份这样的诊断报告 · 可翻看
+      </p>
+      <div className="absolute bottom-[24px] left-[12px] right-[-8px] h-[34px] rounded-b-[20px] border border-[rgba(201,162,75,.18)] bg-[#08130f] shadow-[0_24px_34px_-18px_rgba(8,19,15,.72)]" />
       <div
-        className="absolute bottom-[22px] right-[-13px] top-[16px] w-[52px] rounded-[0_18px_18px_0] border border-[rgba(201,162,75,.18)] bg-[#08130f] shadow-[16px_20px_32px_-20px_rgba(8,19,15,.8)]"
-        style={{ clipPath: "polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%)" }}
+        className="absolute bottom-[37px] right-[-16px] top-[42px] w-[34px] rounded-[0_18px_18px_0] border border-[rgba(201,162,75,.18)] bg-[#08130f] shadow-[14px_18px_28px_-18px_rgba(8,19,15,.8)]"
+        style={{ clipPath: "polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)" }}
       />
       <div
-        className="relative overflow-hidden rounded-[18px] border border-[rgba(201,162,75,.38)] bg-[radial-gradient(circle_at_32%_18%,rgba(201,162,75,.16),transparent_34%),linear-gradient(160deg,#17261F_0%,#0E1914_100%)] p-[22px] text-[#EEF2ED] shadow-[0_28px_46px_-24px_rgba(8,19,15,.78)]"
-        style={{ clipPath: "polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%)" }}
+        className="relative h-[384px] overflow-hidden rounded-[18px] border border-[rgba(201,162,75,.38)] bg-[radial-gradient(circle_at_32%_18%,rgba(201,162,75,.16),transparent_34%),linear-gradient(160deg,#17261F_0%,#0E1914_100%)] p-[18px] text-[#EEF2ED] shadow-[0_24px_42px_-24px_rgba(8,19,15,.78)]"
+        style={{ clipPath: "polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 0 100%)" }}
       >
-        <div className="pointer-events-none absolute inset-[8px] rounded-[14px] border border-[rgba(201,162,75,.16)]" />
-        <div className="pointer-events-none absolute right-0 top-0 h-8 w-8 bg-[linear-gradient(135deg,rgba(201,162,75,.22),rgba(201,162,75,.04)_55%,transparent_56%)]" />
+        <div className="pointer-events-none absolute inset-[7px] rounded-[14px] border border-[rgba(201,162,75,.16)]" />
+        <div className="pointer-events-none absolute right-0 top-0 h-7 w-7 bg-[linear-gradient(135deg,rgba(201,162,75,.22),rgba(201,162,75,.04)_55%,transparent_56%)]" />
 
         <div className="relative flex items-start justify-between gap-4">
           <div>
-            <div className="text-[15px] font-extrabold tracking-[.02em] text-[var(--zs-gold)]">
+            <div className="text-[14px] font-extrabold tracking-[.02em] text-[var(--zs-gold)]">
               NBG 增长诊断报告
             </div>
-            <div className="mt-1 text-[10px] tracking-[.06em] text-[#8FA096]">
+            <div className="mt-1 text-[9.5px] tracking-[.06em] text-[#8FA096]">
               {slideLabels[activeIndex]} · 示例
             </div>
           </div>
@@ -84,7 +88,7 @@ function ReportCardChrome({
           </div>
         </div>
 
-        <div className="relative mt-5">{children}</div>
+        <div className="relative mt-3 h-[292px]">{children}</div>
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-1.5">
@@ -111,8 +115,8 @@ function RadarSlide() {
     .join(" ");
 
   return (
-    <div className="min-h-[246px]">
-      <svg viewBox="0 0 240 230" className="mx-auto h-[220px] w-full max-w-[286px]">
+    <div className="flex h-full flex-col justify-center">
+      <svg viewBox="0 0 240 230" className="mx-auto h-[218px] w-full max-w-[258px]">
         <defs>
           <radialGradient id="nbg-radar-glow" cx="50%" cy="47%" r="58%">
             <stop offset="0%" stopColor="rgba(201,162,75,.18)" />
@@ -176,7 +180,7 @@ function RadarSlide() {
           </text>
         </g>
       </svg>
-      <p className="mt-1 text-center text-[11.5px] leading-[1.7] text-[#9DAA9F]">
+      <p className="mt-2 text-center text-[10.5px] leading-[1.7] text-[#9DAA9F]">
         五个维度系统体检，一眼看清强项与短板
       </p>
     </div>
@@ -185,13 +189,13 @@ function RadarSlide() {
 
 function IssueSlide() {
   return (
-    <div className="min-h-[246px] space-y-3 pt-2">
+    <div className="flex h-full flex-col justify-center space-y-3">
       {[
         ["定价毛利承压", "价格体系与价值交付不匹配，利润被持续稀释。"],
         ["渠道效率偏低", "动作很多，但缺少统一转化指标和复盘机制。"],
         ["客户结构失衡", "复购不足，新客获取成本持续抬升。"],
       ].map(([title, desc]) => (
-        <div key={title} className="rounded-[12px] border border-[rgba(201,162,75,.22)] bg-white/[.04] p-3.5">
+        <div key={title} className="rounded-[12px] border border-[rgba(201,162,75,.22)] bg-white/[.04] p-3">
           <div className="text-[13.5px] font-bold text-[#F4F0E4]">{title}</div>
           <div className="mt-1.5 text-[11.5px] leading-[1.6] text-[#AEBBB2]">{desc}</div>
         </div>
@@ -202,7 +206,7 @@ function IssueSlide() {
 
 function PathSlide() {
   return (
-    <div className="min-h-[246px] pt-4">
+    <div className="flex h-full flex-col justify-center">
       {[
         ["重构定价分层", "优先止住利润流失，明确付费锚点。"],
         ["聚焦核心单品", "压缩低效 SKU，集中可复制增长模型。"],
@@ -227,7 +231,7 @@ function PathSlide() {
 
 function ConclusionSlide() {
   return (
-    <div className="flex min-h-[246px] flex-col justify-center gap-3">
+    <div className="flex h-full flex-col justify-center gap-3">
       {[
         "定价毛利是当前最优先处理的增长短板。",
         "渠道效率问题需要用统一指标和复盘机制拆解。",

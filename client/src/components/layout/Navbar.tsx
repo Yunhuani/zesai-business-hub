@@ -25,7 +25,7 @@ import { Link, useLocation } from "wouter";
 const navLinks = [
   { href: "/", label: "首页" },
   { href: "/toolbox", label: "AI经营工具箱" },
-  { href: "/pricing", label: "定价" },
+  { href: "/pricing", label: "套餐" },
   { href: "/about", label: "关于" },
 ];
 

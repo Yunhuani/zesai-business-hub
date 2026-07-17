@@ -20,7 +20,6 @@ import {
   Goal,
   Landmark,
   ListChecks,
-  MessageCircle,
   Network,
   Search,
   Store,
@@ -137,7 +136,7 @@ export default function Home() {
   const [expertDialogOpen, setExpertDialogOpen] = useState(false);
   const [heroQuery, setHeroQuery] = useState("");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
-  const [placeholderVisible, setPlaceholderVisible] = useState(true);
+  const [typedPlaceholder, setTypedPlaceholder] = useState("");
   const [reportSlideIndex, setReportSlideIndex] = useState(0);
   const [, setLocation] = useLocation();
   const { data: agents, isLoading: agentsLoading } = trpc.agent.list.useQuery();
@@ -154,21 +153,34 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const interval = window.setInterval(() => {
-      setPlaceholderVisible(false);
-      window.setTimeout(() => {
-        setPlaceholderIndex((current) => (current + 1) % placeholderQuestions.length);
-        setPlaceholderVisible(true);
-      }, 200);
-    }, 2500);
+    const question = placeholderQuestions[placeholderIndex];
+    let currentLength = 0;
 
-    return () => window.clearInterval(interval);
-  }, []);
+    setTypedPlaceholder("");
+
+    const typingInterval = window.setInterval(() => {
+      currentLength += 1;
+      setTypedPlaceholder(question.slice(0, currentLength));
+
+      if (currentLength >= question.length) {
+        window.clearInterval(typingInterval);
+      }
+    }, 70);
+
+    const nextQuestionTimeout = window.setTimeout(() => {
+      setPlaceholderIndex((current) => (current + 1) % placeholderQuestions.length);
+    }, Math.max(2200, question.length * 70 + 1200));
+
+    return () => {
+      window.clearInterval(typingInterval);
+      window.clearTimeout(nextQuestionTimeout);
+    };
+  }, [placeholderIndex]);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
       setReportSlideIndex((current) => (current + 1) % NBG_REPORT_SAMPLE_SLIDE_COUNT);
-    }, 3500);
+    }, 6500);
 
     return () => window.clearInterval(interval);
   }, []);
@@ -189,11 +201,11 @@ export default function Home() {
         <section className="zs-container py-[88px] pb-[96px] text-center">
           {isInWeChatBrowser && <WeChatBrowserGuide />}
 
-          <h1 className="m-0 text-[48px] font-black leading-[1.14] tracking-[.01em] text-[var(--zs-ink)] md:text-[62px]">
+          <h1 className="m-0 text-[48px] font-black leading-[1.14] tracking-[.01em] text-[var(--zs-primary)] md:text-[62px]">
             您的 AI 商业顾问
           </h1>
-          <p className="mx-auto mt-[26px] max-w-[740px] text-[19px] font-normal leading-[1.85] text-[var(--zs-sub)]">
-            将全球顶级咨询公司的方法论，与前沿AI大模型相结合。提供麦肯锡级别的经营解决方案。
+          <p className="mx-auto mt-[26px] max-w-[920px] text-[16px] font-normal leading-[1.85] text-[var(--zs-sub)] sm:text-[18px] lg:text-[19px]">
+            融合顶级咨询方法论与前沿 AI 大模型，提供麦肯锡级经营解决方案。
           </p>
 
           <form
@@ -201,18 +213,14 @@ export default function Home() {
             className="mx-auto mt-10 flex max-w-[920px] flex-col gap-3 rounded-[20px] border border-[var(--zs-line)] bg-[var(--zs-card)] p-3 text-left shadow-[0_30px_66px_-32px_rgba(31,61,50,.36)] md:flex-row md:items-center"
           >
             <div className="flex h-[60px] flex-1 items-center gap-3 px-3 md:px-5">
-              <MessageCircle className="h-5 w-5 shrink-0 text-[var(--zs-gold)]" strokeWidth={1.7} />
               <span className="hidden shrink-0 text-[15px] font-semibold text-[var(--zs-ink)] sm:inline">
                 您可以问我：
               </span>
               <div className="relative min-w-0 flex-1">
                 {!heroQuery && (
-                  <span
-                    className={`pointer-events-none absolute inset-y-0 left-0 flex items-center text-[16px] font-semibold text-[var(--zs-primary)] transition-opacity duration-200 ${
-                      placeholderVisible ? "opacity-100" : "opacity-0"
-                    }`}
-                  >
-                    {placeholderQuestions[placeholderIndex]}
+                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center whitespace-nowrap text-[16px] font-semibold text-[var(--zs-primary)]">
+                    {typedPlaceholder}
+                    <span className="ml-[2px] inline-block h-5 w-[2px] animate-pulse rounded-full bg-[var(--zs-primary)]" />
                   </span>
                 )}
                 <input
@@ -245,10 +253,7 @@ export default function Home() {
           <Card className="overflow-hidden rounded-[20px] border-[var(--zs-line)] bg-white shadow-[0_16px_48px_-32px_rgba(31,61,50,.30)]">
             <CardContent className="grid gap-0 p-0 lg:grid-cols-[1fr_440px]">
               <div className="p-7 md:p-10">
-                <span className="rounded-md bg-[rgba(201,162,75,.22)] px-[11px] py-[5px] text-[11.5px] font-bold tracking-[.06em] text-[#5a4516]">
-                  引流主打 · 完整可用
-                </span>
-                <h3 className="mt-4 text-[27px] font-extrabold leading-[1.3]">
+                <h3 className="text-[27px] font-extrabold leading-[1.3]">
                   增长卡住了，找不到突破口
                 </h3>
                 <p className="mt-3 max-w-[520px] text-[16px] leading-[1.75] text-[var(--zs-sub)]">

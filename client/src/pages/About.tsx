@@ -3,24 +3,24 @@ import { Footer, Navbar } from "@/components/layout";
 
 export default function About() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)]">
       <Navbar />
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-16 max-w-4xl">
+      <main className="zs-container max-w-4xl py-16">
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-6">
+          <h1 className="mb-6 text-4xl font-bold text-[var(--zs-primary)] md:text-5xl">
             把顶级商业智慧，直接交付给你
           </h1>
         </div>
 
         {/* Content Sections */}
-        <div className="space-y-8 text-gray-300 leading-relaxed">
+        <div className="space-y-8 leading-relaxed text-[var(--zs-sub)]">
           {/* Section 1 */}
           <div className="glass-effect rounded-2xl p-8 shadow-sm hover:shadow-diffuse transition-smooth">
             <p className="text-lg">
-              泽思 AI（Zenith AI）不是通用 AI 工具，而是一个 <strong className="text-purple-600">AI 驱动的商业咨询交付平台</strong>。
+              泽思 AI（Zenith AI）不是通用 AI 工具，而是一个 <strong className="text-[var(--zs-primary)]">AI 驱动的商业咨询交付平台</strong>。
             </p>
             <p className="text-lg mt-4">
               我们的团队成员来自全球顶尖的管理咨询公司，以及世界500强科技公司。我们让高质量的商业决策，成为创业者和中小企业也能随时调用的能力。
@@ -33,7 +33,7 @@ export default function About() {
           {/* Section 2 */}
           <div className="glass-effect rounded-2xl p-8 shadow-sm hover:shadow-diffuse transition-smooth">
             <p className="text-lg">
-              在商业世界中，真正稀缺的从来不是信息，而是<strong className="text-purple-600">高质量的判断</strong>。
+              在商业世界中，真正稀缺的从来不是信息，而是<strong className="text-[var(--zs-primary)]">高质量的判断</strong>。
             </p>
             <p className="text-lg mt-4">
               泽思AI的团队来自世界最顶级的咨询公司和AI科技公司，我们将顶级商业咨询方法论、分析框架和交付标准，通过 AI 的方式进行拆解、重构和产品化，让更多企业也能获得同样专业、系统的商业支持。
@@ -43,7 +43,7 @@ export default function About() {
           {/* Section 3 */}
           <div className="glass-effect rounded-2xl p-8 shadow-sm hover:shadow-diffuse transition-smooth">
             <p className="text-lg">
-              泽思 AI 关注的不是"生成内容"，而是<strong className="text-purple-600">交付结果</strong>。
+              泽思 AI 关注的不是"生成内容"，而是<strong className="text-[var(--zs-primary)]">交付结果</strong>。
             </p>
             <p className="text-lg mt-4">
               用户无需掌握复杂的咨询模型，也无需整理繁琐报告，只需清晰描述真实的业务问题，系统便会像经验丰富的商业顾问一样完成分析、推演与判断，并直接输出可用于决策和执行的定制化的商业文档，包括战略分析、融资 BP、商业模式设计、市场与竞争分析、增长方案等。
@@ -53,7 +53,7 @@ export default function About() {
           {/* Section 4 */}
           <div className="glass-effect rounded-2xl p-8 shadow-sm hover:shadow-diffuse transition-smooth">
             <p className="text-lg">
-              泽思 AI 不只是帮助用户更快完成工作，而是帮助他们<strong className="text-purple-600">做出更好的商业决策</strong>。
+              泽思 AI 不只是帮助用户更快完成工作，而是帮助他们<strong className="text-[var(--zs-primary)]">做出更好的商业决策</strong>。
             </p>
             <p className="text-lg mt-4">
               我们相信，AI 的真正价值，不在于替代人的思考，而在于让高质量的思考被更高效、更公平地使用。当商业咨询能力能够被规模化交付，企业在关键决策节点上的成功概率，也将被重新定义。
@@ -61,7 +61,7 @@ export default function About() {
           </div>
 
           {/* Section 5 - Closing */}
-          <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-8 text-white shadow-lg">
+          <div className="rounded-2xl bg-[var(--zs-primary)] p-8 text-white shadow-[var(--zs-shadow-large)]">
             <p className="text-xl font-medium text-center">
               把顶级商业智慧，直接交付给你。
             </p>
@@ -74,7 +74,7 @@ export default function About() {
         {/* CTA Section */}
         <div className="mt-16 text-center">
           <Link href="/">
-            <a className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-medium hover:shadow-lg transition-all">
+            <a className="inline-flex items-center gap-2 rounded-xl bg-[var(--zs-primary)] px-8 py-4 font-medium text-white shadow-[var(--zs-shadow-button)] transition-all hover:bg-[var(--zs-primary-2)]">
               开始使用泽思 AI
             </a>
           </Link>
