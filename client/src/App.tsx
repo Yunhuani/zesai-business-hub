@@ -23,7 +23,6 @@ import CreditUsage from "./pages/CreditUsage";
 import UserManagement from "./pages/UserManagement";
 import OrderManagement from "./pages/OrderManagement";
 import SupportForm from "./pages/SupportForm";
-import SupportFloatingButton from "./components/SupportFloatingButton";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
@@ -95,7 +94,6 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
-          <SupportFloatingButton />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
