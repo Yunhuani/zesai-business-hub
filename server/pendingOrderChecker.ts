@@ -3,10 +3,11 @@
  * 作为notify回调的兜底保障
  */
 import { queryAlipayOrder } from "./_core/alipay";
-import { getDb, updateOrderStatus, createOrUpdateSubscription, getUserById } from "./db";
-import { resetSubscriptionCredits, addPurchasedCredits, clearSubscriptionCredits } from "./creditsManager";
+import { getDb, updateOrderStatus, getUserById } from "./db";
+import { addPurchasedCredits, clearSubscriptionCredits } from "./creditsManager";
 import { notifyAdminNewOrder } from "./orderNotification";
 import { getCreditPack, getSubscriptionPlan } from "./pricingConfig";
+import { grantSubscriptionCreditsForOrder } from "./subscriptionGrant";
 import { toMySqlTimestamp } from "./lib/mysqlTimestamp";
 
 function normalizePaymentMethod(paymentMethod: string | null | undefined): "alipay" | "wechat" {
@@ -64,12 +65,13 @@ async function checkAlipayOrder(order: any) {
 
     if (result.tradeStatus === "TRADE_SUCCESS") {
       console.log(`[PendingChecker] Order ${order.outTradeNo} confirmed paid by Alipay`);
+      const paidAt = new Date();
 
       // 更新订单状态
       await updateOrderStatus(order.outTradeNo, {
         status: "paid",
         tradeNo: result.tradeNo,
-        paidAt: new Date(),
+        paidAt,
       });
 
       // 发放权益
@@ -91,17 +93,12 @@ async function checkAlipayOrder(order: any) {
       } catch {}
 
       if (subscriptionConfig) {
-        const endDate = new Date();
-        endDate.setDate(endDate.getDate() + subscriptionConfig.durationDays);
-
-        await createOrUpdateSubscription({
-          userId: order.userId,
-          plan: order.plan as any,
-          price: subscriptionConfig.priceCents,
-          endDate,
-        });
-
-        await resetSubscriptionCredits(order.userId, order.plan);
+        await grantSubscriptionCreditsForOrder(
+          order.id,
+          order.userId,
+          order.plan,
+          paidAt
+        );
         console.log(`[PendingChecker] Subscription credits granted for user ${order.userId}`);
 
         // 发送通知
@@ -223,6 +220,118 @@ async function checkPaidButUndeliveredOrders() {
   }
 }
 
+export const SUBSCRIPTION_GRANT_COMPENSATION_CUTOFF = new Date(
+  "2026-07-17T10:59:05.000Z"
+);
+
+const PAID_SUBSCRIPTION_PLANS = [
+  "basic",
+  "professional",
+  "enterprise",
+] as const;
+
+function parseStoredTimestamp(value: string | Date): Date {
+  if (value instanceof Date) return value;
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(value)) {
+    return new Date(`${value.replace(" ", "T")}Z`);
+  }
+  return new Date(value);
+}
+
+export async function checkPaidButUndeliveredSubscriptionOrders() {
+  try {
+    const db = await getDb();
+    if (!db) return;
+
+    const { orders, creditsTransactions } = await import("../drizzle/schema");
+    const { and, eq, gte, inArray } = await import("drizzle-orm");
+    const paidSubscriptionOrders = await db
+      .select()
+      .from(orders)
+      .where(
+        and(
+          eq(orders.status, "paid"),
+          inArray(orders.plan, [...PAID_SUBSCRIPTION_PLANS]),
+          gte(
+            orders.createdAt,
+            toMySqlTimestamp(SUBSCRIPTION_GRANT_COMPENSATION_CUTOFF)
+          )
+        )
+      );
+
+    const eligibleOrders = paidSubscriptionOrders.filter(order => {
+      const createdAt = parseStoredTimestamp(order.createdAt);
+      return (
+        order.status === "paid" &&
+        PAID_SUBSCRIPTION_PLANS.includes(
+          order.plan as (typeof PAID_SUBSCRIPTION_PLANS)[number]
+        ) &&
+        createdAt >= SUBSCRIPTION_GRANT_COMPENSATION_CUTOFF
+      );
+    });
+    if (eligibleOrders.length === 0) return;
+
+    const deliveredTransactions = await db
+      .select({ orderId: creditsTransactions.relatedOrderId })
+      .from(creditsTransactions)
+      .where(
+        and(
+          eq(creditsTransactions.type, "subscription_grant"),
+          inArray(
+            creditsTransactions.relatedOrderId,
+            eligibleOrders.map(order => order.id)
+          )
+        )
+      );
+    const deliveredOrderIds = new Set(
+      deliveredTransactions
+        .map(transaction => transaction.orderId)
+        .filter((orderId): orderId is number => orderId !== null)
+    );
+
+    const undeliveredOrders = eligibleOrders.filter(
+      order => !deliveredOrderIds.has(order.id)
+    );
+    if (undeliveredOrders.length === 0) return;
+
+    console.log(
+      `[PendingChecker] Found ${undeliveredOrders.length} paid but undelivered subscription orders`
+    );
+
+    for (const order of undeliveredOrders) {
+      try {
+        if (!order.paidAt) {
+          console.warn(
+            `[PendingChecker] Subscription order ${order.outTradeNo} is paid without paidAt, skipping`
+          );
+          continue;
+        }
+        const granted = await grantSubscriptionCreditsForOrder(
+          order.id,
+          order.userId,
+          order.plan,
+          parseStoredTimestamp(order.paidAt)
+        );
+        if (granted) {
+          console.log(
+            `[PendingChecker] Auto-delivered subscription credits for order ${order.outTradeNo} (user ${order.userId})`
+          );
+        }
+      } catch (error) {
+        console.error(
+          `[PendingChecker] Error compensating subscription order ${order.outTradeNo}:`,
+          error
+        );
+      }
+    }
+  } catch (error) {
+    console.error(
+      "[PendingChecker] Error in checkPaidButUndeliveredSubscriptionOrders:",
+      error
+    );
+  }
+}
+
 /**
  * 定时检查过期订阅，自动降级为免费版并清零订阅积分
  */
@@ -283,10 +392,12 @@ export function startPendingOrderChecker() {
   setTimeout(() => {
     checkPendingOrders();
     checkPaidButUndeliveredOrders();
+    checkPaidButUndeliveredSubscriptionOrders();
     checkExpiredSubscriptions(); // 启动时也检查一次过期订阅
     intervalId = setInterval(() => {
       checkPendingOrders();
       checkPaidButUndeliveredOrders();
+      checkPaidButUndeliveredSubscriptionOrders();
     }, CHECK_INTERVAL);
     // 过期订阅每小时检查一次
     subscriptionIntervalId = setInterval(() => {

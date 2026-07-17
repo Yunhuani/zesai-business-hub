@@ -17,6 +17,11 @@ export type PricingEntry = {
 
 export type PricingConfig = Record<string, PricingEntry>;
 
+type PricingDbExecutor = Pick<
+  NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  "select"
+>;
+
 export const ACTION_KEYS = {
   chat: "action.chat",
   quick_analysis: "action.quick_analysis",
@@ -139,8 +144,10 @@ export async function seedPricingConfig(): Promise<void> {
   }
 }
 
-export async function getPricingConfig(): Promise<PricingConfig> {
-  const db = await getDb();
+export async function getPricingConfig(
+  executor?: PricingDbExecutor
+): Promise<PricingConfig> {
+  const db = executor ?? await getDb();
   if (!db) throw new Error("Database not available");
 
   const rows = await db
@@ -171,8 +178,11 @@ export async function getActionCredits(
   return resolveActionCredits(await getPricingConfig(), action);
 }
 
-export async function getSubscriptionPlan(planId: string) {
-  return resolveSubscriptionPlan(await getPricingConfig(), planId);
+export async function getSubscriptionPlan(
+  planId: string,
+  executor?: PricingDbExecutor
+) {
+  return resolveSubscriptionPlan(await getPricingConfig(executor), planId);
 }
 
 export async function getCreditPack(packId: string) {

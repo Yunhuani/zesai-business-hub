@@ -148,8 +148,7 @@ async function startServer() {
   app.post("/api/payment/alipay/notify", async (req, res) => {
     try {
       const { verifyAlipayCallback } = await import("./alipay");
-      const { getOrderByOutTradeNo, updateOrderStatus, createOrUpdateSubscription, getUserById } = await import("../db");
-      const { resetSubscriptionCredits } = await import("../creditsManager");
+      const { getOrderByOutTradeNo, updateOrderStatus, getUserById } = await import("../db");
       const { notifyAdminNewOrder } = await import("../orderNotification");
       
       console.log("[Payment] Alipay notify received:", {
@@ -221,10 +220,11 @@ async function startServer() {
       
       // Handle payment success
       if (tradeStatus === "TRADE_SUCCESS") {
+        const paidAt = new Date();
         await updateOrderStatus(outTradeNo, {
           status: "paid",
           tradeNo,
-          paidAt: new Date(),
+          paidAt,
         });
         
         // Check if it's a subscription or credit pack order
@@ -254,19 +254,13 @@ async function startServer() {
         } catch {}
         
         if (subscriptionConfig) {
-          const endDate = new Date();
-          endDate.setDate(endDate.getDate() + subscriptionConfig.durationDays);
-          
-          await createOrUpdateSubscription({
-            userId: order.userId,
-            plan: order.plan as any,
-            // monthlyLimit removed - using credits system
-            price: subscriptionConfig.priceCents,
-            endDate,
-          });
-          
-          // Grant subscription credits
-          await resetSubscriptionCredits(order.userId, order.plan);
+          const { grantSubscriptionCreditsForOrder } = await import("../subscriptionGrant");
+          await grantSubscriptionCreditsForOrder(
+            order.id,
+            order.userId,
+            order.plan,
+            paidAt
+          );
           console.log("[Payment] Subscription credits granted:", subscriptionConfig.monthlyCredits);
           
           // Send email notification to admin

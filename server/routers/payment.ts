@@ -2,7 +2,7 @@ import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { createAlipayPagePayment, queryAlipayOrder, verifyAlipayCallback } from "../_core/alipay";
 import { createWechatH5Payment, createWechatJsapiPayment, queryWechatPayment } from "../wechatPay";
-import { createOrder, getOrderByOutTradeNo, updateOrderStatus, createOrUpdateSubscription } from "../db";
+import { createOrder, getOrderByOutTradeNo, updateOrderStatus } from "../db";
 import { TRPCError } from "@trpc/server";
 import { ENV } from "../_core/env";
 import {
@@ -12,6 +12,21 @@ import {
   resolveSubscriptionPlan,
 } from "../pricingConfig";
 import { getPaymentProduct } from "../paymentPricing";
+import { grantSubscriptionCreditsForOrder } from "../subscriptionGrant";
+
+const PAID_SUBSCRIPTION_PLANS = new Set([
+  "basic",
+  "professional",
+  "enterprise",
+]);
+
+function parsePaidAt(value: string | Date): Date {
+  if (value instanceof Date) return value;
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(value)) {
+    return new Date(`${value.replace(" ", "T")}Z`);
+  }
+  return new Date(value);
+}
 
 export const paymentRouter = router({
   /**
@@ -192,6 +207,14 @@ export const paymentRouter = router({
       
       // 如果订单已支付,直接返回
       if (order.status === "paid") {
+        if (PAID_SUBSCRIPTION_PLANS.has(order.plan) && order.paidAt) {
+          await grantSubscriptionCreditsForOrder(
+            order.id,
+            order.userId,
+            order.plan,
+            parsePaidAt(order.paidAt)
+          );
+        }
         return {
           status: "paid",
           order,
@@ -219,10 +242,11 @@ export const paymentRouter = router({
         
         // 如果支付成功,更新订单状态
         if (tradeStatus === "TRADE_SUCCESS") {
+          const paidAt = new Date();
           await updateOrderStatus(input.outTradeNo, {
             status: "paid",
             tradeNo,
-            paidAt: new Date(),
+            paidAt,
           });
           
           // Check if it's a subscription or credit pack order
@@ -237,17 +261,12 @@ export const paymentRouter = router({
           } catch {}
           
           if (subscriptionConfig) {
-            // Handle subscription order
-            const endDate = new Date();
-            endDate.setDate(endDate.getDate() + subscriptionConfig.durationDays);
-            
-            await createOrUpdateSubscription({
-              userId: order.userId,
-              plan: order.plan as any,
-              // monthlyLimit removed - using credits system now
-              price: subscriptionConfig.priceCents,
-              endDate,
-            });
+            await grantSubscriptionCreditsForOrder(
+              order.id,
+              order.userId,
+              order.plan,
+              paidAt
+            );
           } else if (creditPackConfig) {
             // Handle credit pack order
             const { addPurchasedCredits } = await import("../creditsManager");
@@ -345,10 +364,11 @@ export const paymentRouter = router({
       
       // 处理支付成功
       if (tradeStatus === "TRADE_SUCCESS") {
+        const paidAt = new Date();
         await updateOrderStatus(outTradeNo, {
           status: "paid",
           tradeNo,
-          paidAt: new Date(),
+          paidAt,
         });
         
         // Check if it's a subscription or credit pack order
@@ -373,21 +393,12 @@ export const paymentRouter = router({
         } catch {}
         
         if (subscriptionConfig) {
-          // Handle subscription order
-          const endDate = new Date();
-          endDate.setDate(endDate.getDate() + subscriptionConfig.durationDays);
-          
-          await createOrUpdateSubscription({
-            userId: order.userId,
-            plan: order.plan as any,
-            // monthlyLimit removed - using credits system now
-            price: subscriptionConfig.priceCents,
-            endDate,
-          });
-          
-          // Initialize subscription credits
-          const { resetSubscriptionCredits } = await import("../creditsManager");
-          await resetSubscriptionCredits(order.userId, order.plan);
+          await grantSubscriptionCreditsForOrder(
+            order.id,
+            order.userId,
+            order.plan,
+            paidAt
+          );
         } else if (creditPackConfig) {
           // Handle credit pack order
           const { addPurchasedCredits } = await import("../creditsManager");

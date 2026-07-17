@@ -322,16 +322,25 @@ export async function getUserSubscription(userId: number) {
   return sub;
 }
 
+type SubscriptionDbExecutor = Pick<
+  NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  "select" | "update" | "insert"
+>;
+
 export async function createOrUpdateSubscription(data: {
   userId: number;
   plan: "free" | "basic" | "professional" | "enterprise";
   price: number;
   endDate: Date;
-}) {
-  const db = await getDb();
+}, executor?: SubscriptionDbExecutor) {
+  const db = executor ?? await getDb();
   if (!db) throw new Error("Database not available");
 
-  const existing = await getUserSubscription(data.userId);
+  const [existing] = await db
+    .select({ id: schema.subscriptions.id })
+    .from(schema.subscriptions)
+    .where(eq(schema.subscriptions.userId, data.userId))
+    .limit(1);
   if (existing) {
     await db
       .update(schema.subscriptions)
