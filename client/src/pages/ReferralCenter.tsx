@@ -149,7 +149,7 @@ export default function ReferralCenter() {
                   <h4 className="font-semibold mb-2">💰 购买佣金</h4>
                   <ul className="text-sm text-muted-foreground space-y-1 ml-4">
                     <li>• 被推荐用户购买套餐或积分包：您获得购买金额的10%</li>
-                    <li>• 佣金冻结7天，无退款后自动确认</li>
+                    <li>• 佣金冻结期结束后自动确认</li>
                     <li>• 确认后满3个月可申请提现</li>
                   </ul>
                 </div>

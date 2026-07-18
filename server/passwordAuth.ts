@@ -7,6 +7,46 @@ import { ENV } from "./_core/env";
 import { toMySqlTimestamp } from "./lib/mysqlTimestamp";
 
 const SALT_ROUNDS = 10;
+const MAX_FAILED_EMAIL_LOGIN_ATTEMPTS = 5;
+const EMAIL_LOGIN_LOCK_MS = 15 * 60 * 1000;
+const EMAIL_LOGIN_LOCK_MESSAGE = "尝试过多,请15分钟后再试";
+
+const emailLoginFailures = new Map<string, {
+  count: number;
+  lockedUntil: number;
+}>();
+
+function getEmailLoginKey(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+function assertEmailLoginNotLocked(key: string): void {
+  const failure = emailLoginFailures.get(key);
+  if (!failure) return;
+
+  if (failure.lockedUntil > Date.now()) {
+    throw new Error(EMAIL_LOGIN_LOCK_MESSAGE);
+  }
+
+  if (failure.lockedUntil > 0) {
+    emailLoginFailures.delete(key);
+  }
+}
+
+function recordFailedEmailLogin(key: string): void {
+  const previous = emailLoginFailures.get(key);
+  const count = (previous?.count ?? 0) + 1;
+
+  if (count >= MAX_FAILED_EMAIL_LOGIN_ATTEMPTS) {
+    emailLoginFailures.set(key, {
+      count,
+      lockedUntil: Date.now() + EMAIL_LOGIN_LOCK_MS,
+    });
+    throw new Error(EMAIL_LOGIN_LOCK_MESSAGE);
+  }
+
+  emailLoginFailures.set(key, { count, lockedUntil: 0 });
+}
 
 /**
  * Hash a password using bcrypt
@@ -234,6 +274,9 @@ export async function registerUserWithEmail(
  * Login with email and password
  */
 export async function loginUserWithEmail(email: string, password: string) {
+  const loginKey = getEmailLoginKey(email);
+  assertEmailLoginNotLocked(loginKey);
+
   const db = await getDb();
   if (!db) {
     throw new Error("Database not available");
@@ -257,8 +300,11 @@ export async function loginUserWithEmail(email: string, password: string) {
   // Verify password
   const isValid = await verifyPassword(password, user.password);
   if (!isValid) {
+    recordFailedEmailLogin(loginKey);
     throw new Error("邮箱或密码错误");
   }
+
+  emailLoginFailures.delete(loginKey);
 
   // Update last signed in and increment login count
   await db

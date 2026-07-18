@@ -113,7 +113,7 @@ export default function CommissionList({ commissions, loading }: CommissionListP
               <div className="mt-3 pt-3 border-t text-xs text-muted-foreground">
                 {commission.status === "pending" && (
                   <div>
-                    冻结中，7天内无退款后自动确认
+                    冻结中，冻结期结束后自动确认
                     {commission.confirmedAt && (
                       <span>
                         ，预计{formatMonthDay(commission.confirmedAt!)}
@@ -134,7 +134,7 @@ export default function CommissionList({ commissions, loading }: CommissionListP
                   </div>
                 )}
                 {commission.status === "paid" && <div>已支付</div>}
-                {commission.status === "cancelled" && <div>已取消（用户退款）</div>}
+                {commission.status === "cancelled" && <div>已取消</div>}
               </div>
             </div>
           ))}

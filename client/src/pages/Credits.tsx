@@ -332,7 +332,7 @@ export default function Credits() {
             <Card className="p-6">
               <h3 className="font-bold mb-2">购买后可以退款吗？</h3>
               <p className="text-sm text-muted-foreground">
-                由于积分是虚拟商品，一旦购买成功并到账，暂不支持退款。请根据实际需求选择合适的积分包。
+                积分一经购买,不支持退款。
               </p>
             </Card>
           </div>
