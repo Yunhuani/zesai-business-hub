@@ -113,7 +113,7 @@ export function UserDetailDialog({ open, onOpenChange, userId }: UserDetailDialo
               <Card>
                 <CardContent className="pt-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-purple-600">{data.stats.totalConversations}</div>
+                    <div className="text-2xl font-bold text-primary">{data.stats.totalConversations}</div>
                     <div className="text-xs text-muted-foreground">总对话数</div>
                   </div>
                 </CardContent>

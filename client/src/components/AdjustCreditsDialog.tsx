@@ -81,7 +81,7 @@ export function AdjustCreditsDialog({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Icons.Coins className="w-5 h-5 text-purple-600" />
+            <Icons.Coins className="w-5 h-5 text-primary" />
             调整用户积分
           </DialogTitle>
           <DialogDescription>
@@ -141,10 +141,10 @@ export function AdjustCreditsDialog({
 
           {/* Preview */}
           {amount && !isNaN(parseInt(amount)) && parseInt(amount) !== 0 && (
-            <div className="rounded-lg border border-purple-200 bg-purple-50 p-3">
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
               <div className="flex items-center gap-2 text-sm">
-                <Icons.Info className="w-4 h-4 text-purple-600" />
-                <span className="text-purple-900">
+                <Icons.Info className="w-4 h-4 text-primary" />
+                <span className="text-primary">
                   调整后总积分：
                   <span className="font-semibold ml-1">
                     {currentCredits.total + parseInt(amount)}
@@ -169,7 +169,7 @@ export function AdjustCreditsDialog({
           <Button
             onClick={handleSubmit}
             disabled={adjustMutation.isPending}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {adjustMutation.isPending ? (
               <>

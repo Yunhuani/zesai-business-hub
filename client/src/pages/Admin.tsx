@@ -14,7 +14,7 @@ import {
 const SUBSCRIPTION_COLORS: Record<string, string> = {
   free: "#94a3b8",
   basic: "#3b82f6",
-  professional: "#8b5cf6",
+  professional: "var(--zs-primary)",
   enterprise: "#f59e0b",
 };
 const SUBSCRIPTION_LABELS: Record<string, string> = {
@@ -94,7 +94,7 @@ export default function Admin() {
                 <Icons.ArrowLeft className="w-5 h-5" />
               </Link>
             </Button>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold text-[var(--zs-primary)]">
               管理后台
             </h1>
           </div>
@@ -177,7 +177,7 @@ export default function Admin() {
                   <YAxis fontSize={12} />
                   <Tooltip />
                   <Area type="monotone" dataKey="newUsers" name="新增用户" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.15} />
-                  <Area type="monotone" dataKey="conversations" name="对话数" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.15} />
+                  <Area type="monotone" dataKey="conversations" name="对话数" stroke="var(--zs-primary)" fill="var(--zs-primary)" fillOpacity={0.15} />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
@@ -233,10 +233,10 @@ export default function Admin() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {[
                   { label: "Agent 管理", icon: Icons.Bot, path: "/admin/agents", color: "from-blue-500 to-cyan-500" },
-                  { label: "用户管理", icon: Icons.Users, path: "/admin/user-management", color: "from-purple-500 to-pink-500" },
+                  { label: "用户管理", icon: Icons.Users, path: "/admin/user-management", color: "from-[var(--zs-primary)] to-[var(--zs-primary-2)]" },
                   { label: "订单管理", icon: Icons.ShoppingCart, path: "/admin/orders", color: "from-green-500 to-emerald-500" },
                   { label: "数据分析", icon: Icons.BarChart3, path: "/admin/analytics", color: "from-amber-500 to-orange-500" },
-                  { label: "知识库管理", icon: Icons.Database, path: "/admin/knowledge", color: "from-indigo-500 to-violet-500" },
+                  { label: "知识库管理", icon: Icons.Database, path: "/admin/knowledge", color: "from-[var(--zs-primary)] to-[var(--zs-primary-2)]" },
                 ].map(item => (
                   <div
                     key={item.path}

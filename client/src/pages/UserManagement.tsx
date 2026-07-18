@@ -86,7 +86,7 @@ export default function UserManagement() {
     <div className="min-h-screen bg-background">
       <header className="border-b glass-effect sticky top-0 z-10">
         <div className="container py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold text-[var(--zs-primary)]">
             用户管理
           </h1>
           <Button variant="outline" onClick={() => setLocation("/admin")}>
@@ -99,7 +99,7 @@ export default function UserManagement() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Coins className="w-5 h-5 text-purple-600" />
+              <Coins className="w-5 h-5 text-primary" />
               用户列表
             </CardTitle>
             <CardDescription>管理用户积分和查看用户信息</CardDescription>
@@ -155,7 +155,7 @@ export default function UserManagement() {
                             <TableCell>
                               <span className={`px-2 py-1 rounded text-xs font-medium ${
                                 u.role === "admin" 
-                                  ? "bg-purple-100 text-purple-700" 
+                                  ? "bg-primary/10 text-primary"
                                   : "bg-gray-800 text-gray-300"
                               }`}>
                                 {u.role === "admin" ? "管理员" : "用户"}
@@ -165,7 +165,7 @@ export default function UserManagement() {
                               {u.subscription ? (
                                 <span className={`px-2 py-1 rounded text-xs font-medium ${
                                   u.subscription.plan === "enterprise" ? "bg-orange-100 text-orange-700" :
-                                  u.subscription.plan === "professional" ? "bg-purple-100 text-purple-700" :
+                                  u.subscription.plan === "professional" ? "bg-primary/10 text-primary" :
                                   u.subscription.plan === "basic" ? "bg-blue-100 text-blue-700" :
                                   "bg-gray-800 text-gray-300"
                                 }`}>
@@ -221,7 +221,7 @@ export default function UserManagement() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => handleOpenAdjustDialog(u)}
-                                  className="hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300"
+                                  className="hover:bg-primary/5 hover:text-primary hover:border-primary/20"
                                 >
                                   <Coins className="w-4 h-4 mr-1" />
                                   积分

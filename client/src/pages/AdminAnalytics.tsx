@@ -573,7 +573,7 @@ export default function AdminAnalytics() {
                 <Icons.ArrowLeft className="w-5 h-5" />
               </Link>
             </Button>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold text-[var(--zs-primary)]">
               数据分析
             </h1>
           </div>

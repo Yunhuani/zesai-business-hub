@@ -90,7 +90,7 @@ export default function AdminAgents() {
                 <Icons.ArrowLeft className="w-5 h-5" />
               </Link>
             </Button>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold text-[var(--zs-primary)]">
               Agent 管理
             </h1>
           </div>
