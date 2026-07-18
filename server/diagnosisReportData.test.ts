@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { buildDiagnosisReport } from "../client/src/pages/diagnosisReportData";
 
@@ -54,6 +55,20 @@ const diagnosis = {
 };
 
 describe("buildDiagnosisReport", () => {
+  it("uses structural-assessment wording for degraded report sections", () => {
+    const source = readFileSync(
+      new URL("../client/src/pages/DiagnosisReport.tsx", import.meta.url),
+      "utf8"
+    );
+
+    expect(source).toContain("结构性判断口径");
+    expect(source).toContain(
+      "结论已基于当前可用信息形成;进入方案深化阶段后,可结合订单、渠道、对手与财务明细进一步量化优先级和投入强度。"
+    );
+    expect(source).not.toContain("基于现有信息提供方向性判断");
+    expect(source).not.toContain("基于现有信息的方向性判断");
+  });
+
   it("maps the real NBG result shape into report sections", () => {
     const report = buildDiagnosisReport(diagnosis);
 
@@ -118,7 +133,47 @@ describe("buildDiagnosisReport", () => {
     expect(visibleCopy).not.toContain("finance.product_lines");
     expect(visibleCopy).not.toContain("competition.self_scores");
     expect(visibleCopy).not.toContain("finance.customers");
-    expect(report.dimensions[0].judgment).toContain("外部市场情报");
+    expect(report.dimensions[0].judgment).toContain(
+      "市场判断采用结构性定性评估口径"
+    );
     expect(report.dimensions[0].upgradeHook).toContain("竞争力自评数据");
+  });
+
+  it("removes hesitant and internal wording from customer-visible report data", () => {
+    const report = buildDiagnosisReport({
+      ...diagnosis,
+      result: {
+        ...diagnosis.result,
+        dimension_outputs: [
+          {
+            ...diagnosis.result.dimension_outputs[0],
+            core_judgment:
+              "未提供 market_brief.market；未提供 market_brief.competition。",
+            reasoning_chain: [
+              "未检索到，留待补充。",
+              "缺少 finance.product_lines 数据。",
+              "该项待补充，并采用降级判断。",
+            ],
+            degradation: {
+              degraded: true,
+              upgrade_hook: "未提供渠道明细，缺少订单数据。",
+            },
+          },
+        ],
+        synthesis_output: {
+          ...diagnosis.result.synthesis_output,
+          overall_judgment: "缺少关键材料，结论留待补充。",
+        },
+      },
+    });
+
+    const visibleCopy = JSON.stringify(report);
+    expect(visibleCopy).not.toMatch(
+      /未提供|缺少|未检索到|留待补充|待补充|降级|market_brief|finance\./
+    );
+    expect(visibleCopy).toContain("市场判断采用结构性定性评估口径");
+    expect(visibleCopy).toContain("竞争判断采用结构性定性评估口径");
+    expect(visibleCopy).toContain("该部分可在方案深化阶段进一步量化");
+    expect(visibleCopy).toContain("该项可在方案深化阶段进一步细化");
   });
 });

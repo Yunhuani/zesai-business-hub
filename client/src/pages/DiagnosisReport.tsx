@@ -419,7 +419,7 @@ export default function DiagnosisReport() {
                     </p>
                     <p className="mt-2 max-w-3xl text-sm leading-7 text-[#9DA4B3]">
                       {degradedDimensions.map(item => item.name).join("、")}
-                      基于现有信息提供方向性判断。补充外部市场情报、竞争力数据或财务明细后，可进一步精确量化。
+                      采用结构性判断口径。结论已基于当前可用信息形成;进入方案深化阶段后,可结合订单、渠道、对手与财务明细进一步量化优先级和投入强度。
                     </p>
                   </div>
                   <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] text-[#8F6825]">
@@ -544,7 +544,7 @@ export default function DiagnosisReport() {
 
                 {dimension.degraded ? (
                   <span className="mt-7 inline-flex border border-[#3A3C44] bg-[#1A1B20] px-3 py-1.5 text-[11px] tracking-[0.08em] text-[#9DA4B3]">
-                    基于现有信息的方向性判断
+                    结构性判断口径
                   </span>
                 ) : null}
 

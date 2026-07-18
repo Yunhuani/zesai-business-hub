@@ -53,11 +53,33 @@ const INTERNAL_TERM_LABELS: Array<[RegExp, string]> = [
   [/\bself_scores\b/g, "竞争力自评数据"],
 ];
 
+const CUSTOMER_SAFE_REPLACEMENTS: Array<[RegExp, string]> = [
+  [/未提供\s*外部市场情报/g, "市场判断采用结构性定性评估口径"],
+  [/未提供\s*外部竞争情报/g, "竞争判断采用结构性定性评估口径"],
+  [
+    /未检索到\s*[,，]?\s*(?:留待补充)?|(?:该项|结论)?\s*(?:留待补充|待补充)/g,
+    "该项可在方案深化阶段进一步细化",
+  ],
+  [/缺少\s*[^，。；;,\n]*?数据(?:\s*数据)?/g, "该部分可在方案深化阶段进一步量化"],
+  [/未提供\s*[^，。；;,\n]*/g, "该项可在方案深化阶段进一步细化"],
+  [/缺少\s*[^，。；;,\n]*/g, "该部分可在方案深化阶段进一步量化"],
+  [/降级(?:判断|口径|处理)?/g, "结构性定性评估口径"],
+];
+
 export function sanitizeCustomerText(value: string): string {
-  return INTERNAL_TERM_LABELS.reduce(
+  const labeledCopy = INTERNAL_TERM_LABELS.reduce(
     (copy, [pattern, label]) => copy.replace(pattern, label),
     value
-  ).replace(/\b[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)+\b/gi, "相关数据");
+  );
+  const customerSafeCopy = CUSTOMER_SAFE_REPLACEMENTS.reduce(
+    (copy, [pattern, replacement]) => copy.replace(pattern, replacement),
+    labeledCopy
+  );
+
+  return customerSafeCopy.replace(
+    /\b[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)+\b/gi,
+    "相关数据"
+  );
 }
 
 function object(value: unknown): JsonObject | null {
