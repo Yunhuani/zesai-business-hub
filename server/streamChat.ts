@@ -144,6 +144,16 @@ export async function handleStreamChat(req: Request, res: Response) {
     });
 
     let fullContent = "";
+    let streamCompleted = false;
+    let streamFailed = false;
+    let clientAborted = false;
+    let streamReading = true;
+    req.on("close", () => {
+      if (streamReading && !streamCompleted) {
+        clientAborted = true;
+      }
+    });
+
     const reader = stream.getReader();
     const decoder = new TextDecoder();
 
@@ -158,7 +168,10 @@ export async function handleStreamChat(req: Request, res: Response) {
         for (const line of lines) {
           if (line.startsWith("data: ")) {
             const data = line.slice(6);
-            if (data === "[DONE]") continue;
+            if (data === "[DONE]") {
+              streamCompleted = true;
+              continue;
+            }
 
             try {
               const parsed = JSON.parse(data);
@@ -175,27 +188,42 @@ export async function handleStreamChat(req: Request, res: Response) {
         }
       }
     } catch (error) {
+      streamFailed = true;
       console.error("Stream error:", error);
       res.write(`data: ${JSON.stringify({ error: "Stream failed" })}\n\n`);
+    } finally {
+      streamReading = false;
     }
 
-    // Save assistant message
-    await createMessage({
-      conversationId,
-      role: "assistant",
-      content: fullContent || "抱歉,我无法生成回复。",
-    });
-    
-    // Deduct credits
-    const chatBillingKey = typeof requestId === "string" && requestId
-      ? `chat:${userId}:${conversationId}:${requestId}`
-      : `chat-message:${userMessage.id}`;
-    await deductCreditsWithIdempotencyKey(
-      userId,
-      chatCredits,
-      `基础对话 - Conversation #${conversationId}`,
-      chatBillingKey
-    );
+    const delivered =
+      streamCompleted &&
+      !streamFailed &&
+      !clientAborted &&
+      fullContent.trim().length > 0;
+
+    if (delivered) {
+      // Save assistant message
+      await createMessage({
+        conversationId,
+        role: "assistant",
+        content: fullContent,
+      });
+
+      // Deduct credits
+      const chatBillingKey = typeof requestId === "string" && requestId
+        ? `chat:${userId}:${conversationId}:${requestId}`
+        : `chat-message:${userMessage.id}`;
+      await deductCreditsWithIdempotencyKey(
+        userId,
+        chatCredits,
+        `基础对话 - Conversation #${conversationId}`,
+        chatBillingKey
+      );
+    } else {
+      res.write(`data: ${JSON.stringify({
+        warning: "回复未完成，未扣费",
+      })}\n\n`);
+    }
 
     // End stream
     res.write("data: [DONE]\n\n");
