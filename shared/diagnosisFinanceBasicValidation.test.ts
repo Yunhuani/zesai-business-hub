@@ -29,6 +29,21 @@ describe("validateFinanceBasicAnswers", () => {
       .toBe("请填写实际支出（房租、工资等）");
   });
 
+  it("only validates finance basic fields in the current step when a scope is provided", () => {
+    const answers = { ...validAnswers, "finance_basic.cash": "-1" };
+
+    expect(validateFinanceBasicAnswers(
+      answers,
+      {},
+      new Set(["finance_basic.net_margin_band", "finance_basic.cost_structure"])
+    )).toBeNull();
+    expect(validateFinanceBasicAnswers(
+      answers,
+      {},
+      new Set(["finance_basic.cash", "finance_basic.monthly_fixed"])
+    )).toBe("账上现金请输入非负数字");
+  });
+
   it.each([
     ["", ""],
     ["0", "0.01"],

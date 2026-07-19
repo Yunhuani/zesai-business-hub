@@ -6,21 +6,29 @@ function trimmedString(value: unknown): string {
 
 export function validateFinanceBasicAnswers(
   answers: FinanceBasicAnswers,
-  customValues: Record<string, string> = {}
+  customValues: Record<string, string> = {},
+  currentStepFields?: ReadonlySet<string>
 ): string | null {
-  const netMarginBand =
-    trimmedString(customValues["finance_basic.net_margin_band"]) ||
-    trimmedString(answers["finance_basic.net_margin_band"]);
-  if (!netMarginBand) {
-    return "请选择「大致净利率区间？」";
+  const shouldValidate = (field: string) => !currentStepFields || currentStepFields.has(field);
+
+  if (shouldValidate("finance_basic.net_margin_band")) {
+    const netMarginBand =
+      trimmedString(customValues["finance_basic.net_margin_band"]) ||
+      trimmedString(answers["finance_basic.net_margin_band"]);
+    if (!netMarginBand) {
+      return "请选择「大致净利率区间？」";
+    }
   }
 
-  if (!trimmedString(answers["finance_basic.cost_structure"])) {
+  if (
+    shouldValidate("finance_basic.cost_structure") &&
+    !trimmedString(answers["finance_basic.cost_structure"])
+  ) {
     return "请填写「你的成本主要花在哪些地方？」";
   }
 
   const cash = trimmedString(answers["finance_basic.cash"]);
-  if (cash) {
+  if (shouldValidate("finance_basic.cash") && cash) {
     const parsedCash = Number(cash);
     if (!Number.isFinite(parsedCash) || parsedCash < 0) {
       return "账上现金请输入非负数字";
@@ -28,7 +36,7 @@ export function validateFinanceBasicAnswers(
   }
 
   const monthlyFixed = trimmedString(answers["finance_basic.monthly_fixed"]);
-  if (monthlyFixed) {
+  if (shouldValidate("finance_basic.monthly_fixed") && monthlyFixed) {
     const parsedMonthlyFixed = Number(monthlyFixed);
     if (!Number.isFinite(parsedMonthlyFixed) || parsedMonthlyFixed <= 0) {
       return "请填写实际支出（房租、工资等）";

@@ -563,11 +563,19 @@ function validateCurrentStep(
     if (requiredError) return requiredError;
   }
 
-  const checksFinanceBasic = step.questions.some(
-    question => "field" in question && question.field.startsWith("finance_basic.")
+  const financeBasicFields = new Set(
+    step.questions.flatMap(question =>
+      "field" in question && question.field.startsWith("finance_basic.")
+        ? [question.field]
+        : []
+    )
   );
-  if (checksFinanceBasic) {
-    const financeBasicError = validateFinanceBasicAnswers(answers, customValues);
+  if (financeBasicFields.size > 0) {
+    const financeBasicError = validateFinanceBasicAnswers(
+      answers,
+      customValues,
+      financeBasicFields
+    );
     if (financeBasicError) return financeBasicError;
   }
 
