@@ -252,7 +252,7 @@ export default function Home() {
 
           <Card className="overflow-hidden rounded-[20px] border-[var(--zs-line)] bg-white shadow-[0_16px_48px_-32px_rgba(31,61,50,.30)]">
             <CardContent className="grid gap-0 p-0 lg:grid-cols-[1fr_440px]">
-              <div className="p-7 md:p-10">
+              <div className="flex flex-col p-7 md:p-10">
                 <h3 className="text-[27px] font-extrabold leading-[1.3]">
                   增长卡住了，找不到突破口
                 </h3>
@@ -264,12 +264,48 @@ export default function Home() {
                   <Button asChild className="rounded-[11px] px-[30px] py-[14px] text-[16px]">
                     <Link href="/diagnosis">开始诊断 →</Link>
                   </Button>
-                  <Link
-                    href="/pricing"
-                    className="text-[15px] font-semibold text-[var(--zs-primary)] underline-offset-4 hover:underline"
-                  >
-                    查看会员权益
-                  </Link>
+                </div>
+
+                <div className="mt-9 border-t border-[var(--zs-line)] pt-7">
+                  <p className="text-[15px] font-bold text-[var(--zs-primary)]">
+                    三步，拿到你的增长诊断报告
+                  </p>
+                  <div className="mt-5 grid gap-5 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                    {[
+                      {
+                        no: "01",
+                        icon: ClipboardList,
+                        title: "填写经营信息",
+                        desc: "几分钟填写企业情况，信息越全，诊断越精准",
+                      },
+                      {
+                        no: "02",
+                        icon: Search,
+                        title: "AI 五维深度分析",
+                        desc: "基于 NBG 方法论，从五个维度系统排查，找出真正制约增长的那一环",
+                      },
+                      {
+                        no: "03",
+                        icon: FileText,
+                        title: "获得增长诊断报告",
+                        desc: "五维健康度、三大关键发现、增长瓶颈与突破方向",
+                      },
+                    ].map(step => {
+                      const StepIcon = step.icon;
+                      return (
+                        <div key={step.no} className="relative border-l border-[rgba(31,61,50,.18)] pl-4">
+                          <div className="flex items-center gap-2.5">
+                            <span className="font-mono text-[10px] font-bold tracking-[.08em] text-[var(--zs-gold)]">{step.no}</span>
+                            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--zs-primary-soft)] text-[var(--zs-primary)]">
+                              <StepIcon className="h-3.5 w-3.5" strokeWidth={1.8} />
+                            </span>
+                          </div>
+                          <p className="mt-3 text-[13px] font-bold text-[var(--zs-ink)]">{step.title}</p>
+                          <p className="mt-1.5 text-[11.5px] leading-[1.65] text-[var(--zs-sub)]">{step.desc}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
