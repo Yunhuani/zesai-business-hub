@@ -13,6 +13,7 @@ import {
   type FinanceRowAnswer,
 } from "@/lib/diagnosisDraft";
 import { rememberLoginReturnPath } from "@/lib/loginReturn";
+import { getDiagnosisFollowUpHint } from "@shared/diagnosisFollowUpHint";
 import { validateFinanceBasicAnswers } from "@shared/diagnosisFinanceBasicValidation";
 import { validateFinancePlusTableTotals } from "@shared/diagnosisFinancePlusValidation";
 import {
@@ -144,17 +145,25 @@ function TextAnswer({
     color: "var(--zs-ink)",
     "--tw-ring-color": "rgba(31,61,50,.12)",
   } as CSSProperties;
+  const followUpHint = getDiagnosisFollowUpHint(question.field, value);
 
   if (question.type === "textarea") {
     return (
-      <textarea
-        rows={5}
-        value={typeof value === "string" ? value : ""}
-        onChange={event => onChange(question.field, event.target.value)}
-        placeholder={question.placeholder}
-        className={`${inputClassName} min-h-32 resize-y py-[15px]`}
-        style={inputStyle}
-      />
+      <div className="space-y-2.5">
+        <textarea
+          rows={5}
+          value={typeof value === "string" ? value : ""}
+          onChange={event => onChange(question.field, event.target.value)}
+          placeholder={question.placeholder}
+          className={`${inputClassName} min-h-32 resize-y py-[15px]`}
+          style={inputStyle}
+        />
+        {followUpHint ? (
+          <p className="text-[13px] leading-6" style={{ color: "var(--zs-gold)" }}>
+            {followUpHint}
+          </p>
+        ) : null}
+      </div>
     );
   }
 
