@@ -82,6 +82,15 @@ describe("diagnosis questionnaire structure", () => {
     ]));
   });
 
+  it("declares the phase-one finance number boundaries on the controls", () => {
+    const questions = DIAGNOSIS_STEPS.flatMap(step => step.questions);
+    const cash = questions.find(question => question.id === "cash");
+    const monthlyFixed = questions.find(question => question.id === "monthly-fixed");
+
+    expect(cash).toMatchObject({ type: "number", min: 0 });
+    expect(monthlyFixed).toMatchObject({ type: "number", min: 0.01 });
+  });
+
   it("defines finance plus table questions with engine-aligned fields", () => {
     const questions = DIAGNOSIS_STEPS.flatMap(step => step.questions);
     const productLines = questions.find(question => question.id === "finance-product-lines");

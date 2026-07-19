@@ -5,6 +5,7 @@ export type TextQuestion = {
   type: "text" | "textarea" | "number";
   placeholder: string;
   unit?: string;
+  min?: number;
   optional?: boolean;
   helperText?: string;
 };
@@ -328,6 +329,7 @@ export const DIAGNOSIS_STEPS: DiagnosisStep[] = [
         type: "number",
         placeholder: "请输入金额",
         unit: "万元",
+        min: 0,
         optional: true,
         helperText: "填写后可精确测算你的现金安全边界；不填我们仍会给出完整诊断。",
       },
@@ -338,6 +340,7 @@ export const DIAGNOSIS_STEPS: DiagnosisStep[] = [
         type: "number",
         placeholder: "请输入金额",
         unit: "万元 / 月",
+        min: 0.01,
         optional: true,
         helperText: "填写后可更准确估算公司的现金跑道；不填我们仍会给出完整诊断。",
       },

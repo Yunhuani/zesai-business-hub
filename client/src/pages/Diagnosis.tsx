@@ -13,6 +13,7 @@ import {
   type FinanceRowAnswer,
 } from "@/lib/diagnosisDraft";
 import { rememberLoginReturnPath } from "@/lib/loginReturn";
+import { validateFinanceBasicAnswers } from "@shared/diagnosisFinanceBasicValidation";
 import {
   DIAGNOSIS_STEPS,
   type ChoiceQuestion,
@@ -162,7 +163,7 @@ function TextAnswer({
         <input
           type={question.type}
           inputMode={question.type === "number" ? "decimal" : undefined}
-          min={question.type === "number" ? 0 : undefined}
+          min={question.type === "number" ? question.min : undefined}
           value={typeof value === "string" ? value : ""}
           onChange={event => onChange(question.field, event.target.value)}
           placeholder={question.placeholder}
@@ -550,6 +551,14 @@ function validateCurrentStep(
   for (const question of step.questions) {
     const requiredError = validateRequiredQuestion(question, answers, customValues);
     if (requiredError) return requiredError;
+  }
+
+  const checksFinanceBasic = step.questions.some(
+    question => "field" in question && question.field.startsWith("finance_basic.")
+  );
+  if (checksFinanceBasic) {
+    const financeBasicError = validateFinanceBasicAnswers(answers, customValues);
+    if (financeBasicError) return financeBasicError;
   }
 
   for (const question of step.questions) {
