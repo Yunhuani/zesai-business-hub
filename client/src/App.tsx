@@ -32,6 +32,7 @@ import About from "./pages/About";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Diagnosis from "./pages/Diagnosis";
+import DiagnosisConversation from "./pages/DiagnosisConversation";
 import DiagnosisProcessing from "./pages/DiagnosisProcessing";
 import DiagnosisReport from "./pages/DiagnosisReport";
 import MyDiagnoses from "./pages/MyDiagnoses";
@@ -68,6 +69,7 @@ function Router() {
       <Route path="/privacy" component={Privacy} />
       <Route path="/diagnosis" component={Diagnosis} />
       <Route path="/diagnosis/new" component={Diagnosis} />
+      <Route path="/diagnosis/conversation" component={DiagnosisConversation} />
       <Route path="/diagnosis/:id/processing" component={DiagnosisProcessing} />
       <Route path="/diagnosis/:id/report" component={DiagnosisReport} />
       <Route path="/my-diagnoses" component={MyDiagnoses} />

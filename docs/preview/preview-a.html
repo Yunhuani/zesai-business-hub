@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>阶段 5 采集页预览 A · 分步式</title>
+  <style>
+    :root {
+      --bg: #FAFAF8;
+      --green: #1F3D32;
+      --green-2: #294C40;
+      --soft: #EEF2ED;
+      --gold: #C9A24B;
+      --ink: #1F2421;
+      --sub: #6F756E;
+      --line: #E8E5DC;
+      --card: #FFFFFF;
+      --shadow: 0 28px 70px -45px rgba(31, 61, 50, .48);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 5%, rgba(201,162,75,.07), transparent 27rem),
+        var(--bg);
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .topbar {
+      position: sticky; top: 0; z-index: 20;
+      border-bottom: 1px solid rgba(232,229,220,.92);
+      background: rgba(250,250,248,.88);
+      backdrop-filter: blur(18px) saturate(150%);
+    }
+    .topbar-inner {
+      width: min(100% - 40px, 920px); height: 68px; margin: auto;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 800; letter-spacing: .02em; }
+    .brand-mark {
+      width: 35px; height: 35px; display: grid; place-items: center;
+      color: #E9DDBD; background: #17271F; border-radius: 10px;
+      border: 1px solid rgba(201,162,75,.5); font-family: serif; font-size: 20px;
+    }
+    .status { display: flex; align-items: center; gap: 8px; color: var(--sub); font-size: 12px; font-weight: 650; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 4px rgba(201,162,75,.13); }
+
+    .shell { width: min(100% - 36px, 720px); margin: 0 auto; padding: 36px 0 148px; }
+    .progress-meta { display: flex; justify-content: space-between; align-items: end; margin-bottom: 12px; }
+    .eyebrow { color: var(--gold); font-size: 11px; font-weight: 800; letter-spacing: .18em; }
+    .dimension { margin-left: 12px; color: var(--sub); font-size: 12px; }
+    .percent { color: var(--sub); font-size: 12px; font-weight: 700; }
+    .progress { height: 4px; overflow: hidden; border-radius: 999px; background: #ECEADF; }
+    .progress > span { display: block; height: 100%; width: 33.333%; border-radius: inherit; background: var(--green); transition: width .35s ease; }
+
+    .stage {
+      position: relative; min-height: 520px; margin-top: 24px; padding: 32px;
+      border: 1px solid var(--line); border-radius: 22px; background: rgba(255,255,255,.94);
+      box-shadow: var(--shadow);
+    }
+    .stage::after {
+      content: ""; position: absolute; top: 0; left: 32px; width: 68px; height: 2px;
+      background: var(--gold);
+    }
+    .ai-row { display: flex; align-items: flex-start; gap: 13px; }
+    .avatar {
+      flex: 0 0 auto; width: 44px; height: 44px; display: grid; place-items: center;
+      border-radius: 13px; color: #E9DDBD; background: #17271F;
+      border: 1px solid rgba(201,162,75,.5); font-family: serif; font-size: 23px; font-weight: 700;
+    }
+    .ai-main { min-width: 0; flex: 1; }
+    .identity { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; font-size: 12px; font-weight: 750; }
+    .live { display: inline-flex; align-items: center; gap: 5px; color: var(--gold); font-size: 10px; font-weight: 800; }
+    .live::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    .bubble {
+      padding: 13px 16px; border-radius: 5px 15px 15px 15px;
+      background: var(--soft); color: #33433B; font-size: 14px; line-height: 1.7;
+    }
+
+    .question-panel { display: none; padding: 32px 0 0 57px; animation: enter .35s ease both; }
+    .question-panel.active { display: block; }
+    @keyframes enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .number { margin-bottom: 7px; color: var(--gold); font-size: 10px; font-weight: 850; letter-spacing: .16em; }
+    h1 { margin: 0 0 22px; font-size: clamp(22px, 4vw, 28px); line-height: 1.4; letter-spacing: -.02em; }
+    .hint { margin: -12px 0 19px; color: var(--sub); font-size: 12px; line-height: 1.65; }
+
+    .choices { display: grid; gap: 10px; }
+    .choice {
+      width: 100%; min-height: 52px; padding: 0 16px; display: flex; align-items: center; gap: 12px;
+      color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 13px;
+      text-align: left; font-size: 14px; font-weight: 650; transition: .18s ease;
+    }
+    .choice:hover { border-color: #AEBDB5; transform: translateY(-1px); }
+    .choice.selected { color: var(--green); border-color: rgba(31,61,50,.58); background: var(--soft); box-shadow: inset 3px 0 0 var(--green); }
+    .radio { width: 18px; height: 18px; border: 1.5px solid #B9C2BC; border-radius: 50%; background: #fff; }
+    .selected .radio { border: 5px solid var(--green); }
+
+    .money-field { position: relative; }
+    .money-field input {
+      width: 100%; height: 58px; padding: 0 88px 0 17px; color: var(--ink);
+      border: 1px solid var(--line); border-radius: 13px; background: #fff; outline: none;
+      font-size: 18px; font-weight: 700; transition: .2s ease;
+    }
+    .money-field input:focus { border-color: var(--green); box-shadow: 0 0 0 4px rgba(31,61,50,.08); }
+    .unit { position: absolute; right: 17px; top: 50%; transform: translateY(-50%); color: var(--sub); font-size: 13px; }
+
+    .matrix { overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+    .matrix-row { display: grid; grid-template-columns: minmax(76px,1.35fr) repeat(4,minmax(48px,.75fr)); align-items: center; min-height: 48px; border-top: 1px solid var(--line); }
+    .matrix-row:first-child { min-height: 38px; border-top: 0; background: #F8F8F5; }
+    .matrix-row > span { padding: 0 9px; color: var(--sub); font-size: 11px; font-weight: 750; text-align: center; }
+    .matrix-row > strong { padding-left: 14px; font-size: 13px; }
+    .matrix-cell { height: 48px; border: 0; background: transparent; display: grid; place-items: center; }
+    .matrix-cell i { width: 18px; height: 18px; border: 1.5px solid #C6CEC8; border-radius: 50%; background: #fff; }
+    .matrix-cell.active i { border: 5px solid var(--green); }
+
+    .dock {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 25;
+      border-top: 1px solid rgba(232,229,220,.95); background: rgba(250,250,248,.91);
+      backdrop-filter: blur(18px) saturate(150%);
+    }
+    .dock-inner { width: min(100% - 36px, 720px); margin: auto; padding: 13px 0 16px; }
+    .composer {
+      display: flex; align-items: center; gap: 12px; padding: 8px 9px 8px 16px;
+      border: 1px solid var(--line); border-radius: 16px; background: #fff; box-shadow: 0 16px 46px -32px rgba(31,61,50,.55);
+    }
+    .composer-copy { min-width: 0; flex: 1; color: var(--sub); font-size: 12px; }
+    .back { border: 0; color: var(--sub); background: transparent; font-size: 13px; font-weight: 700; padding: 10px 4px; }
+    .next {
+      min-width: 108px; height: 42px; border: 0; border-radius: 12px;
+      color: #fff; background: var(--green); font-size: 13px; font-weight: 750;
+      box-shadow: 0 14px 28px -18px rgba(31,61,50,.75); transition: .18s ease;
+    }
+    .next:hover { background: var(--green-2); transform: translateY(-1px); }
+
+    @media (max-width: 620px) {
+      .topbar-inner, .shell, .dock-inner { width: min(100% - 28px, 720px); }
+      .stage { min-height: 560px; padding: 24px 18px; }
+      .stage::after { left: 18px; }
+      .question-panel { padding-left: 0; padding-top: 28px; }
+      .matrix-row { grid-template-columns: 70px repeat(4,1fr); }
+      .matrix-row > span { padding: 0 3px; font-size: 10px; }
+      .composer-copy { display: none; }
+      .back { margin-right: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand"><span class="brand-mark">泽</span><span>增长诊断访谈</span></div>
+      <div class="status"><span class="status-dot"></span>草稿已自动保存</div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <div class="progress-meta">
+      <div><span class="eyebrow" id="stepLabel">STEP 01 / 03</span><span class="dimension" id="dimension">商业模式</span></div>
+      <span class="percent" id="percent">33%</span>
+    </div>
+    <div class="progress"><span id="progressBar"></span></div>
+
+    <section class="stage">
+      <div class="ai-row">
+        <div class="avatar">泽</div>
+        <div class="ai-main">
+          <div class="identity">泽思 · AI 增长顾问 <span class="live">访谈中</span></div>
+          <div class="bubble" id="aiBubble">先了解一下你的业务规模。这不是考试，按最近一个完整年度的大致情况选择即可。</div>
+        </div>
+      </div>
+
+      <div class="question-panel active" data-step="0">
+        <div class="number">01 · REVENUE</div>
+        <h1>你们最近一年的营收大致在哪个区间？</h1>
+        <div class="choices">
+          <button class="choice"><span class="radio"></span>500 万元以下</button>
+          <button class="choice selected"><span class="radio"></span>500 万–2,000 万元</button>
+          <button class="choice"><span class="radio"></span>2,000 万–1 亿元</button>
+          <button class="choice"><span class="radio"></span>1 亿元以上</button>
+        </div>
+      </div>
+
+      <div class="question-panel" data-step="1">
+        <div class="number">02 · CASH</div>
+        <h1>目前账上可自由支配的现金大约有多少？</h1>
+        <p class="hint">用于估算现金安全边界；不需要精确到账面个位数。</p>
+        <div class="money-field">
+          <input type="number" value="320" min="0" aria-label="账上现金" />
+          <span class="unit">万元</span>
+        </div>
+      </div>
+
+      <div class="question-panel" data-step="2">
+        <div class="number">03 · CAPABILITY</div>
+        <h1>你怎么评价当前团队的能力配置？</h1>
+        <p class="hint">每行选择一项；“不适用”也是有效答案。</p>
+        <div class="matrix">
+          <div class="matrix-row"><span></span><span>不适用</span><span>弱</span><span>中</span><span>强</span></div>
+          <div class="matrix-row"><strong>研发</strong><button class="matrix-cell"><i></i></button><button class="matrix-cell"><i></i></button><button class="matrix-cell"><i></i></button><button class="matrix-cell active"><i></i></button></div>
+          <div class="matrix-row"><strong>生产</strong><button class="matrix-cell"><i></i></button><button class="matrix-cell"><i></i></button><button class="matrix-cell active"><i></i></button><button class="matrix-cell"><i></i></button></div>
+          <div class="matrix-row"><strong>销售</strong><button class="matrix-cell"><i></i></button><button class="matrix-cell active"><i></i></button><button class="matrix-cell"><i></i></button><button class="matrix-cell"><i></i></button></div>
+          <div class="matrix-row"><strong>职能</strong><button class="matrix-cell active"><i></i></button><button class="matrix-cell"><i></i></button><button class="matrix-cell"><i></i></button><button class="matrix-cell"><i></i></button></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="dock">
+    <div class="dock-inner">
+      <div class="composer">
+        <button class="back" id="backButton">← 上一步</button>
+        <div class="composer-copy" id="composerCopy">选择最接近实际情况的一项</div>
+        <button class="next" id="nextButton">下一步 →</button>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const panels = [...document.querySelectorAll('.question-panel')];
+    const bubbles = [
+      '先了解一下你的业务规模。这不是考试，按最近一个完整年度的大致情况选择即可。',
+      '接着看企业的现金安全边界。这里填一个大致数，就能帮助我判断经营韧性。',
+      '最后快速扫一眼团队结构。请横向比较，而不是追求每一项都选“强”。'
+    ];
+    const dimensions = ['商业模式', '财务健康', '内部能力'];
+    const copies = ['选择最接近实际情况的一项', '输入大致金额即可', '四行都选择后继续'];
+    let step = 0;
+
+    function render() {
+      panels.forEach((panel, index) => panel.classList.toggle('active', index === step));
+      document.querySelector('#stepLabel').textContent = `STEP 0${step + 1} / 03`;
+      document.querySelector('#dimension').textContent = dimensions[step];
+      document.querySelector('#percent').textContent = `${Math.round((step + 1) / 3 * 100)}%`;
+      document.querySelector('#progressBar').style.width = `${(step + 1) / 3 * 100}%`;
+      document.querySelector('#aiBubble').textContent = bubbles[step];
+      document.querySelector('#composerCopy').textContent = copies[step];
+      document.querySelector('#backButton').style.visibility = step === 0 ? 'hidden' : 'visible';
+      document.querySelector('#nextButton').textContent = step === 2 ? '完成预览 ✓' : '下一步 →';
+    }
+
+    document.querySelector('#nextButton').addEventListener('click', () => {
+      if (step < 2) { step += 1; render(); }
+      else document.querySelector('#nextButton').textContent = '已完成 ✓';
+    });
+    document.querySelector('#backButton').addEventListener('click', () => {
+      if (step > 0) { step -= 1; render(); }
+    });
+    document.querySelectorAll('.choice').forEach(choice => choice.addEventListener('click', () => {
+      choice.parentElement.querySelectorAll('.choice').forEach(item => item.classList.remove('selected'));
+      choice.classList.add('selected');
+    }));
+    document.querySelectorAll('.matrix-row').forEach(row => row.querySelectorAll('.matrix-cell').forEach(cell => cell.addEventListener('click', () => {
+      row.querySelectorAll('.matrix-cell').forEach(item => item.classList.remove('active'));
+      cell.classList.add('active');
+    })));
+    render();
+  </script>
+</body>
+</html>

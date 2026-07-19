@@ -553,7 +553,7 @@ function validateRequiredQuestion(
   return getStringAnswer(answers, question.field) ? null : `请填写「${question.label}」`;
 }
 
-function validateCurrentStep(
+export function validateCurrentStep(
   step: typeof DIAGNOSIS_STEPS[number],
   answers: Answers,
   customValues: Record<string, string>

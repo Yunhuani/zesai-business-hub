@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>阶段 5 采集页预览 B · 对话流式</title>
+  <style>
+    :root {
+      --bg:#FAFAF8; --green:#1F3D32; --green-2:#294C40; --soft:#EEF2ED;
+      --gold:#C9A24B; --ink:#1F2421; --sub:#6F756E; --line:#E8E5DC; --card:#FFFFFF;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      color: var(--ink); background: var(--bg);
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .topbar {
+      position: sticky; top: 0; z-index: 30; border-bottom: 1px solid rgba(232,229,220,.92);
+      background: rgba(250,250,248,.88); backdrop-filter: blur(18px) saturate(150%);
+    }
+    .topbar-inner {
+      width: min(100% - 40px, 920px); height: 68px; margin: auto;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand { display:flex; align-items:center; gap:11px; font-weight:800; }
+    .brand-mark {
+      width:35px; height:35px; display:grid; place-items:center; border-radius:10px;
+      color:#E9DDBD; background:#17271F; border:1px solid rgba(201,162,75,.5); font-family:serif; font-size:20px;
+    }
+    .header-meta { color:var(--sub); font-size:12px; font-weight:650; }
+    .header-meta b { color:var(--gold); }
+
+    .conversation { width:min(100% - 36px, 720px); margin:auto; padding:38px 0 160px; }
+    .intro { margin:0 0 38px 57px; color:var(--sub); font-size:12px; line-height:1.7; }
+    .messages { display:flex; flex-direction:column; gap:28px; }
+    .message { display:flex; align-items:flex-start; gap:13px; animation:rise .45s ease both; }
+    .message:nth-child(2){animation-delay:.05s}.message:nth-child(3){animation-delay:.1s}.message:nth-child(4){animation-delay:.15s}
+    @keyframes rise { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+    .avatar {
+      flex:0 0 auto; width:44px; height:44px; display:grid; place-items:center; border-radius:13px;
+      color:#E9DDBD; background:#17271F; border:1px solid rgba(201,162,75,.5); font-family:serif; font-size:23px; font-weight:700;
+    }
+    .ai-body { min-width:0; width:min(100%, 610px); }
+    .identity { display:flex; align-items:center; gap:9px; margin:0 0 8px; font-size:12px; font-weight:750; }
+    .live { display:inline-flex; align-items:center; gap:5px; color:var(--gold); font-size:10px; font-weight:800; }
+    .live::before { content:""; width:5px; height:5px; border-radius:50%; background:currentColor; }
+    .ai-bubble {
+      display:inline-block; max-width:100%; padding:13px 16px; border-radius:5px 15px 15px 15px;
+      color:#33433B; background:var(--soft); font-size:14px; line-height:1.7;
+    }
+    .control-card {
+      margin-top:11px; padding:14px; border:1px solid var(--line); border-radius:16px;
+      background:#fff; box-shadow:0 18px 48px -40px rgba(31,61,50,.55);
+    }
+    .user-message { justify-content:flex-end; }
+    .user-bubble {
+      max-width:78%; padding:12px 16px; border-radius:15px 5px 15px 15px;
+      color:#fff; background:var(--green); font-size:14px; line-height:1.65;
+      box-shadow:0 15px 32px -24px rgba(31,61,50,.9);
+    }
+    .answer-label { display:block; margin-bottom:3px; color:rgba(255,255,255,.66); font-size:10px; font-weight:700; letter-spacing:.08em; }
+
+    .option-list { display:grid; gap:7px; margin-top:11px; }
+    .option-line { display:flex; gap:9px; color:#3F4943; font-size:13px; line-height:1.55; }
+    .option-line b { min-width:18px; color:var(--green); font-weight:850; }
+    .reply-hint {
+      margin-top:12px; padding:8px 11px; border-left:2px solid rgba(201,162,75,.62);
+      color:var(--sub); background:#F8F8F5; font-size:11px; line-height:1.55;
+    }
+
+    .money { position:relative; }
+    .money input {
+      width:100%; height:50px; padding:0 76px 0 14px; border:1px solid var(--line); border-radius:11px;
+      color:var(--ink); background:#fff; outline:none; font-size:17px; font-weight:750;
+    }
+    .money input:focus { border-color:var(--green); box-shadow:0 0 0 4px rgba(31,61,50,.08); }
+    .unit { position:absolute; right:14px; top:50%; transform:translateY(-50%); color:var(--sub); font-size:12px; }
+
+    .matrix { overflow:hidden; border:1px solid var(--line); border-radius:12px; background:#fff; }
+    .matrix-row { display:grid; grid-template-columns:minmax(82px,1.3fr) repeat(4,minmax(46px,.72fr)); align-items:center; min-height:44px; border-top:1px solid var(--line); }
+    .matrix-row:first-child { min-height:34px; border-top:0; background:#F8F8F5; }
+    .matrix-row.group-start { border-top:2px solid #DCDDD6; }
+    .matrix-row > span { padding:0 6px; color:var(--sub); font-size:10px; font-weight:750; text-align:center; }
+    .matrix-row > strong { padding-left:12px; font-size:12px; }
+    .matrix-cell { height:44px; border:0; display:grid; place-items:center; background:transparent; }
+    .matrix-cell i { width:17px; height:17px; border:1.5px solid #C6CEC8; border-radius:50%; background:#fff; }
+    .matrix-cell.active i { border:5px solid var(--green); }
+    .table-card { width:calc(100vw - 94px); max-width:680px; overflow-x:auto; }
+    .finance-table { width:100%; min-width:640px; border-collapse:collapse; }
+    .finance-table th {
+      padding:9px 8px; color:var(--sub); background:#F8F8F5; border-bottom:1px solid var(--line);
+      font-size:10px; font-weight:800; text-align:left; white-space:nowrap;
+    }
+    .finance-table td { padding:8px; border-bottom:1px solid var(--line); }
+    .finance-table tr:last-child td { border-bottom:0; }
+    .finance-table input {
+      width:100%; height:36px; padding:0 9px; border:1px solid var(--line); border-radius:9px;
+      color:var(--ink); background:#fff; outline:none; font-size:11px;
+    }
+    .finance-table input:focus { border-color:var(--green); box-shadow:0 0 0 3px rgba(31,61,50,.07); }
+    .delete-row { width:32px; height:32px; border:0; border-radius:8px; color:#9A4E41; background:transparent; }
+    .delete-row:hover { background:#F8ECE9; }
+    .table-actions { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:11px; }
+    .table-note { color:var(--sub); font-size:10px; }
+    .add-row {
+      min-height:34px; padding:0 12px; border:1px solid rgba(31,61,50,.22); border-radius:9px;
+      color:var(--green); background:var(--soft); font-size:11px; font-weight:750;
+    }
+
+    .thinking { display:flex; align-items:center; gap:5px; margin-left:57px; color:var(--sub); font-size:12px; }
+    .thinking i { width:5px; height:5px; border-radius:50%; background:var(--gold); animation:pulse 1.2s infinite; }
+    .thinking i:nth-child(2){animation-delay:.15s}.thinking i:nth-child(3){animation-delay:.3s}
+    @keyframes pulse { 0%,80%,100%{opacity:.25;transform:translateY(0)} 40%{opacity:1;transform:translateY(-3px)} }
+
+    .dock {
+      position:fixed; left:0; right:0; bottom:0; z-index:35; border-top:1px solid rgba(232,229,220,.95);
+      background:rgba(250,250,248,.91); backdrop-filter:blur(18px) saturate(150%);
+    }
+    .dock-inner { width:min(100% - 36px, 720px); margin:auto; padding:10px 0 15px; }
+    .input-meta { margin-bottom:7px; text-align:center; color:var(--sub); font-size:10px; }
+    .composer {
+      display:flex; align-items:flex-end; gap:10px; padding:9px 9px 9px 15px;
+      border:1px solid var(--line); border-radius:17px; background:#fff; box-shadow:0 18px 52px -34px rgba(31,61,50,.56);
+    }
+    textarea { flex:1; min-height:36px; max-height:100px; padding:8px 0; border:0; resize:none; outline:none; color:var(--ink); background:transparent; font-size:13px; line-height:1.55; }
+    textarea::placeholder { color:#A7ACA4; }
+    .send {
+      flex:0 0 auto; width:38px; height:38px; border:0; border-radius:50%; color:#fff; background:var(--green);
+      font-size:17px; transition:.18s ease;
+    }
+    .send:hover { background:var(--green-2); transform:translateY(-1px); }
+
+    @media(max-width:620px){
+      .topbar-inner,.conversation,.dock-inner{width:min(100% - 28px,720px)}
+      .conversation{padding-top:26px}.intro{margin-left:0}
+      .control-card{margin-left:-57px}.user-bubble{max-width:86%}
+      .table-card{width:calc(100vw - 28px)}
+      .matrix-row{grid-template-columns:74px repeat(4,1fr)}
+      .matrix-row>span{padding:0 2px;font-size:9px}.matrix-row>strong{padding-left:9px;font-size:11px}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand"><span class="brand-mark">泽</span><span>泽思 · 增长诊断</span></div>
+      <div class="header-meta"><b>访谈中</b>　已完成 7 / 12</div>
+    </div>
+  </header>
+
+  <main class="conversation">
+    <p class="intro">我会像一次真实的顾问访谈那样逐步了解企业情况。你可以直接回答，也可以补充背景。</p>
+    <div class="messages" id="messages">
+      <section class="message">
+        <div class="avatar">泽</div>
+        <div class="ai-body">
+          <div class="identity">泽思 · AI 增长顾问 <span class="live">访谈中</span></div>
+          <div class="ai-bubble">
+            先从业务规模开始。你们最近一年的营收大致在哪个区间？
+            <div class="option-list">
+              <div class="option-line"><b>A.</b><span>500 万元以下</span></div>
+              <div class="option-line"><b>B.</b><span>500 万–2,000 万元</span></div>
+              <div class="option-line"><b>C.</b><span>2,000 万–1 亿元</span></div>
+              <div class="option-line"><b>D.</b><span>1 亿元以上</span></div>
+            </div>
+            <div class="reply-hint">回复对应字母即可，如 A</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="message user-message">
+        <div class="user-bubble"><span class="answer-label">我的回答</span>B<br><span style="color:rgba(255,255,255,.72);font-size:11px">B. 500 万–2,000 万元</span></div>
+      </section>
+
+      <section class="message">
+        <div class="avatar">泽</div>
+        <div class="ai-body">
+          <div class="identity">泽思 · AI 增长顾问 <span class="live">访谈中</span></div>
+          <div class="ai-bubble">收到。接下来看看现金安全边界：目前账上可自由支配的现金大约有多少？</div>
+          <div class="control-card">
+            <div class="money"><input type="number" value="320" min="0" aria-label="账上现金"><span class="unit">万元</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="message user-message">
+        <div class="user-bubble"><span class="answer-label">我的回答</span>账上现金约 320 万元</div>
+      </section>
+
+      <section class="message">
+        <div class="avatar">泽</div>
+        <div class="ai-body">
+          <div class="identity">泽思 · AI 增长顾问 <span class="live">访谈中</span></div>
+          <div class="ai-bubble">下面集中看团队与职能能力。请在每一行选择当前最接近的水平，“不适用”也是有效答案。</div>
+          <div class="control-card">
+            <div class="matrix">
+              <div class="matrix-row"><span></span><span>不适用</span><span>弱</span><span>中</span><span>强</span></div>
+              <div class="matrix-row"><strong>研发</strong><button class="matrix-cell"><i></i></button><button class="matrix-cell"><i></i></button><button class="matrix-cell"><i></i></button><button class="matrix-cell active"><i></i></button></div>
+              <div class="matrix-row"><strong>生产</strong><button class="matrix-cell"><i></i></button><button class="matrix-cell"><i></i></button><button class="matrix-cell active"><i></i></button><button class="matrix-cell"><i></i></button></div>
+              <div class="matrix-row"><strong>销售</strong><button class="matrix-cell"><i></i></button><button class="matrix-cell active"><i></i></button><button class="matrix-cell"><i></i></button><button class="matrix-cell"><i></i></button></div>
+              <div class="matrix-row"><strong>职能</strong><button class="matrix-cell active"><i></i></button><button class="matrix-cell"><i></i></button><button class="matrix-cell"><i></i></button><button class="matrix-cell"><i></i></button></div>
+              <div class="matrix-row group-start"><strong>产品</strong><button class="matrix-cell"><i></i></button><button class="matrix-cell"><i></i></button><button class="matrix-cell active"><i></i></button><button class="matrix-cell"><i></i></button></div>
+              <div class="matrix-row"><strong>供应链</strong><button class="matrix-cell"><i></i></button><button class="matrix-cell"><i></i></button><button class="matrix-cell"><i></i></button><button class="matrix-cell active"><i></i></button></div>
+              <div class="matrix-row"><strong>渠道</strong><button class="matrix-cell"><i></i></button><button class="matrix-cell active"><i></i></button><button class="matrix-cell"><i></i></button><button class="matrix-cell"><i></i></button></div>
+              <div class="matrix-row"><strong>营销</strong><button class="matrix-cell"><i></i></button><button class="matrix-cell active"><i></i></button><button class="matrix-cell"><i></i></button><button class="matrix-cell"><i></i></button></div>
+              <div class="matrix-row"><strong>财务</strong><button class="matrix-cell"><i></i></button><button class="matrix-cell"><i></i></button><button class="matrix-cell active"><i></i></button><button class="matrix-cell"><i></i></button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="message user-message">
+        <div class="user-bubble"><span class="answer-label">我的回答</span>团队与能力评估已完成</div>
+      </section>
+
+      <section class="message">
+        <div class="avatar">泽</div>
+        <div class="ai-body">
+          <div class="identity">泽思 · AI 增长顾问 <span class="live">访谈中</span></div>
+          <div class="ai-bubble">再补充一下主要产品线。每行填写产品线名称、年收入、直接成本和分摊费用。</div>
+          <div class="control-card table-card">
+            <table class="finance-table">
+              <thead><tr><th>产品线名</th><th>年收入 / 万元</th><th>直接成本 / 万元</th><th>分摊费用 / 万元</th><th></th></tr></thead>
+              <tbody id="productRows">
+                <tr><td><input value="卫浴五金"></td><td><input type="number" value="860"></td><td><input type="number" value="510"></td><td><input type="number" value="95"></td><td><button class="delete-row" aria-label="删除行">×</button></td></tr>
+                <tr><td><input value="法兰配件"></td><td><input type="number" value="430"></td><td><input type="number" value="390"></td><td><input type="number" value="72"></td><td><button class="delete-row" aria-label="删除行">×</button></td></tr>
+              </tbody>
+            </table>
+            <div class="table-actions"><span class="table-note">可横向滚动查看完整列</span><button class="add-row" id="addRow">＋ 新增产品线</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="message user-message"><div class="user-bubble"><span class="answer-label">我的回答</span>已填写 2 条产品线明细</div></section>
+
+      <div class="thinking"><span>泽思正在整理下一问</span><i></i><i></i><i></i></div>
+    </div>
+  </main>
+
+  <footer class="dock">
+    <div class="dock-inner">
+      <div class="input-meta">回答会自动保存，你可以随时返回修改</div>
+      <div class="composer">
+        <textarea id="input" rows="1" placeholder="补充说明，或直接回答下一问…"></textarea>
+        <button class="send" id="send" aria-label="发送">↑</button>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const productRows = document.querySelector('#productRows');
+    document.querySelectorAll('.matrix-row').forEach(row => row.querySelectorAll('.matrix-cell').forEach(cell => cell.addEventListener('click', () => {
+      row.querySelectorAll('.matrix-cell').forEach(item => item.classList.remove('active'));
+      cell.classList.add('active');
+    })));
+    function bindDeleteButtons() {
+      document.querySelectorAll('.delete-row').forEach(button => button.onclick = () => button.closest('tr').remove());
+    }
+    document.querySelector('#addRow').addEventListener('click', () => {
+      const row = document.createElement('tr');
+      row.innerHTML = '<td><input placeholder="产品线名称"></td><td><input type="number" placeholder="0"></td><td><input type="number" placeholder="0"></td><td><input type="number" placeholder="0"></td><td><button class="delete-row" aria-label="删除行">×</button></td>';
+      productRows.appendChild(row);
+      bindDeleteButtons();
+    });
+    bindDeleteButtons();
+    const input = document.querySelector('#input');
+    document.querySelector('#send').addEventListener('click', () => {
+      const text = input.value.trim();
+      if (!text) return;
+      const section = document.createElement('section');
+      section.className = 'message user-message';
+      section.innerHTML = `<div class="user-bubble"><span class="answer-label">我的补充</span>${text.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</div>`;
+      document.querySelector('#messages').insertBefore(section, document.querySelector('.thinking'));
+      input.value = '';
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    });
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); document.querySelector('#send').click(); }
+    });
+  </script>
+</body>
+</html>
