@@ -14,6 +14,7 @@ import {
 } from "@/lib/diagnosisDraft";
 import { rememberLoginReturnPath } from "@/lib/loginReturn";
 import { validateFinanceBasicAnswers } from "@shared/diagnosisFinanceBasicValidation";
+import { validateFinancePlusTableTotals } from "@shared/diagnosisFinancePlusValidation";
 import {
   DIAGNOSIS_STEPS,
   type ChoiceQuestion,
@@ -510,7 +511,7 @@ function validateFinanceTableQuestion(question: FinanceTableQuestion, answers: A
     }
   }
 
-  return null;
+  return validateFinancePlusTableTotals(question.field, filledRows);
 }
 
 function validateRequiredQuestion(
