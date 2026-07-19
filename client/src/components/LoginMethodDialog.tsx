@@ -73,8 +73,8 @@ export function LoginMethodDialog({ open, onOpenChange }: LoginMethodDialogProps
             variant="outline"
           >
             <div className="flex items-center gap-3 w-full">
-              <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                <LogIn className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <LogIn className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1 text-left">
                 <div className="font-semibold">Manus 账号登录</div>

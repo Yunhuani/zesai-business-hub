@@ -31,7 +31,7 @@ const navLinks = [
 
 const accountLinks = [
   { href: "/history", label: "历史记录", icon: History },
-  { href: "/my-diagnoses", label: "我的诊断", icon: ClipboardList },
+  { href: "/my-diagnoses", label: "我的报告", icon: ClipboardList },
   { href: "/pricing", label: "升级套餐", icon: Sparkles },
 ];
 
