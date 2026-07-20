@@ -81,32 +81,18 @@ function getDraftStepIndex(unitIndex: number): number {
 
 function AdvisorAvatar() {
   return (
-    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] border border-[rgba(201,162,75,.5)] bg-[#17271f] font-serif text-[23px] font-bold text-[#e9ddbd]">
+    <div className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[var(--zs-primary-soft)] font-serif text-sm font-bold text-[var(--zs-primary)]">
       泽
-    </div>
-  );
-}
-
-function AdvisorIdentity() {
-  return (
-    <div className="mb-2 flex items-center gap-2.5 text-xs font-bold text-[var(--zs-ink)]">
-      泽思 · AI 增长顾问
-      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[var(--zs-gold)]">
-        <span className="h-1.5 w-1.5 rounded-full bg-[var(--zs-gold)]" />访谈中
-      </span>
     </div>
   );
 }
 
 function AdvisorMessage({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-start gap-[13px]">
+    <div className="flex items-start gap-3">
       <AdvisorAvatar />
-      <div className="min-w-0 flex-1">
-        <AdvisorIdentity />
-        <div className="rounded-[5px_15px_15px_15px] bg-[var(--zs-primary-soft)] px-4 py-3 text-sm leading-7 text-[#33433b]">
-          {children}
-        </div>
+      <div className="min-w-0 flex-1 pt-0.5 text-[15px] leading-7 text-[#33433b]">
+        {children}
       </div>
     </div>
   );
@@ -116,11 +102,14 @@ function UserBubble({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex justify-end">
       <div className="max-w-[78%] rounded-[15px_5px_15px_15px] bg-[var(--zs-primary)] px-4 py-3 text-sm leading-6 text-white shadow-[0_15px_32px_-24px_rgba(31,61,50,.9)]">
-        <span className="mb-1 block text-[10px] font-bold tracking-[.08em] text-white/60">我的回答</span>
         {children}
       </div>
     </div>
   );
+}
+
+function SkippedReply() {
+  return <p className="pr-1 text-right text-xs text-[var(--zs-weak)]">（已跳过）</p>;
 }
 
 function ContinueButton({ onClick, label = "继续" }: { onClick: () => void; label?: string }) {
@@ -179,7 +168,7 @@ function TextConversation({ question, value, active }: {
         {question.optional ? <span className="ml-2 text-xs text-[var(--zs-sub)]">选填，可直接跳过</span> : null}
       </AdvisorMessage>
       {!active && value ? <UserBubble>{value}</UserBubble> : null}
-      {!active && !value ? <UserBubble>已跳过</UserBubble> : null}
+      {!active && !value ? <SkippedReply /> : null}
     </div>
   );
 }
@@ -216,9 +205,7 @@ function NumberConversation({ question, value, active, onChange, onContinue }: {
         </div>
       ) : value ? (
         <UserBubble>{value}{question.unit ? ` ${question.unit}` : ""}</UserBubble>
-      ) : (
-        <UserBubble>已跳过</UserBubble>
-      )}
+      ) : <SkippedReply />}
     </div>
   );
 }
@@ -307,9 +294,7 @@ function FinanceTableConversation({ question, rows, active, onChange, onContinue
             <ContinueButton onClick={onContinue} label={filledCount ? "继续" : "跳过"} />
           </div>
         </div>
-      ) : (
-        <UserBubble>{filledCount ? `已填写 ${filledCount} 条明细` : "已跳过"}</UserBubble>
-      )}
+      ) : filledCount ? <UserBubble>{`已填写 ${filledCount} 条明细`}</UserBubble> : <SkippedReply />}
     </div>
   );
 }
@@ -340,9 +325,7 @@ function ArPairConversation({ questions, answers, active, onChange, onContinue }
         </div>
       ) : values.some(Boolean) ? (
         <UserBubble>应收余额 {values[0]} 万元，平均账期 {values[1]} 天</UserBubble>
-      ) : (
-        <UserBubble>已跳过</UserBubble>
-      )}
+      ) : <SkippedReply />}
     </div>
   );
 }
@@ -521,23 +504,26 @@ export default function DiagnosisConversation() {
   const visibleUnits = CONVERSATION_UNITS.slice(0, Math.min(unitIndex + 1, CONVERSATION_UNITS.length));
 
   return (
-    <div className={`min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)] ${usesComposer ? "pb-32" : "pb-12"}`}>
+    <div className={`min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)] ${usesComposer ? "pb-36" : "pb-16"}`}>
       <header className="sticky top-0 z-30 border-b border-[var(--zs-line)] bg-[rgba(250,250,248,.9)] backdrop-blur-xl">
-        <div className="mx-auto flex h-[68px] max-w-[920px] items-center justify-between px-6">
+        <div className="mx-auto flex h-[72px] max-w-[920px] items-center justify-between gap-6 px-6">
           <Link href="/" aria-label="泽思AI 首页"><img src={APP_LOGO_FULL} alt="泽思AI" className="h-[36px]" /></Link>
-          <div className="text-xs font-semibold text-[var(--zs-sub)]"><span className="text-[var(--zs-gold)]">访谈中</span> · 已完成 {Math.min(completedQuestionCount, TOTAL_QUESTIONS)} / {TOTAL_QUESTIONS}</div>
+          <div className="text-right">
+            <div className="text-xs font-semibold text-[var(--zs-ink)]">泽思 · AI 增长顾问</div>
+            <div className="mt-0.5 text-[11px] text-[var(--zs-sub)]">访谈中 · {Math.min(completedQuestionCount, TOTAL_QUESTIONS)} / {TOTAL_QUESTIONS} 题</div>
+          </div>
         </div>
-        <div className="h-1 bg-[#eceadf]"><div className="h-full bg-[var(--zs-primary)] transition-[width] duration-500" style={{ width: `${progress}%` }} /></div>
+        <div className="h-0.5 bg-[#eceadf]"><div className="h-full bg-[var(--zs-primary)] transition-[width] duration-500" style={{ width: `${progress}%` }} /></div>
       </header>
 
-      <main className="mx-auto w-full max-w-[720px] px-6 py-9">
-        <div className="space-y-8">
+      <main className="mx-auto w-full max-w-[720px] px-6 py-12 sm:py-14">
+        <div className="space-y-11">
           <AdvisorMessage>{CONVERSATION_OPENING}</AdvisorMessage>
           {visibleUnits.map((unit, index) => {
             const showSectionIntro = index === 0 || unit.section !== visibleUnits[index - 1].section;
             const active = index === unitIndex;
             return (
-              <div key={unit.id} className="space-y-8">
+              <div key={unit.id} className="space-y-10">
                 {showSectionIntro ? <AdvisorMessage>{unit.sectionIntro}</AdvisorMessage> : null}
                 <ConversationUnitView
                   unit={unit}
@@ -555,16 +541,16 @@ export default function DiagnosisConversation() {
           {unitIndex === CONVERSATION_UNITS.length ? (
             <div className="space-y-4">
               <AdvisorMessage>信息我都了解了。接下来我会结合 NBG 五维方法论，为你生成增长诊断报告。</AdvisorMessage>
-              <div className="ml-[57px] max-sm:ml-0">
+              <div className="ml-10 max-sm:ml-0">
                 <button type="button" onClick={submitReport} disabled={submitDiagnosis.isPending || authLoading} className="inline-flex items-center gap-2 rounded-xl bg-[var(--zs-primary)] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">
-                  <Check className="h-4 w-4" />{submitDiagnosis.isPending ? "正在生成…" : "生成我的诊断报告"}
+                  <Check className="h-4 w-4" />{submitDiagnosis.isPending ? "正在生成…" : "生成增长诊断报告"}
                 </button>
               </div>
             </div>
           ) : null}
 
-          {validationError ? <p className="ml-[57px] text-sm text-red-700 max-sm:ml-0">{validationError}</p> : null}
-          {submitDiagnosis.error ? <p className="ml-[57px] text-sm text-red-700 max-sm:ml-0">提交失败：{submitDiagnosis.error.message}</p> : null}
+          {validationError ? <p className="ml-10 text-sm text-red-700 max-sm:ml-0">{validationError}</p> : null}
+          {submitDiagnosis.error ? <p className="ml-10 text-sm text-red-700 max-sm:ml-0">提交失败：{submitDiagnosis.error.message}</p> : null}
           <div ref={bottomRef} />
         </div>
       </main>
@@ -574,7 +560,7 @@ export default function DiagnosisConversation() {
           <div className="mx-auto max-w-[720px] px-6 py-3">
             {replyHint ? <p className="mb-2 text-xs text-[var(--zs-gold-ink)]">{replyHint}</p> : null}
             {awaitingShortAnswerChoice ? (
-              <button type="button" onClick={() => completeCurrentUnit()} className="mb-2 text-xs font-semibold text-[var(--zs-primary)] hover:underline">保留当前回答，直接继续</button>
+              <button type="button" onClick={() => completeCurrentUnit()} className="mb-2 rounded-lg border border-[var(--zs-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--zs-primary)] transition-colors hover:bg-[var(--zs-primary-soft)]">不补充，继续</button>
             ) : null}
             <div className="flex items-center gap-2 rounded-2xl border border-[var(--zs-line)] bg-white p-2 pl-4 shadow-[var(--zs-shadow-card)]">
               <input
