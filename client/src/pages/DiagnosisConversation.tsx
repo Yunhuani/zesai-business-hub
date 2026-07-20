@@ -81,6 +81,13 @@ function getDraftStepIndex(unitIndex: number): number {
     .reduce((highest, unit) => Math.max(highest, unit.stepIndex), 0);
 }
 
+function getConversationPlaceholder(question: TextQuestion): string {
+  if (question.field === "competition.competitors") {
+    return "列出几家主要对手，公司名或品牌都行，逗号分隔";
+  }
+  return question.placeholder;
+}
+
 function AdvisorAvatar() {
   return (
     <div className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[var(--zs-primary-soft)] font-serif text-sm font-bold text-[var(--zs-primary)]">
@@ -100,6 +107,24 @@ function AdvisorMessage({ children }: { children: React.ReactNode }) {
   );
 }
 
+function QuestionPrompt({ children, optional = false }: { children: React.ReactNode; optional?: boolean }) {
+  return (
+    <p className="text-base font-semibold leading-7 text-[var(--zs-ink)]">
+      {children}
+      {optional ? <span className="ml-2 align-middle text-xs font-normal text-[var(--zs-sub)]">选填，可直接跳过</span> : null}
+    </p>
+  );
+}
+
+function SectionMarker({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="ml-10 flex items-center gap-3 max-sm:ml-0" aria-label="访谈章节">
+      <span className="shrink-0 text-xs font-semibold tracking-[0.08em] text-[var(--zs-sub)]">{children}</span>
+      <span className="h-px flex-1 bg-[var(--zs-line)]" aria-hidden="true" />
+    </div>
+  );
+}
+
 function UserBubble({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex justify-end">
@@ -115,35 +140,59 @@ function SkippedReply() {
 }
 
 function ContinueButton({ onClick, label = "继续" }: { onClick: () => void; label?: string }) {
+  const isSkip = label === "跳过";
   return (
     <button
       type="button"
       onClick={onClick}
-      className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[var(--zs-primary)] px-4 py-2.5 text-sm font-semibold text-white"
+      className={isSkip
+        ? "mt-3 inline-flex items-center rounded-lg border border-[var(--zs-line)] bg-transparent px-3 py-2 text-xs font-medium text-[var(--zs-sub)] transition-colors hover:border-[#b9c4bd] hover:bg-white hover:text-[var(--zs-ink)]"
+        : "mt-3 inline-flex items-center gap-2 rounded-xl bg-[var(--zs-primary)] px-4 py-2.5 text-sm font-semibold text-white transition-[filter] hover:brightness-90"}
     >
-      {label}<ArrowRight className="h-4 w-4" />
+      {label}{!isSkip ? <ArrowRight className="h-4 w-4" /> : null}
     </button>
   );
 }
 
-function ChoiceConversation({ question, answers, customValue, active }: {
+function ChoiceConversation({ question, answers, customValue, active, reply, onChoiceClick }: {
   question: ChoiceQuestion;
   answers: string[];
   customValue: string;
   active: boolean;
+  reply: string;
+  onChoiceClick: (letter: string, multi: boolean) => void;
 }) {
   const displayedAnswer = [...answers, customValue].filter(Boolean).join("、");
+  const customStart = reply.search(/其他\s*[:：]/);
+  const letterPart = customStart >= 0 ? reply.slice(0, customStart) : reply;
+  const normalizedLetters = letterPart.replace(/[\s,，、/]+/g, "").toUpperCase();
+  const selectedLetters = new Set(/^[A-Z]*$/.test(normalizedLetters) ? normalizedLetters : "");
   return (
     <div className="space-y-4">
       <AdvisorMessage>
-        <p>{question.label}</p>
-        <div className="mt-2 space-y-1">
-          {question.options.map((option, index) => (
-            <p key={option}>
-              <strong className="mr-2 text-[var(--zs-primary)]">{getChoiceLetter(index)}.</strong>
-              {option}
-            </p>
-          ))}
+        <QuestionPrompt>{question.label}</QuestionPrompt>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          {question.options.map((option, index) => {
+            const letter = getChoiceLetter(index);
+            const selected = active && selectedLetters.has(letter);
+            return (
+              <button
+                key={option}
+                type="button"
+                disabled={!active}
+                aria-pressed={active ? selected : undefined}
+                onClick={() => onChoiceClick(letter, question.type === "multi")}
+                className={`flex min-h-11 items-center rounded-xl border px-3.5 py-2.5 text-left text-sm transition-[border-color,background-color,box-shadow,transform] ${
+                  selected
+                    ? "border-[rgba(31,61,50,.45)] bg-[var(--zs-primary-soft)] text-[var(--zs-ink)] shadow-[0_8px_20px_-18px_rgba(31,61,50,.8)]"
+                    : "border-[var(--zs-line)] bg-white/80 text-[#405148] enabled:hover:-translate-y-px enabled:hover:border-[#b9c7bf] enabled:hover:bg-white enabled:hover:shadow-[0_10px_24px_-20px_rgba(31,61,50,.65)]"
+                } disabled:cursor-default`}
+              >
+                <strong className="mr-2.5 text-[var(--zs-primary)]">{letter}.</strong>
+                {option}
+              </button>
+            );
+          })}
         </div>
         {active ? (
           <p className="mt-3 border-l-2 border-[rgba(201,162,75,.58)] bg-white/55 px-3 py-2 text-xs text-[var(--zs-sub)]">
@@ -166,8 +215,7 @@ function TextConversation({ question, value, active }: {
   return (
     <div className="space-y-4">
       <AdvisorMessage>
-        {question.label}
-        {question.optional ? <span className="ml-2 text-xs text-[var(--zs-sub)]">选填，可直接跳过</span> : null}
+        <QuestionPrompt optional={question.optional}>{question.label}</QuestionPrompt>
       </AdvisorMessage>
       {!active && value ? <UserBubble>{value}</UserBubble> : null}
       {!active && !value ? <SkippedReply /> : null}
@@ -186,8 +234,7 @@ function NumberConversation({ question, value, active, editing, onChange, onCont
   return (
     <div className="space-y-4">
       <AdvisorMessage>
-        {question.label}
-        {question.optional ? <span className="ml-2 text-xs text-[var(--zs-sub)]">选填</span> : null}
+        <QuestionPrompt optional={question.optional}>{question.label}</QuestionPrompt>
         {active && question.helperText ? <p className="mt-1 text-xs text-[var(--zs-sub)]">{question.helperText}</p> : null}
       </AdvisorMessage>
       {active ? (
@@ -225,7 +272,7 @@ function MatrixConversation({ question, answers, customValue, active, editing, o
 }) {
   return (
     <div className="space-y-4">
-      <AdvisorMessage>{question.label}</AdvisorMessage>
+      <AdvisorMessage><QuestionPrompt>{question.label}</QuestionPrompt></AdvisorMessage>
       {active ? (
         <div className="ml-[57px] max-sm:ml-0">
           <div className="overflow-x-auto rounded-2xl border border-[var(--zs-line)] bg-white shadow-[var(--zs-shadow-card)]">
@@ -278,7 +325,7 @@ function FinanceTableConversation({ question, rows, active, editing, onChange, o
   return (
     <div className="space-y-4">
       <AdvisorMessage>
-        {question.label}
+        <QuestionPrompt>{question.label}</QuestionPrompt>
         {active && question.helperText ? <p className="mt-1 text-xs text-[var(--zs-sub)]">{question.helperText}</p> : null}
       </AdvisorMessage>
       {active ? (
@@ -295,7 +342,7 @@ function FinanceTableConversation({ question, rows, active, editing, onChange, o
             </table>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            {(!question.maxRows || visibleRows.length < question.maxRows) ? <button type="button" onClick={() => onChange([...visibleRows, createEmptyFinanceRow(question)])} className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[var(--zs-primary)]"><Plus className="h-4 w-4" />{question.addButtonLabel}</button> : null}
+            {(!question.maxRows || visibleRows.length < question.maxRows) ? <button type="button" onClick={() => onChange([...visibleRows, createEmptyFinanceRow(question)])} className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-[rgba(31,61,50,.2)] bg-[var(--zs-primary-soft)] px-3 py-2 text-xs font-semibold text-[var(--zs-primary)] transition-colors hover:border-[rgba(31,61,50,.35)] hover:bg-[#e5ece7]"><Plus className="h-4 w-4" />{question.addButtonLabel}</button> : null}
             <ContinueButton onClick={onContinue} label={editing ? "保存修改" : filledCount ? "继续" : "跳过"} />
           </div>
         </div>
@@ -315,7 +362,7 @@ function ArPairConversation({ questions, answers, active, editing, onChange, onC
   const values = questions.map(question => getStringAnswer(answers, question.field));
   return (
     <div className="space-y-4">
-      <AdvisorMessage>最后补充一下应收账款余额和平均账期；两项请同时填写，也可以都跳过。</AdvisorMessage>
+      <AdvisorMessage><QuestionPrompt>最后补充一下应收账款余额和平均账期；两项请同时填写，也可以都跳过。</QuestionPrompt></AdvisorMessage>
       {active ? (
         <div className="ml-[57px] grid gap-3 max-sm:ml-0 sm:grid-cols-2">
           {questions.map((question, index) => (
@@ -336,7 +383,7 @@ function ArPairConversation({ questions, answers, active, editing, onChange, onC
   );
 }
 
-function ConversationUnitView({ unit, active, editing, answers, customValues, onAnswers, onCustomValues, onContinue }: {
+function ConversationUnitView({ unit, active, editing, answers, customValues, onAnswers, onCustomValues, onContinue, reply = "", onChoiceClick = () => {} }: {
   unit: DiagnosisConversationUnit;
   active: boolean;
   editing: boolean;
@@ -345,6 +392,8 @@ function ConversationUnitView({ unit, active, editing, answers, customValues, on
   onAnswers: (answers: Answers) => void;
   onCustomValues: (customValues: Record<string, string>) => void;
   onContinue: () => void;
+  reply?: string;
+  onChoiceClick?: (letter: string, multi: boolean) => void;
 }) {
   if (unit.questions.length === 2 && unit.id === "finance-plus-ar") {
     return <ArPairConversation questions={unit.questions as TextQuestion[]} answers={answers} active={active} editing={editing} onChange={(question, value) => onAnswers(applyConversationNumberAnswer(answers, question, value))} onContinue={onContinue} />;
@@ -352,7 +401,7 @@ function ConversationUnitView({ unit, active, editing, answers, customValues, on
 
   const question = unit.questions[0];
   if (question.type === "single" || question.type === "multi") {
-    return <ChoiceConversation question={question} answers={question.type === "multi" ? getStringArrayAnswer(answers, question.field) : [getStringAnswer(answers, question.field)].filter(Boolean)} customValue={customValues[question.field] ?? ""} active={active} />;
+    return <ChoiceConversation question={question} answers={question.type === "multi" ? getStringArrayAnswer(answers, question.field) : [getStringAnswer(answers, question.field)].filter(Boolean)} customValue={customValues[question.field] ?? ""} active={active} reply={reply} onChoiceClick={onChoiceClick} />;
   }
   if (question.type === "number") {
     return <NumberConversation question={question} value={getStringAnswer(answers, question.field)} active={active} editing={editing} onChange={value => onAnswers(applyConversationNumberAnswer(answers, question, value))} onContinue={onContinue} />;
@@ -441,6 +490,31 @@ export default function DiagnosisConversation() {
   const updateCustomValues = (nextCustomValues: Record<string, string>) => {
     setValidationError(null);
     setCustomValues(nextCustomValues);
+  };
+
+  const selectChoiceCard = (letter: string, multi: boolean) => {
+    setReply(currentReply => {
+      if (!multi) return letter;
+
+      const customMatch = currentReply.match(/其他\s*[:：]\s*(.+)\s*$/);
+      const customReply = customMatch?.[1]?.trim();
+      const letterPart = customMatch
+        ? currentReply.slice(0, customMatch.index).trim()
+        : currentReply.trim();
+      const normalizedLetters = letterPart.replace(/[\s,，、/]+/g, "").toUpperCase();
+      const selectedLetters = new Set(
+        /^[A-Z]*$/.test(normalizedLetters) ? normalizedLetters : ""
+      );
+      if (selectedLetters.has(letter)) selectedLetters.delete(letter);
+      else selectedLetters.add(letter);
+
+      return [
+        [...selectedLetters].sort().join(" "),
+        customReply ? `其他：${customReply}` : "",
+      ].filter(Boolean).join(" ");
+    });
+    setReplyHint(null);
+    setAwaitingShortAnswerChoice(false);
   };
 
   const showValidationError = (error: string) => {
@@ -572,7 +646,7 @@ export default function DiagnosisConversation() {
             const active = index === activeUnitIndex;
             return (
               <div id={`conversation-unit-${index}`} key={unit.id} className="scroll-mt-24 space-y-10">
-                {showSectionIntro ? <AdvisorMessage>{unit.sectionIntro}</AdvisorMessage> : null}
+                {showSectionIntro ? <SectionMarker>{unit.sectionIntro}</SectionMarker> : null}
                 <div className="space-y-3">
                   <ConversationUnitView
                     unit={unit}
@@ -583,6 +657,8 @@ export default function DiagnosisConversation() {
                     onAnswers={updateAnswers}
                     onCustomValues={updateCustomValues}
                     onContinue={() => completeCurrentUnit()}
+                    reply={active ? reply : ""}
+                    onChoiceClick={selectChoiceCard}
                   />
                   {active && validationError ? (
                     <p ref={validationErrorRef} role="alert" className="ml-10 scroll-mb-40 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 max-sm:ml-0">
@@ -630,7 +706,7 @@ export default function DiagnosisConversation() {
                 value={reply}
                 onChange={event => { setReply(event.target.value); setReplyHint(null); setAwaitingShortAnswerChoice(false); }}
                 onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); sendComposerReply(); } }}
-                placeholder={currentQuestion?.type === "multi" ? "回复多个字母，如 b、c" : currentQuestion?.type === "single" ? "回复选项字母，如 B" : currentQuestion && "placeholder" in currentQuestion ? currentQuestion.placeholder : "输入回答"}
+                placeholder={currentQuestion?.type === "multi" ? "回复多个字母，如 b、c" : currentQuestion?.type === "single" ? "回复选项字母，如 B" : currentQuestion && "placeholder" in currentQuestion ? getConversationPlaceholder(currentQuestion) : "输入回答"}
                 className="h-9 min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-[var(--zs-weak)]"
               />
               {currentQuestion && "optional" in currentQuestion && currentQuestion.optional && !reply ? <button type="button" onClick={() => {
