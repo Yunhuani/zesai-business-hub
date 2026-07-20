@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Check, Plus, Send, Trash2 } from "lucide-react";
+import { ArrowRight, ArrowUp, Check, Plus, Trash2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { APP_LOGO_FULL } from "@/const";
@@ -371,6 +371,7 @@ export default function DiagnosisConversation() {
   const [awaitingShortAnswerChoice, setAwaitingShortAnswerChoice] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const validationErrorRef = useRef<HTMLParagraphElement>(null);
   const currentUnit = CONVERSATION_UNITS[unitIndex];
   const completedQuestionCount = CONVERSATION_UNITS.slice(0, unitIndex).reduce(
     (total, unit) => total + unit.questions.length,
@@ -426,6 +427,13 @@ export default function DiagnosisConversation() {
     setCustomValues(nextCustomValues);
   };
 
+  const showValidationError = (error: string) => {
+    setValidationError(error);
+    requestAnimationFrame(() => {
+      validationErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  };
+
   const completeCurrentUnit = (
     nextAnswers: Answers = answers,
     nextCustomValues: Record<string, string> = customValues
@@ -437,7 +445,7 @@ export default function DiagnosisConversation() {
       nextCustomValues
     );
     if (error) {
-      setValidationError(error);
+      showValidationError(error);
       return false;
     }
     setAnswers(nextAnswers);
@@ -478,7 +486,7 @@ export default function DiagnosisConversation() {
       customValues
     );
     if (error) {
-      setValidationError(error);
+      showValidationError(error);
       return;
     }
     setAnswers(nextAnswers);
@@ -525,15 +533,22 @@ export default function DiagnosisConversation() {
             return (
               <div key={unit.id} className="space-y-10">
                 {showSectionIntro ? <AdvisorMessage>{unit.sectionIntro}</AdvisorMessage> : null}
-                <ConversationUnitView
-                  unit={unit}
-                  active={active}
-                  answers={answers}
-                  customValues={customValues}
-                  onAnswers={updateAnswers}
-                  onCustomValues={updateCustomValues}
-                  onContinue={() => completeCurrentUnit()}
-                />
+                <div className="space-y-3">
+                  <ConversationUnitView
+                    unit={unit}
+                    active={active}
+                    answers={answers}
+                    customValues={customValues}
+                    onAnswers={updateAnswers}
+                    onCustomValues={updateCustomValues}
+                    onContinue={() => completeCurrentUnit()}
+                  />
+                  {active && validationError ? (
+                    <p ref={validationErrorRef} role="alert" className="ml-10 scroll-mb-40 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 max-sm:ml-0">
+                      {validationError}
+                    </p>
+                  ) : null}
+                </div>
               </div>
             );
           })}
@@ -549,9 +564,8 @@ export default function DiagnosisConversation() {
             </div>
           ) : null}
 
-          {validationError ? <p className="ml-10 text-sm text-red-700 max-sm:ml-0">{validationError}</p> : null}
           {submitDiagnosis.error ? <p className="ml-10 text-sm text-red-700 max-sm:ml-0">提交失败：{submitDiagnosis.error.message}</p> : null}
-          <div ref={bottomRef} />
+          <div ref={bottomRef} className={usesComposer ? "h-32" : "h-4"} aria-hidden="true" />
         </div>
       </main>
 
@@ -566,12 +580,12 @@ export default function DiagnosisConversation() {
               <input
                 value={reply}
                 onChange={event => { setReply(event.target.value); setReplyHint(null); setAwaitingShortAnswerChoice(false); }}
-                onKeyDown={event => { if (event.key === "Enter") sendComposerReply(); }}
+                onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); sendComposerReply(); } }}
                 placeholder={currentQuestion?.type === "multi" ? "回复多个字母，如 b、c" : currentQuestion?.type === "single" ? "回复选项字母，如 B" : currentQuestion && "placeholder" in currentQuestion ? currentQuestion.placeholder : "输入回答"}
                 className="h-9 min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-[var(--zs-weak)]"
               />
               {currentQuestion && "optional" in currentQuestion && currentQuestion.optional && !reply ? <button type="button" onClick={() => completeCurrentUnit()} className="px-2 text-xs font-semibold text-[var(--zs-sub)]">跳过</button> : null}
-              <button type="button" onClick={sendComposerReply} disabled={!reply.trim()} className="grid h-10 w-10 place-items-center rounded-full bg-[var(--zs-primary)] text-white disabled:opacity-35" aria-label="发送回答"><Send className="h-4 w-4" /></button>
+              <button type="button" onClick={sendComposerReply} disabled={!reply.trim()} className="grid h-10 w-10 place-items-center rounded-full bg-[var(--zs-primary)] text-white shadow-sm transition-[filter,background-color] hover:brightness-90 disabled:cursor-default disabled:bg-[#d2d8d4] disabled:text-white/80 disabled:shadow-none disabled:hover:brightness-100" aria-label="发送回答"><ArrowUp className="h-5 w-5 stroke-[2.5]" /></button>
             </div>
           </div>
         </footer>
