@@ -8,11 +8,12 @@ vi.mock("../diagnosisService", () => ({
   unlockDiagnosis: vi.fn(),
 }));
 
-import { getDiagnosis, retryDiagnosis } from "../diagnosisService";
+import { createDiagnosis, getDiagnosis, retryDiagnosis } from "../diagnosisService";
 import { diagnosisRouter } from "./diagnosis";
 
 const mockedGetDiagnosis = vi.mocked(getDiagnosis);
 const mockedRetryDiagnosis = vi.mocked(retryDiagnosis);
+const mockedCreateDiagnosis = vi.mocked(createDiagnosis);
 
 function createCaller() {
   return diagnosisRouter.createCaller({
@@ -42,6 +43,36 @@ function diagnosisRow(overrides: Record<string, unknown> = {}) {
 }
 
 describe("diagnosis router serialization", () => {
+  it("uses full product type for formal submissions and preview only for previews", async () => {
+    mockedCreateDiagnosis.mockResolvedValueOnce(101).mockResolvedValueOnce(102);
+    const input = {
+      answers: { "company.name": "甬辉卫浴" },
+      customValues: {},
+    };
+
+    await expect(createCaller().submit(input)).resolves.toEqual({
+      diagnosisId: 101,
+      productType: "full",
+    });
+    expect(mockedCreateDiagnosis).toHaveBeenNthCalledWith(
+      1,
+      7,
+      expect.any(Object),
+      "full"
+    );
+
+    await expect(createCaller().submitPreview(input)).resolves.toEqual({
+      diagnosisId: 102,
+      productType: "preview",
+    });
+    expect(mockedCreateDiagnosis).toHaveBeenNthCalledWith(
+      2,
+      7,
+      expect.any(Object),
+      "preview"
+    );
+  });
+
   it("returns errorMessage only for failed diagnoses", async () => {
     mockedGetDiagnosis.mockResolvedValueOnce(
       diagnosisRow({

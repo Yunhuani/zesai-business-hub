@@ -10,7 +10,10 @@ import {
 } from "../diagnosisService";
 import { convertQuestionnaireAnswers } from "../diagnosisIntake";
 import { TRPCError } from "@trpc/server";
-import { buildDiagnosisPreviewResult } from "../diagnosisProduct";
+import {
+  buildDiagnosisPreviewResult,
+  type DiagnosisProduct,
+} from "../diagnosisProduct";
 import { getUserCredits } from "../creditsManager";
 import { getActionCredits } from "../pricingConfig";
 
@@ -55,14 +58,15 @@ function serializeDiagnosis(diagnosis: Awaited<ReturnType<typeof getDiagnosis>>)
 
 async function submitDiagnosis(
   userId: number,
-  input: z.infer<typeof submitSchema>
+  input: z.infer<typeof submitSchema>,
+  productType: Exclude<DiagnosisProduct, "pdf">
 ) {
   const intake = convertQuestionnaireAnswers(
     input.answers,
     input.customValues
   );
-  const diagnosisId = await createDiagnosis(userId, intake);
-  return { diagnosisId, productType: "preview" as const };
+  const diagnosisId = await createDiagnosis(userId, intake, productType);
+  return { diagnosisId, productType };
 }
 
 export const diagnosisRouter = router({
@@ -96,7 +100,7 @@ export const diagnosisRouter = router({
   submitPreview: protectedProcedure
     .input(submitSchema)
     .mutation(({ ctx, input }) =>
-      submitDiagnosis(ctx.user.id, input)
+      submitDiagnosis(ctx.user.id, input, "preview")
     ),
   submitFull: protectedProcedure
     .input(z.object({ diagnosisId: z.number().int().positive() }))
@@ -151,6 +155,6 @@ export const diagnosisRouter = router({
   submit: protectedProcedure
     .input(submitSchema)
     .mutation(({ ctx, input }) =>
-      submitDiagnosis(ctx.user.id, input)
+      submitDiagnosis(ctx.user.id, input, "full")
     ),
 });

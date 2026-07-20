@@ -10,6 +10,7 @@ import {
 import { getActionCredits } from "./pricingConfig";
 import { validateDiagnosisUnlock } from "./diagnosisUnlock";
 import { serializeDiagnosisListItem } from "./diagnosisList";
+import type { DiagnosisProduct } from "./diagnosisProduct";
 import { logStructuredError, notifyOps } from "./observability";
 
 type JsonObject = Record<string, unknown>;
@@ -190,14 +191,15 @@ export async function recoverInterruptedDiagnoses(
 
 export async function createDiagnosis(
   userId: number,
-  intake: JsonObject
+  intake: JsonObject,
+  productType: Exclude<DiagnosisProduct, "pdf">
 ): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
   const [insertResult] = await db
     .insert(diagnoses)
-    .values({ userId, intake, productType: "preview", status: "pending" });
+    .values({ userId, intake, productType, status: "pending" });
   const diagnosisId = insertResult.insertId;
 
   void processDiagnosis(diagnosisId, intake);
