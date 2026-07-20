@@ -26,6 +26,7 @@ describe("diagnosis flow storage", () => {
     const storage = createStorage();
     const draft = {
       stepIndex: 2,
+      conversationUnitIndex: 5,
       answers: { companyName: "示例公司" },
       customValues: { industry: "机器人" },
     };

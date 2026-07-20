@@ -82,6 +82,14 @@ describe("diagnosis conversation data parity", () => {
       answers: {},
       customValues: {},
     });
+    expect(applyConversationMultiReply({}, {}, question, "b、c")).toMatchObject({
+      matched: true,
+      answers: { [question.field]: [question.options[1], question.options[2]] },
+    });
+    expect(applyConversationMultiReply({}, {}, question, "B，C")).toMatchObject({
+      matched: true,
+      answers: { [question.field]: [question.options[1], question.options[2]] },
+    });
   });
 
   it("exports the same nine matrix answers and supplemental text", () => {

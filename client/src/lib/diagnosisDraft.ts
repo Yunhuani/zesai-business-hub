@@ -3,6 +3,7 @@ export type DiagnosisDraftAnswer = string | string[] | FinanceRowAnswer[];
 
 export type DiagnosisDraft = {
   stepIndex: number;
+  conversationUnitIndex?: number;
   answers: Record<string, DiagnosisDraftAnswer>;
   customValues: Record<string, string>;
 };
