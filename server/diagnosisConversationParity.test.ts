@@ -5,6 +5,8 @@ import {
   applyConversationMatrixAnswer,
   applyConversationMultiReply,
   applyConversationNumberAnswer,
+  completeConversationPosition,
+  getConversationChoiceEditReply,
 } from "../client/src/pages/diagnosisConversationProtocol";
 import { DIAGNOSIS_STEPS } from "../client/src/pages/diagnosisQuestionnaire";
 
@@ -144,5 +146,59 @@ describe("diagnosis conversation data parity", () => {
       answers: legacyAnswers,
       customValues: {},
     });
+  });
+
+  it("updates an edited answer without losing later answers or progress", () => {
+    expect(revenueQuestion?.type).toBe("single");
+    if (!revenueQuestion || revenueQuestion.type !== "single") return;
+
+    const existingAnswers = {
+      [revenueQuestion.field]: revenueQuestion.options[0],
+      "finance_basic.cash": "320",
+    };
+    const result = applyConversationChoiceReply(existingAnswers, revenueQuestion, "B");
+    expect(result.matched).toBe(true);
+    if (!result.matched) return;
+
+    expect(result.answers).toEqual({
+      [revenueQuestion.field]: revenueQuestion.options[1],
+      "finance_basic.cash": "320",
+    });
+    expect(completeConversationPosition({ unitIndex: 20, editingUnitIndex: 2 }, 25)).toEqual({
+      unitIndex: 20,
+      editingUnitIndex: null,
+    });
+  });
+
+  it("restores existing choice answers as presentation letters for editing", () => {
+    expect(revenueQuestion?.type).toBe("single");
+    const regionQuestion = DIAGNOSIS_STEPS.flatMap(step => step.questions)
+      .find(candidate => candidate.id === "region");
+    expect(regionQuestion?.type).toBe("multi");
+    if (
+      !revenueQuestion || revenueQuestion.type !== "single" ||
+      !regionQuestion || regionQuestion.type !== "multi"
+    ) return;
+
+    expect(getConversationChoiceEditReply(
+      revenueQuestion,
+      { [revenueQuestion.field]: revenueQuestion.options[1] },
+      {}
+    )).toBe("B");
+    expect(getConversationChoiceEditReply(
+      regionQuestion,
+      { [regionQuestion.field]: [regionQuestion.options[1], regionQuestion.options[2]] },
+      { [regionQuestion.field]: "长三角" }
+    )).toBe("B C 其他：长三角");
+
+    const clearedCustom = applyConversationMultiReply(
+      { [regionQuestion.field]: [regionQuestion.options[1]] },
+      { [regionQuestion.field]: "长三角" },
+      regionQuestion,
+      "C"
+    );
+    expect(clearedCustom.matched).toBe(true);
+    if (!clearedCustom.matched) return;
+    expect(clearedCustom.customValues).toEqual({});
   });
 });

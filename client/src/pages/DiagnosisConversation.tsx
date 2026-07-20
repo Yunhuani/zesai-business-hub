@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, ArrowUp, Check, Plus, Trash2 } from "lucide-react";
+import { ArrowRight, ArrowUp, Check, Pencil, Plus, Trash2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { APP_LOGO_FULL } from "@/const";
@@ -27,7 +27,9 @@ import {
   applyConversationMultiReply,
   applyConversationNumberAnswer,
   applyConversationTextAnswer,
+  completeConversationPosition,
   getChoiceLetter,
+  getConversationChoiceEditReply,
 } from "./diagnosisConversationProtocol";
 import {
   DIAGNOSIS_STEPS,
@@ -173,10 +175,11 @@ function TextConversation({ question, value, active }: {
   );
 }
 
-function NumberConversation({ question, value, active, onChange, onContinue }: {
+function NumberConversation({ question, value, active, editing, onChange, onContinue }: {
   question: TextQuestion;
   value: string;
   active: boolean;
+  editing: boolean;
   onChange: (value: string) => void;
   onContinue: () => void;
 }) {
@@ -201,7 +204,7 @@ function NumberConversation({ question, value, active, onChange, onContinue }: {
             />
             {question.unit ? <span className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 text-xs text-[var(--zs-sub)]">{question.unit}</span> : null}
           </div>
-          <ContinueButton onClick={onContinue} label={question.optional && !value ? "跳过" : "继续"} />
+          <ContinueButton onClick={onContinue} label={editing ? "保存修改" : question.optional && !value ? "跳过" : "继续"} />
         </div>
       ) : value ? (
         <UserBubble>{value}{question.unit ? ` ${question.unit}` : ""}</UserBubble>
@@ -210,11 +213,12 @@ function NumberConversation({ question, value, active, onChange, onContinue }: {
   );
 }
 
-function MatrixConversation({ question, answers, customValue, active, onAnswer, onCustomValue, onContinue }: {
+function MatrixConversation({ question, answers, customValue, active, editing, onAnswer, onCustomValue, onContinue }: {
   question: MatrixQuestion;
   answers: Answers;
   customValue: string;
   active: boolean;
+  editing: boolean;
   onAnswer: (field: string, value: string) => void;
   onCustomValue: (value: string) => void;
   onContinue: () => void;
@@ -242,7 +246,7 @@ function MatrixConversation({ question, answers, customValue, active, onAnswer, 
             </div>
             <input value={customValue} onChange={event => onCustomValue(event.target.value)} placeholder={question.customPlaceholder} className="m-3 h-10 w-[calc(100%-1.5rem)] rounded-lg border border-[var(--zs-line)] px-3 text-sm outline-none focus:border-[var(--zs-primary)]" />
           </div>
-          <ContinueButton onClick={onContinue} />
+          <ContinueButton onClick={onContinue} label={editing ? "保存修改" : "继续"} />
         </div>
       ) : (
         <UserBubble>{question.id === "team-structure" ? "团队结构评估已完成" : "职能能力评估已完成"}</UserBubble>
@@ -255,10 +259,11 @@ function createEmptyFinanceRow(question: FinanceTableQuestion): FinanceRowAnswer
   return Object.fromEntries(question.columns.map(column => [column.key, ""]));
 }
 
-function FinanceTableConversation({ question, rows, active, onChange, onContinue }: {
+function FinanceTableConversation({ question, rows, active, editing, onChange, onContinue }: {
   question: FinanceTableQuestion;
   rows: FinanceRowAnswer[];
   active: boolean;
+  editing: boolean;
   onChange: (rows: FinanceRowAnswer[]) => void;
   onContinue: () => void;
 }) {
@@ -291,7 +296,7 @@ function FinanceTableConversation({ question, rows, active, onChange, onContinue
           </div>
           <div className="flex flex-wrap items-center gap-3">
             {(!question.maxRows || visibleRows.length < question.maxRows) ? <button type="button" onClick={() => onChange([...visibleRows, createEmptyFinanceRow(question)])} className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[var(--zs-primary)]"><Plus className="h-4 w-4" />{question.addButtonLabel}</button> : null}
-            <ContinueButton onClick={onContinue} label={filledCount ? "继续" : "跳过"} />
+            <ContinueButton onClick={onContinue} label={editing ? "保存修改" : filledCount ? "继续" : "跳过"} />
           </div>
         </div>
       ) : filledCount ? <UserBubble>{`已填写 ${filledCount} 条明细`}</UserBubble> : <SkippedReply />}
@@ -299,10 +304,11 @@ function FinanceTableConversation({ question, rows, active, onChange, onContinue
   );
 }
 
-function ArPairConversation({ questions, answers, active, onChange, onContinue }: {
+function ArPairConversation({ questions, answers, active, editing, onChange, onContinue }: {
   questions: TextQuestion[];
   answers: Answers;
   active: boolean;
+  editing: boolean;
   onChange: (question: TextQuestion, value: string) => void;
   onContinue: () => void;
 }) {
@@ -321,7 +327,7 @@ function ArPairConversation({ questions, answers, active, onChange, onContinue }
               </div>
             </label>
           ))}
-          <div className="sm:col-span-2"><ContinueButton onClick={onContinue} label={values.some(Boolean) ? "继续" : "跳过"} /></div>
+          <div className="sm:col-span-2"><ContinueButton onClick={onContinue} label={editing ? "保存修改" : values.some(Boolean) ? "继续" : "跳过"} /></div>
         </div>
       ) : values.some(Boolean) ? (
         <UserBubble>应收余额 {values[0]} 万元，平均账期 {values[1]} 天</UserBubble>
@@ -330,9 +336,10 @@ function ArPairConversation({ questions, answers, active, onChange, onContinue }
   );
 }
 
-function ConversationUnitView({ unit, active, answers, customValues, onAnswers, onCustomValues, onContinue }: {
+function ConversationUnitView({ unit, active, editing, answers, customValues, onAnswers, onCustomValues, onContinue }: {
   unit: DiagnosisConversationUnit;
   active: boolean;
+  editing: boolean;
   answers: Answers;
   customValues: Record<string, string>;
   onAnswers: (answers: Answers) => void;
@@ -340,7 +347,7 @@ function ConversationUnitView({ unit, active, answers, customValues, onAnswers, 
   onContinue: () => void;
 }) {
   if (unit.questions.length === 2 && unit.id === "finance-plus-ar") {
-    return <ArPairConversation questions={unit.questions as TextQuestion[]} answers={answers} active={active} onChange={(question, value) => onAnswers(applyConversationNumberAnswer(answers, question, value))} onContinue={onContinue} />;
+    return <ArPairConversation questions={unit.questions as TextQuestion[]} answers={answers} active={active} editing={editing} onChange={(question, value) => onAnswers(applyConversationNumberAnswer(answers, question, value))} onContinue={onContinue} />;
   }
 
   const question = unit.questions[0];
@@ -348,15 +355,15 @@ function ConversationUnitView({ unit, active, answers, customValues, onAnswers, 
     return <ChoiceConversation question={question} answers={question.type === "multi" ? getStringArrayAnswer(answers, question.field) : [getStringAnswer(answers, question.field)].filter(Boolean)} customValue={customValues[question.field] ?? ""} active={active} />;
   }
   if (question.type === "number") {
-    return <NumberConversation question={question} value={getStringAnswer(answers, question.field)} active={active} onChange={value => onAnswers(applyConversationNumberAnswer(answers, question, value))} onContinue={onContinue} />;
+    return <NumberConversation question={question} value={getStringAnswer(answers, question.field)} active={active} editing={editing} onChange={value => onAnswers(applyConversationNumberAnswer(answers, question, value))} onContinue={onContinue} />;
   }
   if (question.type === "text" || question.type === "textarea") {
     return <TextConversation question={question} value={getStringAnswer(answers, question.field)} active={active} />;
   }
   if (question.type === "matrix") {
-    return <MatrixConversation question={question} answers={answers} customValue={customValues[question.id] ?? ""} active={active} onAnswer={(field, value) => onAnswers(applyConversationMatrixAnswer(answers, field, value))} onCustomValue={value => onCustomValues({ ...customValues, [question.id]: value })} onContinue={onContinue} />;
+    return <MatrixConversation question={question} answers={answers} customValue={customValues[question.id] ?? ""} active={active} editing={editing} onAnswer={(field, value) => onAnswers(applyConversationMatrixAnswer(answers, field, value))} onCustomValue={value => onCustomValues({ ...customValues, [question.id]: value })} onContinue={onContinue} />;
   }
-  return <FinanceTableConversation question={question} rows={getFinanceRows(answers, question.field)} active={active} onChange={rows => onAnswers(applyConversationFinanceRows(answers, question, rows))} onContinue={onContinue} />;
+  return <FinanceTableConversation question={question} rows={getFinanceRows(answers, question.field)} active={active} editing={editing} onChange={rows => onAnswers(applyConversationFinanceRows(answers, question, rows))} onContinue={onContinue} />;
 }
 
 export default function DiagnosisConversation() {
@@ -364,6 +371,7 @@ export default function DiagnosisConversation() {
   const { isAuthenticated, loading: authLoading } = useAuth();
   const [draft] = useState(loadDiagnosisDraft);
   const [unitIndex, setUnitIndex] = useState(() => getInitialUnitIndex(draft));
+  const [editingUnitIndex, setEditingUnitIndex] = useState<number | null>(null);
   const [answers, setAnswers] = useState<Answers>(() => draft?.answers ?? {});
   const [customValues, setCustomValues] = useState<Record<string, string>>(() => draft?.customValues ?? {});
   const [reply, setReply] = useState("");
@@ -372,7 +380,8 @@ export default function DiagnosisConversation() {
   const [validationError, setValidationError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const validationErrorRef = useRef<HTMLParagraphElement>(null);
-  const currentUnit = CONVERSATION_UNITS[unitIndex];
+  const activeUnitIndex = editingUnitIndex ?? unitIndex;
+  const currentUnit = CONVERSATION_UNITS[activeUnitIndex];
   const completedQuestionCount = CONVERSATION_UNITS.slice(0, unitIndex).reduce(
     (total, unit) => total + unit.questions.length,
     0,
@@ -404,18 +413,25 @@ export default function DiagnosisConversation() {
   }, [answers, customValues, unitIndex]);
 
   useEffect(() => {
+    if (editingUnitIndex !== null) {
+      document.getElementById(`conversation-unit-${editingUnitIndex}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [unitIndex, awaitingShortAnswerChoice]);
+  }, [editingUnitIndex, unitIndex, awaitingShortAnswerChoice]);
 
   useEffect(() => {
-    if (currentQuestion?.type === "text" || currentQuestion?.type === "textarea") {
+    if (currentQuestion?.type === "single" || currentQuestion?.type === "multi") {
+      setReply(getConversationChoiceEditReply(currentQuestion, answers, customValues));
+    } else if (currentQuestion?.type === "text" || currentQuestion?.type === "textarea") {
       setReply(getStringAnswer(answers, currentQuestion.field));
     } else {
       setReply("");
     }
     setReplyHint(null);
     setAwaitingShortAnswerChoice(false);
-  }, [unitIndex]);
+  }, [activeUnitIndex]);
 
   const updateAnswers = (nextAnswers: Answers) => {
     setValidationError(null);
@@ -432,6 +448,13 @@ export default function DiagnosisConversation() {
     requestAnimationFrame(() => {
       validationErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     });
+  };
+
+  const editCompletedUnit = (index: number) => {
+    setValidationError(null);
+    setReplyHint(null);
+    setAwaitingShortAnswerChoice(false);
+    setEditingUnitIndex(index);
   };
 
   const completeCurrentUnit = (
@@ -454,7 +477,12 @@ export default function DiagnosisConversation() {
     setReply("");
     setReplyHint(null);
     setAwaitingShortAnswerChoice(false);
-    setUnitIndex(index => Math.min(index + 1, CONVERSATION_UNITS.length));
+    const nextPosition = completeConversationPosition(
+      { unitIndex, editingUnitIndex },
+      CONVERSATION_UNITS.length
+    );
+    setUnitIndex(nextPosition.unitIndex);
+    setEditingUnitIndex(nextPosition.editingUnitIndex);
     return true;
   };
 
@@ -500,6 +528,18 @@ export default function DiagnosisConversation() {
   };
 
   const submitReport = () => {
+    for (let index = 0; index < CONVERSATION_UNITS.length; index += 1) {
+      const error = validateCurrentStep(
+        getConversationValidationStep(CONVERSATION_UNITS[index]),
+        answers,
+        customValues
+      );
+      if (error) {
+        editCompletedUnit(index);
+        showValidationError(error);
+        return;
+      }
+    }
     if (authLoading) return;
     if (!isAuthenticated) {
       rememberLoginReturnPath("/diagnosis/conversation");
@@ -529,14 +569,15 @@ export default function DiagnosisConversation() {
           <AdvisorMessage>{CONVERSATION_OPENING}</AdvisorMessage>
           {visibleUnits.map((unit, index) => {
             const showSectionIntro = index === 0 || unit.section !== visibleUnits[index - 1].section;
-            const active = index === unitIndex;
+            const active = index === activeUnitIndex;
             return (
-              <div key={unit.id} className="space-y-10">
+              <div id={`conversation-unit-${index}`} key={unit.id} className="scroll-mt-24 space-y-10">
                 {showSectionIntro ? <AdvisorMessage>{unit.sectionIntro}</AdvisorMessage> : null}
                 <div className="space-y-3">
                   <ConversationUnitView
                     unit={unit}
                     active={active}
+                    editing={editingUnitIndex === index}
                     answers={answers}
                     customValues={customValues}
                     onAnswers={updateAnswers}
@@ -548,12 +589,19 @@ export default function DiagnosisConversation() {
                       {validationError}
                     </p>
                   ) : null}
+                  {index < unitIndex && !active ? (
+                    <div className="flex justify-end">
+                      <button type="button" onClick={() => editCompletedUnit(index)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--zs-line)] bg-white px-2.5 py-1.5 text-xs font-semibold text-[var(--zs-sub)] transition-colors hover:border-[var(--zs-primary)] hover:text-[var(--zs-primary)]">
+                        <Pencil className="h-3 w-3" />修改
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             );
           })}
 
-          {unitIndex === CONVERSATION_UNITS.length ? (
+          {unitIndex === CONVERSATION_UNITS.length && editingUnitIndex === null ? (
             <div className="space-y-4">
               <AdvisorMessage>信息我都了解了。接下来我会结合 NBG 五维方法论，为你生成增长诊断报告。</AdvisorMessage>
               <div className="ml-10 max-sm:ml-0">
@@ -572,6 +620,7 @@ export default function DiagnosisConversation() {
       {usesComposer ? (
         <footer className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--zs-line)] bg-[rgba(250,250,248,.94)] backdrop-blur-xl">
           <div className="mx-auto max-w-[720px] px-6 py-3">
+            {editingUnitIndex !== null ? <p className="mb-2 text-xs font-semibold text-[var(--zs-primary)]">正在修改已答问题，发送后保存</p> : null}
             {replyHint ? <p className="mb-2 text-xs text-[var(--zs-gold-ink)]">{replyHint}</p> : null}
             {awaitingShortAnswerChoice ? (
               <button type="button" onClick={() => completeCurrentUnit()} className="mb-2 rounded-lg border border-[var(--zs-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--zs-primary)] transition-colors hover:bg-[var(--zs-primary-soft)]">不补充，继续</button>
@@ -584,7 +633,12 @@ export default function DiagnosisConversation() {
                 placeholder={currentQuestion?.type === "multi" ? "回复多个字母，如 b、c" : currentQuestion?.type === "single" ? "回复选项字母，如 B" : currentQuestion && "placeholder" in currentQuestion ? currentQuestion.placeholder : "输入回答"}
                 className="h-9 min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-[var(--zs-weak)]"
               />
-              {currentQuestion && "optional" in currentQuestion && currentQuestion.optional && !reply ? <button type="button" onClick={() => completeCurrentUnit()} className="px-2 text-xs font-semibold text-[var(--zs-sub)]">跳过</button> : null}
+              {currentQuestion && "optional" in currentQuestion && currentQuestion.optional && !reply ? <button type="button" onClick={() => {
+                const nextAnswers = { ...answers, [currentQuestion.field]: currentQuestion.type === "multi" ? [] : "" };
+                const nextCustomValues = { ...customValues };
+                delete nextCustomValues[currentQuestion.field];
+                completeCurrentUnit(nextAnswers, nextCustomValues);
+              }} className="px-2 text-xs font-semibold text-[var(--zs-sub)]">跳过</button> : null}
               <button type="button" onClick={sendComposerReply} disabled={!reply.trim()} className="grid h-10 w-10 place-items-center rounded-full bg-[var(--zs-primary)] text-white shadow-sm transition-[filter,background-color] hover:brightness-90 disabled:cursor-default disabled:bg-[#d2d8d4] disabled:text-white/80 disabled:shadow-none disabled:hover:brightness-100" aria-label="发送回答"><ArrowUp className="h-5 w-5 stroke-[2.5]" /></button>
             </div>
           </div>

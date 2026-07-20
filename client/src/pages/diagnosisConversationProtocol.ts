@@ -12,6 +12,41 @@ export function getChoiceLetter(index: number): string {
   return String.fromCharCode(65 + index);
 }
 
+export type ConversationPosition = {
+  unitIndex: number;
+  editingUnitIndex: number | null;
+};
+
+export function completeConversationPosition(
+  position: ConversationPosition,
+  totalUnits: number
+): ConversationPosition {
+  if (position.editingUnitIndex !== null) {
+    return { unitIndex: position.unitIndex, editingUnitIndex: null };
+  }
+  return {
+    unitIndex: Math.min(position.unitIndex + 1, totalUnits),
+    editingUnitIndex: null,
+  };
+}
+
+export function getConversationChoiceEditReply(
+  question: ChoiceQuestion,
+  answers: ConversationAnswers,
+  customValues: ConversationCustomValues
+): string {
+  const answer = answers[question.field];
+  const values = Array.isArray(answer) ? answer : typeof answer === "string" ? [answer] : [];
+  const letters = values
+    .map(value => question.options.indexOf(String(value)))
+    .filter(index => index >= 0)
+    .map(getChoiceLetter);
+  const customValue = customValues[question.field]?.trim();
+  return [letters.join(" "), customValue ? `其他：${customValue}` : ""]
+    .filter(Boolean)
+    .join(" ");
+}
+
 export function applyConversationChoiceReply(
   answers: ConversationAnswers,
   question: ChoiceQuestion,
@@ -76,12 +111,17 @@ export function applyConversationMultiReply(
   }
 
   const values = indices.map(index => question.options[index]);
+  const nextCustomValues = { ...customValues };
+  if (customValue) {
+    nextCustomValues[question.field] = customValue;
+  } else {
+    delete nextCustomValues[question.field];
+  }
+
   return {
     matched: true,
     answers: values.length > 0 ? { ...answers, [question.field]: values } : answers,
-    customValues: customValue
-      ? { ...customValues, [question.field]: customValue }
-      : customValues,
+    customValues: nextCustomValues,
     values,
   };
 }
