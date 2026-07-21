@@ -4,6 +4,20 @@ const selectResponses: unknown[][] = [];
 const insertedTransactions: unknown[] = [];
 const userUpdates: unknown[] = [];
 
+function queueRefundReads({
+  charge,
+  previous,
+  user,
+  existingRefund = [],
+}: {
+  charge: unknown[];
+  previous: unknown[];
+  user: unknown[];
+  existingRefund?: unknown[];
+}) {
+  selectResponses.push(charge, existingRefund, previous, user);
+}
+
 vi.mock("./db", () => ({
   getDb: vi.fn(async () => ({
     transaction: async (callback: (tx: unknown) => Promise<unknown>) =>
@@ -11,6 +25,9 @@ vi.mock("./db", () => ({
         select: () => ({
           from: () => ({
             where: () => ({
+              orderBy: () => ({
+                limit: async () => selectResponses.shift() ?? [],
+              }),
               limit: async () => selectResponses.shift() ?? [],
             }),
           }),
@@ -38,36 +55,75 @@ describe("diagnosis full refund", () => {
     userUpdates.length = 0;
   });
 
-  it("refunds a charged diagnosis_full transaction once", async () => {
-    selectResponses.push(
-      [{ id: 7, userId: 3, amount: -1500 }],
-      [],
-      [{ id: 3, creditsPurchased: 200, creditsSubscription: 100 }]
-    );
+  it("refunds a pure subscription charge back to the subscription bucket", async () => {
+    queueRefundReads({
+      charge: [{ id: 7, userId: 3, amount: -1500, balancePurchased: 0, balanceSubscription: 0 }],
+      previous: [{ balancePurchased: 0, balanceSubscription: 1500 }],
+      user: [{ id: 3, creditsPurchased: 0, creditsSubscription: 0 }],
+    });
     const { refundDiagnosisFullIfCharged } = await import("./creditsManager");
 
     const result = await refundDiagnosisFullIfCharged(42);
 
     expect(result).toEqual({ refunded: true, amount: 1500 });
-    expect(userUpdates).toEqual([{ creditsPurchased: 1700 }]);
+    expect(userUpdates).toEqual([{ creditsPurchased: 0, creditsSubscription: 1500 }]);
     expect(insertedTransactions).toEqual([
       expect.objectContaining({
         userId: 3,
         type: "refund",
         amount: 1500,
-        balancePurchased: 1700,
-        balanceSubscription: 100,
+        balancePurchased: 0,
+        balanceSubscription: 1500,
         relatedDiagnosisId: 42,
         billingKey: "refund:diagnosis_full",
       }),
     ]);
   });
 
+  it("refunds a pure purchased-credit charge back to the purchased bucket", async () => {
+    queueRefundReads({
+      charge: [{ id: 7, userId: 3, amount: -1500, balancePurchased: 0, balanceSubscription: 0 }],
+      previous: [{ balancePurchased: 1500, balanceSubscription: 0 }],
+      user: [{ id: 3, creditsPurchased: 0, creditsSubscription: 0 }],
+    });
+    const { refundDiagnosisFullIfCharged } = await import("./creditsManager");
+
+    const result = await refundDiagnosisFullIfCharged(42);
+
+    expect(result.amount).toBe(1500);
+    expect(userUpdates).toEqual([{ creditsPurchased: 1500, creditsSubscription: 0 }]);
+    expect(insertedTransactions[0]).toEqual(expect.objectContaining({
+      amount: 1500,
+      balancePurchased: 1500,
+      balanceSubscription: 0,
+    }));
+  });
+
+  it("refunds mixed charges symmetrically across both buckets", async () => {
+    queueRefundReads({
+      charge: [{ id: 7, userId: 3, amount: -1500, balancePurchased: 0, balanceSubscription: 0 }],
+      previous: [{ balancePurchased: 1000, balanceSubscription: 500 }],
+      user: [{ id: 3, creditsPurchased: 0, creditsSubscription: 0 }],
+    });
+    const { refundDiagnosisFullIfCharged } = await import("./creditsManager");
+
+    const result = await refundDiagnosisFullIfCharged(42);
+
+    expect(result.amount).toBe(1500);
+    expect(userUpdates).toEqual([{ creditsPurchased: 1000, creditsSubscription: 500 }]);
+    expect(insertedTransactions[0]).toEqual(expect.objectContaining({
+      amount: 1500,
+      balancePurchased: 1000,
+      balanceSubscription: 500,
+    }));
+    expect(
+      (userUpdates[0] as { creditsPurchased: number; creditsSubscription: number }).creditsPurchased +
+      (userUpdates[0] as { creditsPurchased: number; creditsSubscription: number }).creditsSubscription
+    ).toBe(result.amount);
+  });
+
   it("does not refund diagnosis_full twice", async () => {
-    selectResponses.push(
-      [{ id: 7, userId: 3, amount: -1500 }],
-      [{ id: 8 }]
-    );
+    selectResponses.push([{ id: 7, userId: 3, amount: -1500 }], [{ id: 8 }]);
     const { refundDiagnosisFullIfCharged } = await import("./creditsManager");
 
     const result = await refundDiagnosisFullIfCharged(42);

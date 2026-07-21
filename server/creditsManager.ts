@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq, lt, or } from "drizzle-orm";
 import { getDb } from "./db";
 import { toMySqlTimestamp } from "./lib/mysqlTimestamp";
 import { users, creditsTransactions } from "../drizzle/schema";
@@ -281,6 +281,9 @@ export async function refundDiagnosisFullIfCharged(
         id: creditsTransactions.id,
         userId: creditsTransactions.userId,
         amount: creditsTransactions.amount,
+        balancePurchased: creditsTransactions.balancePurchased,
+        balanceSubscription: creditsTransactions.balanceSubscription,
+        createdAt: creditsTransactions.createdAt,
       })
       .from(creditsTransactions)
       .where(
@@ -313,6 +316,30 @@ export async function refundDiagnosisFullIfCharged(
     }
 
     const refundAmount = Math.abs(charge.amount);
+    // Existing charge rows store post-deduction bucket balances. Comparing them
+    // with the immediately preceding ledger snapshot reconstructs the split
+    // without adding a new column or changing the deduction path.
+    const [previousTransaction] = await tx
+      .select({
+        balancePurchased: creditsTransactions.balancePurchased,
+        balanceSubscription: creditsTransactions.balanceSubscription,
+      })
+      .from(creditsTransactions)
+      .where(
+        and(
+          eq(creditsTransactions.userId, charge.userId),
+          or(
+            lt(creditsTransactions.createdAt, charge.createdAt),
+            and(
+              eq(creditsTransactions.createdAt, charge.createdAt),
+              lt(creditsTransactions.id, charge.id)
+            )
+          )
+        )
+      )
+      .orderBy(desc(creditsTransactions.createdAt), desc(creditsTransactions.id))
+      .limit(1);
+
     const [user] = await tx
       .select()
       .from(users)
@@ -320,10 +347,34 @@ export async function refundDiagnosisFullIfCharged(
       .limit(1);
     if (!user) throw new Error("User not found");
 
-    const nextPurchased = user.creditsPurchased + refundAmount;
+    const inferredSubscriptionRefund = previousTransaction
+      ? Math.max(
+          0,
+          previousTransaction.balanceSubscription - charge.balanceSubscription
+        )
+      : 0;
+    const inferredPurchasedRefund = previousTransaction
+      ? Math.max(
+          0,
+          previousTransaction.balancePurchased - charge.balancePurchased
+        )
+      : 0;
+    const hasExactAllocation =
+      inferredSubscriptionRefund + inferredPurchasedRefund === refundAmount;
+    const subscriptionRefund = hasExactAllocation
+      ? inferredSubscriptionRefund
+      : charge.balanceSubscription > 0
+        ? refundAmount
+        : 0;
+    const purchasedRefund = refundAmount - subscriptionRefund;
+    const nextPurchased = user.creditsPurchased + purchasedRefund;
+    const nextSubscription = user.creditsSubscription + subscriptionRefund;
     await tx
       .update(users)
-      .set({ creditsPurchased: nextPurchased })
+      .set({
+        creditsPurchased: nextPurchased,
+        creditsSubscription: nextSubscription,
+      })
       .where(eq(users.id, charge.userId));
 
     await tx.insert(creditsTransactions).values({
@@ -331,7 +382,7 @@ export async function refundDiagnosisFullIfCharged(
       type: "refund",
       amount: refundAmount,
       balancePurchased: nextPurchased,
-      balanceSubscription: user.creditsSubscription,
+      balanceSubscription: nextSubscription,
       description: `诊断失败退回 - Diagnosis #${relatedDiagnosisId}`,
       relatedDiagnosisId,
       billingKey: "refund:diagnosis_full",
