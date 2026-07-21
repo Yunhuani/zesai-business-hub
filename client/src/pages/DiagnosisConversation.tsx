@@ -362,7 +362,7 @@ function ArPairConversation({ questions, answers, active, editing, onChange, onC
   const values = questions.map(question => getStringAnswer(answers, question.field));
   return (
     <div className="space-y-4">
-      <AdvisorMessage><QuestionPrompt>最后补充一下应收账款余额和平均账期；两项请同时填写，也可以都跳过。</QuestionPrompt></AdvisorMessage>
+      <AdvisorMessage><QuestionPrompt>目前账上还有多少钱没收回来？平均账期大概多少天？（选填）</QuestionPrompt></AdvisorMessage>
       {active ? (
         <div className="ml-[57px] grid gap-3 max-sm:ml-0 sm:grid-cols-2">
           {questions.map((question, index) => (
@@ -640,7 +640,7 @@ export default function DiagnosisConversation() {
 
       <main className="mx-auto w-full max-w-[720px] px-6 py-12 sm:py-14">
         <div className="space-y-11">
-          <AdvisorMessage>{CONVERSATION_OPENING}</AdvisorMessage>
+          <AdvisorMessage><div className="whitespace-pre-line">{CONVERSATION_OPENING}</div></AdvisorMessage>
           {visibleUnits.map((unit, index) => {
             const showSectionIntro = index === 0 || unit.section !== visibleUnits[index - 1].section;
             const active = index === activeUnitIndex;
