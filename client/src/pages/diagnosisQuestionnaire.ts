@@ -237,12 +237,11 @@ export const DIAGNOSIS_STEPS: DiagnosisStep[] = [
         type: "finance-table",
         maxRows: 6,
         addButtonLabel: "添加产品线",
-        helperText: "填写后可计算产品线毛利结构；没有明细可留空。",
+        helperText: "填写后可判断这条产品线是否盈利；没有明细可留空。",
         columns: [
           { key: "name", label: "产品线名", inputType: "text" },
           { key: "revenue", label: "年收入", inputType: "number", unit: "万元" },
-          { key: "direct_cost", label: "直接成本", inputType: "number", unit: "万元" },
-          { key: "allocated", label: "分摊费用", inputType: "number", unit: "万元" },
+          { key: "total_cost", label: "年总成本", inputType: "number", unit: "万元" },
         ],
       },
       {

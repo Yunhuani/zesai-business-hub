@@ -8,7 +8,7 @@ type StringMap = Record<string, string>;
 type JsonObject = Record<string, unknown>;
 
 type FinancePlus = {
-  product_lines: Array<{ name: string; revenue: number; direct_cost: number; allocated: number }> | null;
+  product_lines: Array<{ name: string; revenue: number; total_cost: number }> | null;
   customers: Array<{ name: string; pct: number }> | null;
   ar: { balance: number; days: number } | null;
 } | null;
@@ -176,15 +176,14 @@ function buildFinanceProductLines(
 ): NonNullable<FinancePlus>["product_lines"] {
   const rows = getRowAnswers(answers, "finance_plus.product_lines");
   const productLines = rows.flatMap((row, index) => {
-    if (isBlankRow(row, ["name", "revenue", "direct_cost", "allocated"])) {
+    if (isBlankRow(row, ["name", "revenue", "total_cost"])) {
       return [];
     }
     const rowLabel = `产品线明细第${index + 1}行`;
     return [{
       name: requiredStringValue(row.name, `${rowLabel}名称`),
       revenue: requiredNumberValue(row.revenue, `${rowLabel}收入`),
-      direct_cost: requiredNumberValue(row.direct_cost, `${rowLabel}直接成本`),
-      allocated: requiredNumberValue(row.allocated, `${rowLabel}分摊成本`),
+      total_cost: requiredNumberValue(row.total_cost, `${rowLabel}年总成本`),
     }];
   });
   return productLines.length ? productLines : null;

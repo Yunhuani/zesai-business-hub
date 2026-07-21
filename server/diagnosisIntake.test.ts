@@ -137,10 +137,9 @@ describe("convertQuestionnaireAnswers", () => {
           {
             name: "精密阀体",
             revenue: "3200",
-            direct_cost: "1980",
-            allocated: "420",
+            total_cost: "2400",
           },
-          { name: "", revenue: "", direct_cost: "", allocated: "" },
+          { name: "", revenue: "", total_cost: "" },
         ],
         "finance_plus.customers": [
           { name: "北美渠道A", pct: "38" },
@@ -154,7 +153,7 @@ describe("convertQuestionnaireAnswers", () => {
 
     expect(intake.finance_plus).toEqual({
       product_lines: [
-        { name: "精密阀体", revenue: 3200, direct_cost: 1980, allocated: 420 },
+        { name: "精密阀体", revenue: 3200, total_cost: 2400 },
       ],
       customers: [{ name: "北美渠道A", pct: 38 }],
       ar: { balance: 860, days: 76 },

@@ -21,15 +21,15 @@ describe("validateFinancePlusTableTotals", () => {
 
   it("rejects filled product lines whose total revenue is zero", () => {
     expect(validateFinancePlusTableTotals("finance_plus.product_lines", [
-      { name: "产品线 A", revenue: "0" },
-      { name: "产品线 B", revenue: 0 },
+      { name: "产品线 A", revenue: "0", total_cost: "100" },
+      { name: "产品线 B", revenue: 0, total_cost: 0 },
     ])).toBe("产品线收入合计必须大于 0");
   });
 
   it("allows zero-revenue rows when total product-line revenue is positive", () => {
     expect(validateFinancePlusTableTotals("finance_plus.product_lines", [
-      { name: "产品线 A", revenue: "0" },
-      { name: "产品线 B", revenue: 1 },
+      { name: "产品线 A", revenue: "0", total_cost: "100" },
+      { name: "产品线 B", revenue: 1, total_cost: 1 },
     ])).toBeNull();
   });
 

@@ -111,9 +111,15 @@ describe("diagnosis questionnaire structure", () => {
     expect(productLines && "columns" in productLines ? productLines.columns.map(column => column.key) : []).toEqual([
       "name",
       "revenue",
-      "direct_cost",
-      "allocated",
+      "total_cost",
     ]);
+    expect(productLines && "columns" in productLines ? productLines.columns.map(column => column.label) : []).toEqual([
+      "产品线名",
+      "年收入",
+      "年总成本",
+    ]);
+    expect(productLines && "helperText" in productLines ? productLines.helperText : null)
+      .toBe("填写后可判断这条产品线是否盈利；没有明细可留空。");
 
     expect(customers).toMatchObject({
       type: "finance-table",

@@ -125,8 +125,8 @@ describe("diagnosis conversation data parity", () => {
 
     const rowsById = {
       "finance-product-lines": [
-        { name: "阀门", revenue: "800", direct_cost: "420", allocated: "80" },
-        { name: "法兰", revenue: "300", direct_cost: "260", allocated: "70" },
+        { name: "阀门", revenue: "800", total_cost: "500" },
+        { name: "法兰", revenue: "300", total_cost: "280" },
       ],
       "finance-customers": [
         { name: "客户甲", pct: "35" },
@@ -146,6 +146,7 @@ describe("diagnosis conversation data parity", () => {
       answers: legacyAnswers,
       customValues: {},
     });
+    expect(JSON.stringify(conversationAnswers)).not.toMatch(/direct_cost|allocated/);
   });
 
   it("updates an edited answer without losing later answers or progress", () => {
