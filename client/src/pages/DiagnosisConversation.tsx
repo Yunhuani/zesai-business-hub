@@ -7,9 +7,15 @@ import {
   clearDiagnosisDraft,
   loadDiagnosisDraft,
   saveDiagnosisDraft,
+  type DiagnosisDraft,
   type DiagnosisDraftAnswer,
   type FinanceRowAnswer,
 } from "@/lib/diagnosisDraft";
+import {
+  createDiagnosisDraftSaveQueue,
+  hasDiagnosisDraftContent,
+  hydrateDiagnosisDraft,
+} from "@/lib/diagnosisDraftSync";
 import { rememberLoginReturnPath } from "@/lib/loginReturn";
 import { trpc } from "@/lib/trpc";
 import { getDiagnosisFollowUpHint } from "@shared/diagnosisFollowUpHint";
@@ -418,17 +424,26 @@ function ConversationUnitView({ unit, active, editing, answers, customValues, on
 export default function DiagnosisConversation() {
   const [, setLocation] = useLocation();
   const { isAuthenticated, loading: authLoading } = useAuth();
-  const [draft] = useState(loadDiagnosisDraft);
+  const [draft] = useState(() => {
+    const localDraft = loadDiagnosisDraft();
+    return localDraft
+      ? { ...localDraft, conversationUnitIndex: getInitialUnitIndex(localDraft) }
+      : null;
+  });
   const [unitIndex, setUnitIndex] = useState(() => getInitialUnitIndex(draft));
   const [editingUnitIndex, setEditingUnitIndex] = useState<number | null>(null);
   const [answers, setAnswers] = useState<Answers>(() => draft?.answers ?? {});
   const [customValues, setCustomValues] = useState<Record<string, string>>(() => draft?.customValues ?? {});
+  const [draftHydrated, setDraftHydrated] = useState(false);
   const [reply, setReply] = useState("");
   const [replyHint, setReplyHint] = useState<string | null>(null);
   const [awaitingShortAnswerChoice, setAwaitingShortAnswerChoice] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const validationErrorRef = useRef<HTMLParagraphElement>(null);
+  const hydrationStartedRef = useRef(false);
+  const submittingRef = useRef(false);
+  const lastSyncedDraftRef = useRef<string | null>(null);
   const activeUnitIndex = editingUnitIndex ?? unitIndex;
   const currentUnit = CONVERSATION_UNITS[activeUnitIndex];
   const completedQuestionCount = CONVERSATION_UNITS.slice(0, unitIndex).reduce(
@@ -439,12 +454,29 @@ export default function DiagnosisConversation() {
   const usesComposer = currentQuestion?.type === "single" || currentQuestion?.type === "multi" || currentQuestion?.type === "text" || currentQuestion?.type === "textarea";
   const progress = Math.round((completedQuestionCount / TOTAL_QUESTIONS) * 100);
 
-  const submitDiagnosis = trpc.diagnosis.submit.useMutation({
-    onSuccess: ({ diagnosisId }) => {
-      clearDiagnosisDraft();
-      setLocation(`/diagnosis/${diagnosisId}/processing`);
-    },
+  const serverDraftQuery = trpc.diagnosis.draft.get.useQuery(undefined, {
+    enabled: isAuthenticated && !authLoading,
+    retry: false,
+    refetchOnWindowFocus: false,
   });
+  const saveServerDraft = trpc.diagnosis.draft.save.useMutation();
+  const submitDiagnosis = trpc.diagnosis.submitConversation.useMutation();
+  const saveServerDraftRef = useRef<((nextDraft: DiagnosisDraft) => Promise<void>) | undefined>(undefined);
+  saveServerDraftRef.current = async nextDraft => {
+    await saveServerDraft.mutateAsync({
+      ...nextDraft,
+      conversationUnitIndex: nextDraft.conversationUnitIndex ?? 0,
+    });
+    lastSyncedDraftRef.current = JSON.stringify(nextDraft);
+  };
+  const saveQueueRef = useRef<ReturnType<typeof createDiagnosisDraftSaveQueue> | undefined>(undefined);
+  if (!saveQueueRef.current) {
+    saveQueueRef.current = createDiagnosisDraftSaveQueue(
+      nextDraft => saveServerDraftRef.current!(nextDraft),
+      700
+    );
+  }
+  const saveQueue = saveQueueRef.current;
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -453,13 +485,57 @@ export default function DiagnosisConversation() {
   }, []);
 
   useEffect(() => {
-    saveDiagnosisDraft({
+    const nextDraft: DiagnosisDraft = {
       stepIndex: getDraftStepIndex(unitIndex),
       conversationUnitIndex: unitIndex,
       answers,
       customValues,
+    };
+    saveDiagnosisDraft(nextDraft);
+
+    if (
+      isAuthenticated &&
+      draftHydrated &&
+      !submittingRef.current &&
+      hasDiagnosisDraftContent(nextDraft) &&
+      lastSyncedDraftRef.current !== JSON.stringify(nextDraft)
+    ) {
+      saveQueue.schedule(nextDraft);
+    }
+  }, [answers, customValues, draftHydrated, isAuthenticated, saveQueue, unitIndex]);
+
+  useEffect(() => {
+    saveQueue.setEnabled(isAuthenticated && draftHydrated && !submittingRef.current);
+  }, [draftHydrated, isAuthenticated, saveQueue]);
+
+  useEffect(() => {
+    if (authLoading || hydrationStartedRef.current) return;
+    if (isAuthenticated && serverDraftQuery.isLoading) return;
+
+    hydrationStartedRef.current = true;
+    void hydrateDiagnosisDraft({
+      isAuthenticated,
+      localDraft: draft,
+      loadServerDraft: async () => {
+        if (serverDraftQuery.error) throw serverDraftQuery.error;
+        return serverDraftQuery.data?.payload ?? null;
+      },
+      saveServerDraft: nextDraft => saveServerDraftRef.current!(nextDraft),
+      saveLocalDraft: nextDraft => {
+        saveDiagnosisDraft(nextDraft);
+        lastSyncedDraftRef.current = JSON.stringify(nextDraft);
+      },
+    }).then(resolvedDraft => {
+      if (resolvedDraft) {
+        setUnitIndex(getInitialUnitIndex(resolvedDraft));
+        setAnswers(resolvedDraft.answers);
+        setCustomValues(resolvedDraft.customValues);
+      }
+      setDraftHydrated(true);
     });
-  }, [answers, customValues, unitIndex]);
+  }, [authLoading, draft, isAuthenticated, serverDraftQuery.data, serverDraftQuery.error, serverDraftQuery.isLoading]);
+
+  useEffect(() => () => saveQueue.cancelScheduled(), [saveQueue]);
 
   useEffect(() => {
     if (editingUnitIndex !== null) {
@@ -601,7 +677,7 @@ export default function DiagnosisConversation() {
     completeCurrentUnit(nextAnswers, customValues);
   };
 
-  const submitReport = () => {
+  const submitReport = async () => {
     for (let index = 0; index < CONVERSATION_UNITS.length; index += 1) {
       const error = validateCurrentStep(
         getConversationValidationStep(CONVERSATION_UNITS[index]),
@@ -620,10 +696,36 @@ export default function DiagnosisConversation() {
       setLocation("/login");
       return;
     }
-    submitDiagnosis.mutate({ answers, customValues });
+    submittingRef.current = true;
+    saveQueue.setEnabled(false);
+    saveQueue.cancelScheduled();
+    await saveQueue.waitForPending();
+
+    try {
+      const { diagnosisId } = await submitDiagnosis.mutateAsync({ answers, customValues });
+      clearDiagnosisDraft();
+      setLocation(`/diagnosis/${diagnosisId}/processing`);
+    } catch {
+      submittingRef.current = false;
+      saveQueue.setEnabled(true);
+      saveQueue.schedule({
+        stepIndex: getDraftStepIndex(unitIndex),
+        conversationUnitIndex: unitIndex,
+        answers,
+        customValues,
+      });
+    }
   };
 
   const visibleUnits = CONVERSATION_UNITS.slice(0, Math.min(unitIndex + 1, CONVERSATION_UNITS.length));
+
+  if (authLoading || (isAuthenticated && !draftHydrated)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[var(--zs-bg)] text-sm text-[var(--zs-sub)]">
+        正在同步草稿…
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)] ${usesComposer ? "pb-36" : "pb-16"}`}>

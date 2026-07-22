@@ -41,6 +41,18 @@ export const diagnoses = mysqlTable("diagnoses", {
 	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
 });
 
+export const diagnosisDrafts = mysqlTable("diagnosisDrafts", {
+	id: int().autoincrement().primaryKey(),
+	userId: int().notNull(),
+	flowKey: varchar({ length: 64 }).notNull(),
+	payload: json().notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
+},
+(table) => [
+	uniqueIndex("diagnosisDrafts_user_flow_unique").on(table.userId, table.flowKey),
+]);
+
 export const creditsTransactions = mysqlTable("creditsTransactions", {
 	id: int().autoincrement().primaryKey(),
 	userId: int().notNull(),

@@ -1,12 +1,10 @@
-export type FinanceRowAnswer = Record<string, string | number | null>;
-export type DiagnosisDraftAnswer = string | string[] | FinanceRowAnswer[];
+import type { DiagnosisDraft } from "@shared/diagnosisDraft";
 
-export type DiagnosisDraft = {
-  stepIndex: number;
-  conversationUnitIndex?: number;
-  answers: Record<string, DiagnosisDraftAnswer>;
-  customValues: Record<string, string>;
-};
+export type {
+  DiagnosisDraft,
+  DiagnosisDraftAnswer,
+  FinanceRowAnswer,
+} from "@shared/diagnosisDraft";
 
 const DIAGNOSIS_DRAFT_KEY = "zesai-diagnosis-draft-v1";
 

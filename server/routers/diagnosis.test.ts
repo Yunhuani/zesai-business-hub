@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../diagnosisService", () => ({
   createDiagnosis: vi.fn(),
@@ -8,12 +8,21 @@ vi.mock("../diagnosisService", () => ({
   unlockDiagnosis: vi.fn(),
 }));
 
+vi.mock("../diagnosisDraft", () => ({
+  DIAGNOSIS_CONVERSATION_FLOW_KEY: "diagnosis_conversation_v1",
+  getDiagnosisDraft: vi.fn(),
+  saveDiagnosisDraft: vi.fn(),
+}));
+
 import { createDiagnosis, getDiagnosis, retryDiagnosis } from "../diagnosisService";
+import { getDiagnosisDraft, saveDiagnosisDraft } from "../diagnosisDraft";
 import { diagnosisRouter } from "./diagnosis";
 
 const mockedGetDiagnosis = vi.mocked(getDiagnosis);
 const mockedRetryDiagnosis = vi.mocked(retryDiagnosis);
 const mockedCreateDiagnosis = vi.mocked(createDiagnosis);
+const mockedGetDiagnosisDraft = vi.mocked(getDiagnosisDraft);
+const mockedSaveDiagnosisDraft = vi.mocked(saveDiagnosisDraft);
 
 function createCaller() {
   return diagnosisRouter.createCaller({
@@ -43,6 +52,62 @@ function diagnosisRow(overrides: Record<string, unknown> = {}) {
 }
 
 describe("diagnosis router serialization", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("gets and saves drafts for the authenticated user only", async () => {
+    const draft = {
+      stepIndex: 2,
+      conversationUnitIndex: 5,
+      answers: { "company.name": "示例公司" },
+      customValues: {},
+    };
+    mockedGetDiagnosisDraft.mockResolvedValueOnce({
+      payload: draft,
+      updatedAt: "2026-07-21 10:00:00",
+    } as never);
+
+    await expect(createCaller().draft.get()).resolves.toEqual({
+      payload: draft,
+      updatedAt: "2026-07-21 10:00:00",
+    });
+    await expect(createCaller().draft.save(draft)).resolves.toEqual({ success: true });
+
+    expect(mockedGetDiagnosisDraft).toHaveBeenCalledWith(7);
+    expect(mockedSaveDiagnosisDraft).toHaveBeenCalledWith(7, draft);
+  });
+
+  it("rejects client-supplied user identity in a draft payload", async () => {
+    await expect(createCaller().draft.save({
+      stepIndex: 0,
+      conversationUnitIndex: 0,
+      answers: {},
+      customValues: {},
+      userId: 99,
+    } as never)).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(mockedSaveDiagnosisDraft).not.toHaveBeenCalled();
+  });
+
+  it("uses the conversation submission path that clears the matching draft", async () => {
+    mockedCreateDiagnosis.mockResolvedValueOnce(103);
+    const input = {
+      answers: { "company.name": "示例公司" },
+      customValues: {},
+    };
+
+    await expect(createCaller().submitConversation(input)).resolves.toEqual({
+      diagnosisId: 103,
+      productType: "full",
+    });
+    expect(mockedCreateDiagnosis).toHaveBeenCalledWith(
+      7,
+      expect.any(Object),
+      "full",
+      { clearDraftFlowKey: "diagnosis_conversation_v1" }
+    );
+  });
+
   it("uses full product type for formal submissions and preview only for previews", async () => {
     mockedCreateDiagnosis.mockResolvedValueOnce(101).mockResolvedValueOnce(102);
     const input = {

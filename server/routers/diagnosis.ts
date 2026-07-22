@@ -16,6 +16,12 @@ import {
 } from "../diagnosisProduct";
 import { getUserCredits } from "../creditsManager";
 import { getActionCredits } from "../pricingConfig";
+import { conversationDiagnosisDraftSchema } from "../../shared/diagnosisDraft";
+import {
+  DIAGNOSIS_CONVERSATION_FLOW_KEY,
+  getDiagnosisDraft,
+  saveDiagnosisDraft,
+} from "../diagnosisDraft";
 
 const financeRowAnswerSchema = z.record(
   z.string(),
@@ -59,17 +65,29 @@ function serializeDiagnosis(diagnosis: Awaited<ReturnType<typeof getDiagnosis>>)
 async function submitDiagnosis(
   userId: number,
   input: z.infer<typeof submitSchema>,
-  productType: Exclude<DiagnosisProduct, "pdf">
+  productType: Exclude<DiagnosisProduct, "pdf">,
+  options?: { clearDraftFlowKey?: string }
 ) {
   const intake = convertQuestionnaireAnswers(
     input.answers,
     input.customValues
   );
-  const diagnosisId = await createDiagnosis(userId, intake, productType);
+  const diagnosisId = options
+    ? await createDiagnosis(userId, intake, productType, options)
+    : await createDiagnosis(userId, intake, productType);
   return { diagnosisId, productType };
 }
 
 export const diagnosisRouter = router({
+  draft: router({
+    get: protectedProcedure.query(({ ctx }) => getDiagnosisDraft(ctx.user.id)),
+    save: protectedProcedure
+      .input(conversationDiagnosisDraftSchema)
+      .mutation(async ({ ctx, input }) => {
+        await saveDiagnosisDraft(ctx.user.id, input);
+        return { success: true as const };
+      }),
+  }),
   list: protectedProcedure.query(({ ctx }) =>
     listUserDiagnoses(ctx.user.id)
   ),
@@ -156,5 +174,12 @@ export const diagnosisRouter = router({
     .input(submitSchema)
     .mutation(({ ctx, input }) =>
       submitDiagnosis(ctx.user.id, input, "full")
+    ),
+  submitConversation: protectedProcedure
+    .input(submitSchema)
+    .mutation(({ ctx, input }) =>
+      submitDiagnosis(ctx.user.id, input, "full", {
+        clearDraftFlowKey: DIAGNOSIS_CONVERSATION_FLOW_KEY,
+      })
     ),
 });

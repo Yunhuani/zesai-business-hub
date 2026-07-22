@@ -12,6 +12,7 @@ import { validateDiagnosisUnlock } from "./diagnosisUnlock";
 import { serializeDiagnosisListItem } from "./diagnosisList";
 import type { DiagnosisProduct } from "./diagnosisProduct";
 import { logStructuredError, notifyOps } from "./observability";
+import { deleteDiagnosisDraft } from "./diagnosisDraft";
 
 type JsonObject = Record<string, unknown>;
 // Stale recovery threshold. This depends on the diagnosis engine's 10 minute
@@ -192,15 +193,26 @@ export async function recoverInterruptedDiagnoses(
 export async function createDiagnosis(
   userId: number,
   intake: JsonObject,
-  productType: Exclude<DiagnosisProduct, "pdf">
+  productType: Exclude<DiagnosisProduct, "pdf">,
+  options?: { clearDraftFlowKey?: string }
 ): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const [insertResult] = await db
-    .insert(diagnoses)
-    .values({ userId, intake, productType, status: "pending" });
-  const diagnosisId = insertResult.insertId;
+  const createRecord = async (executor: Pick<typeof db, "insert">) => {
+    const [insertResult] = await executor
+      .insert(diagnoses)
+      .values({ userId, intake, productType, status: "pending" });
+    return insertResult.insertId;
+  };
+
+  const diagnosisId = options?.clearDraftFlowKey
+    ? await db.transaction(async tx => {
+        const id = await createRecord(tx);
+        await deleteDiagnosisDraft(userId, options.clearDraftFlowKey!, tx);
+        return id;
+      })
+    : await createRecord(db);
 
   void processDiagnosis(diagnosisId, intake);
 
