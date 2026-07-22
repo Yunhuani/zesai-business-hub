@@ -17,6 +17,7 @@ import { AppFooter } from "@/components/layout/Footer";
 import { AppHeader } from "@/components/layout/Navbar";
 import { toast } from "sonner";
 import { Loader2, CheckCircle } from "lucide-react";
+import { buildDiagnosisSupportPrefill } from "./supportDiagnosisContext";
 
 const issueTypeMap = {
   technical: "技术问题",
@@ -32,7 +33,9 @@ export default function SupportForm() {
   const [userEmail, setUserEmail] = useState(user?.email || "");
   const [wechat, setWechat] = useState("");
   const [issueType, setIssueType] = useState<keyof typeof issueTypeMap>("technical");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState(() =>
+    buildDiagnosisSupportPrefill(window.location.search, window.location.origin)
+  );
   const [submitted, setSubmitted] = useState(false);
 
   const submitTicket = trpc.support.submitTicket.useMutation({

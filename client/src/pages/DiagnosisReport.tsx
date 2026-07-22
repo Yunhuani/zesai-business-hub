@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "wouter";
 import { toast } from "sonner";
 import { APP_LOGO_FULL } from "@/const";
+import { buildDiagnosisSupportHref } from "./supportDiagnosisContext";
 import {
   buildDiagnosisReport,
   type DiagnosisReportDimension,
@@ -674,7 +675,7 @@ export default function DiagnosisReport() {
             ) : null}
             <div className="report-screen-only mt-10">
               <Link
-                href="/support"
+                href={buildDiagnosisSupportHref(diagnosisId)}
                 className="inline-flex h-12 items-center gap-3 bg-[#E8B84B] px-6 text-sm font-semibold text-[#121317] transition hover:bg-[#FFD166]"
               >
                 联系顾问 / 获取增长方案
