@@ -65,7 +65,7 @@ DATABASE_URL=mysql://user:password@127.0.0.1:3306/zesai_business_hub
 JWT_SECRET=replace-with-a-strong-random-secret
 LLM_PROVIDER=openrouter
 LLM_API_KEY=replace-with-provider-api-key
-LLM_MODEL=deepseek/deepseek-chat
+LLM_MODEL=deepseek-v4-flash
 ```
 
 不要直接沿用示例凭据，也不要让本地开发连接生产数据库。完整变量说明以 [`.env.example`](.env.example) 为准。

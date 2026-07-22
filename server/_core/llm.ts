@@ -488,7 +488,7 @@ export const SUPPORTED_MODELS = {
     { id: "anthropic/claude-3.5-sonnet", name: "Claude 3.5 Sonnet (推荐)", description: "商业咨询场景表现最佳" },
     { id: "openai/gpt-4o", name: "GPT-4o", description: "通用能力强" },
     { id: "google/gemini-pro", name: "Gemini Pro", description: "长文本处理优秀" },
-    { id: "deepseek/deepseek-chat", name: "DeepSeek V3", description: "性价比高" },
+    { id: "deepseek-v4-flash", name: "DeepSeek V4 Flash", description: "高性价比对话模型" },
     { id: "x-ai/grok-2", name: "Grok 2", description: "X平台数据优势" },
   ],
   moonshot: [

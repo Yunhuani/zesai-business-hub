@@ -25,7 +25,7 @@
 DATABASE_URL=postgresql://user:password@host/database?sslmode=require
 LLM_PROVIDER=openrouter
 LLM_API_KEY=your-openrouter-api-key
-LLM_MODEL=deepseek/deepseek-chat
+LLM_MODEL=deepseek-v4-flash
 JWT_SECRET=your-jwt-secret
 NODE_ENV=production
 PORT=3000
