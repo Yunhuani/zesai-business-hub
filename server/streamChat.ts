@@ -3,6 +3,8 @@ import { sdk } from "./_core/sdk";
 import jwt from "jsonwebtoken";
 import { ENV } from "./_core/env";
 import { getUserByOpenId } from "./db";
+import { formatAdvisorSseEvent } from "../shared/advisorStream";
+import { ZESAI_ADVISOR_AGENT_NAME, getZesaiAdvisorSystemPrompt } from "./zesaiAdvisor";
 
 /**
  * Stream chat endpoint for real-time streaming responses
@@ -105,7 +107,10 @@ export async function handleStreamChat(req: Request, res: Response) {
     const { getGlobalPromptRules } = await import("../shared/promptRules");
     const { searchKnowledge, buildRAGPrompt, saveMessageKnowledgeRefs } = await import("./_core/knowledge");
     
-    let systemPrompt = `${getGlobalPromptRules()}\n\n## 专业角色\n${agent.systemPrompt}`;
+    const isZesaiAdvisor = agent.name === ZESAI_ADVISOR_AGENT_NAME;
+    let systemPrompt = isZesaiAdvisor
+      ? getZesaiAdvisorSystemPrompt()
+      : `${getGlobalPromptRules()}\n\n## 专业角色\n${agent.systemPrompt}`;
     
     if (userInputs) {
       const inputFields = JSON.parse(agent.inputFields) as Array<{ name: string; label: string }>;
@@ -156,14 +161,16 @@ export async function handleStreamChat(req: Request, res: Response) {
 
     const reader = stream.getReader();
     const decoder = new TextDecoder();
+    let providerBuffer = "";
 
     try {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split("\n");
+        providerBuffer += decoder.decode(value, { stream: true });
+        const lines = providerBuffer.split("\n");
+        providerBuffer = lines.pop() ?? "";
 
         for (const line of lines) {
           if (line.startsWith("data: ")) {
@@ -179,7 +186,7 @@ export async function handleStreamChat(req: Request, res: Response) {
               if (delta) {
                 fullContent += delta;
                 // Send delta to client
-                res.write(`data: ${JSON.stringify({ delta, fullContent })}\n\n`);
+                res.write(formatAdvisorSseEvent({ type: "message.delta", delta }));
               }
             } catch (e) {
               // Skip invalid JSON
@@ -190,7 +197,6 @@ export async function handleStreamChat(req: Request, res: Response) {
     } catch (error) {
       streamFailed = true;
       console.error("Stream error:", error);
-      res.write(`data: ${JSON.stringify({ error: "Stream failed" })}\n\n`);
     } finally {
       streamReading = false;
     }
@@ -202,12 +208,28 @@ export async function handleStreamChat(req: Request, res: Response) {
       fullContent.trim().length > 0;
 
     if (delivered) {
+      let recommendationMetadata = null;
+      if (isZesaiAdvisor) {
+        const { classifyAdvisorRecommendation } = await import("./advisorRecommendation");
+        recommendationMetadata = await classifyAdvisorRecommendation({
+          question: content,
+          history: messages.filter((message): message is { role: "user" | "assistant"; content: string } =>
+            message.role === "user" || message.role === "assistant"
+          ),
+        });
+      }
+
       // Save assistant message
       await createMessage({
         conversationId,
         role: "assistant",
         content: fullContent,
+        recommendationMetadata,
       });
+
+      if (recommendationMetadata) {
+        res.write(formatAdvisorSseEvent({ type: "recommendation", recommendation: recommendationMetadata }));
+      }
 
       // Deduct credits
       const chatBillingKey = typeof requestId === "string" && requestId
@@ -219,21 +241,20 @@ export async function handleStreamChat(req: Request, res: Response) {
         `基础对话 - Conversation #${conversationId}`,
         chatBillingKey
       );
-    } else {
-      res.write(`data: ${JSON.stringify({
-        warning: "回复未完成，未扣费",
-      })}\n\n`);
     }
 
     // End stream
-    res.write("data: [DONE]\n\n");
+    res.write(formatAdvisorSseEvent(delivered
+      ? { type: "done" }
+      : { type: "done", warning: "回复未完成，未扣费" }
+    ));
     res.end();
   } catch (error) {
     console.error("Stream chat error:", error);
     if (!res.headersSent) {
       res.status(500).json({ error: "Internal server error" });
     } else {
-      res.write(`data: ${JSON.stringify({ error: "Internal server error" })}\n\n`);
+      res.write(formatAdvisorSseEvent({ type: "done" }));
       res.end();
     }
   }

@@ -22,6 +22,23 @@ export interface RecommendedSkillTarget {
   cta: string;
 }
 
+export const RECOMMENDED_SKILL_KEYS = [
+  "nbg_growth_diagnosis",
+  "business_plan",
+  "equity_structure",
+  "team_management",
+  "okr_management",
+  "ai_commercialization",
+  "support",
+] as const;
+
+export type RecommendedSkillKey = typeof RECOMMENDED_SKILL_KEYS[number];
+
+export interface RecommendedSkillMetadata {
+  key: RecommendedSkillKey;
+  reason: string;
+}
+
 export const RECOMMENDED_SKILL_TARGETS: Record<string, RecommendedSkillTarget> = {
   nbg_growth_diagnosis: {
     key: "nbg_growth_diagnosis",

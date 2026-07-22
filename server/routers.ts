@@ -622,8 +622,11 @@ export const appRouter = router({
 
       // Build system prompt with global rules + agent-specific prompt + user inputs
       const { getGlobalPromptRules } = await import("../shared/promptRules");
-      
-      let systemPrompt = `${getGlobalPromptRules()}\n\n## 专业角色\n${agent.systemPrompt}`;
+      const { ZESAI_ADVISOR_AGENT_NAME, getZesaiAdvisorSystemPrompt } = await import("./zesaiAdvisor");
+      const isZesaiAdvisor = agent.name === ZESAI_ADVISOR_AGENT_NAME;
+      let systemPrompt = isZesaiAdvisor
+        ? getZesaiAdvisorSystemPrompt()
+        : `${getGlobalPromptRules()}\n\n## 专业角色\n${agent.systemPrompt}`;
       
       if (input.userInputs) {
         const inputFields = JSON.parse(agent.inputFields) as Array<{ name: string; label: string }>;
@@ -643,12 +646,21 @@ export const appRouter = router({
 
       const rawContent = response.choices[0]?.message?.content;
       const assistantMessage = typeof rawContent === "string" ? rawContent : "抱歉,我无法生成回复。";
+      const recommendationMetadata = isZesaiAdvisor
+        ? await (await import("./advisorRecommendation")).classifyAdvisorRecommendation({
+            question: input.content,
+            history: messages.filter((message): message is { role: "user" | "assistant"; content: string } =>
+              message.role === "user" || message.role === "assistant"
+            ),
+          })
+        : null;
 
       // Save assistant message
       await createMessage({
         conversationId: input.conversationId,
         role: "assistant",
         content: assistantMessage,
+        recommendationMetadata,
       });
       
       // Deduct credits
@@ -662,7 +674,7 @@ export const appRouter = router({
         chatBillingKey
       );
 
-      return { content: assistantMessage };
+      return { content: assistantMessage, recommendationMetadata };
     }),
     list: protectedProcedure.input((val: unknown) => {
       if (typeof val === "object" && val !== null && "conversationId" in val && typeof val.conversationId === "number") {

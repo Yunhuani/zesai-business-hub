@@ -100,6 +100,7 @@ export const messages = mysqlTable("messages", {
 	conversationId: int().notNull(),
 	role: mysqlEnum(['user','assistant','system']).notNull(),
 	content: text().notNull(),
+	recommendationMetadata: json().$type<import("../shared/recommendedSkill").RecommendedSkillMetadata>(),
 	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 

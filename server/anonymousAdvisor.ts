@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 
-import { getGlobalPromptRules } from "../shared/promptRules";
-import { ZESAI_ADVISOR_SYSTEM_PROMPT } from "./zesaiAdvisor";
+import { formatAdvisorSseEvent } from "../shared/advisorStream";
+import { getZesaiAdvisorSystemPrompt } from "./zesaiAdvisor";
 
 type AnonymousHistoryMessage = {
   role: "user" | "assistant";
@@ -158,7 +158,7 @@ export async function handleAnonymousAdvisorChat(req: Request, res: Response) {
     }
 
     const history = normalizeAnonymousHistory(req.body?.history);
-    const systemPrompt = `${getGlobalPromptRules()}\n\n## 专业角色\n${ZESAI_ADVISOR_SYSTEM_PROMPT}`;
+    const systemPrompt = getZesaiAdvisorSystemPrompt();
 
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
@@ -174,28 +174,35 @@ export async function handleAnonymousAdvisorChat(req: Request, res: Response) {
     });
 
     let fullContent = "";
+    let streamCompleted = false;
+    let streamFailed = false;
     const reader = stream.getReader();
     const decoder = new TextDecoder();
+    let providerBuffer = "";
 
     try {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split("\n");
+        providerBuffer += decoder.decode(value, { stream: true });
+        const lines = providerBuffer.split("\n");
+        providerBuffer = lines.pop() ?? "";
 
         for (const line of lines) {
           if (!line.startsWith("data: ")) continue;
           const data = line.slice(6);
-          if (data === "[DONE]") continue;
+          if (data === "[DONE]") {
+            streamCompleted = true;
+            continue;
+          }
 
           try {
             const parsed = JSON.parse(data);
             const delta = parsed.choices?.[0]?.delta?.content;
             if (delta) {
               fullContent += delta;
-              res.write(`data: ${JSON.stringify({ delta, fullContent })}\n\n`);
+              res.write(formatAdvisorSseEvent({ type: "message.delta", delta }));
             }
           } catch {
             // Ignore malformed provider chunks.
@@ -203,18 +210,32 @@ export async function handleAnonymousAdvisorChat(req: Request, res: Response) {
         }
       }
     } catch (error) {
+      streamFailed = true;
       console.error("[AnonymousAdvisor] Stream error:", error);
-      res.write(`data: ${JSON.stringify({ error: "Stream failed" })}\n\n`);
     }
 
-    res.write("data: [DONE]\n\n");
+    if (streamCompleted && !streamFailed && fullContent.trim()) {
+      const { classifyAdvisorRecommendation } = await import("./advisorRecommendation");
+      const recommendation = await classifyAdvisorRecommendation({
+        question: content,
+        history,
+      });
+      if (recommendation) {
+        res.write(formatAdvisorSseEvent({ type: "recommendation", recommendation }));
+      }
+    }
+
+    res.write(formatAdvisorSseEvent(streamCompleted && !streamFailed
+      ? { type: "done" }
+      : { type: "done", warning: "回复未完成" }
+    ));
     res.end();
   } catch (error) {
     console.error("[AnonymousAdvisor] Chat error:", error);
     if (!res.headersSent) {
       res.status(500).json({ error: "Internal server error" });
     } else {
-      res.write(`data: ${JSON.stringify({ error: "Internal server error" })}\n\n`);
+      res.write(formatAdvisorSseEvent({ type: "done" }));
       res.end();
     }
   }

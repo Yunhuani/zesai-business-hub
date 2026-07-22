@@ -66,6 +66,7 @@ export type InvokeParams = {
   output_schema?: OutputSchema;
   responseFormat?: ResponseFormat;
   response_format?: ResponseFormat;
+  thinking?: { type: "enabled" | "disabled" };
 };
 
 export type ToolCall = {
@@ -373,6 +374,10 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.response_format = normalizedResponseFormat;
   }
 
+  if (params.thinking) {
+    payload.thinking = params.thinking;
+  }
+
   const response = await fetch(provider.baseUrl, {
     method: "POST",
     headers: provider.getHeaders(apiKey),
@@ -434,6 +439,10 @@ export async function invokeLLMStream(params: InvokeParams): Promise<ReadableStr
 
   if (normalizedResponseFormat) {
     payload.response_format = normalizedResponseFormat;
+  }
+
+  if (params.thinking) {
+    payload.thinking = params.thinking;
   }
 
   const response = await fetch(provider.baseUrl, {

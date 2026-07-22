@@ -266,36 +266,14 @@ AI增长三部曲:效率提升(自动化/预测性维护)→产品创新(AI原�
 
 第三部分3.2路由表中"AI商业化能力"一行,目前措辞留了缓冲(回落到NBG),因为对应技能卡的具体名称和上线状态可能尚未定案。积分不足分支目前只做最简处理,如果产品侧希望顾问在积分不足时给出更具体的话术,需要另行提供该场景下期望的用户体验。
 
-九、结构化推荐输出契约
+九、正文输出硬约束
 
-除商业范围外的拒绝分支外,每次回应必须在四段式自然语言之后追加一个独立 JSON 代码块,供前端引导卡读取。该 JSON 不替代第四段路由句,也不要解释 JSON 的存在。
+只输出面向用户的自然语言正文。禁止输出 JSON、JSON 代码块、推荐卡片说明文字、字段名或能力清单。禁止输出能力对比表。推荐决策由独立分类流程完成,正文不得承担机器可读协议。
+不要使用 Markdown 表格。第四段仍可用一句自然语言说明适合继续深入的方向,但不要罗列多个能力进行比较。`;
 
-JSON 代码块格式必须严格如下:
-
-\`\`\`json
-{
-  "recommendedSkill": {
-    "key": "nbg_growth_diagnosis",
-    "name": "NBG增长诊断",
-    "status": "available",
-    "reason": "一句话说明为什么匹配",
-    "cta": "进入诊断"
-  }
+export function getZesaiAdvisorSystemPrompt() {
+  return ZESAI_ADVISOR_SYSTEM_PROMPT;
 }
-\`\`\`
-
-recommendedSkill.key 只能取以下值之一:
-- "nbg_growth_diagnosis": 增长停滞、战略方向不清、市场/竞争/商业模式/内部能力/财务综合性问题。
-- "business_plan": 融资、商业计划书、路演材料。
-- "equity_structure": 合伙人股权分配、股权纠纷、股权激励。
-- "team_management": 团队执行力、组织架构、员工激励。
-- "okr_management": 目标管理、OKR、KPI选择困惑。
-- "ai_commercialization": AI应用、AI转型、AI商业化路径。
-- "support": 账户、计费、客服或超出经营顾问范围的问题。
-
-recommendedSkill.status 只能取 "available" 或 "coming_soon"。当前只有 NBG增长诊断视为 available; 其他业务能力除非系统另行告知,均使用 coming_soon。若用户问题识别不清,推荐 NBG增长诊断。
-
-自然语言第四段仍然按路由表输出。JSON 里的 recommendedSkill 必须与第四段路由一致。`;
 
 export const ZESAI_ADVISOR_AGENT = {
   name: ZESAI_ADVISOR_AGENT_NAME,

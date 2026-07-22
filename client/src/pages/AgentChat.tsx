@@ -14,10 +14,12 @@ import { isWeChatBrowser } from "@/utils/wechatDetector";
 import { formatToBeijingTimeShort } from "@/utils/formatTime";
 import { trackAgent, AgentEvents } from "@/lib/analytics";
 import {
-  extractRecommendedSkill,
   getRecommendedSkillTarget,
   type RecommendedSkill,
+  type RecommendedSkillMetadata,
 } from "@shared/recommendedSkill";
+import { parseAdvisorSseData } from "@shared/advisorStream";
+import { getAssistantPresentation } from "@/lib/agentChatStream";
 import {
   ADVISOR_SUGGESTED_PROMPTS,
   buildDocumentAnalysisPrompt,
@@ -38,6 +40,7 @@ type AnonymousChatMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  recommendationMetadata?: RecommendedSkillMetadata | null;
 };
 
 function readAnonymousTurns() {
@@ -98,6 +101,7 @@ export default function AgentChat() {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [isInWeChatBrowser] = useState(isWeChatBrowser());
   const [streamingMessage, setStreamingMessage] = useState("");
+  const [streamingRecommendation, setStreamingRecommendation] = useState<RecommendedSkillMetadata | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const typewriterIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [tempWelcomeMessage, setTempWelcomeMessage] = useState<string | null>(null);
@@ -371,8 +375,14 @@ export default function AgentChat() {
     ? sendMessage.isPending || !conversationId
     : !isAnonymousAdvisorMode || anonymousLimitReached || isStreaming || isWaitingForResponse;
 
-  const renderAssistantContent = (content: string) => {
-    const { displayContent, recommendedSkill } = extractRecommendedSkill(content);
+  const renderAssistantContent = (
+    content: string,
+    recommendationMetadata?: RecommendedSkillMetadata | null,
+  ) => {
+    const { displayContent, recommendedSkill } = getAssistantPresentation({
+      content,
+      recommendationMetadata,
+    });
 
     return (
       <div className="space-y-3">
@@ -402,6 +412,7 @@ export default function AgentChat() {
     setTempUserMessage(null);
     setIsStreaming(false);
     setStreamingMessage("");
+    setStreamingRecommendation(null);
 
     waitingTimeoutRef.current = setTimeout(() => {
       setIsWaitingForResponse(true);
@@ -444,33 +455,32 @@ export default function AgentChat() {
 
       const decoder = new TextDecoder();
       let fullContent = "";
+      let recommendationMetadata: RecommendedSkillMetadata | null = null;
+      let sseBuffer = "";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split("\n");
+        sseBuffer += decoder.decode(value, { stream: true });
+        const lines = sseBuffer.split("\n");
+        sseBuffer = lines.pop() ?? "";
 
         for (const line of lines) {
           if (!line.startsWith("data: ")) continue;
-          const data = line.slice(6);
-          if (data === "[DONE]") continue;
-
-          try {
-            const parsed = JSON.parse(data);
-            if (parsed.delta) {
+          const event = parseAdvisorSseData(line.slice(6));
+          if (event?.type === "message.delta") {
               if (waitingTimeoutRef.current) {
                 clearTimeout(waitingTimeoutRef.current);
                 waitingTimeoutRef.current = null;
               }
               setIsWaitingForResponse(false);
               setIsStreaming(true);
-              fullContent += parsed.delta;
+              fullContent += event.delta;
               setStreamingMessage(fullContent);
-            }
-          } catch {
-            // Skip invalid SSE chunks.
+          } else if (event?.type === "recommendation") {
+            recommendationMetadata = event.recommendation;
+            setStreamingRecommendation(event.recommendation);
           }
         }
       }
@@ -484,11 +494,13 @@ export default function AgentChat() {
           id: createClientMessageId(),
           role: "assistant",
           content: assistantContent || "抱歉，我暂时无法生成回复。",
+          recommendationMetadata,
         },
       ]);
       persistAnonymousTurns(turnState.nextTurns);
       setIsStreaming(false);
       setStreamingMessage("");
+      setStreamingRecommendation(null);
     } catch (error: any) {
       console.error("Anonymous advisor stream error:", error);
       toast.error("发送消息失败: " + error.message);
@@ -496,6 +508,7 @@ export default function AgentChat() {
       setMessage(userMessage);
       setIsStreaming(false);
       setStreamingMessage("");
+      setStreamingRecommendation(null);
     } finally {
       if (waitingTimeoutRef.current) {
         clearTimeout(waitingTimeoutRef.current);
@@ -546,6 +559,7 @@ export default function AgentChat() {
     setTempUserMessage(userMessage);
     setIsStreaming(false);
     setStreamingMessage("");
+    setStreamingRecommendation(null);
     
     // 设置300ms延迟，如果还没收到响应才显示"正在思考"
     waitingTimeoutRef.current = setTimeout(() => {
@@ -583,22 +597,20 @@ export default function AgentChat() {
       
       const decoder = new TextDecoder();
       let fullContent = "";
+      let sseBuffer = "";
       
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split("\n");
+        sseBuffer += decoder.decode(value, { stream: true });
+        const lines = sseBuffer.split("\n");
+        sseBuffer = lines.pop() ?? "";
         
         for (const line of lines) {
           if (line.startsWith("data: ")) {
-            const data = line.slice(6);
-            if (data === "[DONE]") continue;
-            
-            try {
-              const parsed = JSON.parse(data);
-              if (parsed.delta) {
+            const event = parseAdvisorSseData(line.slice(6));
+            if (event?.type === "message.delta") {
                 // 第一次收到内容时，清除等待状态并开启流式显示
                 if (!isStreaming) {
                   // 清除等待提示
@@ -609,11 +621,10 @@ export default function AgentChat() {
                   setIsWaitingForResponse(false);
                   setIsStreaming(true);
                 }
-                fullContent += parsed.delta;
+                fullContent += event.delta;
                 setStreamingMessage(fullContent);
-              }
-            } catch (e) {
-              // Skip invalid JSON
+            } else if (event?.type === "recommendation") {
+              setStreamingRecommendation(event.recommendation);
             }
           }
         }
@@ -623,12 +634,14 @@ export default function AgentChat() {
       await refetchMessages();
       setIsStreaming(false);
       setStreamingMessage("");
+      setStreamingRecommendation(null);
       setTempUserMessage(null); // 清除临时用户消息
     } catch (error: any) {
       console.error("Stream error:", error);
       toast.error("发送消息失败: " + error.message);
       setIsStreaming(false);
       setStreamingMessage("");
+      setStreamingRecommendation(null);
       setTempUserMessage(null);
       setMessage(userMessage); // Restore message on error
     } finally {
@@ -887,12 +900,12 @@ export default function AgentChat() {
                 {isAnonymousAdvisorMode
                   ? anonymousMessages.map(item => (
                       <MessageRow key={item.id} role={item.role}>
-                        {item.role === "assistant" ? renderAssistantContent(item.content) : <p className="whitespace-pre-wrap">{item.content}</p>}
+                        {item.role === "assistant" ? renderAssistantContent(item.content, item.recommendationMetadata) : <p className="whitespace-pre-wrap">{item.content}</p>}
                       </MessageRow>
                     ))
                   : messages?.map(item => (
                       <MessageRow key={item.id} role={item.role}>
-                        {item.role === "assistant" ? renderAssistantContent(item.content) : <p className="whitespace-pre-wrap">{item.content}</p>}
+                        {item.role === "assistant" ? renderAssistantContent(item.content, item.recommendationMetadata) : <p className="whitespace-pre-wrap">{item.content}</p>}
                       </MessageRow>
                     ))}
 
@@ -900,7 +913,7 @@ export default function AgentChat() {
                   <MessageRow role="user"><p className="whitespace-pre-wrap">{tempUserMessage}</p></MessageRow>
                 ) : null}
                 {isStreaming && streamingMessage ? (
-                  <MessageRow role="assistant" streaming>{renderAssistantContent(streamingMessage)}</MessageRow>
+                  <MessageRow role="assistant" streaming>{renderAssistantContent(streamingMessage, streamingRecommendation)}</MessageRow>
                 ) : null}
                 {isWaitingForResponse ? <ThinkingRow /> : null}
 

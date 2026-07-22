@@ -256,7 +256,12 @@ export async function getConversationById(id: number) {
 }
 
 // Message queries
-export async function createMessage(data: { conversationId: number; role: "user" | "assistant" | "system"; content: string }) {
+export async function createMessage(data: {
+  conversationId: number;
+  role: "user" | "assistant" | "system";
+  content: string;
+  recommendationMetadata?: import("../shared/recommendedSkill").RecommendedSkillMetadata | null;
+}) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
