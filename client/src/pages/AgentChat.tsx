@@ -1,22 +1,9 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { AppFooter } from "@/components/layout/Footer";
-import { AppHeader } from "@/components/layout/Navbar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
-import { APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import * as Icons from "lucide-react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, type ReactNode } from "react";
 import { Link, useParams, useLocation } from "wouter";
 import { EnhancedMessage } from "@/components/EnhancedMessage";
 import { toast } from "sonner";
@@ -28,10 +15,14 @@ import { formatToBeijingTimeShort } from "@/utils/formatTime";
 import { trackAgent, AgentEvents } from "@/lib/analytics";
 import {
   extractRecommendedSkill,
-  getRecommendedSkillCta,
-  getRecommendedSkillHref,
+  getRecommendedSkillTarget,
   type RecommendedSkill,
 } from "@shared/recommendedSkill";
+import {
+  ADVISOR_SUGGESTED_PROMPTS,
+  buildDocumentAnalysisPrompt,
+  shouldShowAdvisorSuggestions,
+} from "@/lib/agentChatPresentation";
 import {
   ANONYMOUS_ADVISOR_LIMIT,
   ANONYMOUS_REGISTER_GUIDANCE,
@@ -99,7 +90,6 @@ export default function AgentChat() {
   const { data: subscriptionData } = trpc.subscription.get.useQuery(undefined, { enabled: isAuthenticated });
   const [conversationId, setConversationId] = useState<number | null>(null);
   const [message, setMessage] = useState("");
-  const [isFirstMessage, setIsFirstMessage] = useState(true);
   const [pendingMessage, setPendingMessage] = useState<string | null>(initialMessage);
   const [hasProcessedInitialMessage, setHasProcessedInitialMessage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -117,6 +107,10 @@ export default function AgentChat() {
   const waitingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [anonymousTurns, setAnonymousTurns] = useState(readAnonymousTurns);
   const [anonymousMessages, setAnonymousMessages] = useState<AnonymousChatMessage[]>([]);
+  const [historyOpen, setHistoryOpen] = useState(() =>
+    typeof window === "undefined" ? true : window.innerWidth >= 1024
+  );
+  const [uploadingFileName, setUploadingFileName] = useState<string | null>(null);
 
   const persistAnonymousTurns = (turns: number) => {
     const safeTurns = Math.max(0, Math.min(ANONYMOUS_ADVISOR_LIMIT, turns));
@@ -302,7 +296,6 @@ export default function AgentChat() {
       }, 30); // 30ms per chunk for smooth typing effect
       
       setMessage("");
-      setIsFirstMessage(false);
     },
     onError: (error) => {
       // Check if error is insufficient credits
@@ -321,14 +314,15 @@ export default function AgentChat() {
 
   const uploadDocument = trpc.document.upload.useMutation({
     onSuccess: (data) => {
+      setUploadingFileName(null);
       if (data.error) {
         toast.warning(data.error);
       } else {
-        toast.success("文u6863u4e0au4f20u6210u529f！");
+        toast.success("文档已读取，正在结合内容分析");
       }
       // 将提取的文本内容作为消息发送
       if (data.extractedText && conversationId) {
-        const summary = `我上u4f20了一份文档：${data.filename}\n\n文档内容：\n${data.extractedText.substring(0, 3000)}${data.extractedText.length > 3000 ? '...(内容过长，已截断)' : ''}`;
+        const summary = buildDocumentAnalysisPrompt(data.filename, data.extractedText);
         sendMessage.mutate({
           conversationId,
           content: summary,
@@ -336,7 +330,8 @@ export default function AgentChat() {
       }
     },
     onError: (error) => {
-      toast.error("文档上u4f20失败: " + error.message);
+      setUploadingFileName(null);
+      toast.error("文档上传失败: " + error.message);
     },
   });
 
@@ -349,34 +344,25 @@ export default function AgentChat() {
 
   if (authLoading || agentLoading || (urlConversationId && conversationLoading)) {
     return (
-      <div className="min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)]">
-        <AppHeader />
-        <main className="zs-container flex min-h-[560px] items-center justify-center py-16">
-          <div className="w-12 h-12 border-4 border-[var(--zs-primary)] border-t-transparent rounded-full animate-spin" />
-        </main>
-        <AppFooter />
+      <div className="flex min-h-dvh items-center justify-center bg-[var(--zs-bg)] text-[var(--zs-ink)]">
+        <Icons.Loader2 className="h-8 w-8 animate-spin text-[var(--zs-primary)]" />
       </div>
     );
   }
 
   if (!agent) {
     return (
-      <div className="min-h-screen bg-[var(--zs-bg)] text-[var(--zs-ink)]">
-        <AppHeader />
-        <main className="zs-container flex min-h-[560px] items-center justify-center py-16">
+      <div className="flex min-h-dvh items-center justify-center bg-[var(--zs-bg)] px-6 text-[var(--zs-ink)]">
           <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Agent 不存在</h2>
           <Button asChild>
             <Link href="/">返回首页</Link>
           </Button>
           </div>
-        </main>
-        <AppFooter />
       </div>
     );
   }
 
-  const IconComponent = (Icons as any)[agent.icon] || Icons.Sparkles;
   const isZesaiAdvisor = agent.name === ZESAI_ADVISOR_AGENT_NAME;
   const credits = subscriptionData?.credits;
   const isAnonymousAdvisorMode = !isAuthenticated && isZesaiAdvisor;
@@ -519,12 +505,13 @@ export default function AgentChat() {
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!message.trim()) return;
+  const handleSendMessage = async (suggestedMessage?: string) => {
+    const nextMessage = typeof suggestedMessage === "string" ? suggestedMessage : message;
+    if (!nextMessage.trim()) return;
     
     // 检查登录状态，未登录则显示登录选择对话框
     if (!isAuthenticated && isZesaiAdvisor) {
-      await sendAnonymousAdvisorMessage(message);
+      await sendAnonymousAdvisorMessage(nextMessage);
       return;
     }
 
@@ -535,13 +522,13 @@ export default function AgentChat() {
     
     if (!conversationId) {
       // Conversation还未创建，将消息加入待发送队列
-      setPendingMessage(message);
+      setPendingMessage(nextMessage);
       setMessage("");
       toast.info("正在创建对话...");
       return;
     }
     
-    const userMessage = message;
+    const userMessage = nextMessage;
     const requestId =
       typeof crypto !== "undefined" && "randomUUID" in crypto
         ? crypto.randomUUID()
@@ -657,7 +644,7 @@ export default function AgentChat() {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      void handleSendMessage();
     }
   };
 
@@ -691,6 +678,7 @@ export default function AgentChat() {
       // 读取文件并转换为Base64
       const reader = new FileReader();
       reader.onload = () => {
+        setUploadingFileName(file.name);
         const base64Content = (reader.result as string).split(',')[1];
         uploadDocument.mutate({
           filename: file.name,
@@ -704,378 +692,283 @@ export default function AgentChat() {
     e.target.value = '';
   };
 
+  const advisorConversations = allConversations?.filter(item => item.agentId === agent.id) ?? [];
+  const showAdvisorSuggestions = isZesaiAdvisor && (
+    isAnonymousAdvisorMode
+      ? anonymousMessages.length === 0
+      : isAuthenticated && !tempUserMessage && shouldShowAdvisorSuggestions(messages)
+  );
+
+  const startNewConversation = () => {
+    if (isAuthenticated) {
+      window.location.href = `/agent/${effectiveAgentId}?new=1`;
+      return;
+    }
+    setAnonymousMessages([]);
+    setMessage("");
+    setHistoryOpen(false);
+  };
+
   return (
-    <div className="flex h-screen flex-col bg-[var(--zs-bg)] text-[var(--zs-ink)]">
-      {/* Header */}
-      <header className="sticky top-0 z-10 flex-shrink-0 border-b border-[var(--zs-line)] bg-[rgba(250,250,248,.86)] backdrop-blur-[12px]">
-        <div className="zs-container py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" asChild>
-              <Link href="/">
-                <Icons.ArrowLeft className="w-5 h-5" />
-              </Link>
-            </Button>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[var(--zs-primary)] rounded-[var(--zs-radius-md)] flex items-center justify-center">
-                <IconComponent className="w-6 h-6 text-white" />
+    <div className="flex h-dvh overflow-hidden bg-[var(--zs-bg)] text-[var(--zs-ink)]">
+      {historyOpen ? (
+        <button
+          type="button"
+          aria-label="关闭历史对话"
+          className="fixed inset-0 z-30 bg-black/15 backdrop-blur-[1px] lg:hidden"
+          onClick={() => setHistoryOpen(false)}
+        />
+      ) : null}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex w-[286px] shrink-0 flex-col border-r border-[var(--zs-line)] bg-[#f6f7f3] transition-transform duration-300 lg:relative lg:z-0 ${
+          historyOpen ? "translate-x-0" : "-translate-x-full lg:hidden"
+        }`}
+      >
+        <div className="flex h-[68px] items-center justify-between px-5">
+          <Link href="/" className="flex items-center gap-3" aria-label="返回泽思AI首页">
+            <ZesaiMark />
+            <span className="text-[17px] font-semibold tracking-[-0.02em]">泽思AI</span>
+          </Link>
+          <button
+            type="button"
+            onClick={() => setHistoryOpen(false)}
+            className="grid h-9 w-9 place-items-center rounded-xl text-[var(--zs-sub)] transition hover:bg-white hover:text-[var(--zs-primary)]"
+            aria-label="收起历史对话"
+          >
+            <Icons.PanelLeftClose className="h-[18px] w-[18px]" />
+          </button>
+        </div>
+
+        <div className="px-4 pb-4">
+          <button
+            type="button"
+            onClick={startNewConversation}
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-[13px] bg-[var(--zs-primary)] text-sm font-semibold text-white shadow-[0_8px_22px_rgba(31,61,50,.14)] transition hover:-translate-y-0.5 hover:bg-[var(--zs-primary-2)]"
+          >
+            <Icons.Plus className="h-4 w-4" />
+            新对话
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-3 pb-4">
+          <div className="mb-2 flex items-center justify-between px-2">
+            <span className="text-xs font-semibold tracking-wide text-[var(--zs-sub)]">历史对话</span>
+            {isAuthenticated ? (
+              <Link href="/history" className="text-xs text-[var(--zs-primary)] hover:underline">查看全部</Link>
+            ) : null}
+          </div>
+          {isAuthenticated ? (
+            advisorConversations.length > 0 ? (
+              <div className="space-y-1">
+                {advisorConversations.map(conversation => {
+                  const selected = conversation.id === conversationId;
+                  return (
+                    <Link
+                      key={conversation.id}
+                      href={`/conversation/${conversation.id}`}
+                      onClick={() => setHistoryOpen(false)}
+                      className={`group block rounded-xl px-3 py-2.5 transition ${
+                        selected ? "bg-[#e4ebe5] text-[var(--zs-primary)]" : "hover:bg-white/80"
+                      }`}
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <Icons.MessageCircle className="mt-0.5 h-4 w-4 shrink-0 opacity-70" />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[13px] font-medium leading-5">{conversation.title}</p>
+                          <p className="mt-0.5 text-[11px] text-[var(--zs-sub)]">
+                            {formatToBeijingTimeShort(conversation.updatedAt)}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
-              <div>
-                <h1 className="text-lg md:text-xl font-bold">{agent.name}</h1>
-                <p className="text-sm text-muted-foreground hidden md:block">
-                  {isZesaiAdvisor ? "泽思AI顾问团队 · 商业问题诊断与工具推荐" : agent.description}
-                </p>
+            ) : (
+              <p className="px-3 py-8 text-center text-xs leading-5 text-[var(--zs-sub)]">你的经营对话会保存在这里</p>
+            )
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowLoginDialog(true)}
+              className="w-full rounded-xl border border-dashed border-[var(--zs-line)] px-4 py-5 text-left text-xs leading-5 text-[var(--zs-sub)] transition hover:border-[var(--zs-primary)] hover:bg-white"
+            >
+              登录后保存多轮对话，并在不同设备继续。
+            </button>
+          )}
+        </div>
+
+        <div className="m-3 rounded-2xl border border-[var(--zs-line)] bg-white/75 p-3.5">
+          <div className="flex items-center gap-3">
+            <div className="grid h-9 w-9 place-items-center rounded-full bg-[var(--zs-primary)] text-sm font-semibold text-white">
+              {isAuthenticated ? (user?.username?.slice(0, 1) || user?.email?.slice(0, 1) || "泽") : "泽"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{isAuthenticated ? (user?.username || user?.email || "泽思用户") : "未登录体验"}</p>
+              <p className="text-[11px] text-[var(--zs-gold)]">{isAuthenticated ? "企业顾问账户" : `${anonymousTurns}/${ANONYMOUS_ADVISOR_LIMIT} 轮体验`}</p>
+            </div>
+            <Icons.Settings className="h-4 w-4 text-[var(--zs-sub)]" />
+          </div>
+        </div>
+      </aside>
+
+      <main className="relative flex min-w-0 flex-1 flex-col bg-[var(--zs-bg)]">
+        <header className="z-20 flex h-[68px] shrink-0 items-center justify-between border-b border-[var(--zs-line)] bg-[rgba(250,250,248,.9)] px-4 backdrop-blur-xl sm:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            {!historyOpen ? (
+              <button
+                type="button"
+                onClick={() => setHistoryOpen(true)}
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-[var(--zs-sub)] transition hover:bg-[var(--zs-primary-soft)] hover:text-[var(--zs-primary)]"
+                aria-label="打开历史对话"
+              >
+                <Icons.PanelLeftOpen className="h-[18px] w-[18px]" />
+              </button>
+            ) : null}
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h1 className="truncate text-[15px] font-semibold">{agent.name}</h1>
+                <span className="h-1.5 w-1.5 rounded-full bg-[#4f9b69]" aria-label="在线" />
               </div>
+              <p className="hidden truncate text-xs text-[var(--zs-sub)] sm:block">
+                {isZesaiAdvisor ? "随时梳理经营问题，找到更优解" : agent.description}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {/* 开始新对话按钮 */}
-            {isAuthenticated && agent && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="gap-2"
-                onClick={() => {
-                  // 添加new=1参数，强制创建新对话
-                  window.location.href = `/agent/${effectiveAgentId}?new=1`;
-                }}
+            {isAuthenticated ? (
+              <Link
+                href="/credits"
+                className="flex h-9 items-center gap-2 rounded-xl border border-[var(--zs-line)] bg-white px-3 text-xs text-[var(--zs-sub)] transition hover:border-[var(--zs-primary)]"
               >
-                <Icons.Plus className="w-4 h-4" />
-                开始新对话
-              </Button>
-            )}
-            {/* 历史对话下拉菜单 */}
-            {isAuthenticated && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Icons.History className="w-5 h-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
-                  <DropdownMenuLabel>历史对话</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {(() => {
-                    const filteredConvs = allConversations?.filter(
-                      (c) => c.agentId === agent.id
-                    ).slice(0, 10);
-                    
-                    if (!filteredConvs || filteredConvs.length === 0) {
-                      return (
-                        <div className="px-2 py-4 text-sm text-muted-foreground text-center">
-                          暂无历史对话
-                        </div>
-                      );
-                    }
-                    
-                    return filteredConvs.map((conv) => (
-                      <DropdownMenuItem
-                        key={conv.id}
-                        asChild
-                        className="cursor-pointer"
-                      >
-                        <Link href={`/conversation/${conv.id}`} className="flex flex-col gap-1 py-2">
-                          <div className="font-medium truncate">{conv.title}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {formatToBeijingTimeShort(conv.updatedAt)}
-                          </div>
-                        </Link>
-                      </DropdownMenuItem>
-                    ));
-                  })()}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link href="/history" className="gap-2">
-                      <Icons.List className="w-4 h-4" />
-                      查看全部历史
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                <Icons.Leaf className="h-3.5 w-3.5 text-[var(--zs-primary)]" />
+                <span className="hidden sm:inline">剩余</span>
+                <strong className="font-semibold text-[var(--zs-ink)]">{credits ? credits.total.toLocaleString() : "..."}</strong>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowLoginDialog(true)}
+                className="h-9 rounded-xl border border-[var(--zs-line)] bg-white px-3 text-xs font-medium text-[var(--zs-primary)]"
+              >
+                登录
+              </button>
             )}
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Messages area - scrollable */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-          {/* WeChat Browser Guide */}
-          {isInWeChatBrowser && (
-            <div className="mb-6">
-              <WeChatBrowserGuide />
-            </div>
-          )}
-          
-          <div className="space-y-4">
-            {isAnonymousAdvisorMode ? (
-              <>
-                <div className="mb-5 rounded-[var(--zs-radius-lg)] border border-[var(--zs-line)] bg-[var(--zs-card)] px-4 py-3 shadow-[var(--zs-shadow-card)]">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-2">
-                      <Icons.Sparkles className="h-4 w-4 text-[var(--zs-gold)]" />
-                      <span className="text-sm font-semibold text-[var(--zs-ink)]">泽思AI顾问</span>
-                      <Badge variant="outline" className="border-[var(--zs-line)] text-[var(--zs-sub)]">
-                        未注册体验
-                      </Badge>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--zs-sub)]">
-                      <span>已用 {anonymousTurns}/{ANONYMOUS_ADVISOR_LIMIT} 轮</span>
-                      <button
-                        type="button"
-                        onClick={() => setShowLoginDialog(true)}
-                        className="font-semibold text-[var(--zs-primary)] hover:underline"
-                      >
-                        注册后继续
-                      </button>
-                    </div>
-                  </div>
-                </div>
+        <section className="min-h-0 flex-1 overflow-y-auto scroll-smooth">
+          <div className="mx-auto flex min-h-full w-full max-w-[860px] flex-col px-4 pb-8 pt-6 sm:px-7 lg:pt-9">
+            {isInWeChatBrowser ? <div className="mb-5"><WeChatBrowserGuide /></div> : null}
 
-                {anonymousMessages.length === 0 && (
-                  <div className="flex justify-start">
-                    <div className="max-w-[90%] text-sm md:text-base pl-3">
-                      <EnhancedMessage content="我是泽思AI顾问。你可以直接描述当前最棘手的经营问题，我会先给一个轻诊断判断，再推荐适合继续深入的能力入口。" />
-                    </div>
-                  </div>
-                )}
-
-                {anonymousMessages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-[90%] text-sm md:text-base ${
-                        msg.role === "user"
-                          ? "rounded-[var(--zs-radius-md)] p-3 md:p-4 bg-[var(--zs-primary)] text-white"
-                          : "pl-3"
-                      }`}
-                    >
-                      {msg.role === "assistant" ? (
-                        renderAssistantContent(msg.content)
-                      ) : (
-                        <p className="whitespace-pre-wrap">{msg.content}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-
-                {isStreaming && streamingMessage && (
-                  <div className="flex justify-start">
-                    <div className="max-w-[90%] text-sm md:text-base pl-3">
-                      {renderAssistantContent(streamingMessage)}
-                    </div>
-                  </div>
-                )}
-
-                {anonymousLimitReached && (
-                  <Card className="rounded-[var(--zs-radius-lg)] border-[var(--zs-line)] bg-[var(--zs-card)] p-4 shadow-[var(--zs-shadow-card)]">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <p className="text-sm leading-6 text-[var(--zs-sub)]">{ANONYMOUS_REGISTER_GUIDANCE}</p>
-                      <Button onClick={() => setShowLoginDialog(true)} className="shrink-0 gap-2">
-                        <Icons.LogIn className="h-4 w-4" />
-                        注册 / 登录
-                      </Button>
-                    </div>
-                  </Card>
-                )}
-              </>
-            ) : !isAuthenticated ? (
-              <div className="flex items-center justify-center h-[400px]">
-                <div className="text-center max-w-md">
-                  <div className="w-16 h-16 bg-[var(--zs-primary)] rounded-[var(--zs-radius-lg)] flex items-center justify-center mx-auto mb-6">
-                    <IconComponent className="w-10 h-10 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-bold mb-3">欢迎使用 {agent?.name}</h2>
-                  <p className="text-muted-foreground mb-6">{agent?.description}</p>
-                  <Button
-                    onClick={() => setShowLoginDialog(true)}
-                    className="gap-2"
-                    size="lg"
-                  >
-                    <Icons.LogIn className="w-4 h-4" />
-                    登录开始咨询
-                  </Button>
-                </div>
+            {showAdvisorSuggestions ? (
+              <AdvisorStarter
+                onSelect={prompt => void handleSendMessage(prompt)}
+                disabled={inputDisabled}
+              />
+            ) : !isAuthenticated && !isAnonymousAdvisorMode ? (
+              <div className="m-auto max-w-md py-16 text-center">
+                <ZesaiMark large />
+                <h2 className="mt-5 text-2xl font-semibold tracking-[-0.03em]">登录后使用 {agent.name}</h2>
+                <p className="mt-3 text-sm leading-6 text-[var(--zs-sub)]">{agent.description}</p>
+                <Button onClick={() => setShowLoginDialog(true)} className="mt-6 rounded-xl">登录开始咨询</Button>
               </div>
-            ) : !conversationId ? (
-              <div className="flex items-center justify-center h-[400px]">
-                <div className="text-center text-muted-foreground">
-                  <Icons.Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-                  <p>正在准备对话...</p>
-                </div>
+            ) : !isAnonymousAdvisorMode && !conversationId ? (
+              <div className="m-auto flex items-center gap-2 py-16 text-sm text-[var(--zs-sub)]">
+                <Icons.Loader2 className="h-4 w-4 animate-spin" />
+                正在准备对话
               </div>
             ) : (
-              <>
-                {isZesaiAdvisor && (
-                  <div className="mb-5 rounded-[var(--zs-radius-lg)] border border-[var(--zs-line)] bg-[var(--zs-card)] px-4 py-3 shadow-[var(--zs-shadow-card)]">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex items-center gap-2">
-                        <Icons.Sparkles className="h-4 w-4 text-[var(--zs-gold)]" />
-                        <span className="text-sm font-semibold text-[var(--zs-ink)]">泽思AI顾问</span>
-                        <Badge variant="outline" className="border-[var(--zs-line)] text-[var(--zs-sub)]">
-                          团队顾问
-                        </Badge>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--zs-sub)]">
-                        <span>剩余额度 {credits ? credits.total.toLocaleString() : "..."} 积分</span>
-                        <span>每轮对话 {CHAT_CREDIT_COST} 积分</span>
-                        <Link href="/credits" className="font-semibold text-[var(--zs-primary)] hover:underline">
-                          获取额度
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {/* 临时欢迎消息（在数据库保存完成前显示） */}
-                {tempWelcomeMessage && (
-                  <div className="flex justify-start">
-                    <div className="max-w-[90%] text-sm md:text-base pl-3">
-                      {renderAssistantContent(tempWelcomeMessage)}
-                    </div>
-                  </div>
-                )}
-                {messages?.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-[90%] text-sm md:text-base ${
-                        msg.role === "user"
-                          ? "rounded-[var(--zs-radius-md)] p-3 md:p-4 bg-[var(--zs-primary)] text-white"
-                          : "pl-3"
-                      }`}
-                    >
-                      {msg.role === "assistant" ? (
-                        renderAssistantContent(msg.content)
-                      ) : (
-                        <p className="whitespace-pre-wrap">{msg.content}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                
-              {/* 临时用户消息（立即显示） */}
-              {tempUserMessage && (
-                <div className="flex justify-end">
-                  <div className="max-w-[90%] rounded-[var(--zs-radius-md)] p-3 md:p-4 text-sm md:text-base bg-[var(--zs-primary)] text-white">
-                    <p className="whitespace-pre-wrap">{tempUserMessage}</p>
-                  </div>
-                </div>
-              )}
+              <div className="space-y-7 py-2 sm:py-4">
+                {tempWelcomeMessage ? (
+                  <MessageRow role="assistant">{renderAssistantContent(tempWelcomeMessage)}</MessageRow>
+                ) : null}
+                {isAnonymousAdvisorMode
+                  ? anonymousMessages.map(item => (
+                      <MessageRow key={item.id} role={item.role}>
+                        {item.role === "assistant" ? renderAssistantContent(item.content) : <p className="whitespace-pre-wrap">{item.content}</p>}
+                      </MessageRow>
+                    ))
+                  : messages?.map(item => (
+                      <MessageRow key={item.id} role={item.role}>
+                        {item.role === "assistant" ? renderAssistantContent(item.content) : <p className="whitespace-pre-wrap">{item.content}</p>}
+                      </MessageRow>
+                    ))}
 
-              
-              {/* Streaming message */}
-              {isStreaming && streamingMessage && (
-                <div className="flex justify-start">
-                  <div className="max-w-[90%] text-sm md:text-base pl-3">
-                    {renderAssistantContent(streamingMessage)}
+                {tempUserMessage ? (
+                  <MessageRow role="user"><p className="whitespace-pre-wrap">{tempUserMessage}</p></MessageRow>
+                ) : null}
+                {isStreaming && streamingMessage ? (
+                  <MessageRow role="assistant" streaming>{renderAssistantContent(streamingMessage)}</MessageRow>
+                ) : null}
+                {isWaitingForResponse ? <ThinkingRow /> : null}
+
+                {anonymousLimitReached ? (
+                  <div className="mx-auto flex max-w-2xl flex-col gap-3 rounded-2xl border border-[var(--zs-line)] bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-sm leading-6 text-[var(--zs-sub)]">{ANONYMOUS_REGISTER_GUIDANCE}</p>
+                    <Button onClick={() => setShowLoginDialog(true)} className="shrink-0 rounded-xl">注册 / 登录</Button>
                   </div>
-                </div>
-              )}
-            </>
-            )}
-            {/* 正在等待响应提示 */}
-            {isWaitingForResponse && (
-              <div className="flex justify-start">
-                <div className="p-4">
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <span className="font-medium">泽思</span>
-                    <span>正在思考</span>
-                    <span className="inline-flex">
-                      <span className="animate-[bounce_1s_ease-in-out_infinite]" style={{ animationDelay: '0ms' }}>·</span>
-                      <span className="animate-[bounce_1s_ease-in-out_infinite]" style={{ animationDelay: '200ms' }}>·</span>
-                      <span className="animate-[bounce_1s_ease-in-out_infinite]" style={{ animationDelay: '400ms' }}>·</span>
-                    </span>
-                  </div>
-                </div>
+                ) : null}
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
-        </div>
-      </div>
+        </section>
 
-      {/* Input area - fixed at bottom */}
-      <div className="flex-shrink-0 border-t border-[var(--zs-line)] bg-[rgba(250,250,248,.9)] backdrop-blur-[12px]">
-        <div className="mx-auto max-w-3xl px-4 py-3 sm:px-6 lg:px-8">
-          {/* ChatGPT风格统一输入容器 */}
-          {isAuthenticated && (
-            <div className="mb-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-[var(--zs-sub)]">
-              <span>剩余额度 {credits ? credits.total.toLocaleString() : "..."} 积分</span>
-              <span>本轮对话将消耗 {CHAT_CREDIT_COST} 积分</span>
+        <div className="shrink-0 bg-[linear-gradient(to_top,var(--zs-bg)_72%,transparent)] px-3 pb-3 pt-4 sm:px-6 sm:pb-4">
+          <div className="mx-auto w-full max-w-[860px]">
+            {uploadingFileName ? (
+              <div className="mb-2 inline-flex max-w-full items-center gap-2 rounded-lg border border-[var(--zs-line)] bg-white px-3 py-1.5 text-xs text-[var(--zs-sub)]">
+                <Icons.Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-[var(--zs-primary)]" />
+                <span className="truncate">正在读取 {uploadingFileName}</span>
+              </div>
+            ) : null}
+            <div className="rounded-[20px] border border-[rgba(31,61,50,.16)] bg-white p-2 shadow-[0_16px_44px_rgba(31,61,50,.09)] transition focus-within:border-[rgba(31,61,50,.38)] focus-within:shadow-[0_18px_50px_rgba(31,61,50,.12)]">
+              <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileChange} className="hidden" />
+              <div className="flex items-end gap-2">
+                <button
+                  type="button"
+                  onClick={handleFileUpload}
+                  disabled={!isAuthenticated || uploadDocument.isPending}
+                  title={isAuthenticated ? "上传 PDF、Word 或 Excel 文档" : "登录后上传文档"}
+                  aria-label="上传文档"
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-[var(--zs-sub)] transition hover:bg-[var(--zs-bg-soft)] hover:text-[var(--zs-primary)] disabled:cursor-not-allowed disabled:opacity-35"
+                >
+                  {uploadDocument.isPending ? <Icons.Loader2 className="h-5 w-5 animate-spin" /> : <Icons.Plus className="h-5 w-5" />}
+                </button>
+                <Textarea
+                  placeholder={anonymousLimitReached ? "注册后继续深入对话" : !isAuthenticated && !isAnonymousAdvisorMode ? "请先登录后开始咨询" : "描述你的经营问题…"}
+                  value={message}
+                  onChange={event => setMessage(event.target.value)}
+                  onKeyDown={handleKeyDown}
+                  disabled={inputDisabled}
+                  rows={1}
+                  className="max-h-[180px] min-h-10 flex-1 resize-none border-0 bg-transparent px-1 py-2.5 text-[15px] leading-6 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                  onInput={event => {
+                    const target = event.target as HTMLTextAreaElement;
+                    target.style.height = "auto";
+                    target.style.height = `${Math.min(target.scrollHeight, 180)}px`;
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => void handleSendMessage()}
+                  disabled={!message.trim() || inputDisabled}
+                  aria-label="发送消息"
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[var(--zs-primary)] text-white shadow-[0_6px_16px_rgba(31,61,50,.2)] transition hover:-translate-y-0.5 hover:bg-[var(--zs-primary-2)] disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-35"
+                >
+                  {sendMessage.isPending || (isAnonymousAdvisorMode && (isStreaming || isWaitingForResponse)) ? <Icons.Loader2 className="h-4 w-4 animate-spin" /> : <Icons.ArrowUp className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
-          )}
-          {isAnonymousAdvisorMode && (
-            <div className="mb-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-[var(--zs-sub)]">
-              <span>未注册体验 {anonymousTurns}/{ANONYMOUS_ADVISOR_LIMIT} 轮</span>
-              <span>注册后使用现有积分额度继续对话</span>
+            <div className="mt-2 flex items-center justify-center gap-2 text-[11px] text-[var(--zs-sub)]">
+              <span>AI 可能会犯错，请核查重要信息</span>
+              {isAuthenticated ? <span>· 每轮 {CHAT_CREDIT_COST} 积分</span> : null}
             </div>
-          )}
-          <div className="flex items-end gap-2 rounded-[var(--zs-radius-lg)] border border-[var(--zs-line)] bg-[var(--zs-card)] px-3 py-2 shadow-[var(--zs-shadow-card)]">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,.doc,.docx,.xls,.xlsx"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-            {/* 附件按钮 - 内部左侧 */}
-            <button
-              onClick={handleFileUpload}
-              disabled={!isAuthenticated}
-              title="上传文档"
-              className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-[var(--zs-sub)] hover:text-[var(--zs-ink)] transition-colors rounded-[var(--zs-radius-sm)] hover:bg-[var(--zs-bg-soft)] disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <Icons.Plus className="w-5 h-5" />
-            </button>
-            {/* 输入框 */}
-            <Textarea
-              placeholder={
-                anonymousLimitReached
-                  ? "注册后继续深入对话"
-                  : isAnonymousAdvisorMode
-                    ? "直接描述你的经营问题，未注册可体验 3 轮..."
-                    : !isAuthenticated
-                      ? "请先登录后开始咨询..."
-                      : "请输入您的信息或问题..."
-              }
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={inputDisabled}
-              className="flex-1 min-h-[24px] max-h-[200px] resize-none text-sm sm:text-base bg-transparent border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 px-0 py-1"
-              rows={1}
-              style={{
-                height: 'auto',
-                overflowY: message.split('\n').length > 5 ? 'auto' : 'hidden',
-                whiteSpace: 'pre-wrap',
-                wordWrap: 'break-word',
-                overflowWrap: 'break-word'
-              }}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = 'auto';
-                target.style.height = Math.min(target.scrollHeight, 200) + 'px';
-              }}
-            />
-            {/* 发送按钮 - 内部右侧 */}
-            <button
-              onClick={handleSendMessage}
-              disabled={!message.trim() || inputDisabled}
-              className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-[var(--zs-primary)] text-white rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--zs-primary-2)] transition-colors"
-            >
-              {sendMessage.isPending || (isAnonymousAdvisorMode && (isStreaming || isWaitingForResponse)) ? (
-                <Icons.Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Icons.ArrowUp className="w-4 h-4" />
-              )}
-            </button>
           </div>
-          <p className="text-xs text-gray-500 text-center mt-2">AI 也可能会犯错，请核查重要信息。</p>
         </div>
-      </div>
+      </main>
 
       {/* Insufficient Credits Dialog */}
       <InsufficientCreditsDialog
@@ -1094,38 +987,120 @@ export default function AgentChat() {
 }
 
 function RecommendedSkillCard({ skill }: { skill: RecommendedSkill }) {
-  const href = getRecommendedSkillHref(skill);
-  const cta = getRecommendedSkillCta(skill);
-  const isAvailable = skill.status === "available";
+  const target = getRecommendedSkillTarget(skill.key);
+  if (!target) return null;
 
   return (
-    <Card className="max-w-xl rounded-[var(--zs-radius-lg)] border-[var(--zs-line)] bg-[var(--zs-card)] p-4 shadow-[var(--zs-shadow-card)]">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-bold text-[var(--zs-ink)]">{skill.name}</span>
-            <Badge
-              variant="outline"
-              className={
-                isAvailable
-                  ? "border-[rgba(31,61,50,.22)] bg-[var(--zs-primary-soft)] text-[var(--zs-primary)]"
-                  : "border-[rgba(201,162,75,.32)] bg-[rgba(201,162,75,.16)] text-[#6f551d]"
-              }
-            >
-              {isAvailable ? "available" : "coming_soon"}
-            </Badge>
+    <div className="relative mt-5 max-w-2xl overflow-hidden rounded-[18px] border border-[rgba(201,162,75,.26)] bg-[radial-gradient(circle_at_92%_20%,rgba(31,61,50,.12),transparent_38%),linear-gradient(135deg,#fffdf8,#f7f8f3)] p-5 pl-6 shadow-[0_14px_38px_rgba(31,61,50,.08)] sm:p-6 sm:pl-7">
+      <div className="absolute inset-y-0 left-0 w-1 bg-[var(--zs-gold)]" />
+      <div className="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0 max-w-xl">
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 place-items-center rounded-full border border-[rgba(201,162,75,.35)] bg-white/80 text-[var(--zs-gold)]">
+              <Icons.ChartNoAxesCombined className="h-4 w-4" />
+            </span>
+            <div>
+              <p className="text-[11px] font-semibold tracking-[0.12em] text-[#8a6b27]">建议继续深入</p>
+              <h3 className="mt-0.5 text-lg font-semibold tracking-[-0.02em] text-[var(--zs-primary)]">{target.name}</h3>
+            </div>
           </div>
-          {skill.reason ? (
-            <p className="mt-2 text-sm leading-6 text-[var(--zs-sub)]">{skill.reason}</p>
-          ) : null}
+          <p className="mt-4 text-sm leading-6 text-[var(--zs-sub)]">{skill.reason || target.description}</p>
         </div>
-        <Button asChild variant={isAvailable ? "default" : "outline"} className="shrink-0 gap-2">
-          <Link href={href}>
-            {cta}
-            {isAvailable ? <Icons.ArrowRight className="h-4 w-4" /> : <Icons.Bell className="h-4 w-4" />}
+        {target.available && target.href ? (
+          <Link
+            href={target.href}
+            className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-[var(--zs-primary)] px-4 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[var(--zs-primary-2)]"
+          >
+            {target.cta}
+            <Icons.ArrowRight className="h-4 w-4" />
           </Link>
-        </Button>
+        ) : (
+          <span className="inline-flex h-10 shrink-0 items-center justify-center rounded-xl border border-[var(--zs-line)] bg-white/60 px-4 text-sm text-[var(--zs-sub)]">
+            {target.cta}
+          </span>
+        )}
       </div>
-    </Card>
+    </div>
+  );
+}
+
+function ZesaiMark({ large = false }: { large?: boolean }) {
+  return (
+    <span className={`relative inline-grid shrink-0 place-items-center overflow-hidden rounded-[10px] bg-[var(--zs-primary)] font-semibold italic text-white shadow-[0_6px_16px_rgba(31,61,50,.16)] ${large ? "mx-auto h-14 w-14 text-2xl" : "h-9 w-9 text-lg"}`}>
+      Z
+      <span className="absolute h-[140%] w-[2px] rotate-[32deg] bg-[var(--zs-gold)] opacity-90" />
+    </span>
+  );
+}
+
+function AdvisorStarter({ onSelect, disabled }: { onSelect: (prompt: string) => void; disabled: boolean }) {
+  const promptIcons = [Icons.Search, Icons.TrendingUp, Icons.Users, Icons.Target];
+  return (
+    <div className="my-auto w-full py-8 sm:py-14">
+      <div className="mx-auto max-w-[700px]">
+        <h2 className="text-balance text-center font-serif text-[30px] font-semibold leading-tight tracking-[-0.04em] text-[var(--zs-primary)] sm:text-[40px]">
+          今天想解决什么经营问题？
+        </h2>
+        <p className="mx-auto mt-4 max-w-xl text-center text-sm leading-6 text-[var(--zs-sub)] sm:text-[15px]">
+          从一个具体问题开始。泽思AI顾问会先给出轻诊断，再推荐适合继续深入的方向。
+        </p>
+        <div className="mt-10">
+          <p className="mb-3 text-sm font-semibold text-[var(--zs-primary)]">猜你想问</p>
+          <div className="space-y-2.5">
+            {ADVISOR_SUGGESTED_PROMPTS.map((prompt, index) => {
+              const PromptIcon = promptIcons[index];
+              return (
+                <button
+                  key={prompt}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => onSelect(prompt)}
+                  className="group flex w-full items-center gap-3 rounded-[14px] border border-[var(--zs-line)] bg-white/70 px-4 py-3 text-left text-sm leading-6 transition hover:-translate-y-0.5 hover:border-[rgba(31,61,50,.28)] hover:bg-white hover:shadow-[0_10px_28px_rgba(31,61,50,.06)] disabled:cursor-not-allowed disabled:opacity-50 sm:px-5"
+                >
+                  <PromptIcon className="h-[18px] w-[18px] shrink-0 text-[var(--zs-primary)]" />
+                  <span className="flex-1">{prompt}</span>
+                  <Icons.ChevronRight className="h-4 w-4 text-[var(--zs-sub)] transition group-hover:translate-x-0.5 group-hover:text-[var(--zs-primary)]" />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MessageRow({ role, streaming = false, children }: { role: string; streaming?: boolean; children: ReactNode }) {
+  const isUser = role === "user";
+  if (role === "system") return null;
+  return (
+    <div className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`} style={{ contentVisibility: "auto" }}>
+      {isUser ? (
+        <div className="max-w-[86%] rounded-[18px] rounded-br-[6px] bg-[#e7eee8] px-4 py-3 text-[14px] leading-6 text-[var(--zs-ink)] sm:max-w-[76%] sm:text-[15px]">
+          {children}
+        </div>
+      ) : (
+        <div className="flex w-full items-start gap-3 sm:gap-4">
+          <ZesaiMark />
+          <div className="min-w-0 flex-1 pt-1 text-[14px] leading-7 text-[var(--zs-ink)] sm:text-[15px]">
+            {children}
+            {streaming ? <span className="ml-1 inline-block h-4 w-[2px] animate-pulse bg-[var(--zs-primary)] align-middle" /> : null}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ThinkingRow() {
+  return (
+    <MessageRow role="assistant">
+      <div className="flex items-center gap-2 text-sm text-[var(--zs-sub)]">
+        <span>正在思考</span>
+        <span className="flex gap-1">
+          {[0, 1, 2].map(index => <span key={index} className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--zs-primary)]" style={{ animationDelay: `${index * 140}ms` }} />)}
+        </span>
+      </div>
+    </MessageRow>
   );
 }

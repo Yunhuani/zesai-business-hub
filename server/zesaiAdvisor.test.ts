@@ -16,4 +16,12 @@ describe("Zesai advisor agent", () => {
     expect(ZESAI_ADVISOR_SYSTEM_PROMPT).toContain("recommendedSkill");
     expect(ZESAI_ADVISOR_SYSTEM_PROMPT).toContain("四段式");
   });
+
+  it("keeps the model-evaluation redlines explicit in the system prompt", () => {
+    expect(ZESAI_ADVISOR_SYSTEM_PROMPT).toContain("只给一个动作,不给清单");
+    expect(ZESAI_ADVISOR_SYSTEM_PROMPT).toContain("视为不合格,必须重写");
+    expect(ZESAI_ADVISOR_SYSTEM_PROMPT).toContain("这是唯一允许的拒绝分支");
+    expect(ZESAI_ADVISOR_SYSTEM_PROMPT).toContain("禁止虚构可验证的具体事实");
+    expect(ZESAI_ADVISOR_SYSTEM_PROMPT).toContain("JSON 代码块格式必须严格如下");
+  });
 });
