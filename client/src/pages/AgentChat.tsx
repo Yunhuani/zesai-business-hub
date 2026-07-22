@@ -13,6 +13,7 @@ import { WeChatBrowserGuide } from "@/components/WeChatBrowserGuide";
 import { isWeChatBrowser } from "@/utils/wechatDetector";
 import { formatToBeijingTimeShort } from "@/utils/formatTime";
 import { trackAgent, AgentEvents } from "@/lib/analytics";
+import { APP_LOGO, APP_LOGO_FULL } from "@/const";
 import {
   getRecommendedSkillTarget,
   type RecommendedSkill,
@@ -33,7 +34,6 @@ import {
 } from "@shared/anonymousAdvisor";
 
 const ZESAI_ADVISOR_AGENT_NAME = "泽思AI顾问";
-const CHAT_CREDIT_COST = 10;
 const ANONYMOUS_ADVISOR_TURNS_KEY = "zesai_advisor_anonymous_turns";
 
 type AnonymousChatMessage = {
@@ -368,7 +368,6 @@ export default function AgentChat() {
   }
 
   const isZesaiAdvisor = agent.name === ZESAI_ADVISOR_AGENT_NAME;
-  const credits = subscriptionData?.credits;
   const isAnonymousAdvisorMode = !isAuthenticated && isZesaiAdvisor;
   const anonymousLimitReached = isAnonymousAdvisorMode && anonymousTurns >= ANONYMOUS_ADVISOR_LIMIT;
   const inputDisabled = isAuthenticated
@@ -739,9 +738,8 @@ export default function AgentChat() {
         }`}
       >
         <div className="flex h-[68px] items-center justify-between px-5">
-          <Link href="/" className="flex items-center gap-3" aria-label="返回泽思AI首页">
-            <ZesaiMark />
-            <span className="text-[17px] font-semibold tracking-[-0.02em]">泽思AI</span>
+          <Link href="/" className="flex items-center" aria-label="返回泽思AI首页">
+            <img src={APP_LOGO_FULL} alt="泽思AI" className="h-8 w-auto" />
           </Link>
           <button
             type="button"
@@ -765,11 +763,8 @@ export default function AgentChat() {
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 pb-4">
-          <div className="mb-2 flex items-center justify-between px-2">
+          <div className="mb-2 px-2">
             <span className="text-xs font-semibold tracking-wide text-[var(--zs-sub)]">历史对话</span>
-            {isAuthenticated ? (
-              <Link href="/history" className="text-xs text-[var(--zs-primary)] hover:underline">查看全部</Link>
-            ) : null}
           </div>
           {isAuthenticated ? (
             advisorConversations.length > 0 ? (
@@ -812,18 +807,25 @@ export default function AgentChat() {
           )}
         </div>
 
-        <div className="m-3 rounded-2xl border border-[var(--zs-line)] bg-white/75 p-3.5">
-          <div className="flex items-center gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-full bg-[var(--zs-primary)] text-sm font-semibold text-white">
-              {isAuthenticated ? (user?.username?.slice(0, 1) || user?.email?.slice(0, 1) || "泽") : "泽"}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{isAuthenticated ? (user?.username || user?.email || "泽思用户") : "未登录体验"}</p>
-              <p className="text-[11px] text-[var(--zs-gold)]">{isAuthenticated ? "企业顾问账户" : `${anonymousTurns}/${ANONYMOUS_ADVISOR_LIMIT} 轮体验`}</p>
-            </div>
-            <Icons.Settings className="h-4 w-4 text-[var(--zs-sub)]" />
-          </div>
-        </div>
+        {isAuthenticated ? (
+          <Link
+            href="/credits"
+            aria-label="打开账户与积分"
+            className="m-3 flex items-center gap-3 rounded-xl px-2.5 py-2.5 transition hover:bg-white/80"
+          >
+            <img src={APP_LOGO} alt="" className="h-9 w-9 shrink-0 object-contain" />
+            <p className="min-w-0 flex-1 truncate text-sm font-medium">{user?.email || user?.username || "泽思用户"}</p>
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowLoginDialog(true)}
+            className="m-3 flex items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition hover:bg-white/80"
+          >
+            <img src={APP_LOGO} alt="" className="h-9 w-9 shrink-0 object-contain" />
+            <span className="text-sm font-medium">登录账户</span>
+          </button>
+        )}
       </aside>
 
       <main className="relative flex min-w-0 flex-1 flex-col bg-[var(--zs-bg)]">
@@ -849,17 +851,7 @@ export default function AgentChat() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {isAuthenticated ? (
-              <Link
-                href="/credits"
-                className="flex h-9 items-center gap-2 rounded-xl border border-[var(--zs-line)] bg-white px-3 text-xs text-[var(--zs-sub)] transition hover:border-[var(--zs-primary)]"
-              >
-                <Icons.Leaf className="h-3.5 w-3.5 text-[var(--zs-primary)]" />
-                <span className="hidden sm:inline">剩余</span>
-                <strong className="font-semibold text-[var(--zs-ink)]">{credits ? credits.total.toLocaleString() : "..."}</strong>
-              </Link>
-            ) : (
+          {!isAuthenticated ? (
               <button
                 type="button"
                 onClick={() => setShowLoginDialog(true)}
@@ -867,8 +859,7 @@ export default function AgentChat() {
               >
                 登录
               </button>
-            )}
-          </div>
+          ) : null}
         </header>
 
         <section className="min-h-0 flex-1 overflow-y-auto scroll-smooth">
@@ -977,7 +968,6 @@ export default function AgentChat() {
             </div>
             <div className="mt-2 flex items-center justify-center gap-2 text-[11px] text-[var(--zs-sub)]">
               <span>AI 可能会犯错，请核查重要信息</span>
-              {isAuthenticated ? <span>· 每轮 {CHAT_CREDIT_COST} 积分</span> : null}
             </div>
           </div>
         </div>
@@ -1039,10 +1029,12 @@ function RecommendedSkillCard({ skill }: { skill: RecommendedSkill }) {
 
 function ZesaiMark({ large = false }: { large?: boolean }) {
   return (
-    <span className={`relative inline-grid shrink-0 place-items-center overflow-hidden rounded-[10px] bg-[var(--zs-primary)] font-semibold italic text-white shadow-[0_6px_16px_rgba(31,61,50,.16)] ${large ? "mx-auto h-14 w-14 text-2xl" : "h-9 w-9 text-lg"}`}>
-      Z
-      <span className="absolute h-[140%] w-[2px] rotate-[32deg] bg-[var(--zs-gold)] opacity-90" />
-    </span>
+    <img
+      src={APP_LOGO}
+      alt=""
+      aria-hidden="true"
+      className={`shrink-0 object-contain ${large ? "mx-auto h-14 w-14" : "h-9 w-9"}`}
+    />
   );
 }
 
