@@ -26,6 +26,17 @@ const result = {
     ],
     transition_to_solution: "hidden",
   },
+  data_quality: {
+    overall_level: "limited",
+    summary: "hidden",
+    dimensions: [
+      {
+        dimension: "finance",
+        missing_plus: ["finance.product_lines"],
+        upgrade_hook: "hidden",
+      },
+    ],
+  },
 };
 
 describe("diagnosis products", () => {

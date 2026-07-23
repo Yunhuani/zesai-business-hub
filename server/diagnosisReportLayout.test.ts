@@ -48,4 +48,24 @@ describe("diagnosis report reading flow", () => {
     expect(closingGuardIndex).toBeGreaterThan(-1);
     expect(reportSource).toContain("async function downloadPdf()");
   });
+
+  it("shows customer-safe data quality guidance only in the full report flow", () => {
+    const qualityIndex = reportSource.indexOf("本次报告的信息基础");
+    const healthOverviewIndex = reportSource.indexOf("Health examination");
+    const dimensionIndex = reportSource.indexOf('className="report-dimension');
+    const findingsIndex = reportSource.indexOf('className="report-findings');
+
+    expect(qualityIndex).toBeGreaterThan(-1);
+    expect(qualityIndex).toBeLessThan(healthOverviewIndex);
+    expect(reportSource).toContain("fullAccess && report.dataQuality");
+
+    const dimensionSource = reportSource.slice(dimensionIndex, findingsIndex);
+    expect(dimensionSource).toContain("qualityDimension");
+    expect(dimensionSource).toContain(
+      "若补充这些信息，可进一步提高判断精度"
+    );
+    expect(dimensionSource).toContain("missingInformation.map");
+    expect(dimensionSource).toContain("upgradeHook");
+    expect(dimensionSource).not.toContain("missing_plus");
+  });
 });

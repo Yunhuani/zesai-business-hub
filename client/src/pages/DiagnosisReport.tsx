@@ -415,7 +415,33 @@ export default function DiagnosisReport() {
 
         {report.dimensions.length > 0 ? (
           <section className="report-health border-b border-white/[0.08] bg-[#0E0F13]">
-            {degradedDimensions.length > 0 ? (
+            {fullAccess && report.dataQuality &&
+            (report.dataQuality.overallLabel || report.dataQuality.summary) ? (
+              <div className="report-data-quality border-b border-[#E8B84B]/20 bg-[#17160F]">
+                <div className="mx-auto flex max-w-6xl flex-col gap-5 px-5 py-8 sm:px-8 lg:flex-row lg:items-center lg:justify-between">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <p className="text-sm font-semibold text-[#E8B84B]">
+                        本次报告的信息基础
+                      </p>
+                      {report.dataQuality.overallLabel ? (
+                        <span className="border border-[#E8B84B]/35 bg-[#E8B84B]/10 px-2.5 py-1 text-[11px] text-[#FFD166]">
+                          {report.dataQuality.overallLabel}
+                        </span>
+                      ) : null}
+                    </div>
+                    {report.dataQuality.summary ? (
+                      <p className="mt-3 max-w-3xl text-sm leading-7 text-[#9DA4B3]">
+                        {report.dataQuality.summary}
+                      </p>
+                    ) : null}
+                  </div>
+                  <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] text-[#8F6825]">
+                    Information quality
+                  </span>
+                </div>
+              </div>
+            ) : degradedDimensions.length > 0 ? (
               <div className="report-degradation border-b border-[#E8B84B]/20 bg-[#17160F]">
                 <div className="mx-auto flex max-w-6xl flex-col gap-5 px-5 py-8 sm:px-8 lg:flex-row lg:items-center lg:justify-between">
                   <div>
@@ -505,42 +531,52 @@ export default function DiagnosisReport() {
           </section>
         ) : null}
 
-        {fullAccess ? report.dimensions.map((dimension, index) => (
-          <section
-            key={dimension.key}
-            className="report-dimension mx-auto max-w-6xl border-b border-white/[0.08] px-5 py-20 sm:px-8 sm:py-28"
-          >
-            <div className="grid gap-12 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-20">
-              <div className="report-dimension-heading break-keep [word-break:keep-all]">
-                <span className="font-mono text-xs text-[#E8B84B]">
-                  0{index + 1}
-                </span>
-                <h2 className="report-heading mt-5 text-4xl font-semibold tracking-[-0.05em] sm:text-5xl">
-                  {dimension.name}
-                </h2>
-                <div className="mt-8 flex items-end gap-2">
-                  <span className="text-5xl font-light text-[#FFD166]">
-                    {dimension.score === null ? "—" : dimension.score.toFixed(1)}
-                  </span>
-                  <span className="mb-1 text-xs text-[#6E7180]">/ 10</span>
-                </div>
-                {dimension.frameworks.length > 0 ? (
-                  <p className="mt-8 text-xs leading-6 text-[#6E7180]">
-                    分析框架
-                    <br />
-                    {dimension.frameworks.map(framework => (
-                      <span
-                        key={framework}
-                        className="mt-1 block break-keep text-[#9DA4B3] [word-break:keep-all]"
-                      >
-                        {framework}
-                      </span>
-                    ))}
-                  </p>
-                ) : null}
-              </div>
+        {fullAccess ? report.dimensions.map((dimension, index) => {
+          const qualityDimension = report.dataQuality?.dimensions.find(
+            item => item.key === dimension.key
+          );
+          const hasQualityGuidance = Boolean(
+            qualityDimension &&
+              (qualityDimension.missingInformation.length > 0 ||
+                qualityDimension.upgradeHook)
+          );
 
-              <div>
+          return (
+            <section
+              key={dimension.key}
+              className="report-dimension mx-auto max-w-6xl border-b border-white/[0.08] px-5 py-20 sm:px-8 sm:py-28"
+            >
+              <div className="grid gap-12 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-20">
+                <div className="report-dimension-heading break-keep [word-break:keep-all]">
+                  <span className="font-mono text-xs text-[#E8B84B]">
+                    0{index + 1}
+                  </span>
+                  <h2 className="report-heading mt-5 text-4xl font-semibold tracking-[-0.05em] sm:text-5xl">
+                    {dimension.name}
+                  </h2>
+                  <div className="mt-8 flex items-end gap-2">
+                    <span className="text-5xl font-light text-[#FFD166]">
+                      {dimension.score === null ? "—" : dimension.score.toFixed(1)}
+                    </span>
+                    <span className="mb-1 text-xs text-[#6E7180]">/ 10</span>
+                  </div>
+                  {dimension.frameworks.length > 0 ? (
+                    <p className="mt-8 text-xs leading-6 text-[#6E7180]">
+                      分析框架
+                      <br />
+                      {dimension.frameworks.map(framework => (
+                        <span
+                          key={framework}
+                          className="mt-1 block break-keep text-[#9DA4B3] [word-break:keep-all]"
+                        >
+                          {framework}
+                        </span>
+                      ))}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div>
                 {dimension.judgment ? (
                   <h3 className="report-judgment max-w-3xl text-[27px] font-semibold leading-[1.45] tracking-[-0.035em] sm:text-[34px]">
                     {dimension.judgment}
@@ -551,6 +587,37 @@ export default function DiagnosisReport() {
                   <span className="mt-7 inline-flex border border-[#3A3C44] bg-[#1A1B20] px-3 py-1.5 text-[11px] tracking-[0.08em] text-[#9DA4B3]">
                     结构性判断口径
                   </span>
+                ) : null}
+
+                {qualityDimension && hasQualityGuidance ? (
+                  <div className="report-data-quality mt-9 border border-[#E8B84B]/20 bg-[#17160F] p-6">
+                    <p className="text-sm font-semibold text-[#E8B84B]">
+                      提高判断精度
+                    </p>
+                    {qualityDimension.missingInformation.length > 0 ? (
+                      <div className="mt-4">
+                        <p className="text-sm leading-7 text-[#B5BAC5]">
+                          若补充这些信息，可进一步提高判断精度：
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {qualityDimension.missingInformation.map(item => (
+                            <span
+                              key={item}
+                              className="border border-white/[0.1] bg-white/[0.03] px-3 py-1.5 text-xs text-[#D6D8DE]"
+                            >
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                    {qualityDimension.upgradeHook ? (
+                      <p className="mt-4 text-sm leading-7 text-[#9DA4B3]">
+                        <span className="text-[#B5BAC5]">进一步完善建议：</span>
+                        {qualityDimension.upgradeHook}
+                      </p>
+                    ) : null}
+                  </div>
                 ) : null}
 
                 {dimension.reasoning.length > 0 ? (
@@ -614,10 +681,11 @@ export default function DiagnosisReport() {
                     评分依据：{dimension.scoreBasis}
                   </p>
                 ) : null}
+                </div>
               </div>
-            </div>
-          </section>
-        )) : null}
+            </section>
+          );
+        }) : null}
 
         {report.keyFindings.length > 0 ? (
           <section className="report-findings bg-[#0E0F13]">
