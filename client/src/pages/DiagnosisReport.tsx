@@ -252,25 +252,6 @@ export default function DiagnosisReport() {
             泽思 <span className="mx-2 text-[#6E7180]">·</span> NBG 公司诊断
           </Link>
           <div className="flex items-center gap-5">
-            {!pdfMode && fullAccess ? (
-              <button
-                type="button"
-                onClick={downloadPdf}
-                disabled={downloading}
-                className="inline-flex h-10 items-center gap-2 border border-[#E8B84B]/45 px-4 text-xs font-medium text-[#FFD166] transition hover:border-[#FFD166] disabled:opacity-60"
-              >
-                {downloading ? (
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Download className="h-4 w-4" />
-                )}
-                {downloading
-                  ? "正在生成"
-                  : pdfPurchased
-                    ? "下载 PDF"
-                    : "下载 PDF · 500 积分"}
-              </button>
-            ) : null}
             <div className="text-right font-mono text-[10px] uppercase tracking-[0.16em] text-[#6E7180]">
               <p>Confidential</p>
               <p className="mt-1 text-[#9DA4B3]">NO. {report.id}</p>
@@ -356,7 +337,7 @@ export default function DiagnosisReport() {
         </section>
 
         <section className="report-body-intro border-b border-white/[0.08] bg-[#121317]">
-          <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8">
+          <div className="mx-auto grid max-w-6xl gap-12 px-5 py-14 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#E8B84B]">
                 Client report
@@ -364,6 +345,29 @@ export default function DiagnosisReport() {
               <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">
                 {report.companyName}增长诊断报告
               </h1>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold tracking-[-0.025em] text-[#F5F0E5]">
+                如何阅读这份报告
+              </h2>
+              <ol className="mt-6 grid gap-4 text-sm leading-7 text-[#9DA4B3] sm:grid-cols-2">
+                <li className="border-t border-white/[0.08] pt-4">
+                  <span className="mr-3 font-mono text-xs text-[#E8B84B]">01</span>
+                  先看综合分和五维评分，识别整体结构与明显短板。
+                </li>
+                <li className="border-t border-white/[0.08] pt-4">
+                  <span className="mr-3 font-mono text-xs text-[#E8B84B]">02</span>
+                  再看各维度的判断、推理链和证据，理解结论从何而来。
+                </li>
+                <li className="border-t border-white/[0.08] pt-4">
+                  <span className="mr-3 font-mono text-xs text-[#E8B84B]">03</span>
+                  标注“结构性判断口径”的部分，表示现有信息还不完整，阅读时需谨慎判断。
+                </li>
+                <li className="border-t border-white/[0.08] pt-4">
+                  <span className="mr-3 font-mono text-xs text-[#E8B84B]">04</span>
+                  最后看关键发现和下一步方向，把诊断结论转化为行动重点。
+                </li>
+              </ol>
             </div>
           </div>
         </section>
@@ -673,7 +677,7 @@ export default function DiagnosisReport() {
                 {report.transitionToSolution}
               </p>
             ) : null}
-            <div className="report-screen-only mt-10">
+            <div className="report-screen-only mt-10 flex flex-wrap gap-3">
               <Link
                 href={buildDiagnosisSupportHref(diagnosisId)}
                 className="inline-flex h-12 items-center gap-3 bg-[#E8B84B] px-6 text-sm font-semibold text-[#121317] transition hover:bg-[#FFD166]"
@@ -681,6 +685,25 @@ export default function DiagnosisReport() {
                 联系顾问 / 获取增长方案
                 <ArrowRight className="h-4 w-4" />
               </Link>
+              {!pdfMode ? (
+                <button
+                  type="button"
+                  onClick={downloadPdf}
+                  disabled={downloading}
+                  className="inline-flex h-12 items-center gap-2 border border-[#E8B84B]/45 px-6 text-sm font-medium text-[#FFD166] transition hover:border-[#FFD166] disabled:opacity-60"
+                >
+                  {downloading ? (
+                    <LoaderCircle className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  {downloading
+                    ? "正在生成"
+                    : pdfPurchased
+                      ? "下载 PDF"
+                      : "下载 PDF · 500 积分"}
+                </button>
+              ) : null}
             </div>
           </div>
           <p className="mt-8 text-center font-mono text-[9px] uppercase tracking-[0.14em] text-[#4A4D57]">
