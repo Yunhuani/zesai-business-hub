@@ -6,23 +6,21 @@ const footerColumns = [
     title: "产品",
     links: [
       { href: "/diagnosis", label: "NBG 增长诊断" },
-      { href: "/", label: "方法论" },
-      { href: "/toolbox", label: "即将上线" },
+      { href: "/methodology", label: "方法论" },
     ],
   },
   {
     title: "资源",
     links: [
       { href: "/toolbox", label: "AI经营工具箱" },
-      { href: "/", label: "行业洞察" },
-      { href: "/case-example", label: "客户案例" },
+      { href: "/insights", label: "行业洞察" },
     ],
   },
   {
     title: "公司",
     links: [
       { href: "/about", label: "关于我们" },
-      { href: "/about", label: "加入我们" },
+      { href: "/careers", label: "加入我们" },
       { href: "/support", label: "联系我们" },
     ],
   },

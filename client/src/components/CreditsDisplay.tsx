@@ -1,57 +1,23 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { CreditsEvents, trackCredits } from "@/lib/analytics";
 import { trpc } from "@/lib/trpc";
-import * as Icons from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowRight, FileText, Loader2, Sparkles } from "lucide-react";
 import { Link } from "wouter";
-import { trackCredits, CreditsEvents } from "@/lib/analytics";
 
-/**
- * Credits Display Component - Manus style
- * Shows credits in header with popover details
- */
 export function CreditsDisplay() {
   const { data: credits, isLoading } = trpc.credits.get.useQuery(undefined, {
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 30000,
   });
-  const [timeUntilReset, setTimeUntilReset] = useState<string>("");
-
-  // Update countdown timer
-  useEffect(() => {
-    if (!credits?.nextResetIn) return;
-
-    const updateTimer = () => {
-      const seconds = credits.nextResetIn;
-      const hours = Math.floor(seconds / 3600);
-      const minutes = Math.floor((seconds % 3600) / 60);
-      const secs = seconds % 60;
-
-      if (hours > 24) {
-        const days = Math.floor(hours / 24);
-        setTimeUntilReset(`${days}天后刷新`);
-      } else if (hours > 0) {
-        setTimeUntilReset(`${hours}小时后刷新`);
-      } else if (minutes > 0) {
-        setTimeUntilReset(`${minutes}分钟后刷新`);
-      } else {
-        setTimeUntilReset(`${secs}秒后刷新`);
-      }
-    };
-
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
-    return () => clearInterval(interval);
-  }, [credits?.nextResetIn]);
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-md">
-        <Icons.Loader2 className="w-4 h-4 animate-spin" />
+      <div className="flex h-9 min-w-20 items-center justify-center rounded-full border border-[var(--zs-line)] bg-white/70 px-3">
+        <Loader2 className="h-4 w-4 animate-spin text-[var(--zs-primary)]" />
       </div>
     );
   }
@@ -61,87 +27,73 @@ export function CreditsDisplay() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button 
-          variant="ghost" 
-          className="gap-2 font-mono"
-          onClick={() => trackCredits(CreditsEvents.CREDITS_VIEW, credits?.total || 0)}
+        <Button
+          variant="ghost"
+          className="h-9 gap-1.5 rounded-full border border-[var(--zs-line)] bg-white/80 px-3 font-mono text-[13px] font-semibold text-[var(--zs-primary)] shadow-sm hover:bg-[var(--zs-primary-soft)] sm:gap-2 sm:text-sm"
+          aria-label={`查看积分详情，当前 ${credits.total.toLocaleString()} 积分`}
+          onClick={() =>
+            trackCredits(CreditsEvents.CREDITS_VIEW, credits.total)
+          }
         >
-          <Icons.Sparkles className="w-4 h-4" />
-          {credits.total.toLocaleString()} 积分
+          <Sparkles className="h-4 w-4 text-[var(--zs-gold)]" />
+          <span>{credits.total.toLocaleString()}</span>
+          <span className="hidden font-sans text-xs font-medium text-[var(--zs-sub)] sm:inline">
+            积分
+          </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
-        <Card className="border-0 shadow-lg">
-          {/* Header */}
-          <div className="p-4 border-b flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Icons.Sparkles className="w-5 h-5 text-blue-600" />
-              <span className="font-semibold">积分</span>
-            </div>
-            <Link href="/credits">
-              <Button size="sm" variant="default">
-                获得积分
-              </Button>
-            </Link>
-          </div>
+      <PopoverContent
+        className="w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border-[var(--zs-line)] bg-[var(--zs-card)] p-0 shadow-[var(--zs-shadow-large)]"
+        align="end"
+      >
+        <div className="border-b border-[var(--zs-line)] bg-[var(--zs-primary)] px-5 py-4 text-white">
+          <p className="text-xs font-medium text-white/70">可用积分</p>
+          <p className="mt-1 font-mono text-3xl font-bold tracking-tight">
+            {credits.total.toLocaleString()}
+          </p>
+        </div>
 
-          {/* Credits Breakdown */}
-          <div className="p-4 space-y-3">
-            {/* Total Credits */}
+        <div className="space-y-3 px-5 py-4 text-sm">
+          {credits.free > 0 ? (
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Icons.Sparkles className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">积分</span>
-                <Icons.HelpCircle className="w-3 h-3 text-muted-foreground" />
-              </div>
-              <span className="text-lg font-bold">{credits.total.toLocaleString()}</span>
+              <span className="text-[var(--zs-sub)]">免费积分</span>
+              <span className="font-mono font-semibold">
+                {credits.free.toLocaleString()}
+              </span>
             </div>
-
-            {/* Free Credits */}
-            {credits.free > 0 && (
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">免费积分</span>
-                <span>{credits.free.toLocaleString()}</span>
-              </div>
-            )}
-
-            {/* Monthly Credits */}
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">每月积分</span>
-              <span>{credits.subscription.toLocaleString()}</span>
-            </div>
-
-            {/* Purchased Credits */}
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">购买积分</span>
-              <span>{credits.purchased.toLocaleString()}</span>
-            </div>
-
-            {/* Daily Reset */}
-            <div className="pt-3 border-t">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Icons.RotateCw className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">每日刷新积分</span>
-                </div>
-                <span className="text-sm font-medium">0</span>
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {timeUntilReset || "计算中..."}
-              </div>
-            </div>
+          ) : null}
+          <div className="flex items-center justify-between">
+            <span className="text-[var(--zs-sub)]">订阅积分</span>
+            <span className="font-mono font-semibold">
+              {credits.subscription.toLocaleString()}
+            </span>
           </div>
+          <div className="flex items-center justify-between">
+            <span className="text-[var(--zs-sub)]">购买积分</span>
+            <span className="font-mono font-semibold">
+              {credits.purchased.toLocaleString()}
+            </span>
+          </div>
+        </div>
 
-          {/* Footer */}
-          <div className="p-3 border-t bg-muted/50">
-            <Link href="/credit-usage">
-              <Button variant="ghost" size="sm" className="w-full justify-start gap-2">
-                <Icons.FileText className="w-4 h-4" />
-                查看使用情况
-              </Button>
+        <div className="grid gap-2 border-t border-[var(--zs-line)] bg-[var(--zs-bg)] p-3">
+          <Button asChild className="w-full justify-between rounded-xl">
+            <Link href="/pricing">
+              升级套餐
+              <ArrowRight className="h-4 w-4" />
             </Link>
-          </div>
-        </Card>
+          </Button>
+          <Button
+            asChild
+            variant="ghost"
+            className="w-full justify-start rounded-xl text-[var(--zs-sub)]"
+          >
+            <Link href="/credit-usage">
+              <FileText className="h-4 w-4" />
+              查看积分明细
+            </Link>
+          </Button>
+        </div>
       </PopoverContent>
     </Popover>
   );

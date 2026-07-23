@@ -7,10 +7,12 @@ function readSource(relativePath: string): string {
 
 describe("report navigation labels", () => {
   it("uses the generic report label only in global navigation", () => {
-    const navbarSource = readSource("../client/src/components/layout/Navbar.tsx");
+    const navigationSource = readSource(
+      "../client/src/components/layout/navigationModel.ts"
+    );
     const diagnosesSource = readSource("../client/src/pages/MyDiagnoses.tsx");
 
-    expect(navbarSource).toContain(
+    expect(navigationSource).toContain(
       '{ href: "/my-diagnoses", label: "我的报告", icon: ClipboardList }'
     );
     expect(diagnosesSource).toContain(

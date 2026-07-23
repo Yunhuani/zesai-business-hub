@@ -36,6 +36,11 @@ import DiagnosisConversation from "./pages/DiagnosisConversation";
 import DiagnosisProcessing from "./pages/DiagnosisProcessing";
 import DiagnosisReport from "./pages/DiagnosisReport";
 import MyDiagnoses from "./pages/MyDiagnoses";
+import {
+  CareersComingSoon,
+  InsightsComingSoon,
+  MethodologyComingSoon,
+} from "./pages/ComingSoon";
 // import ReferralCenter from "./pages/ReferralCenter"; // 推荐功能暂时隐藏
 
 function Router() {
@@ -65,6 +70,9 @@ function Router() {
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/about" component={About} />
+      <Route path="/methodology" component={MethodologyComingSoon} />
+      <Route path="/insights" component={InsightsComingSoon} />
+      <Route path="/careers" component={CareersComingSoon} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/diagnosis" component={Diagnosis} />
