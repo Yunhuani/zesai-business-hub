@@ -14,6 +14,9 @@ describe("homepage NBG showcase", () => {
     expect(source).toContain("NBG_REPORT_SAMPLE_SLIDE_COUNT = 5");
     expect(source).toContain("NBG 增长诊断报告");
     expect(source).not.toContain("NBG增长诊断报告（示例）");
+    expect(source).toContain("<NbgRadarChart dimensions={dimensions} />");
+    expect(source).not.toContain("function polarPoint");
+    expect(source).not.toContain("function polygonPoints");
 
     for (const copy of [
       "五维增长解码",

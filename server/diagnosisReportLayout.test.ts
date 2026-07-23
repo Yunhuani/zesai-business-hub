@@ -68,4 +68,18 @@ describe("diagnosis report reading flow", () => {
     expect(dimensionSource).toContain("upgradeHook");
     expect(dimensionSource).not.toContain("missing_plus");
   });
+
+  it("shows the shared radar chart in both preview and full reports while retaining exact score bars", () => {
+    const healthIndex = reportSource.indexOf('className="report-health');
+    const unlockIndex = reportSource.indexOf("{!fullAccess ? (", healthIndex);
+    const healthSource = reportSource.slice(healthIndex, unlockIndex);
+
+    expect(reportSource).toContain("NbgRadarChart,");
+    expect(reportSource).toContain('from "@/components/NbgRadarChart"');
+    expect(healthSource).toContain("<NbgRadarChart");
+    expect(healthSource).toContain("radarDimensions");
+    expect(healthSource).toContain("<ScoreBar");
+    expect(healthSource).not.toContain("fullAccess && radarDimensions");
+    expect(healthSource).not.toContain("!pdfMode");
+  });
 });

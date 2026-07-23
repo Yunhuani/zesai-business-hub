@@ -12,6 +12,11 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "wouter";
 import { toast } from "sonner";
 import { APP_LOGO_FULL } from "@/const";
+import {
+  NbgRadarChart,
+  orderNbgRadarDimensions,
+  type RadarDimension,
+} from "@/components/NbgRadarChart";
 import { buildDiagnosisSupportHref } from "./supportDiagnosisContext";
 import {
   buildDiagnosisReport,
@@ -206,6 +211,23 @@ export default function DiagnosisReport() {
   const degradedDimensions = report.dimensions.filter(
     dimension => dimension.degraded
   );
+  const dimensionsByKey = new Map(
+    report.dimensions.map(dimension => [dimension.key, dimension])
+  );
+  const radarDimensions: RadarDimension[] = orderNbgRadarDimensions(
+    report.dimensions.map(dimension => ({
+      key: dimension.key,
+      label: dimension.name,
+      score: dimension.score,
+    }))
+  );
+  const orderedDimensions = radarDimensions.flatMap(dimension => {
+    const reportDimension = dimensionsByKey.get(dimension.key);
+    return reportDimension ? [reportDimension] : [];
+  });
+  const radarHasMissingScores = radarDimensions.some(
+    dimension => dimension.score === null
+  );
   const pdfPurchased = query.data?.pdfPurchased === true;
   const reportDate = formatReportDate(report.createdAt);
 
@@ -237,7 +259,7 @@ export default function DiagnosisReport() {
           .report-dimension {
             break-inside: auto;
           }
-          .report-dimension-heading, .report-heading, .report-judgment, .report-card, .report-reason, .report-degradation {
+          .report-dimension-heading, .report-heading, .report-judgment, .report-card, .report-reason, .report-degradation, .report-radar {
             break-inside: avoid;
           }
           .report-heading { break-after: avoid; }
@@ -470,11 +492,25 @@ export default function DiagnosisReport() {
                 <p className="mt-5 max-w-md text-sm leading-7 text-[#8A8F9C]">
                   五个维度等权观察。分数用于定位结构性短板，具体判断以各维度的证据链为准。
                 </p>
+                <div className="report-radar mt-10 border border-white/[0.08] bg-white/[0.02] px-4 py-5 sm:px-6">
+                  <NbgRadarChart
+                    dimensions={radarDimensions}
+                    className="mx-auto h-auto w-full max-w-[390px]"
+                  />
+                  {radarHasMissingScores ? (
+                    <p className="mt-3 text-center text-xs leading-6 text-[#6E7180]">
+                      暂无评分的维度以“—”标注，且不参与雷达轮廓绘制。
+                    </p>
+                  ) : null}
+                </div>
               </div>
-              <div>
-                {report.dimensions.map(dimension => (
+              <div className="self-center">
+                {orderedDimensions.map(dimension => (
                   <ScoreBar key={dimension.key} dimension={dimension} />
                 ))}
+                <p className="mt-5 text-xs leading-6 text-[#6E7180]">
+                  雷达图用于观察整体结构，进度条保留各维度的精确分数。
+                </p>
               </div>
             </div>
           </section>

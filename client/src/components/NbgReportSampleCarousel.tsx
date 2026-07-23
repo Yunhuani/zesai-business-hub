@@ -1,34 +1,21 @@
 import { ArrowLeft, ArrowRight, TrendingUp } from "lucide-react";
+import {
+  NbgRadarChart,
+  type RadarDimension,
+} from "./NbgRadarChart";
 
 export const NBG_REPORT_SAMPLE_SLIDE_COUNT = 5;
 
 const GOLD = "#C9A24B";
 const dimensions = [
-  { label: "市场机会", score: 8.4 },
-  { label: "竞争格局", score: 7.8 },
-  { label: "商业模式", score: 7.2 },
-  { label: "内部能力", score: 7.6 },
-  { label: "财务健康", score: 6.5 },
-];
+  { key: "market", label: "市场机会", score: 8.4 },
+  { key: "competition", label: "竞争格局", score: 7.8 },
+  { key: "business_model", label: "商业模式", score: 7.2 },
+  { key: "capability", label: "内部能力", score: 7.6 },
+  { key: "finance", label: "财务健康", score: 6.5 },
+] satisfies RadarDimension[];
 
 const slideLabels = ["报告封面", "诊断总览", "三大关键发现", "五维评分", "增长突破方向"];
-
-function polarPoint(radius: number, angle: number) {
-  const radians = (Math.PI / 180) * angle;
-  return {
-    x: Number((120 + radius * Math.cos(radians)).toFixed(2)),
-    y: Number((112 + radius * Math.sin(radians)).toFixed(2)),
-  };
-}
-
-function polygonPoints(radius: number) {
-  return dimensions
-    .map((_, index) => {
-      const point = polarPoint(radius, -90 + index * 72);
-      return `${point.x},${point.y}`;
-    })
-    .join(" ");
-}
 
 function ReportCardChrome({
   activeIndex,
@@ -131,11 +118,6 @@ function CoverSlide() {
 }
 
 function RadarSlide() {
-  const dataPoints = dimensions
-    .map((dimension, index) => polarPoint(65 * (dimension.score / 10), -90 + index * 72))
-    .map(point => `${point.x},${point.y}`)
-    .join(" ");
-
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-end justify-between border-b border-white/[.08] pb-3">
@@ -147,27 +129,7 @@ function RadarSlide() {
           结构总体健康
         </div>
       </div>
-      <svg viewBox="0 0 240 210" className="mx-auto mt-1 h-[210px] w-full max-w-[270px]">
-        {[65, 48, 31].map(radius => (
-          <polygon key={radius} points={polygonPoints(radius)} fill="none" stroke="rgba(201,162,75,.17)" />
-        ))}
-        {dimensions.map((_, index) => {
-          const point = polarPoint(65, -90 + index * 72);
-          return <line key={index} x1="120" y1="112" x2={point.x} y2={point.y} stroke="rgba(201,162,75,.13)" />;
-        })}
-        <polygon points={dataPoints} fill="rgba(201,162,75,.24)" stroke={GOLD} strokeWidth="2.5" />
-        {dimensions.map((dimension, index) => {
-          const point = polarPoint(65 * (dimension.score / 10), -90 + index * 72);
-          return <circle key={dimension.label} cx={point.x} cy={point.y} r="3" fill={GOLD} />;
-        })}
-        <g fill="#D6DED8" fontSize="10.5" fontWeight="700" fontFamily="Noto Sans SC, Inter, sans-serif">
-          <text x="120" y="20" textAnchor="middle">市场机会</text>
-          <text x="196" y="74" textAnchor="middle">竞争格局</text>
-          <text x="173" y="193" textAnchor="middle">商业模式</text>
-          <text x="67" y="193" textAnchor="middle">内部能力</text>
-          <text x="43" y="74" textAnchor="middle" fill={GOLD}>财务健康</text>
-        </g>
-      </svg>
+      <NbgRadarChart dimensions={dimensions} />
       <p className="mt-auto text-center text-[10.5px] leading-5 text-[#9DAA9F]">
         五个维度系统体检，一眼看清强项与短板
       </p>
