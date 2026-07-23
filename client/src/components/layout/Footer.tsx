@@ -58,9 +58,17 @@ export function AppFooter() {
       </div>
 
       <div className="border-t border-[var(--zs-line)]">
-        <div className="zs-container flex flex-col gap-3 py-5 text-[12.5px] text-[var(--zs-weak)] md:flex-row md:items-center md:justify-between">
-          <span>© 2026 泽思AI&nbsp; 沪ICP备2024051234号-1</span>
-          <span className="flex gap-[26px]">
+        <div className="zs-container grid grid-cols-1 items-center gap-3 py-5 text-center text-[12.5px] text-[var(--zs-weak)] md:grid-cols-3">
+          <span className="md:justify-self-start">© 2026 泽思AI</span>
+          <a
+            href="http://beian.miit.gov.cn/"
+            target="_blank"
+            rel="noopener"
+            className="hover:text-[var(--zs-sub)] md:justify-self-center"
+          >
+            沪ICP备2024048847号-3
+          </a>
+          <span className="flex justify-center gap-[26px] md:justify-self-end">
             <Link href="/privacy" className="hover:text-[var(--zs-sub)]">
               隐私政策
             </Link>

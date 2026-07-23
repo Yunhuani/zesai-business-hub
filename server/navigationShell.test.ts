@@ -95,6 +95,19 @@ describe("global navigation shell", () => {
     }
   });
 
+  it("shows the ICP filing link in the middle of the footer legal row", () => {
+    const footerSource = readSource(
+      "../client/src/components/layout/Footer.tsx"
+    );
+
+    expect(footerSource).toContain("沪ICP备2024048847号-3");
+    expect(footerSource).toContain('href="http://beian.miit.gov.cn/"');
+    expect(footerSource).toContain('target="_blank"');
+    expect(footerSource).toContain('rel="noopener"');
+    expect(footerSource).toContain("md:grid-cols-3");
+    expect(footerSource).toContain("md:justify-self-center");
+  });
+
   it("preserves custom headers on diagnosis collection and report pages", () => {
     for (const path of [
       "../client/src/pages/Diagnosis.tsx",
