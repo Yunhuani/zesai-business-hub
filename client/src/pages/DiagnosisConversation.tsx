@@ -150,6 +150,7 @@ function ContinueButton({ onClick, label = "继续" }: { onClick: () => void; la
   return (
     <button
       type="button"
+      data-testid="continue-button"
       onClick={onClick}
       className={isSkip
         ? "mt-3 inline-flex items-center rounded-lg border border-[var(--zs-line)] bg-transparent px-3 py-2 text-xs font-medium text-[var(--zs-sub)] transition-colors hover:border-[#b9c4bd] hover:bg-white hover:text-[var(--zs-ink)]"
@@ -185,6 +186,7 @@ function ChoiceConversation({ question, answers, customValue, active, reply, onC
               <button
                 key={option}
                 type="button"
+                data-testid={`option-${index}`}
                 disabled={!active}
                 aria-pressed={active ? selected : undefined}
                 onClick={() => onChoiceClick(letter, question.type === "multi")}
@@ -248,6 +250,7 @@ function NumberConversation({ question, value, active, editing, onChange, onCont
           <div className="relative rounded-2xl border border-[var(--zs-line)] bg-white p-3 shadow-[var(--zs-shadow-card)]">
             <input
               type="number"
+              data-testid="number-input"
               inputMode="decimal"
               min={question.min}
               value={value}
@@ -375,7 +378,7 @@ function ArPairConversation({ questions, answers, active, editing, onChange, onC
             <label key={question.id} className="rounded-2xl border border-[var(--zs-line)] bg-white p-3 text-xs text-[var(--zs-sub)] shadow-[var(--zs-shadow-card)]">
               {question.label}
               <div className="relative mt-2">
-                <input type="number" inputMode="decimal" value={values[index]} onChange={event => onChange(question, event.target.value)} placeholder={question.placeholder} className="h-11 w-full rounded-xl border border-[var(--zs-line)] px-3 pr-16 text-sm text-[var(--zs-ink)] outline-none focus:border-[var(--zs-primary)]" />
+                <input type="number" data-testid="number-input" inputMode="decimal" value={values[index]} onChange={event => onChange(question, event.target.value)} placeholder={question.placeholder} className="h-11 w-full rounded-xl border border-[var(--zs-line)] px-3 pr-16 text-sm text-[var(--zs-ink)] outline-none focus:border-[var(--zs-primary)]" />
                 <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">{question.unit}</span>
               </div>
             </label>
@@ -783,7 +786,7 @@ export default function DiagnosisConversation() {
             <div className="space-y-4">
               <AdvisorMessage>信息我都了解了。接下来我会结合 NBG 五维方法论，为你生成增长诊断报告。</AdvisorMessage>
               <div className="ml-10 max-sm:ml-0">
-                <button type="button" onClick={submitReport} disabled={submitDiagnosis.isPending || authLoading} className="inline-flex items-center gap-2 rounded-xl bg-[var(--zs-primary)] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">
+                <button type="button" data-testid="submit-diagnosis" onClick={submitReport} disabled={submitDiagnosis.isPending || authLoading} className="inline-flex items-center gap-2 rounded-xl bg-[var(--zs-primary)] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">
                   <Check className="h-4 w-4" />{submitDiagnosis.isPending ? "正在生成…" : "生成增长诊断报告"}
                 </button>
               </div>
@@ -805,19 +808,20 @@ export default function DiagnosisConversation() {
             ) : null}
             <div className="flex items-center gap-2 rounded-2xl border border-[var(--zs-line)] bg-white p-2 pl-4 shadow-[var(--zs-shadow-card)]">
               <input
+                data-testid="answer-input"
                 value={reply}
                 onChange={event => { setReply(event.target.value); setReplyHint(null); setAwaitingShortAnswerChoice(false); }}
                 onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); sendComposerReply(); } }}
                 placeholder={currentQuestion?.type === "multi" ? "回复多个字母，如 b、c" : currentQuestion?.type === "single" ? "回复选项字母，如 B" : currentQuestion && "placeholder" in currentQuestion ? getConversationPlaceholder(currentQuestion) : "输入回答"}
                 className="h-9 min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-[var(--zs-weak)]"
               />
-              {currentQuestion && "optional" in currentQuestion && currentQuestion.optional && !reply ? <button type="button" onClick={() => {
+              {currentQuestion && "optional" in currentQuestion && currentQuestion.optional && !reply ? <button type="button" data-testid="skip-question" onClick={() => {
                 const nextAnswers = { ...answers, [currentQuestion.field]: currentQuestion.type === "multi" ? [] : "" };
                 const nextCustomValues = { ...customValues };
                 delete nextCustomValues[currentQuestion.field];
                 completeCurrentUnit(nextAnswers, nextCustomValues);
               }} className="px-2 text-xs font-semibold text-[var(--zs-sub)]">跳过</button> : null}
-              <button type="button" onClick={sendComposerReply} disabled={!reply.trim()} className="grid h-10 w-10 place-items-center rounded-full bg-[var(--zs-primary)] text-white shadow-sm transition-[filter,background-color] hover:brightness-90 disabled:cursor-default disabled:bg-[#d2d8d4] disabled:text-white/80 disabled:shadow-none disabled:hover:brightness-100" aria-label="发送回答"><ArrowUp className="h-5 w-5 stroke-[2.5]" /></button>
+              <button type="button" data-testid="answer-send" onClick={sendComposerReply} disabled={!reply.trim()} className="grid h-10 w-10 place-items-center rounded-full bg-[var(--zs-primary)] text-white shadow-sm transition-[filter,background-color] hover:brightness-90 disabled:cursor-default disabled:bg-[#d2d8d4] disabled:text-white/80 disabled:shadow-none disabled:hover:brightness-100" aria-label="发送回答"><ArrowUp className="h-5 w-5 stroke-[2.5]" /></button>
             </div>
           </div>
         </footer>
