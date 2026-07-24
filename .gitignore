@@ -33,6 +33,9 @@ Thumbs.db
 # Logs
 logs
 *.log
+.diagnosis-*.log
+.tmp-*.log
+*.stderr.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -49,6 +52,11 @@ pids
 # Coverage directory used by tools like istanbul
 coverage/
 *.lcov
+
+# Playwright test artifacts
+playwright-report/
+test-results/
+/e2e/.auth/
 
 # nyc test coverage
 .nyc_output
