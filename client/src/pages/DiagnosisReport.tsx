@@ -281,7 +281,6 @@ export default function DiagnosisReport() {
           <div className="flex items-center gap-5">
             <div className="text-right font-mono text-[10px] uppercase tracking-[0.16em] text-[#6E7180]">
               <p>Confidential</p>
-              <p className="mt-1 text-[#9DA4B3]">NO. {report.id}</p>
             </div>
           </div>
         </div>
@@ -311,7 +310,6 @@ export default function DiagnosisReport() {
             />
             <div className="text-right font-mono text-[10px] uppercase tracking-[0.18em] text-[#6E7180]">
               <p>Confidential Report</p>
-              <p className="mt-1 text-[#E8B84B]">NO. {report.id}</p>
             </div>
           </div>
 
@@ -434,8 +432,7 @@ export default function DiagnosisReport() {
               </span>
             ) : null}
             <p className="mt-7 font-mono text-[10px] leading-5 text-[#6E7180]">
-              DIAGNOSIS ID {report.id}
-              {report.createdAt ? <><br />{report.createdAt}</> : null}
+              {report.createdAt}
             </p>
           </div>
         </section>
@@ -782,7 +779,7 @@ export default function DiagnosisReport() {
         ) : null}
 
         {fullAccess && missingInformation.length > 0 ? (
-          <section className="mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-10">
+          <section className="mx-auto max-w-6xl px-5 pb-16 pt-0 sm:px-8 sm:pb-20">
             <div className="space-y-3 text-sm leading-7 text-[#8B909E]">
               <p>
                 本增长诊断报告基于您目前提供的信息完成。后续如果需要增长方案，补充以下几项信息，会让报告更加完整：{missingInformation.join("、")}。
