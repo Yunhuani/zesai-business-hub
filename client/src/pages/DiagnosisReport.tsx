@@ -772,23 +772,22 @@ export default function DiagnosisReport() {
               ) : null}
             </div>
           </div>
+          {fullAccess && missingInformation.length > 0 ? (
+            <section className="mt-14">
+              <div className="space-y-3 text-sm leading-7 text-[#8B909E]">
+                <p>
+                  本增长诊断报告基于您目前提供的信息完成。后续如果需要增长方案，补充以下几项信息，会让报告更加完整：{missingInformation.join("、")}。
+                </p>
+                <p>
+                  如果您需要人工顾问来帮您分析报告、制定针对性增长方案，可以联系我们的顾问。
+                </p>
+              </div>
+            </section>
+          ) : null}
           <p className="mt-8 text-center font-mono text-[9px] uppercase tracking-[0.14em] text-[#4A4D57]">
             泽思 AI 按 NBG 五维框架生成 · 诊断结果需结合顾问审核深化
           </p>
         </section>
-        ) : null}
-
-        {fullAccess && missingInformation.length > 0 ? (
-          <section className="mx-auto max-w-6xl px-5 pb-16 pt-0 sm:px-8 sm:pb-20">
-            <div className="space-y-3 text-sm leading-7 text-[#8B909E]">
-              <p>
-                本增长诊断报告基于您目前提供的信息完成。后续如果需要增长方案，补充以下几项信息，会让报告更加完整：{missingInformation.join("、")}。
-              </p>
-              <p>
-                如果您需要人工顾问来帮您分析报告、制定针对性增长方案，可以联系我们的顾问。
-              </p>
-            </div>
-          </section>
         ) : null}
 
         <section className="report-about bg-[#0E0F13]">
