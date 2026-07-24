@@ -292,9 +292,9 @@ function MatrixConversation({ question, answers, customValue, active, editing, o
               {question.items.map(item => (
                 <div key={item.field} className="grid grid-cols-[1fr_repeat(4,64px)] items-center border-t border-[var(--zs-line)] px-3 py-2">
                   <span className="text-sm">{item.label}</span>
-                  {question.options.map(option => (
+                  {question.options.map((option, optionIndex) => (
                     <label key={option} className="grid place-items-center">
-                      <input type="radio" name={item.field} checked={getStringAnswer(answers, item.field) === option} onChange={() => onAnswer(item.field, option)} className="accent-[var(--zs-primary)]" />
+                      <input type="radio" name={item.field} data-testid={`matrix-${item.field}-${optionIndex}`} checked={getStringAnswer(answers, item.field) === option} onChange={() => onAnswer(item.field, option)} className="accent-[var(--zs-primary)]" />
                     </label>
                   ))}
                 </div>
@@ -344,14 +344,14 @@ function FinanceTableConversation({ question, rows, active, editing, onChange, o
               <thead className="bg-[#f6f7f3] text-[var(--zs-sub)]"><tr>{question.columns.map(column => <th key={column.key} className="px-3 py-2">{column.label}{column.unit ? `（${column.unit}）` : ""}</th>)}<th className="w-12" /></tr></thead>
               <tbody>{visibleRows.map((row, rowIndex) => (
                 <tr key={rowIndex} className="border-t border-[var(--zs-line)]">
-                  {question.columns.map(column => <td key={column.key} className="p-2"><input type={column.inputType} value={String(row[column.key] ?? "")} onChange={event => updateCell(rowIndex, column.key, event.target.value)} className="h-9 w-full min-w-[92px] rounded-lg border border-[var(--zs-line)] px-2 outline-none focus:border-[var(--zs-primary)]" /></td>)}
-                  <td><button type="button" onClick={() => onChange(visibleRows.filter((_, index) => index !== rowIndex))} className="p-2 text-[var(--zs-sub)]" aria-label="删除行"><Trash2 className="h-4 w-4" /></button></td>
+                  {question.columns.map(column => <td key={column.key} className="p-2"><input type={column.inputType} data-testid={`table-${rowIndex}-${column.key}`} value={String(row[column.key] ?? "")} onChange={event => updateCell(rowIndex, column.key, event.target.value)} className="h-9 w-full min-w-[92px] rounded-lg border border-[var(--zs-line)] px-2 outline-none focus:border-[var(--zs-primary)]" /></td>)}
+                  <td><button type="button" data-testid="table-remove-row" onClick={() => onChange(visibleRows.filter((_, index) => index !== rowIndex))} className="p-2 text-[var(--zs-sub)]" aria-label="删除行"><Trash2 className="h-4 w-4" /></button></td>
                 </tr>
               ))}</tbody>
             </table>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            {(!question.maxRows || visibleRows.length < question.maxRows) ? <button type="button" onClick={() => onChange([...visibleRows, createEmptyFinanceRow(question)])} className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-[rgba(31,61,50,.2)] bg-[var(--zs-primary-soft)] px-3 py-2 text-xs font-semibold text-[var(--zs-primary)] transition-colors hover:border-[rgba(31,61,50,.35)] hover:bg-[#e5ece7]"><Plus className="h-4 w-4" />{question.addButtonLabel}</button> : null}
+            {(!question.maxRows || visibleRows.length < question.maxRows) ? <button type="button" data-testid="table-add-row" onClick={() => onChange([...visibleRows, createEmptyFinanceRow(question)])} className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-[rgba(31,61,50,.2)] bg-[var(--zs-primary-soft)] px-3 py-2 text-xs font-semibold text-[var(--zs-primary)] transition-colors hover:border-[rgba(31,61,50,.35)] hover:bg-[#e5ece7]"><Plus className="h-4 w-4" />{question.addButtonLabel}</button> : null}
             <ContinueButton onClick={onContinue} label={editing ? "保存修改" : filledCount ? "继续" : "跳过"} />
           </div>
         </div>
@@ -378,7 +378,7 @@ function ArPairConversation({ questions, answers, active, editing, onChange, onC
             <label key={question.id} className="rounded-2xl border border-[var(--zs-line)] bg-white p-3 text-xs text-[var(--zs-sub)] shadow-[var(--zs-shadow-card)]">
               {question.label}
               <div className="relative mt-2">
-                <input type="number" data-testid="number-input" inputMode="decimal" value={values[index]} onChange={event => onChange(question, event.target.value)} placeholder={question.placeholder} className="h-11 w-full rounded-xl border border-[var(--zs-line)] px-3 pr-16 text-sm text-[var(--zs-ink)] outline-none focus:border-[var(--zs-primary)]" />
+                <input type="number" data-testid={question.id} inputMode="decimal" value={values[index]} onChange={event => onChange(question, event.target.value)} placeholder={question.placeholder} className="h-11 w-full rounded-xl border border-[var(--zs-line)] px-3 pr-16 text-sm text-[var(--zs-ink)] outline-none focus:border-[var(--zs-primary)]" />
                 <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">{question.unit}</span>
               </div>
             </label>
