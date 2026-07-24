@@ -230,6 +230,11 @@ export default function DiagnosisReport() {
   );
   const pdfPurchased = query.data?.pdfPurchased === true;
   const reportDate = formatReportDate(report.createdAt);
+  const missingInformation = Array.from(new Set(
+    report.dataQuality?.dimensions.flatMap(
+      dimension => dimension.missingInformation
+    ) ?? []
+  ));
 
   return (
     <div
@@ -568,15 +573,6 @@ export default function DiagnosisReport() {
         ) : null}
 
         {fullAccess ? report.dimensions.map((dimension, index) => {
-          const qualityDimension = report.dataQuality?.dimensions.find(
-            item => item.key === dimension.key
-          );
-          const hasQualityGuidance = Boolean(
-            qualityDimension &&
-              (qualityDimension.missingInformation.length > 0 ||
-                qualityDimension.upgradeHook)
-          );
-
           return (
             <section
               key={dimension.key}
@@ -623,37 +619,6 @@ export default function DiagnosisReport() {
                   <span className="mt-7 inline-flex border border-[#3A3C44] bg-[#1A1B20] px-3 py-1.5 text-[11px] tracking-[0.08em] text-[#9DA4B3]">
                     结构性判断口径
                   </span>
-                ) : null}
-
-                {qualityDimension && hasQualityGuidance ? (
-                  <div className="report-data-quality mt-9 border border-[#E8B84B]/20 bg-[#17160F] p-6">
-                    <p className="text-sm font-semibold text-[#E8B84B]">
-                      提高判断精度
-                    </p>
-                    {qualityDimension.missingInformation.length > 0 ? (
-                      <div className="mt-4">
-                        <p className="text-sm leading-7 text-[#B5BAC5]">
-                          若补充这些信息，可进一步提高判断精度：
-                        </p>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {qualityDimension.missingInformation.map(item => (
-                            <span
-                              key={item}
-                              className="border border-white/[0.1] bg-white/[0.03] px-3 py-1.5 text-xs text-[#D6D8DE]"
-                            >
-                              {item}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-                    {qualityDimension.upgradeHook ? (
-                      <p className="mt-4 text-sm leading-7 text-[#9DA4B3]">
-                        <span className="text-[#B5BAC5]">进一步完善建议：</span>
-                        {qualityDimension.upgradeHook}
-                      </p>
-                    ) : null}
-                  </div>
                 ) : null}
 
                 {dimension.reasoning.length > 0 ? (
@@ -759,6 +724,19 @@ export default function DiagnosisReport() {
                   </article>
                 ))}
               </div>
+            </div>
+          </section>
+        ) : null}
+
+        {fullAccess && missingInformation.length > 0 ? (
+          <section className="mx-auto max-w-6xl px-5 py-12 sm:px-8 sm:py-16">
+            <div className="space-y-3 text-sm leading-7 text-[#8B909E]">
+              <p>
+                本增长诊断报告基于您目前提供的信息完成。后续如果需要增长方案，补充以下几项信息，会让报告更加完整：{missingInformation.join("、")}。
+              </p>
+              <p>
+                如果您需要人工顾问来帮您分析报告、制定针对性增长方案，可以联系我们的顾问。
+              </p>
             </div>
           </section>
         ) : null}
