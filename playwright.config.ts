@@ -3,8 +3,13 @@ import { config as loadEnv } from "dotenv";
 
 loadEnv({ path: ".env.e2e", quiet: true });
 
+const runsFullDiagnosis = process.argv.some(argument =>
+  argument.replaceAll("\\", "/").endsWith("e2e/full-diagnosis.spec.ts")
+);
+
 export default defineConfig({
   testDir: "./e2e",
+  testIgnore: runsFullDiagnosis ? [] : ["**/full-diagnosis.spec.ts"],
   timeout: 60_000,
   workers: 1,
   retries: 0,
