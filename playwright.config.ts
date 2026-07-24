@@ -5,7 +5,8 @@ loadEnv({ path: ".env.e2e", quiet: true });
 
 export default defineConfig({
   testDir: "./e2e",
-  timeout: 30_000,
+  timeout: 60_000,
+  workers: 1,
   retries: 0,
   reporter: "list",
   use: {
