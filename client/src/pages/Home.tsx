@@ -198,13 +198,13 @@ export default function Home() {
       <AppHeader />
 
       <main>
-        <section className="zs-container py-[88px] pb-[96px] text-center">
+        <section className="zs-container py-[48px] pb-[56px] text-center">
           {isInWeChatBrowser && <WeChatBrowserGuide />}
 
-          <h1 className="m-0 text-[48px] font-black leading-[1.14] tracking-[.01em] text-[var(--zs-primary)] md:text-[62px]">
+          <h1 className="m-0 text-[38px] font-black leading-[1.14] tracking-[.01em] text-[var(--zs-primary)] md:text-[50px]">
             您的 AI 商业顾问
           </h1>
-          <p className="mx-auto mt-[26px] max-w-[920px] text-[16px] font-normal leading-[1.85] text-[var(--zs-sub)] sm:text-[18px] lg:text-[19px]">
+          <p className="mx-auto mt-[18px] max-w-[920px] text-[16px] font-normal leading-[1.85] text-[var(--zs-sub)] sm:text-[18px] lg:text-[19px]">
             融合顶级咨询方法论与前沿 AI 大模型，提供麦肯锡级经营解决方案。
           </p>
 
