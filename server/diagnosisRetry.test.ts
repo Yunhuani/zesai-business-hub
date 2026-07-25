@@ -119,4 +119,50 @@ describe("diagnosis retry", () => {
     await expect(retryDiagnosis(42, 7)).rejects.toThrow("Diagnosis not found");
     expect(transactionUpdates).toEqual([]);
   });
+
+  it("admin retry preserves purchased report and PDF entitlements", async () => {
+    diagnosisRows.push({
+      id: 42,
+      userId: 8,
+      status: "error",
+      retryCount: 1,
+      intake: { company: { name: "海拓精密" } },
+      productType: "full",
+      fullCreditsDeducted: 1500,
+      pdfPurchased: 1,
+      pdfCreditsDeducted: 500,
+    });
+    const { retryDiagnosisAsAdmin } = await import("./diagnosisService");
+
+    await expect(retryDiagnosisAsAdmin(42)).resolves.toEqual({
+      diagnosisId: 42,
+      status: "pending",
+    });
+
+    expect(transactionUpdates[0]).toEqual({
+      status: "pending",
+      errorMessage: null,
+      result: null,
+      headline: null,
+      overallScore: null,
+      scoreLabel: null,
+      retryCount: 2,
+    });
+  });
+
+  it("admin retry keeps the existing retry limit", async () => {
+    diagnosisRows.push({
+      id: 42,
+      userId: 8,
+      status: "error",
+      retryCount: 3,
+      intake: {},
+    });
+    const { retryDiagnosisAsAdmin } = await import("./diagnosisService");
+
+    await expect(retryDiagnosisAsAdmin(42)).rejects.toThrow(
+      "Diagnosis retry limit reached"
+    );
+    expect(transactionUpdates).toEqual([]);
+  });
 });

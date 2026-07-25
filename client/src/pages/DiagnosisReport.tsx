@@ -55,7 +55,7 @@ function ScoreBar({ dimension }: { dimension: DiagnosisReportDimension }) {
 }
 
 export default function DiagnosisReport() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { id } = useParams<{ id: string }>();
   const diagnosisId = Number(id);
   const validId = Number.isInteger(diagnosisId) && diagnosisId > 0;
@@ -63,12 +63,23 @@ export default function DiagnosisReport() {
     import.meta.env.DEV &&
     new URLSearchParams(window.location.search).get("preview") === "1";
   const pdfMode = new URLSearchParams(window.location.search).get("pdf") === "1";
+  const adminMode =
+    new URLSearchParams(window.location.search).get("admin") === "1" &&
+    user?.role === "admin";
   const [downloading, setDownloading] = useState(false);
   const utils = trpc.useUtils();
   const diagnosisQuery = trpc.diagnosis.get.useQuery(
     { id: diagnosisId },
     {
-      enabled: validId && !previewMode,
+      enabled: validId && !previewMode && !adminMode,
+      retry: 1,
+      refetchOnWindowFocus: false,
+    }
+  );
+  const adminDiagnosisQuery = trpc.admin.getDiagnosisReport.useQuery(
+    { diagnosisId },
+    {
+      enabled: validId && adminMode,
       retry: 1,
       refetchOnWindowFocus: false,
     }
@@ -81,7 +92,11 @@ export default function DiagnosisReport() {
       refetchOnWindowFocus: false,
     }
   );
-  const query = previewMode ? previewQuery : diagnosisQuery;
+  const query = adminMode
+    ? adminDiagnosisQuery
+    : previewMode
+      ? previewQuery
+      : diagnosisQuery;
   const unlockDiagnosis = trpc.diagnosis.submitFull.useMutation({
     onSuccess: data => {
       utils.diagnosis.get.setData({ id: diagnosisId }, data);
@@ -103,7 +118,12 @@ export default function DiagnosisReport() {
   const fullAccess = query.data?.fullAccess === true;
   const requiredUnlockCredits = 1500;
   const creditsQuery = trpc.credits.get.useQuery(undefined, {
-    enabled: isAuthenticated && validId && !previewMode && !fullAccess,
+    enabled:
+      isAuthenticated &&
+      validId &&
+      !previewMode &&
+      !adminMode &&
+      !fullAccess,
     retry: 1,
     refetchOnWindowFocus: false,
   });
@@ -287,6 +307,19 @@ export default function DiagnosisReport() {
       </header>
 
       <main className="relative z-10">
+        {adminMode ? (
+          <div className="report-screen-only border-b border-[#E8B84B]/20 bg-[#17160F]">
+            <div className="mx-auto max-w-6xl px-5 py-4 sm:px-8">
+              <Link
+                href="/admin/diagnoses"
+                className="inline-flex items-center gap-2 text-sm text-[#FFD166]"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                返回诊断管理
+              </Link>
+            </div>
+          </div>
+        ) : null}
         {!fullAccess ? (
           <div className="border-b border-[#E8B84B]/20 bg-[#17160F]">
             <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-6 sm:px-8">
@@ -751,7 +784,7 @@ export default function DiagnosisReport() {
                 联系顾问 / 获取增长方案
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              {!pdfMode ? (
+              {!pdfMode && !adminMode ? (
                 <button
                   type="button"
                   onClick={downloadPdf}

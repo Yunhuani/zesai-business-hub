@@ -268,6 +268,50 @@ export async function retryDiagnosis(
   return { diagnosisId, status: "pending" };
 }
 
+export async function retryDiagnosisAsAdmin(
+  diagnosisId: number
+): Promise<{ diagnosisId: number; status: "pending" }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const diagnosis = await getDiagnosis(diagnosisId);
+  if (!diagnosis) {
+    throw new Error("Diagnosis not found");
+  }
+  if (diagnosis.status !== "error") {
+    throw new Error("Diagnosis is not retryable");
+  }
+
+  const retryCount = diagnosis.retryCount ?? 0;
+  if (retryCount >= MAX_DIAGNOSIS_RETRY_COUNT) {
+    throw new Error("Diagnosis retry limit reached");
+  }
+
+  const intake = getObject(diagnosis.intake);
+  if (!intake) {
+    throw new Error("Diagnosis intake is invalid");
+  }
+
+  await db.transaction(async tx => {
+    await tx
+      .update(diagnoses)
+      .set({
+        status: "pending",
+        errorMessage: null,
+        result: null,
+        headline: null,
+        overallScore: null,
+        scoreLabel: null,
+        retryCount: retryCount + 1,
+      })
+      .where(eq(diagnoses.id, diagnosisId));
+  });
+
+  void processDiagnosis(diagnosisId, intake);
+
+  return { diagnosisId, status: "pending" };
+}
+
 export async function getDiagnosis(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
