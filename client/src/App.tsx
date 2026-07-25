@@ -22,6 +22,7 @@ import Credits from "./pages/Credits";
 import CreditUsage from "./pages/CreditUsage";
 import UserManagement from "./pages/UserManagement";
 import OrderManagement from "./pages/OrderManagement";
+import TicketManagement from "./pages/TicketManagement";
 import SupportForm from "./pages/SupportForm";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -66,6 +67,7 @@ function Router() {
       <Route path="/usage" component={CreditUsage} />
       <Route path="/admin/user-management" component={UserManagement} />
       <Route path="/admin/orders" component={OrderManagement} />
+      <Route path="/admin/tickets" component={TicketManagement} />
       <Route path="/support" component={SupportForm} />
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />

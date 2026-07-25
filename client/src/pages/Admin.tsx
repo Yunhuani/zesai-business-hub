@@ -235,6 +235,7 @@ export default function Admin() {
                   { label: "Agent 管理", icon: Icons.Bot, path: "/admin/agents", color: "from-blue-500 to-cyan-500" },
                   { label: "用户管理", icon: Icons.Users, path: "/admin/user-management", color: "from-[var(--zs-primary)] to-[var(--zs-primary-2)]" },
                   { label: "订单管理", icon: Icons.ShoppingCart, path: "/admin/orders", color: "from-green-500 to-emerald-500" },
+                  { label: "工单管理", icon: Icons.TicketCheck, path: "/admin/tickets", color: "from-sky-500 to-blue-500" },
                   { label: "数据分析", icon: Icons.BarChart3, path: "/admin/analytics", color: "from-amber-500 to-orange-500" },
                   { label: "知识库管理", icon: Icons.Database, path: "/admin/knowledge", color: "from-[var(--zs-primary)] to-[var(--zs-primary-2)]" },
                 ].map(item => (
