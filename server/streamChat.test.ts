@@ -165,7 +165,7 @@ describe("handleStreamChat delivery billing", () => {
     expect(mocks.classifyRecommendation).toHaveBeenCalledTimes(1);
     const llmCall = mocks.invokeLLMStream.mock.calls[0][0];
     expect(llmCall.messages[0].content).not.toContain("Global rules");
-    expect(llmCall.messages[0].content).toContain("禁止输出 JSON");
+    expect(llmCall.messages[0].content).toContain("不输出任何标签、代码、JSON 或系统标记");
   });
 
   it("emits typed delta, recommendation, and done events", async () => {
