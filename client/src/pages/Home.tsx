@@ -244,7 +244,7 @@ export default function Home() {
 
         <section className="zs-container pb-[80px]">
           <div className="mb-9 text-center">
-            <h2 className="m-0 text-[34px] font-extrabold leading-[1.3]">您现在面临什么问题？</h2>
+            <h2 className="m-0 text-[34px] font-extrabold leading-[1.3] text-[var(--zs-primary)]">您现在面临什么问题？</h2>
             <p className="mx-auto mt-4 max-w-[680px] text-[16px] leading-[1.8] text-[var(--zs-sub)]">
               不用先选择工具。先说问题，泽思AI 会把它匹配到对应的咨询能力。
             </p>
@@ -374,7 +374,7 @@ export default function Home() {
         <section className="border-y border-[var(--zs-line)] bg-white">
           <div className="zs-container py-20">
             <div className="mb-12 text-center">
-              <h2 className="m-0 text-[30px] font-bold">每一步，都是顶级咨询方法论与 AI 模型的结合</h2>
+              <h2 className="m-0 text-[30px] font-bold text-[var(--zs-primary)]">每一步，都是顶级咨询方法论与 AI 模型的结合</h2>
               <p className="mx-auto mt-4 max-w-[680px] text-[16px] leading-[1.8] text-[var(--zs-sub)]">
                 泽思AI 不是一个普通 AI 问答工具，而是一套咨询顾问式工作流程：先诊断问题，再用咨询方法论分析，最后交付可落地的解决方案。
               </p>
@@ -405,7 +405,7 @@ export default function Home() {
 
         <section className="zs-container py-20">
           <div className="mb-10 text-center">
-            <h2 className="m-0 text-[34px] font-extrabold">成功客户案例</h2>
+            <h2 className="m-0 text-[34px] font-extrabold text-[var(--zs-primary)]">成功客户案例</h2>
             <p className="mx-auto mt-4 max-w-[640px] text-[16px] leading-[1.8] text-[var(--zs-sub)]">
               面向各行各业，不限领域——制造、消费、科技、服务皆有落地。
             </p>
