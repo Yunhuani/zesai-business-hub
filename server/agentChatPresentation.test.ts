@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -7,6 +8,23 @@ import {
 } from "../client/src/lib/agentChatPresentation";
 
 describe("agent chat presentation", () => {
+  it("starts homepage advisor messages in exactly one new conversation", () => {
+    const homeSource = readFileSync(
+      new URL("../client/src/pages/Home.tsx", import.meta.url),
+      "utf8",
+    );
+    const agentChatSource = readFileSync(
+      new URL("../client/src/pages/AgentChat.tsx", import.meta.url),
+      "utf8",
+    );
+
+    expect(homeSource).toContain(
+      "`/agent/${advisorAgentId}?new=1&initial=${encodeURIComponent(query)}`",
+    );
+    expect(agentChatSource).toContain("hasRequestedNewConversationRef.current");
+    expect(agentChatSource).toContain("if (isNewConversation && !hasRequestedNewConversationRef.current)");
+  });
+
   it("provides the fixed advisor starter questions", () => {
     expect(ADVISOR_SUGGESTED_PROMPTS).toEqual([
       "我的获客成本越来越高，应该先排查什么？",

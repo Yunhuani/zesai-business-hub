@@ -190,7 +190,7 @@ export default function Home() {
     if (!advisorAgentId) return;
 
     const query = heroQuery.trim() || placeholderQuestions[placeholderIndex];
-    setLocation(`/agent/${advisorAgentId}?initial=${encodeURIComponent(query)}`);
+    setLocation(`/agent/${advisorAgentId}?new=1&initial=${encodeURIComponent(query)}`);
   };
 
   return (

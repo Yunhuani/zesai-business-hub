@@ -87,7 +87,7 @@ export default function AgentChat() {
   // Get latest conversation for this agent
   const { data: latestConversation } = trpc.conversation.getLatestByAgent.useQuery(
     { agentId: effectiveAgentId },
-    { enabled: !!effectiveAgentId && isAuthenticated && !urlConversationId }
+    { enabled: !!effectiveAgentId && isAuthenticated && !urlConversationId && !isNewConversation }
   );
   
   const { data: subscriptionData } = trpc.subscription.get.useQuery(undefined, { enabled: isAuthenticated });
@@ -97,6 +97,7 @@ export default function AgentChat() {
   const [hasProcessedInitialMessage, setHasProcessedInitialMessage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const hasRequestedNewConversationRef = useRef(false);
   const [showInsufficientCreditsDialog, setShowInsufficientCreditsDialog] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [isInWeChatBrowser] = useState(isWeChatBrowser());
@@ -185,7 +186,8 @@ export default function AgentChat() {
   useEffect(() => {
     if (agent && isAuthenticated && !conversationId && !urlConversationId) {
       // 如果是“开始新对话”操作，强制创建新对话
-      if (isNewConversation) {
+      if (isNewConversation && !hasRequestedNewConversationRef.current) {
+        hasRequestedNewConversationRef.current = true;
         createConversation.mutate({
           agentId: agent.id,
           title: `${agent.name} - ${new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
@@ -262,6 +264,7 @@ export default function AgentChat() {
       }
     },
     onError: (error) => {
+      hasRequestedNewConversationRef.current = false;
       toast.error("创建对话失败: " + error.message);
       setPendingMessage(null);
     },
