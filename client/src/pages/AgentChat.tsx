@@ -169,6 +169,12 @@ export default function AgentChat() {
   }, [agent, isAuthenticated]);
 
   useEffect(() => {
+    if (initialMessage) {
+      setPendingMessage(initialMessage);
+    }
+  }, [initialMessage]);
+
+  useEffect(() => {
     if (!authLoading && agent && isZesaiAdvisorAgent && !isAuthenticated && initialMessage && !hasProcessedInitialMessage) {
       setMessage(initialMessage);
       setHasProcessedInitialMessage(true);
@@ -256,10 +262,7 @@ export default function AgentChat() {
       
       // 如果有待发送的消息，现在发送
       if (pendingMessage) {
-        sendMessage.mutate({
-          conversationId: newConversationId,
-          content: pendingMessage,
-        });
+        void handleSendMessage(pendingMessage, newConversationId);
         setPendingMessage(null);
       }
     },
@@ -520,8 +523,9 @@ export default function AgentChat() {
     }
   };
 
-  const handleSendMessage = async (suggestedMessage?: string) => {
+  const handleSendMessage = async (suggestedMessage?: string, explicitConversationId?: number) => {
     const nextMessage = typeof suggestedMessage === "string" ? suggestedMessage : message;
+    const effectiveConversationId = explicitConversationId ?? conversationId;
     if (!nextMessage.trim()) return;
     
     // 检查登录状态，未登录则显示登录选择对话框
@@ -535,7 +539,7 @@ export default function AgentChat() {
       return;
     }
     
-    if (!conversationId) {
+    if (!effectiveConversationId) {
       // Conversation还未创建，将消息加入待发送队列
       setPendingMessage(nextMessage);
       setMessage("");
@@ -553,7 +557,7 @@ export default function AgentChat() {
     // 追踪发送消息事件
     if (agent) {
       trackAgent(AgentEvents.AGENT_MESSAGE_SEND, agent.id, agent.name, {
-        conversation_id: conversationId,
+        conversation_id: effectiveConversationId,
       });
     }
     
@@ -579,7 +583,7 @@ export default function AgentChat() {
         },
         credentials: "include",
         body: JSON.stringify({
-          conversationId,
+          conversationId: effectiveConversationId,
           content: userMessage,
           requestId,
         }),
