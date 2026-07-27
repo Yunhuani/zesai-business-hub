@@ -5,7 +5,6 @@ import { httpLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
-import { getLoginUrl } from "./const";
 import "./index.css";
 import { initSentry } from "@/lib/sentry";
 import { toast } from "sonner";
@@ -27,7 +26,7 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   rememberLoginReturnPath(
     `${window.location.pathname}${window.location.search}`
   );
-  window.location.href = getLoginUrl();
+  window.location.href = "/login";
 };
 
 queryClient.getQueryCache().subscribe(event => {

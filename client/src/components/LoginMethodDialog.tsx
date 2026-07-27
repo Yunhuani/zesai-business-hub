@@ -6,9 +6,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Mail, LogIn } from "lucide-react";
+import { Mail } from "lucide-react";
 import { useLocation } from "wouter";
-import { getLoginUrl } from "@/const";
 
 interface LoginMethodDialogProps {
   open: boolean;
@@ -17,8 +16,7 @@ interface LoginMethodDialogProps {
 
 /**
  * 登录方式选择对话框
- * 提供邮箱登录和Manus OAuth登录两种方式
- * 优先推荐邮箱登录（国内可用）
+ * 提供邮箱登录方式（国内可用）
  */
 export function LoginMethodDialog({ open, onOpenChange }: LoginMethodDialogProps) {
   const [, setLocation] = useLocation();
@@ -26,11 +24,6 @@ export function LoginMethodDialog({ open, onOpenChange }: LoginMethodDialogProps
   const handleEmailLogin = () => {
     onOpenChange(false);
     setLocation("/login");
-  };
-
-  const handleManusLogin = () => {
-    onOpenChange(false);
-    window.location.href = getLoginUrl();
   };
 
   return (
@@ -61,25 +54,6 @@ export function LoginMethodDialog({ open, onOpenChange }: LoginMethodDialogProps
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
                   使用邮箱和密码登录，国内访问稳定
-                </div>
-              </div>
-            </div>
-          </Button>
-
-          {/* Manus OAuth登录 */}
-          <Button
-            onClick={handleManusLogin}
-            className="w-full h-auto py-4 flex flex-col items-start gap-2"
-            variant="outline"
-          >
-            <div className="flex items-center gap-3 w-full">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <LogIn className="w-5 h-5 text-primary" />
-              </div>
-              <div className="flex-1 text-left">
-                <div className="font-semibold">Manus 账号登录</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  使用Manus统一账号登录
                 </div>
               </div>
             </div>

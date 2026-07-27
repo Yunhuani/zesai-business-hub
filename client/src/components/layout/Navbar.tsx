@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { APP_LOGO_FULL, APP_TITLE, getLoginUrl } from "@/const";
+import { APP_LOGO_FULL, APP_TITLE } from "@/const";
 import { cn } from "@/lib/utils";
 import { LogOut, Menu, User } from "lucide-react";
 import { Link, useLocation } from "wouter";
@@ -127,18 +127,18 @@ export function AppHeader() {
             </>
           ) : (
             <>
-              <a
-                href={getLoginUrl()}
+              <Link
+                href="/login"
                 className="hidden text-[14.5px] font-medium text-[var(--zs-sub)] transition-colors hover:text-[var(--zs-ink)] sm:inline-flex"
               >
                 登录
-              </a>
-              <a
-                href={getLoginUrl()}
+              </Link>
+              <Link
+                href="/login"
                 className="inline-flex rounded-lg bg-[var(--zs-primary)] px-4 py-2 text-[14px] font-semibold text-white shadow-[var(--zs-shadow-button)] transition-colors hover:bg-[var(--zs-primary-2)] sm:px-5 sm:text-[14.5px]"
               >
                 注册
-              </a>
+              </Link>
             </>
           )}
 
