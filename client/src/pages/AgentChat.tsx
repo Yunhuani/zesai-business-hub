@@ -503,6 +503,9 @@ export default function AgentChat() {
       setIsStreaming(false);
       setStreamingMessage("");
       setStreamingRecommendation(null);
+      requestAnimationFrame(() => {
+        scrollToBottom("auto");
+      });
     } catch (error: any) {
       console.error("Anonymous advisor stream error:", error);
       toast.error("发送消息失败: " + error.message);
@@ -639,6 +642,9 @@ export default function AgentChat() {
       setStreamingMessage("");
       setStreamingRecommendation(null);
       setTempUserMessage(null); // 清除临时用户消息
+      requestAnimationFrame(() => {
+        scrollToBottom("auto");
+      });
     } catch (error: any) {
       console.error("Stream error:", error);
       toast.error("发送消息失败: " + error.message);
