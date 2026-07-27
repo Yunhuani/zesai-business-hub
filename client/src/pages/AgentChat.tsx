@@ -134,18 +134,18 @@ export default function AgentChat() {
     { enabled: isAuthenticated }
   );
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
+    messagesEndRef.current?.scrollIntoView({ behavior });
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, tempUserMessage, anonymousMessages, isWaitingForResponse]);
   
   // Auto-scroll during streaming
   useEffect(() => {
     if (isStreaming) {
-      scrollToBottom();
+      scrollToBottom("auto");
     }
   }, [streamingMessage, isStreaming]);
   
