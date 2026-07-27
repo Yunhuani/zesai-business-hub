@@ -29,7 +29,6 @@ import {
 import {
   ANONYMOUS_ADVISOR_LIMIT,
   ANONYMOUS_REGISTER_GUIDANCE,
-  appendAnonymousGuidance,
   getNextAnonymousTurnState,
 } from "@shared/anonymousAdvisor";
 
@@ -112,6 +111,7 @@ export default function AgentChat() {
   const waitingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [anonymousTurns, setAnonymousTurns] = useState(readAnonymousTurns);
   const [anonymousMessages, setAnonymousMessages] = useState<AnonymousChatMessage[]>([]);
+  const [anonymousLimitPrompted, setAnonymousLimitPrompted] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(() =>
     typeof window === "undefined" ? true : window.innerWidth >= 1024
   );
@@ -375,10 +375,9 @@ export default function AgentChat() {
 
   const isZesaiAdvisor = agent.name === ZESAI_ADVISOR_AGENT_NAME;
   const isAnonymousAdvisorMode = !isAuthenticated && isZesaiAdvisor;
-  const anonymousLimitReached = isAnonymousAdvisorMode && anonymousTurns >= ANONYMOUS_ADVISOR_LIMIT;
   const inputDisabled = isAuthenticated
     ? sendMessage.isPending || !conversationId
-    : !isAnonymousAdvisorMode || anonymousLimitReached || isStreaming || isWaitingForResponse;
+    : !isAnonymousAdvisorMode || isStreaming || isWaitingForResponse;
 
   const renderAssistantContent = (
     content: string,
@@ -403,6 +402,7 @@ export default function AgentChat() {
 
     const turnState = getNextAnonymousTurnState(anonymousTurns);
     if (!turnState.allowed) {
+      setAnonymousLimitPrompted(true);
       setShowLoginDialog(true);
       toast.info("注册后继续深入对话");
       return;
@@ -490,15 +490,12 @@ export default function AgentChat() {
         }
       }
 
-      const assistantContent = turnState.shouldAppendGuidance
-        ? appendAnonymousGuidance(fullContent || ANONYMOUS_REGISTER_GUIDANCE)
-        : fullContent;
       setAnonymousMessages((current) => [
         ...current,
         {
           id: createClientMessageId(),
           role: "assistant",
-          content: assistantContent || "抱歉，我暂时无法生成回复。",
+          content: fullContent || "抱歉，我暂时无法生成回复。",
           recommendationMetadata,
         },
       ]);
@@ -724,6 +721,7 @@ export default function AgentChat() {
       return;
     }
     setAnonymousMessages([]);
+    setAnonymousLimitPrompted(false);
     setMessage("");
     setHistoryOpen(false);
   };
@@ -915,7 +913,7 @@ export default function AgentChat() {
                 ) : null}
                 {isWaitingForResponse ? <ThinkingRow /> : null}
 
-                {anonymousLimitReached ? (
+                {anonymousLimitPrompted ? (
                   <div className="mx-auto flex max-w-2xl flex-col gap-3 rounded-2xl border border-[var(--zs-line)] bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-sm leading-6 text-[var(--zs-sub)]">{ANONYMOUS_REGISTER_GUIDANCE}</p>
                     <Button onClick={() => setShowLoginDialog(true)} className="shrink-0 rounded-xl">注册 / 登录</Button>
@@ -949,7 +947,7 @@ export default function AgentChat() {
                   {uploadDocument.isPending ? <Icons.Loader2 className="h-5 w-5 animate-spin" /> : <Icons.Plus className="h-5 w-5" />}
                 </button>
                 <Textarea
-                  placeholder={anonymousLimitReached ? "注册后继续深入对话" : !isAuthenticated && !isAnonymousAdvisorMode ? "请先登录后开始咨询" : "描述你的经营问题…"}
+                  placeholder={anonymousLimitPrompted ? "注册后继续深入对话" : !isAuthenticated && !isAnonymousAdvisorMode ? "请先登录后开始咨询" : "描述你的经营问题…"}
                   value={message}
                   onChange={event => setMessage(event.target.value)}
                   onKeyDown={handleKeyDown}
