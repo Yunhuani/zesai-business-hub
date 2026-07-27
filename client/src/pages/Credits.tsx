@@ -106,7 +106,7 @@ export default function Credits() {
   if (authLoading || creditsLoading || subscriptionLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-[var(--zs-primary)] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -163,15 +163,15 @@ export default function Credits() {
       <div className="container py-16 max-w-6xl">
         {/* Current Credits Display */}
         {creditsData && (
-          <Card className="mb-12 p-8 bg-gradient-to-br from-blue-600 to-purple-600 text-white">
+          <Card className="mb-12 p-8 bg-gradient-to-br from-[var(--zs-primary)] to-[var(--zs-primary-2)] text-white">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold mb-2">我的积分</h2>
-                <p className="text-blue-100">可用于所有AI顾问咨询服务</p>
+                <p className="text-white/70">可用于所有AI顾问咨询服务</p>
               </div>
               <div className="text-right">
                 <div className="text-5xl font-bold">{creditsData.total}</div>
-                <div className="text-sm text-blue-100 mt-2">
+                <div className="text-sm text-white/70 mt-2">
                   购买积分: {creditsData.purchased} | 订阅积分: {creditsData.subscription}
                 </div>
               </div>
@@ -181,7 +181,7 @@ export default function Credits() {
 
         {/* Page Title */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold mb-4 text-[var(--zs-primary)]">
             购买积分包
           </h1>
           <p className="text-lg text-muted-foreground">
@@ -219,18 +219,18 @@ export default function Credits() {
               key={pack.id}
               className={`p-6 relative ${
                 pack.popular
-                  ? "border-2 border-blue-600 shadow-lg"
+                  ? "border-2 border-[var(--zs-primary)] shadow-lg"
                   : "border"
               }`}
             >
               {pack.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-medium">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--zs-gold)] text-white px-4 py-1 rounded-full text-sm font-medium">
                   最受欢迎
                 </div>
               )}
               <div className="text-center mb-6">
                 <h3 className="text-xl font-bold mb-2">{pack.name}</h3>
-                <div className="text-4xl font-bold text-blue-600 mb-2">
+                <div className="text-4xl font-bold text-[var(--zs-primary)] mb-2">
                   {pack.credits}
                   <span className="text-lg text-muted-foreground ml-1">积分</span>
                 </div>
@@ -253,7 +253,7 @@ export default function Credits() {
                   isFreeUser
                     ? "bg-gray-300 cursor-not-allowed"
                     : pack.popular
-                    ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    ? "bg-[var(--zs-primary)] hover:bg-[var(--zs-primary-2)]"
                     : ""
                 }`}
               >
@@ -273,8 +273,8 @@ export default function Credits() {
         <div className="mt-16 grid md:grid-cols-3 gap-8">
           <Card className="p-6">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Icons.Infinity className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-[var(--zs-primary-soft)] rounded-lg flex items-center justify-center flex-shrink-0">
+                <Icons.Infinity className="w-6 h-6 text-[var(--zs-primary)]" />
               </div>
               <div>
                 <h3 className="font-bold mb-2">永久有效</h3>
@@ -286,8 +286,8 @@ export default function Credits() {
           </Card>
           <Card className="p-6">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Icons.Zap className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-[var(--zs-primary-soft)] rounded-lg flex items-center justify-center flex-shrink-0">
+                <Icons.Zap className="w-6 h-6 text-[var(--zs-primary)]" />
               </div>
               <div>
                 <h3 className="font-bold mb-2">即时到账</h3>
@@ -299,8 +299,8 @@ export default function Credits() {
           </Card>
           <Card className="p-6">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Icons.Shield className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 bg-[var(--zs-primary-soft)] rounded-lg flex items-center justify-center flex-shrink-0">
+                <Icons.Shield className="w-6 h-6 text-[var(--zs-primary)]" />
               </div>
               <div>
                 <h3 className="font-bold mb-2">安全支付</h3>
