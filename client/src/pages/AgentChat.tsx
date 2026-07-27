@@ -1008,7 +1008,7 @@ function RecommendedSkillCard({ skill }: { skill: RecommendedSkill }) {
               <h3 className="mt-0.5 text-lg font-semibold tracking-[-0.02em] text-[var(--zs-primary)]">{target.name}</h3>
             </div>
           </div>
-          <p className="mt-4 text-sm leading-6 text-[var(--zs-sub)]">{skill.reason || target.description}</p>
+          <p className="mt-4 text-sm leading-6 text-[var(--zs-sub)]">{target.description}</p>
         </div>
         {target.available && target.href ? (
           <Link

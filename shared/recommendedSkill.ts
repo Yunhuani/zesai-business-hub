@@ -43,7 +43,7 @@ export const RECOMMENDED_SKILL_TARGETS: Record<string, RecommendedSkillTarget> =
   nbg_growth_diagnosis: {
     key: "nbg_growth_diagnosis",
     name: "NBG 增长诊断",
-    description: "从市场、竞争、商业模式、内部能力与财务五个维度定位增长瓶颈。",
+    description: "针对您目前遇到的问题，可用我们专业的 NBG 增长诊断模型，从五个维度做全面诊断，找到症结，给您一套专业的解决方案。",
     available: true,
     href: "/diagnosis/conversation",
     cta: "进入诊断",
