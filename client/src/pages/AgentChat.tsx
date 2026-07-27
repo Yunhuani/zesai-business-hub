@@ -524,6 +524,7 @@ export default function AgentChat() {
     const nextMessage = typeof suggestedMessage === "string" ? suggestedMessage : message;
     const effectiveConversationId = explicitConversationId ?? conversationId;
     if (!nextMessage.trim()) return;
+    console.log("[DEBUG] agent.name =", JSON.stringify(agent?.name), "| ZESAI_ADVISOR_AGENT_NAME =", JSON.stringify(ZESAI_ADVISOR_AGENT_NAME), "| isZesaiAdvisor =", isZesaiAdvisor, "| isAuthenticated =", isAuthenticated, "| anonymousTurns =", anonymousTurns);
     
     // 检查登录状态，未登录则显示登录选择对话框
     if (!isAuthenticated && isZesaiAdvisor) {
