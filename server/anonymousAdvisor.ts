@@ -163,6 +163,8 @@ export async function handleAnonymousAdvisorChat(req: Request, res: Response) {
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no");
+    res.flushHeaders?.();
 
     const { invokeLLMStream } = await import("./_core/llm");
     const stream = await invokeLLMStream({
@@ -203,6 +205,7 @@ export async function handleAnonymousAdvisorChat(req: Request, res: Response) {
             if (delta) {
               fullContent += delta;
               res.write(formatAdvisorSseEvent({ type: "message.delta", delta }));
+              res.flush?.();
             }
           } catch {
             // Ignore malformed provider chunks.

@@ -137,6 +137,8 @@ export async function handleStreamChat(req: Request, res: Response) {
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no");
+    res.flushHeaders?.();
 
     const { invokeLLMStream } = await import("./_core/llm");
 
@@ -187,6 +189,7 @@ export async function handleStreamChat(req: Request, res: Response) {
                 fullContent += delta;
                 // Send delta to client
                 res.write(formatAdvisorSseEvent({ type: "message.delta", delta }));
+                res.flush?.();
               }
             } catch (e) {
               // Skip invalid JSON
