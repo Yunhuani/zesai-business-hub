@@ -1046,35 +1046,29 @@ function ZesaiMark({ large = false }: { large?: boolean }) {
 }
 
 function AdvisorStarter({ onSelect, disabled }: { onSelect: (prompt: string) => void; disabled: boolean }) {
-  const promptIcons = [Icons.Search, Icons.TrendingUp, Icons.Users, Icons.Target];
   return (
-    <div className="my-auto w-full py-8 sm:py-14">
+    <div className="my-auto w-full py-8 sm:py-12">
       <div className="mx-auto max-w-[700px]">
-        <h2 className="text-balance text-center font-serif text-[30px] font-semibold leading-tight tracking-[-0.04em] text-[var(--zs-primary)] sm:text-[40px]">
+        <h2 className="text-balance text-center font-serif text-[26px] font-semibold leading-tight tracking-[-0.03em] text-[var(--zs-primary)] sm:text-[32px]">
           今天想解决什么经营问题？
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-center text-sm leading-6 text-[var(--zs-sub)] sm:text-[15px]">
           从一个具体问题开始。泽思AI顾问会先给出轻诊断，再推荐适合继续深入的方向。
         </p>
-        <div className="mt-10">
-          <p className="mb-3 text-sm font-semibold text-[var(--zs-primary)]">猜你想问</p>
-          <div className="space-y-2.5">
-            {ADVISOR_SUGGESTED_PROMPTS.map((prompt, index) => {
-              const PromptIcon = promptIcons[index];
-              return (
-                <button
-                  key={prompt}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => onSelect(prompt)}
-                  className="group flex w-full items-center gap-3 rounded-[14px] border border-[var(--zs-line)] bg-white/70 px-4 py-3 text-left text-sm leading-6 transition hover:-translate-y-0.5 hover:border-[rgba(31,61,50,.28)] hover:bg-white hover:shadow-[0_10px_28px_rgba(31,61,50,.06)] disabled:cursor-not-allowed disabled:opacity-50 sm:px-5"
-                >
-                  <PromptIcon className="h-[18px] w-[18px] shrink-0 text-[var(--zs-primary)]" />
-                  <span className="flex-1">{prompt}</span>
-                  <Icons.ChevronRight className="h-4 w-4 text-[var(--zs-sub)] transition group-hover:translate-x-0.5 group-hover:text-[var(--zs-primary)]" />
-                </button>
-              );
-            })}
+        <div className="mt-8">
+          <p className="mb-3 text-center text-sm font-semibold text-[var(--zs-primary)]">猜你想问</p>
+          <div className="flex flex-wrap justify-center gap-2.5">
+            {ADVISOR_SUGGESTED_PROMPTS.map(prompt => (
+              <button
+                key={prompt}
+                type="button"
+                disabled={disabled}
+                onClick={() => onSelect(prompt)}
+                className="whitespace-nowrap rounded-full border border-[var(--zs-line)] bg-[var(--zs-bg)] px-4 py-2 text-sm leading-5 text-[var(--zs-primary)] transition-colors hover:border-[rgba(31,61,50,.24)] hover:bg-[var(--zs-primary-soft)] hover:shadow-[0_4px_14px_rgba(31,61,50,.06)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {prompt}
+              </button>
+            ))}
           </div>
         </div>
       </div>

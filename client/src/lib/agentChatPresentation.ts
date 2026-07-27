@@ -1,8 +1,10 @@
 export const ADVISOR_SUGGESTED_PROMPTS = [
-  "我的获客成本越来越高，应该先排查什么？",
-  "公司增长停滞，问题可能出在哪里？",
-  "两个合伙人股权怎么分更合理？",
-  "团队执行力差，应该先改组织还是目标？",
+  "公司业绩上不去，怎么突破",
+  "团队执行力差，该怎么办",
+  "获客难，该怎么办",
+  "创业融资，怎么写商业计划书",
+  "创业合伙，怎么分配股权",
+  "老业务增长见顶，怎么找新赛道",
 ] as const;
 
 export function shouldShowAdvisorSuggestions(messages: Array<{ role: string }> | undefined) {
