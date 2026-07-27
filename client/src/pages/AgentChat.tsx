@@ -907,7 +907,7 @@ export default function AgentChat() {
                       </MessageRow>
                     ))}
 
-                {tempUserMessage ? (
+                {tempUserMessage && messages?.findLast(item => item.role === "user")?.content !== tempUserMessage ? (
                   <MessageRow role="user"><p className="whitespace-pre-wrap">{tempUserMessage}</p></MessageRow>
                 ) : null}
                 {isStreaming && streamingMessage ? (
