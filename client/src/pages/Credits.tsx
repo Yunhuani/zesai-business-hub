@@ -202,7 +202,7 @@ export default function Credits() {
                   积分包仅对付费订阅用户开放。请先升级到基础版、专业版或企业版套餐，即可购买积分包补充积分。
                 </p>
                 <Link href="/pricing">
-                  <Button className="bg-amber-600 hover:bg-amber-700">
+                  <Button className="bg-[var(--zs-primary)] hover:bg-[var(--zs-primary-2)]">
                     <Icons.ArrowRight className="w-4 h-4 mr-2" />
                     立即升级套餐
                   </Button>
