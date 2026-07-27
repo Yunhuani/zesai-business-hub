@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ExpertConsultationDialog } from "@/components/ExpertConsultationDialog";
 import { NBG_REPORT_SAMPLE_SLIDE_COUNT, NbgReportSampleCarousel } from "@/components/NbgReportSampleCarousel";
 import { WeChatBrowserGuide } from "@/components/WeChatBrowserGuide";
+import { ADVISOR_SUGGESTED_PROMPTS } from "@/lib/agentChatPresentation";
 import { trackAgent, AgentEvents, trackConversion, ConversionEvents } from "@/lib/analytics";
 import { trpc } from "@/lib/trpc";
 import { isWeChatBrowser } from "@/utils/wechatDetector";
@@ -26,13 +27,6 @@ import {
   Users,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
-
-const placeholderQuestions = [
-  "公司业绩上不去怎办？",
-  "三个合伙人怎么分配股权？",
-  "创业怎么写商业计划书？",
-  "怎么做好团队管理？",
-];
 
 const serviceCards = [
   {
@@ -135,8 +129,6 @@ export default function Home() {
   const [isInWeChatBrowser] = useState(isWeChatBrowser());
   const [expertDialogOpen, setExpertDialogOpen] = useState(false);
   const [heroQuery, setHeroQuery] = useState("");
-  const [placeholderIndex, setPlaceholderIndex] = useState(0);
-  const [typedPlaceholder, setTypedPlaceholder] = useState("");
   const [reportSlideIndex, setReportSlideIndex] = useState(0);
   const [, setLocation] = useLocation();
   const { data: agents, isLoading: agentsLoading } = trpc.agent.list.useQuery();
@@ -153,31 +145,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const question = placeholderQuestions[placeholderIndex];
-    let currentLength = 0;
-
-    setTypedPlaceholder("");
-
-    const typingInterval = window.setInterval(() => {
-      currentLength += 1;
-      setTypedPlaceholder(question.slice(0, currentLength));
-
-      if (currentLength >= question.length) {
-        window.clearInterval(typingInterval);
-      }
-    }, 70);
-
-    const nextQuestionTimeout = window.setTimeout(() => {
-      setPlaceholderIndex((current) => (current + 1) % placeholderQuestions.length);
-    }, Math.max(2200, question.length * 70 + 1200));
-
-    return () => {
-      window.clearInterval(typingInterval);
-      window.clearTimeout(nextQuestionTimeout);
-    };
-  }, [placeholderIndex]);
-
-  useEffect(() => {
     const interval = window.setInterval(() => {
       setReportSlideIndex((current) => (current + 1) % NBG_REPORT_SAMPLE_SLIDE_COUNT);
     }, 6500);
@@ -185,12 +152,18 @@ export default function Home() {
     return () => window.clearInterval(interval);
   }, []);
 
-  const handleHeroSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const startAdvisorChat = (query: string) => {
     if (!advisorAgentId) return;
 
-    const query = heroQuery.trim() || placeholderQuestions[placeholderIndex];
     setLocation(`/agent/${advisorAgentId}?new=1&initial=${encodeURIComponent(query)}`);
+  };
+
+  const handleHeroSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const query = heroQuery.trim();
+    if (!query) return;
+
+    startAdvisorChat(query);
   };
 
   return (
@@ -213,21 +186,13 @@ export default function Home() {
             className="mx-auto mt-10 flex max-w-[920px] flex-col gap-3 rounded-[20px] border border-[var(--zs-line)] bg-[var(--zs-card)] p-3 text-left shadow-[0_30px_66px_-32px_rgba(31,61,50,.36)] md:flex-row md:items-center"
           >
             <div className="flex h-[60px] flex-1 items-center gap-3 px-3 md:px-5">
-              <span className="hidden shrink-0 text-[15px] font-semibold text-[var(--zs-ink)] sm:inline">
-                您可以问我：
-              </span>
-              <div className="relative min-w-0 flex-1">
-                {!heroQuery && (
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center whitespace-nowrap text-[16px] font-semibold text-[var(--zs-primary)]">
-                    {typedPlaceholder}
-                    <span className="ml-[2px] inline-block h-5 w-[2px] animate-pulse rounded-full bg-[var(--zs-primary)]" />
-                  </span>
-                )}
+              <div className="min-w-0 flex-1">
                 <input
                   value={heroQuery}
                   onChange={(event) => setHeroQuery(event.target.value)}
-                  className="relative z-10 h-full w-full bg-transparent text-[16px] text-[var(--zs-ink)] outline-none"
-                  aria-label="您可以问我"
+                  placeholder="描述你的经营问题…"
+                  className="h-full w-full bg-transparent text-[16px] text-[var(--zs-ink)] outline-none placeholder:text-[var(--zs-sub)]"
+                  aria-label="描述你的经营问题"
                 />
               </div>
             </div>
@@ -240,6 +205,19 @@ export default function Home() {
               开始 →
             </Button>
           </form>
+          <div className="mx-auto mt-5 flex max-w-[920px] flex-wrap justify-center gap-2.5">
+            {ADVISOR_SUGGESTED_PROMPTS.map(prompt => (
+              <button
+                key={prompt}
+                type="button"
+                disabled={agentsLoading || !advisorAgentId}
+                onClick={() => startAdvisorChat(prompt)}
+                className="w-full rounded-full border border-[var(--zs-line)] bg-[var(--zs-bg)] px-4 py-2 text-sm leading-5 text-[var(--zs-primary)] transition-colors hover:border-[rgba(31,61,50,.24)] hover:bg-[var(--zs-primary-soft)] disabled:cursor-not-allowed disabled:opacity-50 sm:w-[calc(50%-0.3125rem)] lg:w-[calc(33.333%-0.4167rem)]"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
         </section>
 
         <section className="zs-container pb-[80px]">
