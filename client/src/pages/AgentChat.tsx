@@ -942,16 +942,6 @@ export default function AgentChat() {
             <div className="rounded-[20px] border border-[rgba(31,61,50,.16)] bg-white p-2 shadow-[0_16px_44px_rgba(31,61,50,.09)] transition focus-within:border-[rgba(31,61,50,.38)] focus-within:shadow-[0_18px_50px_rgba(31,61,50,.12)]">
               <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileChange} className="hidden" />
               <div className="flex items-end gap-2">
-                <button
-                  type="button"
-                  onClick={handleFileUpload}
-                  disabled={!isAuthenticated || uploadDocument.isPending}
-                  title={isAuthenticated ? "上传 PDF、Word 或 Excel 文档" : "登录后上传文档"}
-                  aria-label="上传文档"
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-[var(--zs-sub)] transition hover:bg-[var(--zs-bg-soft)] hover:text-[var(--zs-primary)] disabled:cursor-not-allowed disabled:opacity-35"
-                >
-                  {uploadDocument.isPending ? <Icons.Loader2 className="h-5 w-5 animate-spin" /> : <Icons.Plus className="h-5 w-5" />}
-                </button>
                 <Textarea
                   placeholder={anonymousLimitPrompted ? "注册后继续深入对话" : !isAuthenticated && !isAnonymousAdvisorMode ? "请先登录后开始咨询" : "描述你的经营问题…"}
                   value={message}
