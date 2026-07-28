@@ -18,7 +18,11 @@ export default function Login() {
   const [, setLocation] = useLocation();
   
   // Tab：登录 | 注册
-  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+  const [activeTab, setActiveTab] = useState<"login" | "register">(
+    new URLSearchParams(window.location.search).get("tab") === "register"
+      ? "register"
+      : "login"
+  );
 
   // ========== 邮箱登录状态 ==========
   const [loginEmail, setLoginEmail] = useState("");

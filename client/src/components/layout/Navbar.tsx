@@ -134,7 +134,7 @@ export function AppHeader() {
                 登录
               </Link>
               <Link
-                href="/login"
+                href="/login?tab=register"
                 className="inline-flex rounded-lg bg-[var(--zs-primary)] px-4 py-2 text-[14px] font-semibold text-white shadow-[var(--zs-shadow-button)] transition-colors hover:bg-[var(--zs-primary-2)] sm:px-5 sm:text-[14.5px]"
               >
                 注册
