@@ -222,9 +222,9 @@ export default function Home() {
 
         <section className="zs-container pb-[80px]">
           <div className="mb-9 text-center">
-            <h2 className="m-0 text-[34px] font-extrabold leading-[1.3] text-[var(--zs-primary)]">您现在面临什么问题？</h2>
+            <h2 className="m-0 text-[34px] font-extrabold leading-[1.3] text-[var(--zs-primary)]">每一个商业难题，都有专属的泽思AI顾问帮你解决</h2>
             <p className="mx-auto mt-4 max-w-[680px] text-[16px] leading-[1.8] text-[var(--zs-sub)]">
-              不用先选择工具。先说问题，泽思AI 会把它匹配到对应的咨询能力。
+              根据你的问题，选择下方对应的模块，让专属AI顾问为你解决。
             </p>
           </div>
 
