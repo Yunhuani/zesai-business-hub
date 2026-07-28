@@ -3,12 +3,13 @@ import { ExpertConsultationDialog } from "@/components/ExpertConsultationDialog"
 import { AppFooter, AppHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ConversionEvents, trackConversion } from "@/lib/analytics";
+import { ConversionEvents, CreditsEvents, trackConversion, trackCredits } from "@/lib/analytics";
 import { rememberLoginReturnPath } from "@/lib/loginReturn";
 import { trpc } from "@/lib/trpc";
 import { Check, Minus, MessageCircle, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import { toast } from "sonner";
 
 type Plan = {
   id: "free" | "basic" | "professional" | "enterprise";
@@ -118,6 +119,7 @@ export default function Pricing() {
   const [, setLocation] = useLocation();
   const [expertDialogOpen, setExpertDialogOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
+  const [paymentFormHtml, setPaymentFormHtml] = useState<string>("");
   const { isAuthenticated } = useAuth();
   const { data: subscriptionData } = trpc.subscription.get.useQuery(undefined, {
     enabled: isAuthenticated,
@@ -130,6 +132,34 @@ export default function Pricing() {
   }, [isAuthenticated]);
 
   const currentPlan = subscriptionData?.subscription?.plan || "free";
+  const isFreeUser = currentPlan === "free";
+
+  const createOrder = trpc.payment.createOrder.useMutation({
+    onSuccess: (data: { orderId: string; paymentForm?: string; paymentUrl?: string; paymentMethod: string }) => {
+      if (data.paymentMethod === "wechat" && data.paymentUrl) {
+        setTimeout(() => {
+          window.location.href = data.paymentUrl!;
+        }, 0);
+      } else if (data.paymentForm) {
+        setPaymentFormHtml(data.paymentForm);
+      }
+    },
+    onError: (error: { message: string }) => {
+      toast.error("创建订单失败: " + error.message);
+    },
+  });
+
+  useEffect(() => {
+    if (paymentFormHtml) {
+      const container = document.createElement('div');
+      container.innerHTML = paymentFormHtml;
+      document.body.appendChild(container);
+      const form = container.querySelector('form');
+      if (form) {
+        form.submit();
+      }
+    }
+  }, [paymentFormHtml]);
 
   function goToPayment(plan: Plan) {
     if (plan.id === "free") {
@@ -153,14 +183,35 @@ export default function Pricing() {
     setLocation(paymentPath);
   }
 
-  function goToCredits() {
+  function handlePurchaseCredits(pack: (typeof creditPacks)[number]) {
+    if (isFreeUser) {
+      toast.error("免费版用户请先升级套餐后再购买积分包");
+      return;
+    }
+
     if (!isAuthenticated) {
-      rememberLoginReturnPath("/credits");
+      rememberLoginReturnPath("/pricing");
       setLocation("/login");
       return;
     }
 
-    setLocation("/credits");
+    const priceNum = Number(pack.price.replace("¥", ""));
+    const creditsNum = Number(pack.credits.replace(/,/g, ""));
+    const paymentMethod = "alipay";
+
+    trackCredits(CreditsEvents.CREDITS_RECHARGE, creditsNum, {
+      pack_id: pack.id,
+      price: priceNum,
+      payment_method: paymentMethod,
+    });
+
+    createOrder.mutate({
+      type: "credits" as const,
+      planId: pack.id,
+      amount: priceNum,
+      credits: creditsNum,
+      paymentMethod,
+    });
   }
 
   return (
@@ -269,7 +320,12 @@ export default function Pricing() {
                     <span className="ml-1 text-[14px] text-[var(--zs-sub)]">积分</span>
                   </div>
                   <div className="mt-2 font-['Inter'] text-[17px] font-bold text-[var(--zs-primary)]">{pack.price}</div>
-                  <Button variant="secondary" className="mt-5 w-full" onClick={goToCredits}>
+                  <Button
+                    variant="secondary"
+                    className="mt-5 w-full"
+                    onClick={() => handlePurchaseCredits(pack)}
+                    disabled={createOrder.isPending || isFreeUser}
+                  >
                     购买
                   </Button>
                 </CardContent>
