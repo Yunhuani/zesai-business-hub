@@ -19,7 +19,6 @@ import Payment from "./pages/Payment";
 import PaymentResult from "./pages/PaymentResult";
 import CaseExample from "./pages/CaseExample";
 import Credits from "./pages/Credits";
-import CreditUsage from "./pages/CreditUsage";
 import UserManagement from "./pages/UserManagement";
 import OrderManagement from "./pages/OrderManagement";
 import TicketManagement from "./pages/TicketManagement";
@@ -64,8 +63,6 @@ function Router() {
       <Route path="/payment/result" component={PaymentResult} />
       <Route path="/case-example" component={CaseExample} />
       <Route path="/credits" component={Credits} />
-      <Route path="/credit-usage" component={CreditUsage} />
-      <Route path="/usage" component={CreditUsage} />
       <Route path="/admin/user-management" component={UserManagement} />
       <Route path="/admin/orders" component={OrderManagement} />
       <Route path="/admin/tickets" component={TicketManagement} />

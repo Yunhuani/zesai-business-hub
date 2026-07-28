@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/popover";
 import { CreditsEvents, trackCredits } from "@/lib/analytics";
 import { trpc } from "@/lib/trpc";
-import { ArrowRight, FileText, Loader2, Sparkles } from "lucide-react";
+import { ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 
 export function CreditsDisplay() {
@@ -81,16 +81,6 @@ export function CreditsDisplay() {
             <Link href="/pricing">
               升级套餐
               <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Button
-            asChild
-            variant="ghost"
-            className="w-full justify-start rounded-xl text-[var(--zs-sub)]"
-          >
-            <Link href="/credit-usage">
-              <FileText className="h-4 w-4" />
-              查看积分明细
             </Link>
           </Button>
         </div>

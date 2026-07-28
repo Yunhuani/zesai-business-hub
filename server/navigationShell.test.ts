@@ -62,7 +62,6 @@ describe("global navigation shell", () => {
       "购买积分",
       "升级套餐",
       'href="/pricing"',
-      'href="/credit-usage"',
     ]) {
       expect(creditsSource).toContain(copy);
     }
