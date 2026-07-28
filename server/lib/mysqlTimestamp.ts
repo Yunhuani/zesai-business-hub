@@ -10,16 +10,16 @@ export function toMySqlTimestamp(value: Date | string = new Date()): string {
 
   const pad = (part: number) => String(part).padStart(2, "0");
   return [
-    date.getUTCFullYear(),
+    date.getFullYear(),
     "-",
-    pad(date.getUTCMonth() + 1),
+    pad(date.getMonth() + 1),
     "-",
-    pad(date.getUTCDate()),
+    pad(date.getDate()),
     " ",
-    pad(date.getUTCHours()),
+    pad(date.getHours()),
     ":",
-    pad(date.getUTCMinutes()),
+    pad(date.getMinutes()),
     ":",
-    pad(date.getUTCSeconds()),
+    pad(date.getSeconds()),
   ].join("");
 }

@@ -130,12 +130,12 @@ describe("grantSubscriptionCreditsForOrder", () => {
       plan: "basic",
       price: 9900,
       status: "active",
-      endDate: "2026-08-19 10:00:00",
+      endDate: "2026-08-19 18:00:00",
     });
     expect(user).toMatchObject({
       creditsPurchased: 250,
       creditsSubscription: 1800,
-      creditsResetDate: "2026-08-19 10:00:00",
+      creditsResetDate: "2026-08-19 18:00:00",
     });
     expect(creditTransactions).toEqual([
       expect.objectContaining({
