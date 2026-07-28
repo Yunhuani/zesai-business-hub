@@ -63,10 +63,6 @@ export default function Credits() {
   // 获取支付配置 - 必须在所有条件判断之前调用
   const { data: paymentConfig } = trpc.payment.getPaymentConfig.useQuery();
   
-  // 检查用户是否为免费版
-  const userPlan = subscriptionData?.subscription?.plan || "free";
-  const isFreeUser = userPlan === "free";
-
   const createOrder = trpc.payment.createOrder.useMutation({
     onSuccess: (data: { orderId: string; paymentForm?: string; paymentUrl?: string; paymentMethod: string }) => {
       if (data.paymentMethod === "wechat" && data.paymentUrl) {
@@ -113,12 +109,6 @@ export default function Credits() {
 
   // Payment method: Alipay only
   const handlePurchase = (packId: string, price: number, credits: number) => {
-    // 免费版用户不能购买积分包
-    if (isFreeUser) {
-      toast.error("免费版用户请先升级套餐后再购买积分包");
-      return;
-    }
-    
     // 强制使用支付宝
     const paymentMethod = "alipay";
     
@@ -139,9 +129,9 @@ export default function Credits() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[var(--zs-bg)]">
       {/* Header */}
-      <header className="border-b glass-effect sticky top-0 z-10">
+      <header className="sticky top-0 z-10 border-b border-[var(--zs-line)] bg-[var(--zs-bg)]">
         <div className="container py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <img src={APP_LOGO} alt={APP_TITLE} className="h-8" />
@@ -184,44 +174,17 @@ export default function Credits() {
           <h1 className="text-4xl font-bold mb-4 text-[var(--zs-primary)]">
             购买积分包
           </h1>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-lg text-[var(--zs-sub)]">
             购买的积分永久有效，不会过期
           </p>
         </div>
-
-        {/* 免费版用户提示 */}
-        {isFreeUser && (
-          <Card className="mb-8 p-6 bg-amber-50 border-amber-200">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Icons.AlertCircle className="w-5 h-5 text-amber-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-amber-800 mb-2">免费版用户暂不支持购买积分包</h3>
-                <p className="text-sm text-amber-700 mb-4">
-                  积分包仅对付费订阅用户开放。请先升级到基础版、专业版或企业版套餐，即可购买积分包补充积分。
-                </p>
-                <Link href="/pricing">
-                  <Button className="bg-[var(--zs-primary)] hover:bg-[var(--zs-primary-2)]">
-                    <Icons.ArrowRight className="w-4 h-4 mr-2" />
-                    立即升级套餐
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </Card>
-        )}
 
         {/* Credit Packs Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {CREDIT_PACKS.map((pack) => (
             <Card
               key={pack.id}
-              className={`p-6 relative ${
-                pack.popular
-                  ? "border-2 border-[var(--zs-primary)] shadow-lg"
-                  : "border"
-              }`}
+              className="relative rounded-[16px] border-[var(--zs-line)] bg-white p-6"
             >
               {pack.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--zs-gold)] text-white px-4 py-1 rounded-full text-sm font-medium">
@@ -232,35 +195,31 @@ export default function Credits() {
                 <h3 className="text-xl font-bold mb-2">{pack.name}</h3>
                 <div className="text-4xl font-bold text-[var(--zs-primary)] mb-2">
                   {pack.credits}
-                  <span className="text-lg text-muted-foreground ml-1">积分</span>
+                  <span className="ml-1 text-lg text-[var(--zs-sub)]">积分</span>
                 </div>
                 <div className="text-2xl font-bold mb-2">
                   ¥{pack.price}
                 </div>
                 {pack.discount && (
-                  <div className="text-sm text-green-600 font-medium">
+                  <div className="text-sm font-medium text-[var(--zs-gold)]">
                     {pack.discount}
                   </div>
                 )}
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="mt-2 text-sm text-[var(--zs-sub)]">
                   {pack.description}
                 </p>
               </div>
               <Button
                 onClick={() => handlePurchase(pack.id, pack.price, pack.credits)}
-                disabled={createOrder.isPending || isFreeUser}
+                disabled={createOrder.isPending}
                 className={`w-full ${
-                  isFreeUser
-                    ? "bg-gray-300 cursor-not-allowed"
-                    : pack.popular
+                  pack.popular
                     ? "bg-[var(--zs-primary)] hover:bg-[var(--zs-primary-2)]"
                     : ""
                 }`}
               >
                 {createOrder.isPending ? (
                   <Icons.Loader2 className="w-4 h-4 animate-spin" />
-                ) : isFreeUser ? (
-                  "请先升级套餐"
                 ) : (
                   "立即购买"
                 )}
@@ -278,7 +237,7 @@ export default function Credits() {
               </div>
               <div>
                 <h3 className="font-bold mb-2">永久有效</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[var(--zs-sub)]">
                   购买的积分永久有效，不会过期，随时可用
                 </p>
               </div>
@@ -291,7 +250,7 @@ export default function Credits() {
               </div>
               <div>
                 <h3 className="font-bold mb-2">即时到账</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[var(--zs-sub)]">
                   支付成功后积分立即到账，无需等待
                 </p>
               </div>
@@ -304,7 +263,7 @@ export default function Credits() {
               </div>
               <div>
                 <h3 className="font-bold mb-2">安全支付</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[var(--zs-sub)]">
                   使用支付宝官方支付，安全可靠
                 </p>
               </div>
@@ -318,20 +277,20 @@ export default function Credits() {
           <div className="space-y-4 max-w-3xl mx-auto">
             <Card className="p-6">
               <h3 className="font-bold mb-2">购买的积分会过期吗？</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-[var(--zs-sub)]">
                 不会。购买的积分永久有效，不会过期。您可以随时使用。
               </p>
             </Card>
             <Card className="p-6">
               <h3 className="font-bold mb-2">积分和订阅有什么区别？</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-[var(--zs-sub)]">
                 订阅积分每月重置，购买的积分永久有效。使用时会优先消耗购买的积分，然后才使用订阅积分。
               </p>
             </Card>
 
             <Card className="p-6">
               <h3 className="font-bold mb-2">购买后可以退款吗？</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-[var(--zs-sub)]">
                 积分一经购买,不支持退款。
               </p>
             </Card>
@@ -340,9 +299,9 @@ export default function Credits() {
 
         {/* CTA Section */}
         <div className="mt-16 text-center">
-          <Card className="p-8 glass-effect">
+          <Card className="border-[var(--zs-line)] bg-white p-8">
             <h2 className="text-2xl font-bold mb-4">还在犹豫？</h2>
-            <p className="text-muted-foreground mb-6">
+            <p className="mb-6 text-[var(--zs-sub)]">
               升级订阅套餐，享受更多积分和专属功能
             </p>
             <Link href="/pricing">
