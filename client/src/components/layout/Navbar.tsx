@@ -6,6 +6,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { APP_LOGO_FULL, APP_TITLE } from "@/const";
@@ -97,6 +98,27 @@ export function AppHeader() {
                   </Link>
                 </DropdownMenuItem>
               ))}
+              {!isAuthenticated ? (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/login"
+                      className="cursor-pointer rounded-lg px-2 py-2.5"
+                    >
+                      登录
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/login?tab=register"
+                      className="cursor-pointer rounded-lg px-2 py-2.5"
+                    >
+                      注册
+                    </Link>
+                  </DropdownMenuItem>
+                </>
+              ) : null}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

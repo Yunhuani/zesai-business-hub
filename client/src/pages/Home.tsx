@@ -155,13 +155,17 @@ export default function Home() {
   const startAdvisorChat = (query: string) => {
     if (!advisorAgentId) return;
 
+    if (!query) {
+      setLocation(`/agent/${advisorAgentId}?new=1`);
+      return;
+    }
+
     setLocation(`/agent/${advisorAgentId}?new=1&initial=${encodeURIComponent(query)}`);
   };
 
   const handleHeroSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const query = heroQuery.trim();
-    if (!query) return;
 
     startAdvisorChat(query);
   };
@@ -174,7 +178,7 @@ export default function Home() {
         <section className="zs-container py-[88px] pb-[96px] text-center">
           {isInWeChatBrowser && <WeChatBrowserGuide />}
 
-          <h1 className="m-0 text-[48px] font-black leading-[1.14] tracking-[.01em] text-[var(--zs-primary)] md:text-[62px]">
+          <h1 className="m-0 text-[32px] font-black leading-[1.14] tracking-[.01em] text-[var(--zs-primary)] md:text-[62px]">
             您的 AI 商业顾问
           </h1>
           <p className="mx-auto mt-[26px] max-w-[920px] text-[16px] font-normal leading-[1.85] text-[var(--zs-sub)] sm:text-[18px] lg:text-[19px]">
@@ -222,7 +226,7 @@ export default function Home() {
 
         <section className="zs-container pb-[80px]">
           <div className="mb-9 text-center">
-            <h2 className="m-0 text-[34px] font-extrabold leading-[1.3] text-[var(--zs-primary)]">每一个商业难题，都有专属的泽思AI顾问帮你解决</h2>
+            <h2 className="m-0 text-[24px] font-extrabold leading-[1.3] text-[var(--zs-primary)] md:text-[34px]">每一个商业难题，都有专属的泽思AI顾问帮你解决</h2>
             <p className="mx-auto mt-4 max-w-[680px] text-[16px] leading-[1.8] text-[var(--zs-sub)]">
               根据你的问题，选择下方对应的模块，让专属AI顾问为你解决。
             </p>
@@ -231,7 +235,7 @@ export default function Home() {
           <Card className="overflow-hidden rounded-[20px] border-[var(--zs-line)] bg-white shadow-[0_16px_48px_-32px_rgba(31,61,50,.30)]">
             <CardContent className="grid gap-0 p-0 lg:grid-cols-[1fr_440px]">
               <div className="flex flex-col p-7 md:p-10">
-                <h3 className="text-[27px] font-extrabold leading-[1.3]">
+                <h3 className="text-[22px] font-extrabold leading-[1.3] md:text-[27px]">
                   增长卡住了，找不到突破口
                 </h3>
                 <p className="mt-3 max-w-[520px] text-[16px] leading-[1.75] text-[var(--zs-sub)]">
@@ -352,7 +356,7 @@ export default function Home() {
         <section className="border-y border-[var(--zs-line)] bg-white">
           <div className="zs-container py-20">
             <div className="mb-12 text-center">
-              <h2 className="m-0 text-[30px] font-bold text-[var(--zs-primary)]">每一步，都是顶级咨询方法论与 AI 模型的结合</h2>
+              <h2 className="m-0 text-[22px] font-bold text-[var(--zs-primary)] md:text-[30px]">每一步，都是顶级咨询方法论与 AI 模型的结合</h2>
               <p className="mx-auto mt-4 max-w-[680px] text-[16px] leading-[1.8] text-[var(--zs-sub)]">
                 泽思AI 不是一个普通 AI 问答工具，而是一套咨询顾问式工作流程：先诊断问题，再用咨询方法论分析，最后交付可落地的解决方案。
               </p>
@@ -383,7 +387,7 @@ export default function Home() {
 
         <section className="zs-container py-20">
           <div className="mb-10 text-center">
-            <h2 className="m-0 text-[34px] font-extrabold text-[var(--zs-primary)]">成功客户案例</h2>
+            <h2 className="m-0 text-[24px] font-extrabold text-[var(--zs-primary)] md:text-[34px]">成功客户案例</h2>
             <p className="mx-auto mt-4 max-w-[640px] text-[16px] leading-[1.8] text-[var(--zs-sub)]">
               面向各行各业，不限领域——制造、消费、科技、服务皆有落地。
             </p>
@@ -424,7 +428,7 @@ export default function Home() {
         <section className="zs-container pb-20">
           <div className="relative flex flex-col gap-8 overflow-hidden rounded-[22px] bg-[var(--zs-primary)] p-8 text-[#eef2ed] md:flex-row md:items-center md:justify-between md:p-[60px]">
             <div className="max-w-[680px]">
-              <h2 className="m-0 text-[34px] font-extrabold leading-[1.3] text-white">
+              <h2 className="m-0 text-[24px] font-extrabold leading-[1.3] text-white md:text-[34px]">
                 需要深入支持？
                 <br />
                 联系我们的专家顾问。
