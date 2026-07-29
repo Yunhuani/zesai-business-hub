@@ -1,7 +1,8 @@
 import {
   ClipboardList,
-  History,
+  CreditCard,
   Settings,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 
@@ -18,7 +19,8 @@ export const PRIMARY_NAV_LINKS: NavigationLink[] = [
 ];
 
 const ACCOUNT_LINKS: NavigationLink[] = [
-  { href: "/history", label: "历史记录", icon: History },
+  { href: "/pricing", label: "套餐", icon: CreditCard },
+  { href: "/credits", label: "我的积分", icon: Sparkles },
   { href: "/my-diagnoses", label: "我的报告", icon: ClipboardList },
 ];
 

@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { AccountMenu } from "@/components/AccountMenu";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
@@ -48,7 +49,7 @@ const CREDIT_PACKS = [
 ];
 
 export default function Credits() {
-  const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { loading: authLoading, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
   const { data: creditsData, isLoading: creditsLoading } = trpc.credits.get.useQuery(
     undefined,
@@ -137,12 +138,7 @@ export default function Credits() {
             <img src={APP_LOGO} alt={APP_TITLE} className="h-8" />
           </Link>
           <div className="flex items-center gap-4">
-            {user && (
-              <div className="flex items-center gap-2">
-                <Icons.User className="w-4 h-4" />
-                <span className="text-sm">{user.name || user.email}</span>
-              </div>
-            )}
+            {isAuthenticated ? <AccountMenu /> : null}
             <Link href="/">
               <Button variant="ghost">返回首页</Button>
             </Link>

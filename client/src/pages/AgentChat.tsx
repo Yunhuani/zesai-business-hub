@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { AccountMenu } from "@/components/AccountMenu";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
@@ -63,7 +64,7 @@ export default function AgentChat() {
   const isConversationRoute = location.startsWith('/conversation/');
   const agentId = isConversationRoute ? 0 : parseInt(params.id || "0");
   const urlConversationId = isConversationRoute ? parseInt(params.id || "0") : null;
-  const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { loading: authLoading, isAuthenticated } = useAuth();
   
   // Get initial message from URL query parameter
   const urlParams = new URLSearchParams(window.location.search);
@@ -819,14 +820,7 @@ export default function AgentChat() {
         </div>
 
         {isAuthenticated ? (
-          <Link
-            href="/credits"
-            aria-label="打开账户与积分"
-            className="m-3 flex items-center gap-3 rounded-xl px-2.5 py-2.5 transition hover:bg-white/80"
-          >
-            <img src={APP_LOGO} alt="" className="h-9 w-9 shrink-0 object-contain" />
-            <p className="min-w-0 flex-1 truncate text-sm font-medium">{user?.email || user?.username || "泽思用户"}</p>
-          </Link>
+          <AccountMenu variant="bar" />
         ) : (
           <button
             type="button"

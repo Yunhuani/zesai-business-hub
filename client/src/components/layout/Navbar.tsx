@@ -1,34 +1,22 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { AccountMenu } from "@/components/AccountMenu";
 import { CreditsDisplay } from "@/components/CreditsDisplay";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { APP_LOGO_FULL, APP_TITLE } from "@/const";
 import { cn } from "@/lib/utils";
-import { LogOut, Menu, User } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { getAccountMenuLinks, PRIMARY_NAV_LINKS } from "./navigationModel";
+import { PRIMARY_NAV_LINKS } from "./navigationModel";
 
 export function AppHeader() {
   const [location] = useLocation();
-  const { user, loading, isAuthenticated, logout } = useAuth();
-  const accountInitial =
-    user?.name?.trim().charAt(0) ||
-    user?.username?.trim().charAt(0) ||
-    user?.email?.trim().charAt(0);
-
-  const handleLogout = async () => {
-    await logout();
-    setTimeout(() => {
-      window.location.href = "/login";
-    }, 0);
-  };
+  const { loading, isAuthenticated } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--zs-line)] bg-[rgba(250,250,248,.86)] backdrop-blur-[12px] backdrop-saturate-[180%]">
@@ -68,62 +56,7 @@ export function AppHeader() {
           ) : isAuthenticated ? (
             <>
               <CreditsDisplay />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 rounded-full border border-[var(--zs-line)] bg-white/80 text-[var(--zs-primary)] shadow-sm hover:bg-[var(--zs-primary-soft)]"
-                    aria-label="打开账号菜单"
-                  >
-                    {accountInitial ? (
-                      <span className="text-sm font-bold uppercase">
-                        {accountInitial}
-                      </span>
-                    ) : (
-                      <User className="h-4 w-4" />
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="w-64 rounded-xl border-[var(--zs-line)] bg-[var(--zs-card)] p-2 shadow-[var(--zs-shadow-large)]"
-                >
-                  <DropdownMenuLabel className="px-2 py-2">
-                    <span className="block text-sm font-semibold text-[var(--zs-ink)]">
-                      {user?.name || user?.username || "我的账号"}
-                    </span>
-                    {user?.email ? (
-                      <span className="mt-0.5 block truncate text-xs font-normal text-[var(--zs-weak)]">
-                        {user.email}
-                      </span>
-                    ) : null}
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {getAccountMenuLinks(user?.role).map(item => {
-                    const Icon = item.icon;
-                    return (
-                      <DropdownMenuItem key={item.href} asChild>
-                        <Link
-                          href={item.href}
-                          className="flex cursor-pointer items-center rounded-lg px-2 py-2.5"
-                        >
-                          {Icon ? <Icon className="h-4 w-4" /> : null}
-                          {item.label}
-                        </Link>
-                      </DropdownMenuItem>
-                    );
-                  })}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="rounded-lg py-2.5 text-destructive focus:text-destructive"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="h-4 w-4" />
-                    退出登录
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <AccountMenu />
             </>
           ) : (
             <>
