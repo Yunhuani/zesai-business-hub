@@ -14,8 +14,13 @@ vi.mock("../diagnosisDraft", () => ({
   saveDiagnosisDraft: vi.fn(),
 }));
 
+vi.mock("../db", () => ({
+  getUserSubscription: vi.fn(),
+}));
+
 import { createDiagnosis, getDiagnosis, retryDiagnosis } from "../diagnosisService";
 import { getDiagnosisDraft, saveDiagnosisDraft } from "../diagnosisDraft";
+import { getUserSubscription } from "../db";
 import { diagnosisRouter } from "./diagnosis";
 
 const mockedGetDiagnosis = vi.mocked(getDiagnosis);
@@ -23,6 +28,7 @@ const mockedRetryDiagnosis = vi.mocked(retryDiagnosis);
 const mockedCreateDiagnosis = vi.mocked(createDiagnosis);
 const mockedGetDiagnosisDraft = vi.mocked(getDiagnosisDraft);
 const mockedSaveDiagnosisDraft = vi.mocked(saveDiagnosisDraft);
+const mockedGetUserSubscription = vi.mocked(getUserSubscription);
 
 function createCaller() {
   return diagnosisRouter.createCaller({
@@ -54,6 +60,7 @@ function diagnosisRow(overrides: Record<string, unknown> = {}) {
 describe("diagnosis router serialization", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockedGetUserSubscription.mockResolvedValue({ plan: "basic" } as never);
   });
 
   it("gets and saves drafts for the authenticated user only", async () => {
@@ -136,6 +143,23 @@ describe("diagnosis router serialization", () => {
       expect.any(Object),
       "preview"
     );
+  });
+
+  it.each([
+    ["no subscription", undefined],
+    ["free plan", { plan: "free" }],
+  ])("rejects diagnosis submission for %s", async (_case, subscription) => {
+    mockedGetUserSubscription.mockResolvedValue(subscription as never);
+    const input = {
+      answers: { "company.name": "示例公司" },
+      customValues: {},
+    };
+
+    await expect(createCaller().submit(input)).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      message: "NBG诊断仅套餐会员可用，请先开通套餐",
+    });
+    expect(mockedCreateDiagnosis).not.toHaveBeenCalled();
   });
 
   it("returns errorMessage only for failed diagnoses", async () => {

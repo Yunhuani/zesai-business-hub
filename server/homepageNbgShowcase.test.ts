@@ -79,7 +79,11 @@ describe("homepage NBG showcase", () => {
       expect(source).toContain(copy);
     }
 
-    expect(source).toContain('<Link href="/diagnosis">开始诊断 →</Link>');
+    expect(source).toContain("onClick={handleStartDiagnosis}");
+    expect(source).toContain(
+      "NBG 增长诊断是套餐会员的专属服务，开通套餐即可使用。"
+    );
+    expect(source).toContain('setLocation("/pricing")');
     expect(source).not.toContain("查看会员权益");
   });
 });
