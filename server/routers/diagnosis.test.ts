@@ -18,9 +18,19 @@ vi.mock("../db", () => ({
   getUserSubscription: vi.fn(),
 }));
 
+vi.mock("../creditsManager", () => ({
+  getUserCredits: vi.fn(),
+}));
+
+vi.mock("../pricingConfig", () => ({
+  getActionCredits: vi.fn(),
+}));
+
 import { createDiagnosis, getDiagnosis, retryDiagnosis } from "../diagnosisService";
 import { getDiagnosisDraft, saveDiagnosisDraft } from "../diagnosisDraft";
+import { getUserCredits } from "../creditsManager";
 import { getUserSubscription } from "../db";
+import { getActionCredits } from "../pricingConfig";
 import { diagnosisRouter } from "./diagnosis";
 
 const mockedGetDiagnosis = vi.mocked(getDiagnosis);
@@ -28,7 +38,9 @@ const mockedRetryDiagnosis = vi.mocked(retryDiagnosis);
 const mockedCreateDiagnosis = vi.mocked(createDiagnosis);
 const mockedGetDiagnosisDraft = vi.mocked(getDiagnosisDraft);
 const mockedSaveDiagnosisDraft = vi.mocked(saveDiagnosisDraft);
+const mockedGetUserCredits = vi.mocked(getUserCredits);
 const mockedGetUserSubscription = vi.mocked(getUserSubscription);
+const mockedGetActionCredits = vi.mocked(getActionCredits);
 
 function createCaller() {
   return diagnosisRouter.createCaller({
@@ -61,6 +73,15 @@ describe("diagnosis router serialization", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockedGetUserSubscription.mockResolvedValue({ plan: "basic" } as never);
+    mockedGetUserCredits.mockResolvedValue({
+      purchased: 600,
+      subscription: 1_200,
+      total: 1_800,
+      free: 0,
+      resetDate: new Date("2026-08-01T00:00:00.000Z"),
+      nextResetIn: 86_400,
+    });
+    mockedGetActionCredits.mockResolvedValue(1_000);
   });
 
   it("gets and saves drafts for the authenticated user only", async () => {
@@ -166,6 +187,38 @@ describe("diagnosis router serialization", () => {
       "full"
     );
     expect(mockedGetUserSubscription).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["submit", (caller: ReturnType<typeof createCaller>, input: any) => caller.submit(input)],
+    ["submitConversation", (caller: ReturnType<typeof createCaller>, input: any) =>
+      caller.submitConversation(input)],
+    ["submitPreview", (caller: ReturnType<typeof createCaller>, input: any) =>
+      caller.submitPreview(input)],
+  ])("rejects insufficient credits before %s creates a diagnosis", async (_name, submit) => {
+    mockedGetUserCredits.mockResolvedValueOnce({
+      purchased: 250,
+      subscription: 150,
+      total: 400,
+      free: 0,
+      resetDate: new Date("2026-08-01T00:00:00.000Z"),
+      nextResetIn: 86_400,
+    });
+    const input = {
+      answers: { "company.name": "绀轰緥鍏徃" },
+      customValues: {},
+    };
+
+    await expect(submit(createCaller(), input)).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      message: JSON.stringify({
+        error: "INSUFFICIENT_CREDITS",
+        required: 1_000,
+        current: 400,
+        missing: 600,
+      }),
+    });
+    expect(mockedCreateDiagnosis).not.toHaveBeenCalled();
   });
 
   it("returns errorMessage only for failed diagnoses", async () => {

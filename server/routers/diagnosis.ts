@@ -68,6 +68,20 @@ async function submitDiagnosis(
   productType: Exclude<DiagnosisProduct, "pdf">,
   options?: { clearDraftFlowKey?: string }
 ) {
+  const required = await getActionCredits("diagnosis_full");
+  const credits = await getUserCredits(userId);
+  if (credits.total < required) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: JSON.stringify({
+        error: "INSUFFICIENT_CREDITS",
+        required,
+        current: credits.total,
+        missing: required - credits.total,
+      }),
+    });
+  }
+
   const intake = convertQuestionnaireAnswers(
     input.answers,
     input.customValues
