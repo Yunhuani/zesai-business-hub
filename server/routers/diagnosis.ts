@@ -22,7 +22,6 @@ import {
   getDiagnosisDraft,
   saveDiagnosisDraft,
 } from "../diagnosisDraft";
-import { getUserSubscription } from "../db";
 
 const financeRowAnswerSchema = z.record(
   z.string(),
@@ -69,14 +68,6 @@ async function submitDiagnosis(
   productType: Exclude<DiagnosisProduct, "pdf">,
   options?: { clearDraftFlowKey?: string }
 ) {
-  const subscription = await getUserSubscription(userId);
-  if (!subscription?.plan || subscription.plan === "free") {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "NBG诊断仅套餐会员可用，请先开通套餐",
-    });
-  }
-
   const intake = convertQuestionnaireAnswers(
     input.answers,
     input.customValues

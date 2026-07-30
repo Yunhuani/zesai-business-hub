@@ -148,18 +148,24 @@ describe("diagnosis router serialization", () => {
   it.each([
     ["no subscription", undefined],
     ["free plan", { plan: "free" }],
-  ])("rejects diagnosis submission for %s", async (_case, subscription) => {
+  ])("allows an authenticated user with %s to submit", async (_case, subscription) => {
     mockedGetUserSubscription.mockResolvedValue(subscription as never);
+    mockedCreateDiagnosis.mockResolvedValueOnce(104);
     const input = {
       answers: { "company.name": "示例公司" },
       customValues: {},
     };
 
-    await expect(createCaller().submit(input)).rejects.toMatchObject({
-      code: "FORBIDDEN",
-      message: "NBG诊断仅套餐会员可用，请先开通套餐",
+    await expect(createCaller().submit(input)).resolves.toEqual({
+      diagnosisId: 104,
+      productType: "full",
     });
-    expect(mockedCreateDiagnosis).not.toHaveBeenCalled();
+    expect(mockedCreateDiagnosis).toHaveBeenCalledWith(
+      7,
+      expect.any(Object),
+      "full"
+    );
+    expect(mockedGetUserSubscription).not.toHaveBeenCalled();
   });
 
   it("returns errorMessage only for failed diagnoses", async () => {

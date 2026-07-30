@@ -1,16 +1,7 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
-import { useAuth } from "@/_core/hooks/useAuth";
 import { AppFooter, AppHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { ExpertConsultationDialog } from "@/components/ExpertConsultationDialog";
 import { NBG_REPORT_SAMPLE_SLIDE_COUNT, NbgReportSampleCarousel } from "@/components/NbgReportSampleCarousel";
 import { WeChatBrowserGuide } from "@/components/WeChatBrowserGuide";
@@ -137,20 +128,10 @@ const caseCards = [
 export default function Home() {
   const [isInWeChatBrowser] = useState(isWeChatBrowser());
   const [expertDialogOpen, setExpertDialogOpen] = useState(false);
-  const [diagnosisMembershipDialogOpen, setDiagnosisMembershipDialogOpen] =
-    useState(false);
   const [heroQuery, setHeroQuery] = useState("");
   const [reportSlideIndex, setReportSlideIndex] = useState(0);
   const [, setLocation] = useLocation();
-  const { isAuthenticated } = useAuth();
-  const { data: subscriptionData, isLoading: subscriptionLoading } =
-    trpc.subscription.get.useQuery(undefined, {
-      enabled: isAuthenticated,
-    });
   const { data: agents, isLoading: agentsLoading } = trpc.agent.list.useQuery();
-  const isFreeUser =
-    !subscriptionData?.subscription?.plan ||
-    subscriptionData.subscription.plan === "free";
 
   const agentByName = useMemo(() => {
     return new Map((agents ?? []).map((agent) => [agent.name, agent]));
@@ -187,15 +168,6 @@ export default function Home() {
     const query = heroQuery.trim();
 
     startAdvisorChat(query);
-  };
-
-  const handleStartDiagnosis = () => {
-    if (isFreeUser) {
-      setDiagnosisMembershipDialogOpen(true);
-      return;
-    }
-
-    setLocation("/diagnosis");
   };
 
   return (
@@ -271,12 +243,8 @@ export default function Home() {
                   ：给企业做一次全面体检，五个维度系统排查，找出真正限制增长的那一环——而不是表面症状。
                 </p>
                 <div className="mt-[22px] flex flex-wrap items-center gap-5">
-                  <Button
-                    className="rounded-[11px] px-[30px] py-[14px] text-[16px]"
-                    disabled={isAuthenticated && subscriptionLoading}
-                    onClick={handleStartDiagnosis}
-                  >
-                    开始诊断 →
+                  <Button asChild className="rounded-[11px] px-[30px] py-[14px] text-[16px]">
+                    <Link href="/diagnosis">开始诊断 →</Link>
                   </Button>
                 </div>
 
@@ -480,32 +448,6 @@ export default function Home() {
           </div>
         </section>
       </main>
-
-      <Dialog
-        open={diagnosisMembershipDialogOpen}
-        onOpenChange={setDiagnosisMembershipDialogOpen}
-      >
-        <DialogContent className="border-[var(--zs-line)] bg-[var(--zs-card)] sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-[var(--zs-primary)]">
-              开通套餐，使用 NBG 增长诊断
-            </DialogTitle>
-            <DialogDescription className="leading-7 text-[var(--zs-sub)]">
-              NBG 增长诊断是套餐会员的专属服务，开通套餐即可使用。
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              onClick={() => {
-                setDiagnosisMembershipDialogOpen(false);
-                setLocation("/pricing");
-              }}
-            >
-              开通套餐
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <AppFooter />
 
