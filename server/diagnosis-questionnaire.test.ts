@@ -182,7 +182,9 @@ describe("diagnosis questionnaire structure", () => {
       expect(question && "optional" in question ? question.optional : false).toBe(true);
     }
 
-    expect(DIAGNOSIS_STEPS.find(step => step.id === "finance-cash")?.showFinanceUpload).toBe(true);
+    expect(DIAGNOSIS_STEPS.find(step => step.id === "finance-cash")).not.toHaveProperty(
+      "showFinanceUpload"
+    );
   });
 
   it("uses 公司 instead of 企业 in questionnaire copy", () => {

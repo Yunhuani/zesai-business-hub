@@ -52,7 +52,6 @@ export type DiagnosisStep = {
   dimension: string;
   title: string;
   questions: DiagnosisQuestion[];
-  showFinanceUpload?: boolean;
 };
 
 export const DIAGNOSIS_STEPS: DiagnosisStep[] = [
@@ -319,7 +318,6 @@ export const DIAGNOSIS_STEPS: DiagnosisStep[] = [
     id: "finance-cash",
     dimension: "Financial health",
     title: "现金安全边界",
-    showFinanceUpload: true,
     questions: [
       {
         id: "cash",

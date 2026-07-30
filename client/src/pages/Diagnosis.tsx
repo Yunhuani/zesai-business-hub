@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
-import { ArrowLeft, ArrowRight, Check, FileSpreadsheet, LockKeyhole, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Plus, Trash2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { APP_LOGO_FULL } from "@/const";
 import { DiagnosisInsufficientDialog } from "@/components/DiagnosisInsufficientDialog";
@@ -462,29 +462,6 @@ function QuestionBlock({
   );
 }
 
-function FinanceUploadTeaser() {
-  return (
-    <section className="flex cursor-not-allowed items-center gap-4 rounded-[14px] border border-dashed bg-[#f7f7f3] px-[22px] py-[19px] max-sm:flex-col max-sm:items-start">
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[11px] bg-[#eceee9] text-[#9aa39c]">
-        <FileSpreadsheet className="h-[22px] w-[22px]" strokeWidth={1.7} />
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[15px] font-bold text-[#4a504a]">上传财务明细，解锁精确测算</span>
-          <span className="rounded-[5px] bg-[rgba(201,162,75,.22)] px-2 py-1 text-[10.5px] font-bold tracking-[.06em] text-[#5a4516]">
-            ADVANCED
-          </span>
-        </div>
-        <p className="mt-1 text-[12.5px] leading-6" style={{ color: "var(--zs-sub)" }}>
-          上传利润表 / 资产负债表后，诊断将给出更精确的财务测算与行业对标。
-          <span className="text-[#9aa39c]">即将开放</span>
-        </p>
-      </div>
-      <LockKeyhole className="h-[18px] w-[18px] shrink-0 text-[#b4bbb2]" />
-    </section>
-  );
-}
-
 function isBlankCell(value: unknown): boolean {
   return value == null || (typeof value === "string" && value.trim().length === 0);
 }
@@ -767,7 +744,6 @@ export default function Diagnosis() {
                 onCustomValue={updateCustomValue}
               />
             ))}
-            {step.showFinanceUpload ? <FinanceUploadTeaser /> : null}
           </div>
         </div>
 
