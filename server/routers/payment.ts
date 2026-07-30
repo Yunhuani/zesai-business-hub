@@ -2,7 +2,12 @@ import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { createAlipayPagePayment, queryAlipayOrder, verifyAlipayCallback } from "../_core/alipay";
 import { createWechatH5Payment, createWechatJsapiPayment, queryWechatPayment } from "../wechatPay";
-import { createOrder, getOrderByOutTradeNo, updateOrderStatus } from "../db";
+import {
+  createOrder,
+  getOrderByOutTradeNo,
+  getUserSubscription,
+  updateOrderStatus,
+} from "../db";
 import { TRPCError } from "@trpc/server";
 import { ENV } from "../_core/env";
 import {
@@ -44,6 +49,16 @@ export const paymentRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { type, planId, paymentMethod } = input;
+
+      if (type === "credits") {
+        const subscription = await getUserSubscription(ctx.user.id);
+        if (!subscription?.plan || subscription.plan === "free") {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "积分包仅套餐会员可购买，开通套餐即可使用",
+          });
+        }
+      }
       
       // 生成商户订单号
       const outTradeNo = `ZS${Date.now()}${ctx.user.id}`;

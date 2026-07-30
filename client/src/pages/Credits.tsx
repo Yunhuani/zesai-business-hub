@@ -59,6 +59,9 @@ export default function Credits() {
     undefined,
     { enabled: isAuthenticated }
   );
+  const isFreeUser =
+    !subscriptionData?.subscription?.plan ||
+    subscriptionData.subscription.plan === "free";
   const [paymentFormHtml, setPaymentFormHtml] = useState<string>("");
   
   // 获取支付配置 - 必须在所有条件判断之前调用
@@ -110,6 +113,12 @@ export default function Credits() {
 
   // Payment method: Alipay only
   const handlePurchase = (packId: string, price: number, credits: number) => {
+    if (isFreeUser) {
+      toast.error("积分包是套餐会员专属，开通套餐即可购买");
+      navigate("/pricing");
+      return;
+    }
+
     // 强制使用支付宝
     const paymentMethod = "alipay";
     
@@ -175,6 +184,17 @@ export default function Credits() {
           </p>
         </div>
 
+        {isFreeUser ? (
+          <Card className="mb-8 flex flex-col gap-4 rounded-[16px] border-[var(--zs-primary)]/20 bg-[var(--zs-primary-soft)] p-6 text-[var(--zs-primary)] sm:flex-row sm:items-center sm:justify-between">
+            <p className="font-medium">
+              积分包是套餐会员的专属服务，开通套餐后即可购买。
+            </p>
+            <Button asChild className="shrink-0">
+              <Link href="/pricing">开通套餐</Link>
+            </Button>
+          </Card>
+        ) : null}
+
         {/* Credit Packs Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {CREDIT_PACKS.map((pack) => (
@@ -207,7 +227,7 @@ export default function Credits() {
               </div>
               <Button
                 onClick={() => handlePurchase(pack.id, pack.price, pack.credits)}
-                disabled={createOrder.isPending}
+                disabled={createOrder.isPending || isFreeUser}
                 className={`w-full ${
                   pack.popular
                     ? "bg-[var(--zs-primary)] hover:bg-[var(--zs-primary-2)]"
@@ -216,6 +236,8 @@ export default function Credits() {
               >
                 {createOrder.isPending ? (
                   <Icons.Loader2 className="w-4 h-4 animate-spin" />
+                ) : isFreeUser ? (
+                  "开通套餐后可购买"
                 ) : (
                   "立即购买"
                 )}

@@ -184,14 +184,14 @@ export default function Pricing() {
   }
 
   function handlePurchaseCredits(pack: (typeof creditPacks)[number]) {
-    if (isFreeUser) {
-      toast.error("免费版用户请先升级套餐后再购买积分包");
-      return;
-    }
-
     if (!isAuthenticated) {
       rememberLoginReturnPath("/pricing");
       setLocation("/login");
+      return;
+    }
+
+    if (isFreeUser) {
+      toast.info("积分包是套餐会员专属，开通套餐即可购买");
       return;
     }
 
@@ -324,9 +324,9 @@ export default function Pricing() {
                     variant="secondary"
                     className="mt-5 w-full"
                     onClick={() => handlePurchaseCredits(pack)}
-                    disabled={createOrder.isPending || isFreeUser}
+                    disabled={createOrder.isPending}
                   >
-                    购买
+                    {isFreeUser ? "开通套餐后可购买" : "购买"}
                   </Button>
                 </CardContent>
               </Card>
