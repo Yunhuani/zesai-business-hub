@@ -51,57 +51,25 @@ describe("diagnosis report reading flow", () => {
     expect(reportSource).toContain("async function downloadPdf()");
   });
 
-  it("shows the 1000-credit unlock and recharge actions only for locked reports", () => {
-    const unlockIndex = reportSource.indexOf("{!fullAccess ? (");
-    const fullReportIndex = reportSource.indexOf(
-      "{fullAccess ? report.dimensions.map"
-    );
-    const unlockSource = reportSource.slice(unlockIndex, fullReportIndex);
-
-    expect(unlockIndex).toBeGreaterThan(-1);
-    expect(fullReportIndex).toBeGreaterThan(unlockIndex);
-    expect(reportSource).toContain("const requiredUnlockCredits = 1000");
-    expect(unlockSource).toContain("积分不足,充值后可解锁完整报告");
-    expect(unlockSource).toContain('href="/credits"');
-    expect(unlockSource).toContain("去充值");
-    expect(unlockSource).toContain("解锁完整报告(消耗1000积分)");
-    expect(reportSource).not.toContain("1,500");
-    expect(reportSource).not.toContain("1500 积分");
-  });
-
-  it("shows one real key finding and two data-free placeholders in preview", () => {
-    const findingsIndex = reportSource.indexOf('className="report-findings');
+  it("shows a clear home action for regular users after the full report closing section", () => {
     const closingIndex = reportSource.indexOf('className="report-closing');
-    const findingsSource = reportSource.slice(findingsIndex, closingIndex);
+    const aboutIndex = reportSource.indexOf('className="report-about');
+    const closingSource = reportSource.slice(closingIndex, aboutIndex);
 
-    expect(reportSource).toMatch(
-      /fullAccess\s*\?\s*report\.keyFindings\s*:\s*report\.keyFindings\.slice\(0,\s*1\)/
-    );
-    expect(findingsSource).toContain("visibleKeyFindings.map");
-    expect(findingsSource).toContain("Array.from({ length: 2 }");
-    expect(findingsSource).toContain("解锁完整报告查看全部关键发现");
+    expect(closingSource).toContain("fullAccess && !adminMode");
+    expect(closingSource).toContain('href="/"');
+    expect(closingSource).toContain("返回首页");
   });
 
-  it("lists the four report benefits before the unlock action", () => {
-    const unlockIndex = reportSource.indexOf("{!fullAccess ? (");
-    const fullReportIndex = reportSource.indexOf(
-      "{fullAccess ? report.dimensions.map"
-    );
-    const unlockSource = reportSource.slice(unlockIndex, fullReportIndex);
-    const benefitsIndex = unlockSource.indexOf("解锁后可查看");
-    const unlockButtonIndex = unlockSource.indexOf(
-      "解锁完整报告(消耗1000积分)"
-    );
-
-    expect(benefitsIndex).toBeGreaterThan(-1);
-    expect(benefitsIndex).toBeLessThan(unlockButtonIndex);
-    expect(unlockSource).toContain("UNLOCK_BENEFITS.map");
-    expect(reportSource).toContain(
-      "五个维度逐项深度分析（评分、判断、推理链、证据）"
-    );
-    expect(reportSource).toContain("全部三个关键发现");
-    expect(reportSource).toContain("从诊断到行动的下一步增长方向");
-    expect(reportSource).toContain("完整报告PDF下载");
+  it("shows a simple fallback instead of the old unlock preview for legacy locked reports", () => {
+    expect(reportSource).toContain("!fullAccess && !previewMode && !adminMode");
+    expect(reportSource).toContain("该报告未生成完整内容，请重新发起诊断。");
+    expect(reportSource).toContain('href="/diagnosis"');
+    expect(reportSource).toContain("重新诊断");
+    expect(reportSource).not.toContain("const requiredUnlockCredits = 1000");
+    expect(reportSource).not.toContain("解锁完整报告(消耗1000积分)");
+    expect(reportSource).not.toContain("解锁后可查看");
+    expect(reportSource).toContain("previewMode && !fullAccess");
   });
 
   it("shows customer-safe data quality guidance only in the full report flow", () => {
@@ -124,11 +92,15 @@ describe("diagnosis report reading flow", () => {
     expect(dimensionSource).not.toContain("missing_plus");
   });
 
-  it("shows the shared radar chart in both preview and full reports while retaining exact score bars", () => {
+  it("keeps the development preview layout while retaining exact score bars", () => {
     const healthIndex = reportSource.indexOf('className="report-health');
-    const unlockIndex = reportSource.indexOf("{!fullAccess ? (", healthIndex);
-    const healthSource = reportSource.slice(healthIndex, unlockIndex);
+    const dimensionsIndex = reportSource.indexOf(
+      "{fullAccess ? report.dimensions.map"
+    );
+    const healthSource = reportSource.slice(healthIndex, dimensionsIndex);
 
+    expect(reportSource).toContain("import.meta.env.DEV");
+    expect(reportSource).toContain('get("preview") === "1"');
     expect(reportSource).toContain("NbgRadarChart,");
     expect(reportSource).toContain('from "@/components/NbgRadarChart"');
     expect(healthSource).toContain("<NbgRadarChart");

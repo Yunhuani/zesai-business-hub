@@ -3,7 +3,6 @@ import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
   ArrowRight,
-  Check,
   CircleAlert,
   Download,
   LoaderCircle,
@@ -23,13 +22,6 @@ import {
   buildDiagnosisReport,
   type DiagnosisReportDimension,
 } from "./diagnosisReportData";
-
-const UNLOCK_BENEFITS = [
-  "五个维度逐项深度分析（评分、判断、推理链、证据）",
-  "全部三个关键发现",
-  "从诊断到行动的下一步增长方向",
-  "完整报告PDF下载",
-] as const;
 
 function formatReportDate(value: string | null): string {
   const date = value ? new Date(value) : new Date();
@@ -63,7 +55,7 @@ function ScoreBar({ dimension }: { dimension: DiagnosisReportDimension }) {
 }
 
 export default function DiagnosisReport() {
-  const { isAuthenticated, user } = useAuth();
+  const { user } = useAuth();
   const { id } = useParams<{ id: string }>();
   const diagnosisId = Number(id);
   const validId = Number.isInteger(diagnosisId) && diagnosisId > 0;
@@ -75,7 +67,6 @@ export default function DiagnosisReport() {
     new URLSearchParams(window.location.search).get("admin") === "1" &&
     user?.role === "admin";
   const [downloading, setDownloading] = useState(false);
-  const utils = trpc.useUtils();
   const diagnosisQuery = trpc.diagnosis.get.useQuery(
     { id: diagnosisId },
     {
@@ -105,43 +96,10 @@ export default function DiagnosisReport() {
     : previewMode
       ? previewQuery
       : diagnosisQuery;
-  const unlockDiagnosis = trpc.diagnosis.submitFull.useMutation({
-    onSuccess: data => {
-      utils.diagnosis.get.setData({ id: diagnosisId }, data);
-      void utils.credits.get.invalidate();
-      toast.success("完整诊断已解锁");
-    },
-    onError: error => {
-      if (error.message.includes("INSUFFICIENT_CREDITS")) {
-        toast.error("积分不足，请先充值积分或升级套餐");
-        return;
-      }
-      toast.error("解锁失败，请稍后重试");
-    },
-  });
-
   const report = query.data
     ? buildDiagnosisReport(query.data)
     : null;
   const fullAccess = query.data?.fullAccess === true;
-  const requiredUnlockCredits = 1000;
-  const creditsQuery = trpc.credits.get.useQuery(undefined, {
-    enabled:
-      isAuthenticated &&
-      validId &&
-      !previewMode &&
-      !adminMode &&
-      !fullAccess,
-    retry: 1,
-    refetchOnWindowFocus: false,
-  });
-  const currentCredits = creditsQuery.data?.total ?? 0;
-  const missingCredits = Math.max(0, requiredUnlockCredits - currentCredits);
-  const hasEnoughCredits =
-    creditsQuery.data ? currentCredits >= requiredUnlockCredits : false;
-  const shouldDisableUnlock =
-    unlockDiagnosis.isPending ||
-    (creditsQuery.data ? !hasEnoughCredits : false);
 
   useEffect(() => {
     if (report) {
@@ -232,6 +190,27 @@ export default function DiagnosisReport() {
     );
   }
 
+  if (!fullAccess && !previewMode && !adminMode) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#121317] px-6 text-[#EAEDF3]">
+        <div className="max-w-md text-center">
+          <CircleAlert className="mx-auto h-8 w-8 text-[#E8B84B]" />
+          <h1 className="mt-6 text-2xl font-semibold">该报告未生成完整内容</h1>
+          <p className="mt-3 text-sm leading-7 text-[#9DA4B3]">
+            该报告未生成完整内容，请重新发起诊断。
+          </p>
+          <Link
+            href="/diagnosis"
+            className="mt-8 inline-flex h-12 items-center gap-2 bg-[#E8B84B] px-6 text-sm font-semibold text-[#121317] transition hover:bg-[#FFD166]"
+          >
+            重新诊断
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const degradedDimensions = report.dimensions.filter(
     dimension => dimension.degraded
   );
@@ -258,10 +237,9 @@ export default function DiagnosisReport() {
       dimension => dimension.missingInformation
     ) ?? []
   ));
-  const visibleKeyFindings = fullAccess
-    ? report.keyFindings
-    : report.keyFindings.slice(0, 1);
-
+  const visibleKeyFindings = previewMode
+    ? report.keyFindings.slice(0, 1)
+    : report.keyFindings;
   return (
     <div
       className="diagnosis-report min-h-screen overflow-hidden bg-[#121317] text-[#EAEDF3] [font-family:'Noto_Sans_SC',sans-serif]"
@@ -326,7 +304,7 @@ export default function DiagnosisReport() {
             </div>
           </div>
         ) : null}
-        {!fullAccess ? (
+        {previewMode && !fullAccess ? (
           <div className="border-b border-[#E8B84B]/20 bg-[#17160F]">
             <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-6 sm:px-8">
               <div className="flex items-center gap-2 text-sm font-semibold text-[#FFD166]">
@@ -557,60 +535,6 @@ export default function DiagnosisReport() {
           </section>
         ) : null}
 
-        {!fullAccess ? (
-          <section className="border-b border-white/[0.08] bg-[#0E0F13]">
-            <div className="mx-auto max-w-3xl px-5 py-20 text-center sm:px-8">
-              <LockKeyhole className="mx-auto h-8 w-8 text-[#E8B84B]" />
-              <h2 className="mt-6 text-3xl font-semibold tracking-[-0.04em]">
-                解锁完整 NBG 增长诊断
-              </h2>
-              <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-[#9DA4B3]">
-                积分不足,充值后可解锁完整报告
-              </p>
-              <div className="mx-auto mt-8 max-w-xl border border-[#E8B84B]/25 bg-[#17160F] p-6 text-left">
-                <p className="text-sm font-semibold text-[#FFD166]">
-                  解锁后可查看
-                </p>
-                <ul className="mt-5 grid gap-3 text-sm leading-6 text-[#B5BAC5]">
-                  {UNLOCK_BENEFITS.map(benefit => (
-                    <li key={benefit} className="flex items-start gap-3">
-                      <Check className="mt-1 h-4 w-4 shrink-0 text-[#E8B84B]" />
-                      <span>{benefit}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <p className="mt-5 text-sm text-[#B5BAC5]">
-                {creditsQuery.isLoading
-                  ? "正在读取积分…"
-                  : creditsQuery.isError
-                    ? "余额暂时无法读取，点击后将再次校验"
-                    : hasEnoughCredits
-                      ? `当前积分:${currentCredits.toLocaleString()} / 需要 1,000,可立即解锁`
-                      : `当前积分:${currentCredits.toLocaleString()} / 需要 1,000,还差 ${missingCredits.toLocaleString()} 积分`}
-              </p>
-              <button
-                type="button"
-                onClick={() => unlockDiagnosis.mutate({ diagnosisId })}
-                disabled={shouldDisableUnlock}
-                className="mt-8 inline-flex h-12 items-center gap-2 bg-[#E8B84B] px-6 text-sm font-semibold text-[#121317] transition hover:bg-[#FFD166] disabled:opacity-60"
-              >
-                {unlockDiagnosis.isPending ? (
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
-                ) : (
-                  <LockKeyhole className="h-4 w-4" />
-                )}
-                {unlockDiagnosis.isPending
-                  ? "正在解锁"
-                  : "解锁完整报告(消耗1000积分)"}
-              </button>
-              <div className="mt-5 flex justify-center text-sm">
-                <Link href="/credits" className="text-[#FFD166]">去充值</Link>
-              </div>
-            </div>
-          </section>
-        ) : null}
-
         {fullAccess ? report.dimensions.map((dimension, index) => {
           return (
             <section
@@ -762,7 +686,7 @@ export default function DiagnosisReport() {
                     ) : null}
                   </article>
                 ))}
-                {!fullAccess
+                {previewMode && !fullAccess
                   ? Array.from({ length: 2 }, (_, index) => (
                       <article
                         key={`locked-finding-${index}`}
@@ -773,7 +697,7 @@ export default function DiagnosisReport() {
                         </span>
                         <LockKeyhole className="mt-8 h-7 w-7 text-[#E8B84B]" />
                         <p className="mt-5 max-w-48 text-sm leading-7 text-[#9DA4B3]">
-                          解锁完整报告查看全部关键发现
+                          开发预览占位
                         </p>
                       </article>
                     ))
@@ -823,6 +747,15 @@ export default function DiagnosisReport() {
                   )}
                   {downloading ? "正在生成" : "下载 PDF"}
                 </button>
+              ) : null}
+              {fullAccess && !adminMode ? (
+                <Link
+                  href="/"
+                  className="inline-flex h-12 items-center gap-2 border border-white/[0.14] px-6 text-sm font-medium text-[#EAEDF3] transition hover:border-[#E8B84B]/60 hover:text-[#FFD166]"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  返回首页
+                </Link>
               ) : null}
             </div>
           </div>

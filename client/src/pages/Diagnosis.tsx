@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import { ArrowLeft, ArrowRight, Check, FileSpreadsheet, LockKeyhole, Plus, Trash2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { APP_LOGO_FULL } from "@/const";
+import { DiagnosisInsufficientDialog } from "@/components/DiagnosisInsufficientDialog";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
@@ -13,6 +14,10 @@ import {
   type FinanceRowAnswer,
 } from "@/lib/diagnosisDraft";
 import { rememberLoginReturnPath } from "@/lib/loginReturn";
+import {
+  parseDiagnosisInsufficientCredits,
+  type DiagnosisInsufficientCredits,
+} from "@/lib/diagnosisSubmissionError";
 import { getDiagnosisFollowUpHint } from "@shared/diagnosisFollowUpHint";
 import { validateFinanceBasicAnswers } from "@shared/diagnosisFinanceBasicValidation";
 import { validateFinancePlusTableTotals } from "@shared/diagnosisFinancePlusValidation";
@@ -625,6 +630,14 @@ export default function Diagnosis() {
     () => draft?.customValues ?? {}
   );
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [insufficientCredits, setInsufficientCredits] =
+    useState<DiagnosisInsufficientCredits | null>(null);
+  const { data: subscriptionData } = trpc.subscription.get.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
+  const isFreeUser =
+    !subscriptionData?.subscription?.plan ||
+    subscriptionData.subscription.plan === "free";
 
   const step = DIAGNOSIS_STEPS[stepIndex];
   const progress = ((stepIndex + 1) / DIAGNOSIS_STEPS.length) * 100;
@@ -632,6 +645,9 @@ export default function Diagnosis() {
     onSuccess: ({ diagnosisId }) => {
       clearDiagnosisDraft();
       setLocation(`/diagnosis/${diagnosisId}/processing`);
+    },
+    onError: error => {
+      setInsufficientCredits(parseDiagnosisInsufficientCredits(error));
     },
   });
 
@@ -797,12 +813,22 @@ export default function Diagnosis() {
           回答已自动保存 · 可随时离开，下次回来继续
         </div>
 
-        {submitDiagnosis.error ? (
+        {submitDiagnosis.error &&
+        !parseDiagnosisInsufficientCredits(submitDiagnosis.error) ? (
           <p className="mt-4 text-right text-sm text-red-700">
-            提交失败：{submitDiagnosis.error.message}
+            提交失败，请稍后重试。
           </p>
         ) : null}
       </main>
+
+      <DiagnosisInsufficientDialog
+        open={insufficientCredits !== null}
+        onOpenChange={open => {
+          if (!open) setInsufficientCredits(null);
+        }}
+        isFreeUser={isFreeUser}
+        credits={insufficientCredits}
+      />
     </div>
   );
 }

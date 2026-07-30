@@ -3,6 +3,7 @@ import { ArrowRight, ArrowUp, Check, Pencil, Plus, Trash2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { APP_LOGO_FULL } from "@/const";
+import { DiagnosisInsufficientDialog } from "@/components/DiagnosisInsufficientDialog";
 import {
   clearDiagnosisDraft,
   loadDiagnosisDraft,
@@ -17,6 +18,10 @@ import {
   hydrateDiagnosisDraft,
 } from "@/lib/diagnosisDraftSync";
 import { rememberLoginReturnPath } from "@/lib/loginReturn";
+import {
+  parseDiagnosisInsufficientCredits,
+  type DiagnosisInsufficientCredits,
+} from "@/lib/diagnosisSubmissionError";
 import { trpc } from "@/lib/trpc";
 import { getDiagnosisFollowUpHint } from "@shared/diagnosisFollowUpHint";
 import { validateCurrentStep } from "./Diagnosis";
@@ -442,6 +447,8 @@ export default function DiagnosisConversation() {
   const [replyHint, setReplyHint] = useState<string | null>(null);
   const [awaitingShortAnswerChoice, setAwaitingShortAnswerChoice] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [insufficientCredits, setInsufficientCredits] =
+    useState<DiagnosisInsufficientCredits | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const validationErrorRef = useRef<HTMLParagraphElement>(null);
   const hydrationStartedRef = useRef(false);
@@ -462,6 +469,12 @@ export default function DiagnosisConversation() {
     retry: false,
     refetchOnWindowFocus: false,
   });
+  const { data: subscriptionData } = trpc.subscription.get.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
+  const isFreeUser =
+    !subscriptionData?.subscription?.plan ||
+    subscriptionData.subscription.plan === "free";
   const saveServerDraft = trpc.diagnosis.draft.save.useMutation();
   const submitDiagnosis = trpc.diagnosis.submitConversation.useMutation();
   const saveServerDraftRef = useRef<((nextDraft: DiagnosisDraft) => Promise<void>) | undefined>(undefined);
@@ -708,7 +721,13 @@ export default function DiagnosisConversation() {
       const { diagnosisId } = await submitDiagnosis.mutateAsync({ answers, customValues });
       clearDiagnosisDraft();
       setLocation(`/diagnosis/${diagnosisId}/processing`);
-    } catch {
+    } catch (error) {
+      const creditsError = parseDiagnosisInsufficientCredits(error);
+      if (creditsError) {
+        setInsufficientCredits(creditsError);
+      } else {
+        showValidationError("提交失败，请稍后重试。");
+      }
       submittingRef.current = false;
       saveQueue.setEnabled(true);
       saveQueue.schedule({
@@ -793,7 +812,6 @@ export default function DiagnosisConversation() {
             </div>
           ) : null}
 
-          {submitDiagnosis.error ? <p className="ml-10 text-sm text-red-700 max-sm:ml-0">提交失败：{submitDiagnosis.error.message}</p> : null}
           <div ref={bottomRef} className={usesComposer ? "h-32" : "h-4"} aria-hidden="true" />
         </div>
       </main>
@@ -826,6 +844,15 @@ export default function DiagnosisConversation() {
           </div>
         </footer>
       ) : null}
+
+      <DiagnosisInsufficientDialog
+        open={insufficientCredits !== null}
+        onOpenChange={open => {
+          if (!open) setInsufficientCredits(null);
+        }}
+        isFreeUser={isFreeUser}
+        credits={insufficientCredits}
+      />
     </div>
   );
 }
