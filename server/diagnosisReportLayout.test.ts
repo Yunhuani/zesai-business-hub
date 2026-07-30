@@ -44,9 +44,29 @@ describe("diagnosis report reading flow", () => {
     expect(closingSource).toContain("onClick={downloadPdf}");
     expect(closingSource).toContain("report-screen-only");
     expect(closingSource).toContain("!pdfMode");
-    expect(closingSource).toContain("下载 PDF · 500 积分");
+    expect(closingSource).toContain('"下载 PDF"');
+    expect(reportSource).not.toContain("下载 PDF · 500 积分");
+    expect(reportSource).not.toContain("首次下载需要 500 积分");
     expect(closingGuardIndex).toBeGreaterThan(-1);
     expect(reportSource).toContain("async function downloadPdf()");
+  });
+
+  it("shows the 1000-credit unlock and recharge actions only for locked reports", () => {
+    const unlockIndex = reportSource.indexOf("{!fullAccess ? (");
+    const fullReportIndex = reportSource.indexOf(
+      "{fullAccess ? report.dimensions.map"
+    );
+    const unlockSource = reportSource.slice(unlockIndex, fullReportIndex);
+
+    expect(unlockIndex).toBeGreaterThan(-1);
+    expect(fullReportIndex).toBeGreaterThan(unlockIndex);
+    expect(reportSource).toContain("const requiredUnlockCredits = 1000");
+    expect(unlockSource).toContain("积分不足,充值后可解锁完整报告");
+    expect(unlockSource).toContain('href="/credits"');
+    expect(unlockSource).toContain("去充值");
+    expect(unlockSource).toContain("解锁完整报告(消耗1000积分)");
+    expect(reportSource).not.toContain("1,500");
+    expect(reportSource).not.toContain("1500 积分");
   });
 
   it("shows customer-safe data quality guidance only in the full report flow", () => {

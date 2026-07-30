@@ -116,7 +116,7 @@ export default function DiagnosisReport() {
     ? buildDiagnosisReport(query.data)
     : null;
   const fullAccess = query.data?.fullAccess === true;
-  const requiredUnlockCredits = 1500;
+  const requiredUnlockCredits = 1000;
   const creditsQuery = trpc.credits.get.useQuery(undefined, {
     enabled:
       isAuthenticated &&
@@ -154,10 +154,6 @@ export default function DiagnosisReport() {
         }
       );
       if (!response.ok) {
-        if (response.status === 402) {
-          toast.error("积分不足，首次下载需要 500 积分");
-          return;
-        }
         throw new Error("PDF generation failed");
       }
 
@@ -248,7 +244,6 @@ export default function DiagnosisReport() {
   const radarHasMissingScores = radarDimensions.some(
     dimension => dimension.score === null
   );
-  const pdfPurchased = query.data?.pdfPurchased === true;
   const reportDate = formatReportDate(report.createdAt);
   const missingInformation = Array.from(new Set(
     report.dataQuality?.dimensions.flatMap(
@@ -559,7 +554,7 @@ export default function DiagnosisReport() {
                 解锁完整 NBG 增长诊断
               </h2>
               <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-[#9DA4B3]">
-                查看完整五维分析、证据链、风险判断和行动建议。解锁基于本次已生成结果，不会重新等待分析。
+                积分不足,充值后可解锁完整报告
               </p>
               <p className="mt-5 text-sm text-[#B5BAC5]">
                 {creditsQuery.isLoading
@@ -567,8 +562,8 @@ export default function DiagnosisReport() {
                   : creditsQuery.isError
                     ? "余额暂时无法读取，点击后将再次校验"
                     : hasEnoughCredits
-                      ? `当前积分:${currentCredits.toLocaleString()} / 需要 1,500,可立即解锁`
-                      : `当前积分:${currentCredits.toLocaleString()} / 需要 1,500,还差 ${missingCredits.toLocaleString()} 积分`}
+                      ? `当前积分:${currentCredits.toLocaleString()} / 需要 1,000,可立即解锁`
+                      : `当前积分:${currentCredits.toLocaleString()} / 需要 1,000,还差 ${missingCredits.toLocaleString()} 积分`}
               </p>
               <button
                 type="button"
@@ -583,21 +578,11 @@ export default function DiagnosisReport() {
                 )}
                 {unlockDiagnosis.isPending
                   ? "正在解锁"
-                  : creditsQuery.data && !hasEnoughCredits
-                    ? `积分不足,差 ${missingCredits.toLocaleString()} 积分`
-                    : "解锁完整报告 · 1500 积分"}
+                  : "解锁完整报告(消耗1000积分)"}
               </button>
-              {creditsQuery.data && !hasEnoughCredits ? (
-                <div className="mt-5 flex justify-center gap-5 text-sm">
-                  <Link href="/credits" className="text-[#FFD166]">购买积分</Link>
-                  <Link href="/pricing" className="text-[#FFD166]">查看套餐</Link>
-                </div>
-              ) : unlockDiagnosis.error?.message.includes("INSUFFICIENT_CREDITS") ? (
-                <div className="mt-5 flex justify-center gap-5 text-sm">
-                  <Link href="/credits" className="text-[#FFD166]">购买积分</Link>
-                  <Link href="/pricing" className="text-[#FFD166]">查看套餐</Link>
-                </div>
-              ) : null}
+              <div className="mt-5 flex justify-center text-sm">
+                <Link href="/credits" className="text-[#FFD166]">去充值</Link>
+              </div>
             </div>
           </section>
         ) : null}
@@ -796,11 +781,7 @@ export default function DiagnosisReport() {
                   ) : (
                     <Download className="h-4 w-4" />
                   )}
-                  {downloading
-                    ? "正在生成"
-                    : pdfPurchased
-                      ? "下载 PDF"
-                      : "下载 PDF · 500 积分"}
+                  {downloading ? "正在生成" : "下载 PDF"}
                 </button>
               ) : null}
             </div>
