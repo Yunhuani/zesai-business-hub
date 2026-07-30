@@ -9,7 +9,7 @@ describe("anonymous advisor turn limit", () => {
   it("allows the first turn without registration guidance", () => {
     expect(getNextAnonymousTurnState(0)).toEqual({
       allowed: true,
-      nextTurns: ANONYMOUS_ADVISOR_LIMIT,
+      nextTurns: 1,
       shouldAppendGuidance: false,
     });
   });

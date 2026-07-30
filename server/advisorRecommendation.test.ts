@@ -28,6 +28,8 @@ describe("advisor recommendation classifier", () => {
     await expect(classifyAdvisorRecommendation({
       question: "公司增长停滞，应该先查哪里？",
       history: [
+        { role: "user", content: "补充一次实质提问。" },
+        { role: "assistant", content: "补充一次回答。" },
         { role: "user", content: "最近经营有些问题。" },
         { role: "assistant", content: "具体是什么表现？" },
         { role: "user", content: "增长已经停了几个月。" },
@@ -63,7 +65,7 @@ describe("advisor recommendation classifier", () => {
     }).success).toBe(false);
   });
 
-  it("does not invoke the classifier before the third substantive user turn", async () => {
+  it("does not invoke the classifier before the fifth substantive user turn", async () => {
     const invoke = vi.fn(async () => llmResult(JSON.stringify({
       key: "nbg_growth_diagnosis",
       reason: "增长问题需要系统诊断。",
@@ -88,6 +90,10 @@ describe("advisor recommendation classifier", () => {
     await expect(classifyAdvisorRecommendation({
       question: "这是第三次实质提问。",
       history: [
+        { role: "user", content: "补充的第一次实质提问。" },
+        { role: "assistant", content: "补充的第一次回答。" },
+        { role: "user", content: "补充的第二次实质提问。" },
+        { role: "assistant", content: "补充的第二次回答。" },
         { role: "user", content: "第一次实质提问。" },
         { role: "assistant", content: "第一次回答。" },
         { role: "user", content: "第二次实质提问。" },
@@ -107,6 +113,8 @@ describe("advisor recommendation classifier", () => {
     await expect(classifyAdvisorRecommendation({
       question: "团队成员没有活力，怎么提升管理？",
       history: [
+        { role: "user", content: "补充一次管理问题。" },
+        { role: "assistant", content: "补充一次管理回答。" },
         { role: "user", content: "团队最近状态不好。" },
         { role: "assistant", content: "主要表现在哪？" },
         { role: "user", content: "成员缺乏主动性。" },
@@ -129,6 +137,8 @@ describe("advisor recommendation classifier", () => {
     await expect(classifyAdvisorRecommendation({
       question: "公司业绩持续上不去，想系统解决。",
       history: [
+        { role: "user", content: "补充一次增长问题。" },
+        { role: "assistant", content: "补充一次增长回答。" },
         { role: "user", content: "公司增长遇到问题。" },
         { role: "assistant", content: "最明显的表现是什么？" },
         { role: "user", content: "销售额持续下降。" },
@@ -149,6 +159,8 @@ describe("advisor recommendation classifier", () => {
     await expect(classifyAdvisorRecommendation({
       question: "随便聊聊",
       history: [
+        { role: "user", content: "补充的测试问题。" },
+        { role: "assistant", content: "补充的测试回答。" },
         { role: "user", content: "第一个问题。" },
         { role: "assistant", content: "第一个回答。" },
         { role: "user", content: "第二个问题。" },

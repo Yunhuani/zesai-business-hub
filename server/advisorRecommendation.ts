@@ -48,7 +48,7 @@ export async function classifyAdvisorRecommendation({
   const currentQuestionAlreadyIncluded =
     userMessages.at(-1)?.content.trim() === question.trim();
   const userTurnCount = userMessages.length + (currentQuestionAlreadyIncluded ? 0 : 1);
-  if (userTurnCount < 3) return null;
+  if (userTurnCount < 5) return null;
 
   const context = history
     .slice(-6)
