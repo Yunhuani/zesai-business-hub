@@ -42,10 +42,18 @@ vi.mock("./creditsManager", async importOriginal => {
   const actual = await importOriginal<typeof import("./creditsManager")>();
   return {
     ...actual,
-    deductCreditsOnce: vi.fn(),
+    checkAndResetCredits: vi.fn(async () => undefined),
+    deductCreditsOnceInTx: vi.fn(async () => ({
+      success: true,
+      charged: true,
+    })),
     refundDiagnosisFullIfCharged: vi.fn(async () => ({ refunded: false, amount: 0 })),
   };
 });
+
+vi.mock("./pricingConfig", () => ({
+  getActionCredits: vi.fn(async () => 1000),
+}));
 
 describe("diagnosis retry", () => {
   beforeEach(() => {
@@ -55,7 +63,7 @@ describe("diagnosis retry", () => {
     vi.clearAllMocks();
   });
 
-  it("resets an owned failed diagnosis and reruns the stored intake without charging credits", async () => {
+  it("resets an owned failed diagnosis, charges once, and reruns the stored intake", async () => {
     diagnosisRows.push({
       id: 42,
       userId: 7,
@@ -65,7 +73,7 @@ describe("diagnosis retry", () => {
     });
     const { retryDiagnosis } = await import("./diagnosisService");
     const { runNbgDiagnosis } = await import("./nbgClient");
-    const { deductCreditsOnce, refundDiagnosisFullIfCharged } = await import("./creditsManager");
+    const { deductCreditsOnceInTx, refundDiagnosisFullIfCharged } = await import("./creditsManager");
 
     await expect(retryDiagnosis(42, 7)).resolves.toEqual({
       diagnosisId: 42,
@@ -85,10 +93,21 @@ describe("diagnosis retry", () => {
       pdfCreditsDeducted: 0,
       retryCount: 2,
     });
+    expect(deductCreditsOnceInTx).toHaveBeenCalledWith(
+      expect.anything(),
+      7,
+      1000,
+      "NBG 诊断生成 - Diagnosis #42",
+      42,
+      "diagnosis_full"
+    );
+    expect(transactionUpdates[1]).toEqual({
+      productType: "full",
+      fullCreditsDeducted: 1000,
+    });
     await vi.waitFor(() => {
       expect(runNbgDiagnosis).toHaveBeenCalledWith({ company: { name: "海拓精密" } });
     });
-    expect(deductCreditsOnce).not.toHaveBeenCalled();
     expect(refundDiagnosisFullIfCharged).not.toHaveBeenCalled();
   });
 

@@ -35,8 +35,8 @@ export const ACTION_KEYS = {
 const DEFAULT_ROWS: PricingEntry[] = [
   { key: ACTION_KEYS.chat, category: "action", name: "对话", credits: 10, priceCents: null, monthlyCredits: null, durationDays: null, permanent: false },
   { key: ACTION_KEYS.quick_analysis, category: "action", name: "快速分析", credits: 200, priceCents: null, monthlyCredits: null, durationDays: null, permanent: false },
-  { key: ACTION_KEYS.diagnosis_full, category: "action", name: "诊断（在线生成查看）", credits: 1500, priceCents: null, monthlyCredits: null, durationDays: null, permanent: false },
-  { key: ACTION_KEYS.diagnosis_pdf, category: "action", name: "诊断下载 PDF", credits: 500, priceCents: null, monthlyCredits: null, durationDays: null, permanent: false },
+  { key: ACTION_KEYS.diagnosis_full, category: "action", name: "诊断（在线生成查看）", credits: 1000, priceCents: null, monthlyCredits: null, durationDays: null, permanent: false },
+  { key: ACTION_KEYS.diagnosis_pdf, category: "action", name: "诊断下载 PDF", credits: 0, priceCents: null, monthlyCredits: null, durationDays: null, permanent: false },
   { key: ACTION_KEYS.business_plan, category: "action", name: "商业计划书", credits: 1800, priceCents: null, monthlyCredits: null, durationDays: null, permanent: false },
   { key: ACTION_KEYS.equity_structure, category: "action", name: "股权架构", credits: 1800, priceCents: null, monthlyCredits: null, durationDays: null, permanent: false },
   { key: ACTION_KEYS.report_redownload, category: "action", name: "重下已购报告", credits: 0, priceCents: null, monthlyCredits: null, durationDays: null, permanent: false },

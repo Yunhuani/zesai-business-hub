@@ -21,6 +21,32 @@ const DIAGNOSIS_TIMEOUT_MS = 15 * 60 * 1000;
 const INTERRUPTED_DIAGNOSIS_ERROR = "Diagnosis interrupted or timed out";
 const MAX_DIAGNOSIS_RETRY_COUNT = 3;
 
+async function chargeDiagnosisFullIfPossible(
+  tx: Parameters<typeof deductCreditsOnceInTx>[0],
+  userId: number,
+  diagnosisId: number,
+  credits: number
+): Promise<boolean> {
+  const charge = await deductCreditsOnceInTx(
+    tx,
+    userId,
+    credits,
+    `NBG 诊断生成 - Diagnosis #${diagnosisId}`,
+    diagnosisId,
+    "diagnosis_full"
+  );
+  if (!charge.success) return false;
+
+  await tx
+    .update(diagnoses)
+    .set({
+      productType: "full",
+      fullCreditsDeducted: credits,
+    })
+    .where(eq(diagnoses.id, diagnosisId));
+  return true;
+}
+
 const TRANSIENT_DATABASE_ERROR_CODES = new Set([
   "ECONNRESET",
   "ETIMEDOUT",
@@ -206,13 +232,23 @@ export async function createDiagnosis(
     return insertResult.insertId;
   };
 
-  const diagnosisId = options?.clearDraftFlowKey
-    ? await db.transaction(async tx => {
-        const id = await createRecord(tx);
+  const fullCredits = productType === "full"
+    ? await (async () => {
+        await checkAndResetCredits(userId);
+        return getActionCredits("diagnosis_full");
+      })()
+    : null;
+
+  const diagnosisId = await db.transaction(async tx => {
+    const id = await createRecord(tx);
+    if (options?.clearDraftFlowKey) {
         await deleteDiagnosisDraft(userId, options.clearDraftFlowKey!, tx);
-        return id;
-      })
-    : await createRecord(db);
+    }
+    if (fullCredits !== null) {
+      await chargeDiagnosisFullIfPossible(tx, userId, id, fullCredits);
+    }
+    return id;
+  });
 
   void processDiagnosis(diagnosisId, intake);
 
@@ -244,6 +280,9 @@ export async function retryDiagnosis(
     throw new Error("Diagnosis intake is invalid");
   }
 
+  await checkAndResetCredits(userId);
+  const fullCredits = await getActionCredits("diagnosis_full");
+
   await db.transaction(async tx => {
     await tx
       .update(diagnoses)
@@ -261,6 +300,13 @@ export async function retryDiagnosis(
         retryCount: retryCount + 1,
       })
       .where(eq(diagnoses.id, diagnosisId));
+
+    await chargeDiagnosisFullIfPossible(
+      tx,
+      userId,
+      diagnosisId,
+      fullCredits
+    );
   });
 
   void processDiagnosis(diagnosisId, intake);

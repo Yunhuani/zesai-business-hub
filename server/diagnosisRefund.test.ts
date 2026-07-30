@@ -57,23 +57,23 @@ describe("diagnosis full refund", () => {
 
   it("refunds a pure subscription charge back to the subscription bucket", async () => {
     queueRefundReads({
-      charge: [{ id: 7, userId: 3, amount: -1500, balancePurchased: 0, balanceSubscription: 0 }],
-      previous: [{ balancePurchased: 0, balanceSubscription: 1500 }],
+      charge: [{ id: 7, userId: 3, amount: -1000, balancePurchased: 0, balanceSubscription: 0 }],
+      previous: [{ balancePurchased: 0, balanceSubscription: 1000 }],
       user: [{ id: 3, creditsPurchased: 0, creditsSubscription: 0 }],
     });
     const { refundDiagnosisFullIfCharged } = await import("./creditsManager");
 
     const result = await refundDiagnosisFullIfCharged(42);
 
-    expect(result).toEqual({ refunded: true, amount: 1500 });
-    expect(userUpdates).toEqual([{ creditsPurchased: 0, creditsSubscription: 1500 }]);
+    expect(result).toEqual({ refunded: true, amount: 1000 });
+    expect(userUpdates).toEqual([{ creditsPurchased: 0, creditsSubscription: 1000 }]);
     expect(insertedTransactions).toEqual([
       expect.objectContaining({
         userId: 3,
         type: "refund",
-        amount: 1500,
+        amount: 1000,
         balancePurchased: 0,
-        balanceSubscription: 1500,
+        balanceSubscription: 1000,
         relatedDiagnosisId: 42,
         billingKey: "refund:diagnosis_full",
       }),
@@ -82,39 +82,39 @@ describe("diagnosis full refund", () => {
 
   it("refunds a pure purchased-credit charge back to the purchased bucket", async () => {
     queueRefundReads({
-      charge: [{ id: 7, userId: 3, amount: -1500, balancePurchased: 0, balanceSubscription: 0 }],
-      previous: [{ balancePurchased: 1500, balanceSubscription: 0 }],
+      charge: [{ id: 7, userId: 3, amount: -1000, balancePurchased: 0, balanceSubscription: 0 }],
+      previous: [{ balancePurchased: 1000, balanceSubscription: 0 }],
       user: [{ id: 3, creditsPurchased: 0, creditsSubscription: 0 }],
     });
     const { refundDiagnosisFullIfCharged } = await import("./creditsManager");
 
     const result = await refundDiagnosisFullIfCharged(42);
 
-    expect(result.amount).toBe(1500);
-    expect(userUpdates).toEqual([{ creditsPurchased: 1500, creditsSubscription: 0 }]);
+    expect(result.amount).toBe(1000);
+    expect(userUpdates).toEqual([{ creditsPurchased: 1000, creditsSubscription: 0 }]);
     expect(insertedTransactions[0]).toEqual(expect.objectContaining({
-      amount: 1500,
-      balancePurchased: 1500,
+      amount: 1000,
+      balancePurchased: 1000,
       balanceSubscription: 0,
     }));
   });
 
   it("refunds mixed charges symmetrically across both buckets", async () => {
     queueRefundReads({
-      charge: [{ id: 7, userId: 3, amount: -1500, balancePurchased: 0, balanceSubscription: 0 }],
-      previous: [{ balancePurchased: 1000, balanceSubscription: 500 }],
+      charge: [{ id: 7, userId: 3, amount: -1000, balancePurchased: 0, balanceSubscription: 0 }],
+      previous: [{ balancePurchased: 600, balanceSubscription: 400 }],
       user: [{ id: 3, creditsPurchased: 0, creditsSubscription: 0 }],
     });
     const { refundDiagnosisFullIfCharged } = await import("./creditsManager");
 
     const result = await refundDiagnosisFullIfCharged(42);
 
-    expect(result.amount).toBe(1500);
-    expect(userUpdates).toEqual([{ creditsPurchased: 1000, creditsSubscription: 500 }]);
+    expect(result.amount).toBe(1000);
+    expect(userUpdates).toEqual([{ creditsPurchased: 600, creditsSubscription: 400 }]);
     expect(insertedTransactions[0]).toEqual(expect.objectContaining({
-      amount: 1500,
-      balancePurchased: 1000,
-      balanceSubscription: 500,
+      amount: 1000,
+      balancePurchased: 600,
+      balanceSubscription: 400,
     }));
     expect(
       (userUpdates[0] as { creditsPurchased: number; creditsSubscription: number }).creditsPurchased +
@@ -123,7 +123,7 @@ describe("diagnosis full refund", () => {
   });
 
   it("does not refund diagnosis_full twice", async () => {
-    selectResponses.push([{ id: 7, userId: 3, amount: -1500 }], [{ id: 8 }]);
+    selectResponses.push([{ id: 7, userId: 3, amount: -1000 }], [{ id: 8 }]);
     const { refundDiagnosisFullIfCharged } = await import("./creditsManager");
 
     const result = await refundDiagnosisFullIfCharged(42);

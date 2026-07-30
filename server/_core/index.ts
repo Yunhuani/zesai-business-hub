@@ -356,30 +356,6 @@ async function startServer() {
         }
       }
 
-      let pdfAlreadyPurchased = preview || diagnosis.pdfPurchased === 1;
-      let pdfCredits = 0;
-      if (!preview) {
-        const {
-          checkAndResetCredits,
-          checkCredits,
-          hasCreditCharge,
-        } = await import("../creditsManager");
-        const { getActionCredits } = await import("../pricingConfig");
-        pdfAlreadyPurchased =
-          pdfAlreadyPurchased ||
-          await hasCreditCharge(diagnosisId, "diagnosis_pdf");
-        if (!pdfAlreadyPurchased) {
-          await checkAndResetCredits(diagnosis.userId);
-          pdfCredits = await getActionCredits("diagnosis_pdf");
-          if (!await checkCredits(diagnosis.userId, pdfCredits)) {
-            return res.status(402).json({
-              error: "INSUFFICIENT_CREDITS",
-              required: pdfCredits,
-            });
-          }
-        }
-      }
-
       const protocol = req.protocol;
       const baseUrl = `${protocol}://${req.get("host")}`;
       const authToken = req.headers.authorization?.replace(/^Bearer\s+/i, "");
@@ -391,25 +367,6 @@ async function startServer() {
         authToken,
         cookieHeader: req.headers.cookie,
       });
-
-      if (!preview && !pdfAlreadyPurchased) {
-        const { deductCreditsOnce } = await import("../creditsManager");
-        const charge = await deductCreditsOnce(
-          diagnosis.userId,
-          pdfCredits,
-          `诊断 PDF - Diagnosis #${diagnosisId}`,
-          diagnosisId,
-          "diagnosis_pdf"
-        );
-        if (!charge.success) {
-          return res.status(402).json({
-            error: "INSUFFICIENT_CREDITS",
-            required: pdfCredits,
-          });
-        }
-        const { markDiagnosisPdfPurchased } = await import("../diagnosisService");
-        await markDiagnosisPdfPurchased(diagnosisId, pdfCredits);
-      }
 
       const company = diagnosis.intake && typeof diagnosis.intake === "object"
         ? (diagnosis.intake as any).company?.name

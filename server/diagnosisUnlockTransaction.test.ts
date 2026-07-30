@@ -89,7 +89,7 @@ vi.mock("./pricingConfig", async importOriginal => {
   const actual = await importOriginal<typeof import("./pricingConfig")>();
   return {
     ...actual,
-    getActionCredits: vi.fn(async () => 1500),
+    getActionCredits: vi.fn(async () => 1000),
   };
 });
 
