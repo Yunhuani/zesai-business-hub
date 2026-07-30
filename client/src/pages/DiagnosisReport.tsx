@@ -3,6 +3,7 @@ import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft,
   ArrowRight,
+  Check,
   CircleAlert,
   Download,
   LoaderCircle,
@@ -22,6 +23,13 @@ import {
   buildDiagnosisReport,
   type DiagnosisReportDimension,
 } from "./diagnosisReportData";
+
+const UNLOCK_BENEFITS = [
+  "五个维度逐项深度分析（评分、判断、推理链、证据）",
+  "全部三个关键发现",
+  "从诊断到行动的下一步增长方向",
+  "完整报告PDF下载",
+] as const;
 
 function formatReportDate(value: string | null): string {
   const date = value ? new Date(value) : new Date();
@@ -250,6 +258,9 @@ export default function DiagnosisReport() {
       dimension => dimension.missingInformation
     ) ?? []
   ));
+  const visibleKeyFindings = fullAccess
+    ? report.keyFindings
+    : report.keyFindings.slice(0, 1);
 
   return (
     <div
@@ -556,6 +567,19 @@ export default function DiagnosisReport() {
               <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-[#9DA4B3]">
                 积分不足,充值后可解锁完整报告
               </p>
+              <div className="mx-auto mt-8 max-w-xl border border-[#E8B84B]/25 bg-[#17160F] p-6 text-left">
+                <p className="text-sm font-semibold text-[#FFD166]">
+                  解锁后可查看
+                </p>
+                <ul className="mt-5 grid gap-3 text-sm leading-6 text-[#B5BAC5]">
+                  {UNLOCK_BENEFITS.map(benefit => (
+                    <li key={benefit} className="flex items-start gap-3">
+                      <Check className="mt-1 h-4 w-4 shrink-0 text-[#E8B84B]" />
+                      <span>{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
               <p className="mt-5 text-sm text-[#B5BAC5]">
                 {creditsQuery.isLoading
                   ? "正在读取积分…"
@@ -713,7 +737,7 @@ export default function DiagnosisReport() {
                 决定公司下一步的三个关键发现
               </h2>
               <div className="mt-14 grid gap-px overflow-hidden border border-white/[0.08] bg-white/[0.08] lg:grid-cols-3">
-                {report.keyFindings.map((finding, index) => (
+                {visibleKeyFindings.map((finding, index) => (
                   <article
                     key={finding.id ?? finding.title}
                     className="report-card bg-[#121317] p-7 sm:p-9"
@@ -738,6 +762,22 @@ export default function DiagnosisReport() {
                     ) : null}
                   </article>
                 ))}
+                {!fullAccess
+                  ? Array.from({ length: 2 }, (_, index) => (
+                      <article
+                        key={`locked-finding-${index}`}
+                        className="report-card flex min-h-64 flex-col items-center justify-center bg-[#17181D] p-7 text-center sm:p-9"
+                      >
+                        <span className="font-mono text-xs text-[#6E7180]">
+                          0{index + 2}
+                        </span>
+                        <LockKeyhole className="mt-8 h-7 w-7 text-[#E8B84B]" />
+                        <p className="mt-5 max-w-48 text-sm leading-7 text-[#9DA4B3]">
+                          解锁完整报告查看全部关键发现
+                        </p>
+                      </article>
+                    ))
+                  : null}
               </div>
             </div>
           </section>

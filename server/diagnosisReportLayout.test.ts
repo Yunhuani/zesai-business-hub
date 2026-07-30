@@ -69,6 +69,41 @@ describe("diagnosis report reading flow", () => {
     expect(reportSource).not.toContain("1500 积分");
   });
 
+  it("shows one real key finding and two data-free placeholders in preview", () => {
+    const findingsIndex = reportSource.indexOf('className="report-findings');
+    const closingIndex = reportSource.indexOf('className="report-closing');
+    const findingsSource = reportSource.slice(findingsIndex, closingIndex);
+
+    expect(reportSource).toMatch(
+      /fullAccess\s*\?\s*report\.keyFindings\s*:\s*report\.keyFindings\.slice\(0,\s*1\)/
+    );
+    expect(findingsSource).toContain("visibleKeyFindings.map");
+    expect(findingsSource).toContain("Array.from({ length: 2 }");
+    expect(findingsSource).toContain("解锁完整报告查看全部关键发现");
+  });
+
+  it("lists the four report benefits before the unlock action", () => {
+    const unlockIndex = reportSource.indexOf("{!fullAccess ? (");
+    const fullReportIndex = reportSource.indexOf(
+      "{fullAccess ? report.dimensions.map"
+    );
+    const unlockSource = reportSource.slice(unlockIndex, fullReportIndex);
+    const benefitsIndex = unlockSource.indexOf("解锁后可查看");
+    const unlockButtonIndex = unlockSource.indexOf(
+      "解锁完整报告(消耗1000积分)"
+    );
+
+    expect(benefitsIndex).toBeGreaterThan(-1);
+    expect(benefitsIndex).toBeLessThan(unlockButtonIndex);
+    expect(unlockSource).toContain("UNLOCK_BENEFITS.map");
+    expect(reportSource).toContain(
+      "五个维度逐项深度分析（评分、判断、推理链、证据）"
+    );
+    expect(reportSource).toContain("全部三个关键发现");
+    expect(reportSource).toContain("从诊断到行动的下一步增长方向");
+    expect(reportSource).toContain("完整报告PDF下载");
+  });
+
   it("shows customer-safe data quality guidance only in the full report flow", () => {
     const qualityIndex = reportSource.indexOf("本次报告的信息基础");
     const healthOverviewIndex = reportSource.indexOf("Health examination");
