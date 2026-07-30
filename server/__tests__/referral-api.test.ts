@@ -7,8 +7,8 @@ import { z } from "zod";
 describe("Referral API - Route Definitions", () => {
   it("should have getMyCode procedure", async () => {
     // 验证referral.ts中的getMyCode接口定义
-    const code = "ZESAI-ABC123";
-    expect(code).toMatch(/^ZESAI-[A-Z0-9]{6}$/);
+    const code = "ZESI-ABC123";
+    expect(code).toMatch(/^ZESI-[A-Z0-9]{6}$/);
   });
 
   it("should have getMyStats procedure", async () => {
@@ -164,8 +164,8 @@ describe("Referral API - Route Definitions", () => {
 describe("Referral Database Functions", () => {
   it("should generate valid referral code", () => {
     // 验证邀请码格式
-    const code = "ZESAI-ABC123";
-    expect(code).toMatch(/^ZESAI-[A-Z0-9]{6}$/);
+    const code = "ZESI-ABC123";
+    expect(code).toMatch(/^ZESI-[A-Z0-9]{6}$/);
   });
 
   it("should handle referral relationships correctly", () => {
@@ -244,12 +244,12 @@ describe("Referral Business Flow", () => {
     // 验证注册流程
     const newUser = {
       email: "newuser@example.com",
-      referralCode: "ZESAI-ABC123",
+      referralCode: "ZESI-ABC123",
     };
 
     const referrer = {
       id: 1,
-      referralCode: "ZESAI-ABC123",
+      referralCode: "ZESI-ABC123",
     };
 
     // 检查邀请码是否匹配

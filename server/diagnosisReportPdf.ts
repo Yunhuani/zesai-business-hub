@@ -244,7 +244,7 @@ export async function renderDiagnosisReportPdf({
       footerTemplate: `
         <div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box;width:100%;height:100%;margin:0;background:#121317;font-family:'Noto Sans SC',sans-serif;color:#7f8592;">
           <div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box;width:100%;height:10mm;margin:0;padding:0 14mm 4mm;background:#121317;display:flex;align-items:flex-end;justify-content:space-between;font-size:8px;">
-            <span>泽思AI · zesai&#46;com</span>
+            <span>泽思AI · zesiai&#46;com</span>
             <span><span class="pageNumber"></span> / <span class="totalPages"></span></span>
           </div>
         </div>

@@ -10,12 +10,12 @@ describe("Referral Complete Business Flow", () => {
       day0: {
         event: "推荐人分享邀请码",
         referrerId: 1,
-        referralCode: "ZESAI-ABC123",
+        referralCode: "ZESI-ABC123",
       },
       day1: {
         event: "新用户注册",
         refereeId: 2,
-        referralCode: "ZESAI-ABC123",
+        referralCode: "ZESI-ABC123",
         status: "pending",
       },
       day2: {
@@ -66,7 +66,7 @@ describe("Referral Complete Business Flow", () => {
     };
 
     // 验证流程的各个阶段
-    expect(timeline.day0.referralCode).toMatch(/^ZESAI-[A-Z0-9]{6}$/);
+    expect(timeline.day0.referralCode).toMatch(/^ZESI-[A-Z0-9]{6}$/);
     expect(timeline.day1.status).toBe("pending");
     expect(timeline.day2.reward.credits).toBe(200);
     expect(timeline.day2.referralStatus).toBe("completed");
@@ -233,7 +233,7 @@ describe("Referral Data Consistency", () => {
       id: 1,
       referrerId: 1,
       refereeId: 2,
-      referralCode: "ZESAI-ABC123",
+      referralCode: "ZESI-ABC123",
       status: "completed",
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -243,7 +243,7 @@ describe("Referral Data Consistency", () => {
     expect(referral.referrerId).not.toBe(referral.refereeId);
 
     // 邀请码必须有效
-    expect(referral.referralCode).toMatch(/^ZESAI-[A-Z0-9]{6}$/);
+    expect(referral.referralCode).toMatch(/^ZESI-[A-Z0-9]{6}$/);
 
     // 状态必须有效
     expect(["pending", "completed"]).toContain(referral.status);

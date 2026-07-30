@@ -43,7 +43,7 @@ export async function getDb() {
  * 生成用户专属邀请码
  */
 export function generateReferralCode(userId: number): string {
-  const prefix = "ZESAI";
+  const prefix = "ZESI";
   const random = Math.random().toString(36).substring(2, 8).toUpperCase();
   return `${prefix}-${random}`;
 }

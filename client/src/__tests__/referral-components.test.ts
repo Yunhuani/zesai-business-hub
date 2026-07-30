@@ -122,13 +122,13 @@ describe("Referral Frontend Data Flow", () => {
       trigger: "component mount",
       api: "trpc.referral.getMyCode.useQuery()",
       response: {
-        code: "ZESAI-ABC123",
-        url: "https://www.zesiai.com?ref=ZESAI-ABC123",
+        code: "ZESI-ABC123",
+        url: "https://www.zesiai.com?ref=ZESI-ABC123",
       },
     };
 
     expect(flow.api).toContain("getMyCode");
-    expect(flow.response.code).toMatch(/^ZESAI-[A-Z0-9]{6}$/);
+    expect(flow.response.code).toMatch(/^ZESI-[A-Z0-9]{6}$/);
   });
 
   it("should fetch referral stats on component mount", () => {
@@ -238,7 +238,7 @@ describe("Referral Frontend User Interactions", () => {
     const action = {
       trigger: "用户点击复制按钮",
       function: "handleCopyCode",
-      clipboard: "ZESAI-ABC123",
+      clipboard: "ZESI-ABC123",
       toast: "邀请码已复制",
     };
 
@@ -251,7 +251,7 @@ describe("Referral Frontend User Interactions", () => {
     const action = {
       trigger: "用户点击复制链接按钮",
       function: "handleCopyUrl",
-      clipboard: "https://www.zesiai.com?ref=ZESAI-ABC123",
+      clipboard: "https://www.zesiai.com?ref=ZESI-ABC123",
       toast: "邀请链接已复制",
     };
 
@@ -267,7 +267,7 @@ describe("Referral Frontend User Interactions", () => {
       shareData: {
         title: "泽思AI商业智库",
         text: "我在用泽思AI，邀请你一起来！",
-        url: "https://www.zesiai.com?ref=ZESAI-ABC123",
+        url: "https://www.zesiai.com?ref=ZESI-ABC123",
       },
     };
 

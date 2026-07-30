@@ -389,7 +389,7 @@ export default function DiagnosisReport() {
               基于 NBG 增长解码体系
             </p>
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#6E7180]">
-              ZESAI.COM
+              ZESIAI.COM
             </p>
           </div>
         </section>
@@ -838,7 +838,7 @@ export default function DiagnosisReport() {
             <div className="grid gap-12 py-14 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#E8B84B]">
-                  About Zesai AI
+                  About ZESI AI
                 </p>
                 <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] sm:text-5xl">
                   关于泽思AI
@@ -860,7 +860,7 @@ export default function DiagnosisReport() {
               <p>
                 官网
                 <br />
-                <span className="font-mono text-[#F5F0E5]">zesai.com</span>
+                <span className="font-mono text-[#F5F0E5]">zesiai.com</span>
               </p>
               <p>
                 报告类型

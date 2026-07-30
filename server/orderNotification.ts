@@ -152,7 +152,7 @@ export async function notifyAdminNewOrder(orderInfo: OrderInfo): Promise<void> {
   </div>
 
   <div class="footer">
-    <p>泽思 Zenith AI - 专业AI商业咨询平台</p>
+    <p>泽思AI - 专业AI商业咨询平台</p>
     <p style="margin-top: 10px;">
       <a href="https://zesiai.com/admin/orders" style="color: #667eea; text-decoration: none;">
         查看订单管理后台 →

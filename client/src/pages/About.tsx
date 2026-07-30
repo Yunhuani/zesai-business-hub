@@ -20,7 +20,7 @@ export default function About() {
           {/* Section 1 */}
           <div className="glass-effect rounded-2xl p-8 shadow-sm hover:shadow-diffuse transition-smooth">
             <p className="text-lg">
-              泽思 AI（Zenith AI）不是通用 AI 工具，而是一个 <strong className="text-[var(--zs-primary)]">AI 驱动的商业咨询交付平台</strong>。
+              泽思AI不是通用 AI 工具，而是一个 <strong className="text-[var(--zs-primary)]">AI 驱动的商业咨询交付平台</strong>。
             </p>
             <p className="text-lg mt-4">
               我们的团队成员来自全球顶尖的管理咨询公司，以及世界500强科技公司。我们让高质量的商业决策，成为创业者和中小企业也能随时调用的能力。
