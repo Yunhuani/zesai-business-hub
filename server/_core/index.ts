@@ -49,6 +49,15 @@ async function startServer() {
   } catch (error) {
     console.error("[Diagnosis Recovery] Startup recovery failed:", error);
   }
+  try {
+    const { recoverInterruptedBusinessPlans } = await import("../businessPlanService");
+    const recovered = await recoverInterruptedBusinessPlans();
+    if (recovered > 0) {
+      console.log(`[Business Plan Recovery] Marked ${recovered} interrupted business plans as error`);
+    }
+  } catch (error) {
+    console.error("[Business Plan Recovery] Startup recovery failed:", error);
+  }
   const app = express();
   const server = createServer(app);
 
@@ -430,6 +439,12 @@ async function startServer() {
       startDiagnosisRecoveryScheduler();
     }).catch((err) => {
       console.error("[DiagnosisRecoveryScheduler] Failed to start:", err);
+    });
+
+    import("../businessPlanRecoveryScheduler").then(({ startBusinessPlanRecoveryScheduler }) => {
+      startBusinessPlanRecoveryScheduler();
+    }).catch((err) => {
+      console.error("[BusinessPlanRecoveryScheduler] Failed to start:", err);
     });
   });
 }
