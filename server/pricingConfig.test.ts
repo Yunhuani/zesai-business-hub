@@ -13,7 +13,7 @@ describe("pricing config", () => {
     expect(resolveActionCredits(DEFAULT_PRICING_CONFIG, "quick_analysis")).toBe(200);
     expect(resolveActionCredits(DEFAULT_PRICING_CONFIG, "diagnosis_full")).toBe(1000);
     expect(resolveActionCredits(DEFAULT_PRICING_CONFIG, "diagnosis_pdf")).toBe(0);
-    expect(resolveActionCredits(DEFAULT_PRICING_CONFIG, "business_plan")).toBe(1800);
+    expect(resolveActionCredits(DEFAULT_PRICING_CONFIG, "business_plan")).toBe(1500);
     expect(resolveActionCredits(DEFAULT_PRICING_CONFIG, "equity_structure")).toBe(1800);
     expect(resolveActionCredits(DEFAULT_PRICING_CONFIG, "report_redownload")).toBe(0);
   });
