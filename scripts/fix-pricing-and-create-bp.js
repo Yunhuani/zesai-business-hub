@@ -86,9 +86,9 @@ async function findConfigKeyUniqueIndexes(connection) {
     FROM information_schema.STATISTICS
     WHERE TABLE_SCHEMA = DATABASE()
       AND TABLE_NAME = 'pricingConfig'
+      AND NON_UNIQUE = 0
     GROUP BY INDEX_NAME, NON_UNIQUE
-    HAVING NON_UNIQUE = 0
-      AND columnsInIndex = 'configKey'
+    HAVING columnsInIndex = 'configKey'
   `);
   return rows;
 }
