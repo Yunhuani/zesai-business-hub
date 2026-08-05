@@ -16,6 +16,8 @@ export type BusinessPlanReportModule = {
   id: number;
   key: BusinessPlanModuleKey;
   title: string;
+  headline: string | null;
+  headlineSource: BusinessPlanSourceType | null;
   status: "success" | "error";
   errorMessage: string | null;
   fields: JsonObject;
@@ -96,6 +98,30 @@ export function parseBusinessPlanNumber(value: unknown): number {
   const amount = Number(match[0]);
   if (!Number.isFinite(amount)) return 0;
   return value.includes("亿") ? amount * 10_000 : amount;
+}
+
+export type BusinessPlanCoverage = {
+  regions: Array<{ name: string; value: number }>;
+  fallbackText: string | null;
+};
+
+export function parseBusinessPlanCoverage(
+  value: unknown
+): BusinessPlanCoverage {
+  const text = rawText(value);
+  if (!text) return { regions: [], fallbackText: null };
+
+  const coveragePart = /([^、，,\d\s]+)\s*(\d+(?:\.\d+)?)%/g;
+  const regions = [...text.matchAll(coveragePart)]
+    .map(match => ({ name: match[1], value: Number(match[2]) }))
+    .filter(region => Number.isFinite(region.value) && region.value >= 0);
+  const unparsed = text
+    .replace(coveragePart, "")
+    .replace(/[、，,；;\s]/g, "");
+
+  return regions.length > 0 && !unparsed
+    ? { regions, fallbackText: null }
+    : { regions: [], fallbackText: text };
 }
 
 function sourceType(value: unknown): BusinessPlanSourceType | null {
@@ -217,12 +243,24 @@ export function buildBusinessPlanReport(input: unknown): BusinessPlanReport {
       date: rawText(record.createdAt),
     },
     modules: MODULES.map(definition => {
-      const content = unwrapModuleFields(result[definition.key]);
+      const rawModule = object(result[definition.key]);
+      const content = unwrapModuleFields(rawModule);
       const status = moduleStatus(result.module_statuses, definition.id);
+      const headlineSources: Record<string, BusinessPlanSourceType> = {};
+      const headlineValue = unwrapFieldValue(
+        rawModule?.headline ?? object(rawModule?.fields)?.headline,
+        "headline",
+        headlineSources
+      );
+      const headlineSource = headlineSources.headline ?? null;
+      const headline =
+        headlineSource === "pending_customer" ? null : rawText(headlineValue);
       return {
         ...definition,
         ...status,
         ...content,
+        headline,
+        headlineSource,
         pendingItems: pendingItems.filter(
           item => item.moduleId === definition.id
         ),

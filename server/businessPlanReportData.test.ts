@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildBusinessPlanReport,
+  parseBusinessPlanCoverage,
   parseBusinessPlanNumber,
 } from "../client/src/pages/businessPlanReportData";
 
@@ -29,17 +30,28 @@ function recordFixture() {
       },
       demand: {
         module_id: 1,
+        headline: field(
+          "中小制造企业设备管理依赖经验,转型需求明确",
+          "engine_rewrite"
+        ),
         fields: {
           target_customer: field("面向中小制造企业,帮助管理者实时决策"),
           pain_points: field([
-            "设备状态依赖人工记录,决策没有依据",
-            "设备坏了才修,直接影响交期.",
+            {
+              pain_point: "设备状态依赖人工记录,决策没有依据",
+              rigid_demand: "管理者无法实时决策",
+            },
+            {
+              pain_point: "设备坏了才修,直接影响交期.",
+              rigid_demand: "非计划停机造成直接损失",
+            },
           ]),
           why_now: field("待补充", "pending_customer"),
         },
       },
       product_model: {
         module_id: 2,
+        headline: field("待补充", "pending_customer"),
         fields: {
           business_model: field({
             net_margin: field("待补充", "pending_customer"),
@@ -48,7 +60,12 @@ function recordFixture() {
       },
       market: { module_id: 3, fields: {} },
       competition: { module_id: 4, fields: {} },
-      current_state: { module_id: 5, fields: {} },
+      current_state: {
+        module_id: 5,
+        fields: {
+          coverage: field("华南60%、华东30%、其他10%"),
+        },
+      },
       plan: { module_id: 6, fields: {} },
       funding: { module_id: 7, fields: {} },
       team: { module_id: 8, fields: {} },
@@ -111,11 +128,42 @@ describe("buildBusinessPlanReport", () => {
       "面向中小制造企业，帮助管理者实时决策。"
     );
     expect(demand.fields.pain_points).toEqual([
-      "设备状态依赖人工记录，决策没有依据。",
-      "设备坏了才修，直接影响交期。",
+      {
+        pain_point: "设备状态依赖人工记录，决策没有依据。",
+        rigid_demand: "管理者无法实时决策。",
+      },
+      {
+        pain_point: "设备坏了才修，直接影响交期。",
+        rigid_demand: "非计划停机造成直接损失。",
+      },
     ]);
+    expect(demand.headline).toBe(
+      "中小制造企业设备管理依赖经验,转型需求明确"
+    );
+    expect(demand.headlineSource).toBe("engine_rewrite");
+    expect(report.modules[1].headline).toBeNull();
+    expect(report.modules[1].headlineSource).toBe("pending_customer");
     expect(demand.sources.target_customer).toBe("client_provided");
     expect(report.cover.slogan).toBe("设备联网、数据驱动、让制造更聪明");
+  });
+
+  it("parses coverage text and preserves unexpected formats for fallback display", () => {
+    expect(parseBusinessPlanCoverage("华南60%、华东30%、其他10%")).toEqual({
+      regions: [
+        { name: "华南", value: 60 },
+        { name: "华东", value: 30 },
+        { name: "其他", value: 10 },
+      ],
+      fallbackText: null,
+    });
+    expect(parseBusinessPlanCoverage("业务覆盖华南及华东地区")).toEqual({
+      regions: [],
+      fallbackText: "业务覆盖华南及华东地区",
+    });
+    expect(parseBusinessPlanCoverage("华南60%，覆盖其他地区")).toEqual({
+      regions: [],
+      fallbackText: "华南60%，覆盖其他地区",
+    });
   });
 
   it("filters search-only pending items but keeps customer-supplied gaps", () => {

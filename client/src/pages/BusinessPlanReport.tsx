@@ -4,13 +4,25 @@ import { useEffect, type ReactElement } from "react";
 import { Link, useParams } from "wouter";
 import {
   buildBusinessPlanReport,
+  parseBusinessPlanCoverage,
   parseBusinessPlanNumber,
   type BusinessPlanReportModule,
 } from "./businessPlanReportData";
 
 type JsonObject = Record<string, unknown>;
+type PageVariant =
+  | "full"
+  | "solution"
+  | "business"
+  | "space"
+  | "growth"
+  | "matrix"
+  | "advantages"
+  | "roadmap"
+  | "financial";
 type ModuleRenderer = (props: {
   module: BusinessPlanReportModule;
+  variant: PageVariant;
 }) => ReactElement;
 
 const PALETTE = ["var(--pri)", "var(--acc)", "var(--acc-l)", "#A9B7A6"];
@@ -38,8 +50,10 @@ const BP_REPORT_CSS = `
 }
 .bp-report * { box-sizing: border-box; }
 .bp-shell { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
-.bp-section { padding: 64px 0; border-top: 1px solid var(--line); }
-.bp-section:nth-of-type(even) { background: var(--acc-p2); }
+.bp-document { padding: 92px 0 72px; }
+.bp-document-page { position: relative; width: min(1120px, calc(100% - 40px)); min-height: 680px; margin: 0 auto 48px; overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: var(--card); box-shadow: 0 18px 50px rgba(31,61,50,.10); }
+.bp-page-content { padding: 58px 64px 72px; }
+.bp-page-number { position: absolute; right: 28px; bottom: 22px; color: var(--ink3); font-size: 11px; letter-spacing: .14em; }
 .bp-module-label { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; color: var(--ink2); font-size: 12px; }
 .bp-module-label::before { content: ""; width: 3px; height: 15px; border-radius: 2px; background: var(--acc); }
 .bp-title { color: var(--pri); font-size: clamp(28px, 3vw, 38px); font-weight: 700; line-height: 1.25; letter-spacing: -.02em; }
@@ -49,7 +63,7 @@ const BP_REPORT_CSS = `
 .bp-pending { display: inline-flex; margin: 18px 8px 0 0; padding: 5px 10px; border: 1px solid rgba(194,112,58,.2); border-radius: 999px; background: #FFF9F3; color: var(--warn); font-size: 11px; font-style: italic; }
 .bp-source { margin-left: 8px; color: var(--ink3); font-size: 10px; font-weight: 400; }
 .bp-horizontal-scroll { overflow-x: auto; padding-bottom: 4px; }
-.bp-cover { position: relative; display: flex; min-height: 88vh; align-items: center; overflow: hidden; background: linear-gradient(135deg,var(--pri-deep),var(--pri) 58%,var(--pri-mid)); color: white; }
+.bp-cover { position: relative; display: flex; min-height: 760px; align-items: center; overflow: hidden; border-color: transparent; background: linear-gradient(135deg,var(--pri-deep),var(--pri) 58%,var(--pri-mid)); color: white; }
 .bp-cover-grid { position: absolute; inset: 0; opacity: .44; }
 .bp-cover-content { position: relative; z-index: 1; padding: 100px 0 72px; }
 .bp-cover-mark { display: flex; height: 38px; width: 38px; align-items: center; justify-content: center; border-radius: 8px; background: var(--acc); color: white; font-weight: 700; }
@@ -58,12 +72,15 @@ const BP_REPORT_CSS = `
 .bp-cover-date { margin-top: 64px; color: rgba(255,255,255,.48); font-size: 12px; letter-spacing: .1em; }
 @media (max-width: 720px) {
   .bp-shell { width: min(100% - 28px, 1120px); }
-  .bp-section { padding: 44px 0; }
-  .bp-cover { min-height: 76vh; }
+  .bp-document { padding-top: 72px; }
+  .bp-document-page { width: min(100% - 24px, 1120px); min-height: 560px; margin-bottom: 28px; border-radius: 12px; }
+  .bp-page-content { padding: 42px 24px 64px; }
+  .bp-cover { min-height: 680px; }
 }
 @media print {
   .bp-report header { display: none; }
-  .bp-section { break-inside: auto; }
+  .bp-document { padding: 0; }
+  .bp-document-page { width: 100%; min-height: 0; margin: 0; border: 0; border-radius: 0; box-shadow: none; break-after: page; }
   .bp-card, .bp-team-card, .bp-pain-card { break-inside: avoid; }
   .bp-horizontal-scroll { overflow: visible; }
 }
@@ -118,12 +135,8 @@ function PendingNotes({ module }: { module: BusinessPlanReportModule }) {
   return (
     <div>
       {module.pendingItems.map(item => (
-        <span
-          key={`${item.moduleId}-${item.fieldName}`}
-          className="bp-pending"
-          title={item.message ?? undefined}
-        >
-          待补充：{item.fieldName}
+        <span key={`${item.moduleId}-${item.fieldName}`} className="bp-pending">
+          资料待补充
         </span>
       ))}
     </div>
@@ -184,25 +197,32 @@ function DemandModule({ module }: { module: BusinessPlanReportModule }) {
         </p>
       </div>
       <div className="mt-5 grid items-stretch gap-4 md:grid-cols-3">
-        {pains.map((pain, index) => (
-          <article
-            key={index}
-            className="bp-pain-card bp-card flex min-h-[310px] flex-col p-5"
-          >
-            <div className="flex items-center gap-3">
-              <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--pri)] text-xs font-bold text-white">
-                {index + 1}
-              </span>
-              <h3 className="text-base font-bold text-[var(--pri)]">
-                核心痛点
-              </h3>
-            </div>
-            <p className="my-5 text-sm leading-7 text-[var(--ink2)]">
-              {asText(pain)}
-            </p>
-            <LossChain />
-          </article>
-        ))}
+        {pains.map((rawPain, index) => {
+          const pain = asObject(rawPain);
+          const painPoint = asText(pain.pain_point);
+          const rigidDemand = asText(
+            pain.rigid_demand ?? pain.why_rigid_demand
+          );
+          return (
+            <article
+              key={index}
+              className="bp-pain-card bp-card flex min-h-[310px] flex-col p-5"
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--pri)] text-xs font-bold text-white">
+                  {index + 1}
+                </span>
+                <h3 className="text-base font-bold text-[var(--pri)]">
+                  {painPoint}
+                </h3>
+              </div>
+              <p className="my-5 text-sm leading-7 text-[var(--ink2)]">
+                {rigidDemand}
+              </p>
+              <LossChain />
+            </article>
+          );
+        })}
       </div>
       <PendingNotes module={module} />
     </>
@@ -254,16 +274,22 @@ function ProductArchitecture() {
   );
 }
 
-function ProductModule({ module }: { module: BusinessPlanReportModule }) {
+function ProductModule({
+  module,
+  variant,
+}: {
+  module: BusinessPlanReportModule;
+  variant: PageVariant;
+}) {
   const solutions = asArray(module.fields.solution).map(asObject);
   const values = asArray(module.fields.core_value);
   const model = asObject(module.fields.business_model);
   const revenue = asArray(model.revenue_sources).map(asObject);
-  return (
-    <>
-      <ProductArchitecture />
-      <div className="mt-5 grid gap-4 lg:grid-cols-[1.15fr_.85fr]">
-        <div>
+  if (variant === "solution") {
+    return (
+      <>
+        <ProductArchitecture />
+        <div className="mt-5">
           <h3 className="bp-card-title">痛点到解法的转化</h3>
           <div className="bp-conversion-pair grid gap-3 md:grid-cols-3">
             {solutions.map((item, index) => (
@@ -289,6 +315,12 @@ function ProductModule({ module }: { module: BusinessPlanReportModule }) {
             ))}
           </div>
         </div>
+      </>
+    );
+  }
+  return (
+    <>
+      <div className="grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
         <div className="rounded-xl bg-[var(--pri)] p-6 text-white">
           <h3 className="text-sm text-white/65">收入构成</h3>
           <div className="mt-5 space-y-4">
@@ -322,16 +354,25 @@ function ProductModule({ module }: { module: BusinessPlanReportModule }) {
             </div>
           </div>
         </div>
+        <div className="bp-card p-6">
+          <h3 className="bp-card-title">销售模式</h3>
+          <p className="text-sm leading-8 text-[var(--ink2)]">
+            {asText(module.fields.sales_model)}
+          </p>
+        </div>
       </div>
-      <p className="mt-5 text-sm leading-7 text-[var(--ink2)]">
-        销售模式：{asText(module.fields.sales_model)}
-      </p>
       <PendingNotes module={module} />
     </>
   );
 }
 
-function MarketModule({ module }: { module: BusinessPlanReportModule }) {
+function MarketModule({
+  module,
+  variant,
+}: {
+  module: BusinessPlanReportModule;
+  variant: PageVariant;
+}) {
   const size = asObject(module.fields.market_size);
   const trend = asArray(module.fields.growth_forecast).map(asObject);
   const max = Math.max(
@@ -340,97 +381,107 @@ function MarketModule({ module }: { module: BusinessPlanReportModule }) {
   );
   return (
     <>
-      <div className="grid gap-5 lg:grid-cols-2">
-        <div className="bp-market-funnel bp-card p-5">
-          <h3 className="bp-card-title">市场空间层级</h3>
-          <div className="space-y-3">
-            {[
-              ["TAM", "总体市场", size.tam, "0px", "var(--pri)"],
-              ["SAM", "可服务市场", size.sam, "28px", "var(--pri-mid)"],
-              ["SOM", "可获得市场", size.som, "56px", "var(--acc)"],
-            ].map(([label, name, value, margin, color]) => (
-              <div
-                key={String(label)}
-                className="flex"
-                style={{ marginLeft: String(margin) }}
-              >
+      <div>
+        {variant === "space" ? (
+          <div className="bp-market-funnel bp-card p-5">
+            <h3 className="bp-card-title">市场空间层级</h3>
+            <div className="space-y-3">
+              {[
+                ["TAM", "总体市场", size.tam, "0px", "var(--pri)"],
+                ["SAM", "可服务市场", size.sam, "28px", "var(--pri-mid)"],
+                ["SOM", "可获得市场", size.som, "56px", "var(--acc)"],
+              ].map(([label, name, value, margin, color]) => (
                 <div
-                  className="flex w-24 shrink-0 flex-col justify-center rounded-l-md px-4 py-4 text-white"
-                  style={{ background: String(color) }}
+                  key={String(label)}
+                  className="flex"
+                  style={{ marginLeft: String(margin) }}
                 >
-                  <b>{String(label)}</b>
-                  <span className="mt-1 text-[10px] opacity-75">
-                    {String(name)}
-                  </span>
-                </div>
-                <div className="flex min-w-0 flex-1 items-center justify-between rounded-r-md border border-l-0 border-[var(--line)] bg-[var(--acc-p2)] px-5">
-                  <span className="text-xs text-[var(--ink2)]">市场规模</span>
-                  <strong className="text-xl text-[var(--pri)]">
-                    {asText(value)}
-                  </strong>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="bp-growth-chart bp-card p-5">
-          <h3 className="bp-card-title">五年增长趋势</h3>
-          <svg
-            viewBox="0 0 520 300"
-            className="w-full"
-            role="img"
-            aria-label="市场增长柱状图"
-          >
-            <line x1="35" y1="255" x2="505" y2="255" stroke="var(--line)" />
-            {trend.map((item, index) => {
-              const height =
-                (175 * parseBusinessPlanNumber(item.market_size)) / max;
-              const x = 55 + index * (420 / Math.max(1, trend.length));
-              return (
-                <g key={index}>
-                  <rect
-                    x={x}
-                    y={255 - height}
-                    width="48"
-                    height={height}
-                    rx="5"
-                    fill={
-                      index === trend.length - 1
-                        ? "var(--acc)"
-                        : "var(--pri-mid)"
-                    }
-                  />
-                  <text
-                    x={x + 24}
-                    y="278"
-                    textAnchor="middle"
-                    fill="var(--ink2)"
-                    fontSize="11"
+                  <div
+                    className="flex w-24 shrink-0 flex-col justify-center rounded-l-md px-4 py-4 text-white"
+                    style={{ background: String(color) }}
                   >
-                    {asText(item.year)}
-                  </text>
-                  <g transform={`translate(${x + 4} ${225 - height})`}>
-                    <rect width="40" height="20" rx="10" fill="var(--acc-p)" />
+                    <b>{String(label)}</b>
+                    <span className="mt-1 text-[10px] opacity-75">
+                      {String(name)}
+                    </span>
+                  </div>
+                  <div className="flex min-w-0 flex-1 items-center justify-between rounded-r-md border border-l-0 border-[var(--line)] bg-[var(--acc-p2)] px-5">
+                    <span className="text-xs text-[var(--ink2)]">市场规模</span>
+                    <strong className="text-xl text-[var(--pri)]">
+                      {asText(value)}
+                    </strong>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="bp-growth-chart bp-card p-5">
+            <h3 className="bp-card-title">五年增长趋势</h3>
+            <svg
+              viewBox="0 0 520 300"
+              className="w-full"
+              role="img"
+              aria-label="市场增长柱状图"
+            >
+              <line x1="35" y1="255" x2="505" y2="255" stroke="var(--line)" />
+              {trend.map((item, index) => {
+                const height =
+                  (175 * parseBusinessPlanNumber(item.market_size)) / max;
+                const x = 55 + index * (420 / Math.max(1, trend.length));
+                return (
+                  <g key={index}>
+                    <rect
+                      x={x}
+                      y={255 - height}
+                      width="48"
+                      height={height}
+                      rx="5"
+                      fill={
+                        index === trend.length - 1
+                          ? "var(--acc)"
+                          : "var(--pri-mid)"
+                      }
+                    />
                     <text
-                      x="20"
-                      y="14"
+                      x={x + 24}
+                      y="278"
                       textAnchor="middle"
-                      fill="var(--pri)"
-                      fontSize="9"
-                      fontWeight="700"
+                      fill="var(--ink2)"
+                      fontSize="11"
                     >
-                      {asText(item.growth_rate, "")}
+                      {asText(item.year)}
                     </text>
+                    <g transform={`translate(${x + 4} ${225 - height})`}>
+                      <rect
+                        width="40"
+                        height="20"
+                        rx="10"
+                        fill="var(--acc-p)"
+                      />
+                      <text
+                        x="20"
+                        y="14"
+                        textAnchor="middle"
+                        fill="var(--pri)"
+                        fontSize="9"
+                        fontWeight="700"
+                      >
+                        {asText(item.growth_rate, "")}
+                      </text>
+                    </g>
                   </g>
-                </g>
-              );
-            })}
-          </svg>
-        </div>
+                );
+              })}
+            </svg>
+          </div>
+        )}
       </div>
-      <p className="mt-5 rounded-lg bg-[var(--acc-p)] p-5 text-sm leading-7 text-[var(--ink2)]">
-        {asText(module.fields.market_narrative)}
-      </p>
+      {variant === "growth" ? (
+        <p className="mt-5 rounded-lg bg-[var(--acc-p)] p-5 text-sm leading-7 text-[var(--ink2)]">
+          {asText(module.fields.market_narrative)}
+        </p>
+      ) : null}
       <PendingNotes module={module} />
     </>
   );
@@ -476,91 +527,99 @@ function ScoreDots({
   );
 }
 
-function CompetitionModule({ module }: { module: BusinessPlanReportModule }) {
+function CompetitionModule({
+  module,
+  variant,
+}: {
+  module: BusinessPlanReportModule;
+  variant: PageVariant;
+}) {
   const competitors = asArray(module.fields.competitors).map(asObject);
   const dimensions = Array.from(
     new Set(competitors.flatMap(item => Object.keys(asObject(item.dimensions))))
   );
   return (
     <>
-      <div className="bp-horizontal-scroll bp-card">
-        <table className="w-full min-w-[780px] border-collapse text-center text-xs">
-          <thead className="bg-[var(--pri)] text-white">
-            <tr>
-              <th className="p-4 text-left">竞争对象</th>
-              {dimensions.map(item => (
-                <th key={item} className="p-4">
-                  {item}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {competitors.map((competitor, index) => {
-              const cells = asObject(competitor.dimensions);
-              return (
-                <tr key={index} className="border-t border-[var(--line)]">
-                  <th className="p-4 text-left font-bold text-[var(--pri)]">
-                    {asText(competitor.name)}
+      {variant === "matrix" ? (
+        <div className="bp-horizontal-scroll bp-card">
+          <table className="w-full min-w-[780px] border-collapse text-center text-xs">
+            <thead className="bg-[var(--pri)] text-white">
+              <tr>
+                <th className="p-4 text-left">竞争对象</th>
+                {dimensions.map(item => (
+                  <th key={item} className="p-4">
+                    {item}
                   </th>
-                  {dimensions.map(dimension => (
-                    <td key={dimension} className="p-4">
-                      <ScoreDots value={cells[dimension]} highlighted={false} />
-                      <div className="mt-2 text-[10px] leading-4 text-[var(--ink3)]">
-                        {asText(cells[dimension])}
-                      </div>
-                    </td>
-                  ))}
-                </tr>
-              );
-            })}
-            <tr className="border-t border-[var(--line)] bg-[var(--acc-p)]">
-              <th className="p-4 text-left font-bold text-[var(--pri)]">
-                本项目
-              </th>
-              {dimensions.map(dimension => (
-                <td key={dimension} className="p-4">
-                  <div className="bp-score-dots flex justify-center gap-1">
-                    {[1, 2, 3, 4, 5].map(dot => (
-                      <span
-                        key={dot}
-                        className="h-2 w-2 rounded-full bg-[var(--pri)]"
-                      />
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {competitors.map((competitor, index) => {
+                const cells = asObject(competitor.dimensions);
+                return (
+                  <tr key={index} className="border-t border-[var(--line)]">
+                    <th className="p-4 text-left font-bold text-[var(--pri)]">
+                      {asText(competitor.name)}
+                    </th>
+                    {dimensions.map(dimension => (
+                      <td key={dimension} className="p-4">
+                        <ScoreDots
+                          value={cells[dimension]}
+                          highlighted={false}
+                        />
+                        <div className="mt-2 text-[10px] leading-4 text-[var(--ink3)]">
+                          {asText(cells[dimension])}
+                        </div>
+                      </td>
                     ))}
-                  </div>
-                  <div className="mt-2 text-[10px] font-bold text-[var(--acc)]">
-                    重点适配
-                  </div>
-                </td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div className="mt-5 grid gap-3 md:grid-cols-3">
-        {asArray(module.fields.differentiation).map((item, index) => (
-          <div
-            key={index}
-            className="rounded-lg border-l-4 border-l-[var(--acc)] bg-white p-4 text-sm leading-6 text-[var(--pri)] shadow-sm"
-          >
-            {asText(item)}
-          </div>
-        ))}
-      </div>
-      <PendingNotes module={module} />
+                  </tr>
+                );
+              })}
+              <tr className="border-t border-[var(--line)] bg-[var(--acc-p)]">
+                <th className="p-4 text-left font-bold text-[var(--pri)]">
+                  本项目
+                </th>
+                {dimensions.map(dimension => (
+                  <td key={dimension} className="p-4">
+                    <div className="bp-score-dots flex justify-center gap-1">
+                      {[1, 2, 3, 4, 5].map(dot => (
+                        <span
+                          key={dot}
+                          className="h-2 w-2 rounded-full bg-[var(--pri)]"
+                        />
+                      ))}
+                    </div>
+                    <div className="mt-2 text-[10px] font-bold text-[var(--acc)]">
+                      重点适配
+                    </div>
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-3">
+          {asArray(module.fields.differentiation).map((item, index) => (
+            <div
+              key={index}
+              className="rounded-lg border-l-4 border-l-[var(--acc)] bg-white p-4 text-sm leading-6 text-[var(--pri)] shadow-sm"
+            >
+              {asText(item)}
+            </div>
+          ))}
+        </div>
+      )}
+      {variant === "advantages" ? <PendingNotes module={module} /> : null}
     </>
   );
 }
 
-function parseRegions(value: unknown) {
-  const text = asText(value, "");
-  return [...text.matchAll(/([^、，,：:\s]+)\s*(\d+(?:\.\d+)?)%/g)].map(
-    match => ({ name: match[1], value: Number(match[2]) })
-  );
-}
-
 function CurrentStateModule({ module }: { module: BusinessPlanReportModule }) {
-  const traction = asObject(module.fields.traction);
+  const nestedTraction = asObject(module.fields.traction);
+  const traction = hasObjectValues(nestedTraction)
+    ? nestedTraction
+    : module.fields;
   const financials = asObject(traction.financials);
   const metrics = [
     ["客户数量", traction.customer_count],
@@ -568,7 +627,8 @@ function CurrentStateModule({ module }: { module: BusinessPlanReportModule }) {
     ["团队规模", traction.team_size],
     ...Object.entries(financials),
   ];
-  const regions = parseRegions(traction.coverage);
+  const coverage = parseBusinessPlanCoverage(traction.coverage);
+  const regions = coverage.regions;
   const arr = Object.entries(financials).find(
     ([key]) => key.toUpperCase() === "ARR"
   )?.[1];
@@ -630,35 +690,43 @@ function CurrentStateModule({ module }: { module: BusinessPlanReportModule }) {
         </div>
         <div className="bp-region-bar bp-card p-5">
           <h3 className="bp-card-title">区域覆盖</h3>
-          <div className="mt-6 flex h-5 overflow-hidden rounded-full bg-[var(--line)]">
-            {regions.map((region, index) => (
-              <div
-                key={region.name}
-                style={{
-                  width: `${region.value}%`,
-                  background: PALETTE[index % PALETTE.length],
-                }}
-                title={`${region.name} ${region.value}%`}
-              />
-            ))}
-          </div>
-          <div className="mt-5 space-y-3">
-            {regions.map((region, index) => (
-              <div
-                key={region.name}
-                className="flex items-center justify-between text-sm"
-              >
-                <span className="flex items-center gap-2 text-[var(--ink2)]">
-                  <i
-                    className="h-3 w-3 rounded-sm"
-                    style={{ background: PALETTE[index % PALETTE.length] }}
+          {regions.length > 0 ? (
+            <>
+              <div className="mt-6 flex h-5 overflow-hidden rounded-full bg-[var(--line)]">
+                {regions.map((region, index) => (
+                  <div
+                    key={region.name}
+                    style={{
+                      width: `${region.value}%`,
+                      background: PALETTE[index % PALETTE.length],
+                    }}
+                    title={`${region.name} ${region.value}%`}
                   />
-                  {region.name}
-                </span>
-                <b className="text-[var(--pri)]">{region.value}%</b>
+                ))}
               </div>
-            ))}
-          </div>
+              <div className="mt-5 space-y-3">
+                {regions.map((region, index) => (
+                  <div
+                    key={region.name}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="flex items-center gap-2 text-[var(--ink2)]">
+                      <i
+                        className="h-3 w-3 rounded-sm"
+                        style={{ background: PALETTE[index % PALETTE.length] }}
+                      />
+                      {region.name}
+                    </span>
+                    <b className="text-[var(--pri)]">{region.value}%</b>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : coverage.fallbackText ? (
+            <p className="mt-6 rounded-lg bg-[var(--acc-p2)] p-4 text-sm leading-7 text-[var(--ink2)]">
+              {coverage.fallbackText}
+            </p>
+          ) : null}
         </div>
       </div>
       <p className="mt-5 rounded-lg bg-white p-5 text-sm leading-7 text-[var(--ink2)] shadow-sm">
@@ -669,7 +737,13 @@ function CurrentStateModule({ module }: { module: BusinessPlanReportModule }) {
   );
 }
 
-function PlanModule({ module }: { module: BusinessPlanReportModule }) {
+function PlanModule({
+  module,
+  variant,
+}: {
+  module: BusinessPlanReportModule;
+  variant: PageVariant;
+}) {
   const roadmap = asArray(module.fields.roadmap).map(asObject);
   const financials = asArray(module.fields.financial_projection).map(asObject);
   const values = financials.flatMap(item => [
@@ -679,140 +753,146 @@ function PlanModule({ module }: { module: BusinessPlanReportModule }) {
   const max = Math.max(1, ...values.map(Math.abs));
   return (
     <>
-      <div className="bp-roadmap bp-horizontal-scroll">
-        <div className="grid min-w-[780px] grid-cols-[1fr_auto_1fr_auto_1fr] gap-3">
-          {roadmap.slice(0, 3).map((item, index) => (
-            <div key={index} className="contents">
-              <article className="bp-card overflow-hidden">
-                <div
-                  className="px-4 py-3 text-sm font-bold text-white"
-                  style={{
-                    background: ["var(--pri)", "var(--pri-mid)", "var(--acc)"][
-                      index
-                    ],
-                  }}
-                >
-                  {asText(item.period)}
-                </div>
-                <div className="p-5">
-                  <h3 className="font-bold leading-6 text-[var(--pri)]">
-                    {asText(item.objective)}
-                  </h3>
-                  <p className="mt-3 text-sm leading-7 text-[var(--ink2)]">
-                    {asText(item.deliverables)}
-                  </p>
-                </div>
-              </article>
-              {index < 2 ? (
-                <svg width="24" viewBox="0 0 24 140" aria-hidden="true">
-                  <path
-                    d="M3 70h16m-5-5 5 5-5 5"
-                    fill="none"
-                    stroke="var(--acc)"
-                    strokeWidth="2"
-                  />
-                </svg>
-              ) : null}
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="bp-financial-chart bp-card mt-5 p-5">
-        <h3 className="bp-card-title">收入与净利润预测</h3>
-        <div className="bp-horizontal-scroll">
-          <svg
-            viewBox="0 0 900 310"
-            className="min-w-[760px] w-full"
-            role="img"
-            aria-label="财务双序列柱状图"
-          >
-            <line x1="55" y1="238" x2="860" y2="238" stroke="var(--line)" />
-            {financials.map((item, index) => {
-              const x = 85 + index * 155;
-              const revenue =
-                (150 * parseBusinessPlanNumber(item.revenue)) / max;
-              const profit =
-                (150 * Math.abs(parseBusinessPlanNumber(item.net_profit))) /
-                max;
-              const loss = parseBusinessPlanNumber(item.net_profit) < 0;
-              const breakEven =
-                !loss &&
-                index > 0 &&
-                parseBusinessPlanNumber(financials[index - 1]?.net_profit) < 0;
-              return (
-                <g key={index}>
-                  <rect
-                    x={x}
-                    y={238 - revenue}
-                    width="44"
-                    height={revenue}
-                    rx="4"
-                    fill="var(--acc)"
-                  />
-                  <rect
-                    x={x + 50}
-                    y={loss ? 238 : 238 - profit}
-                    width="44"
-                    height={profit}
-                    rx="4"
-                    fill={loss ? "var(--warn)" : "var(--pri)"}
-                  />
-                  <text
-                    x={x + 47}
-                    y="280"
-                    textAnchor="middle"
-                    fill="var(--ink2)"
-                    fontSize="12"
+      {variant === "roadmap" ? (
+        <div className="bp-roadmap bp-horizontal-scroll">
+          <div className="grid min-w-[780px] grid-cols-[1fr_auto_1fr_auto_1fr] gap-3">
+            {roadmap.slice(0, 3).map((item, index) => (
+              <div key={index} className="contents">
+                <article className="bp-card overflow-hidden">
+                  <div
+                    className="px-4 py-3 text-sm font-bold text-white"
+                    style={{
+                      background: [
+                        "var(--pri)",
+                        "var(--pri-mid)",
+                        "var(--acc)",
+                      ][index],
+                    }}
                   >
-                    {asText(item.year)}
-                  </text>
-                  {breakEven ? (
-                    <g>
-                      <line
-                        x1={x + 72}
-                        y1="35"
-                        x2={x + 72}
-                        y2="245"
-                        stroke="var(--acc)"
-                        strokeDasharray="5 5"
-                      />
-                      <rect
-                        x={x + 28}
-                        y="16"
-                        width="88"
-                        height="22"
-                        rx="11"
-                        fill="var(--acc-p)"
-                      />
-                      <text
-                        x={x + 72}
-                        y="31"
-                        textAnchor="middle"
-                        fill="var(--pri)"
-                        fontSize="10"
-                        fontWeight="700"
-                      >
-                        盈亏平衡点
-                      </text>
-                    </g>
-                  ) : null}
-                </g>
-              );
-            })}
-            <g transform="translate(680 20)">
-              <rect width="12" height="12" fill="var(--acc)" />
-              <text x="18" y="11" fontSize="11" fill="var(--ink2)">
-                收入
-              </text>
-              <rect x="70" width="12" height="12" fill="var(--pri)" />
-              <text x="88" y="11" fontSize="11" fill="var(--ink2)">
-                净利润
-              </text>
-            </g>
-          </svg>
+                    {asText(item.period)}
+                  </div>
+                  <div className="p-5">
+                    <h3 className="font-bold leading-6 text-[var(--pri)]">
+                      {asText(item.objective)}
+                    </h3>
+                    <p className="mt-3 text-sm leading-7 text-[var(--ink2)]">
+                      {asText(item.deliverables)}
+                    </p>
+                  </div>
+                </article>
+                {index < 2 ? (
+                  <svg width="24" viewBox="0 0 24 140" aria-hidden="true">
+                    <path
+                      d="M3 70h16m-5-5 5 5-5 5"
+                      fill="none"
+                      stroke="var(--acc)"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                ) : null}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-      <PendingNotes module={module} />
+      ) : (
+        <div className="bp-financial-chart bp-card p-5">
+          <h3 className="bp-card-title">收入与净利润预测</h3>
+          <div className="bp-horizontal-scroll">
+            <svg
+              viewBox="0 0 900 310"
+              className="min-w-[760px] w-full"
+              role="img"
+              aria-label="财务双序列柱状图"
+            >
+              <line x1="55" y1="238" x2="860" y2="238" stroke="var(--line)" />
+              {financials.map((item, index) => {
+                const x = 85 + index * 155;
+                const revenue =
+                  (150 * parseBusinessPlanNumber(item.revenue)) / max;
+                const profit =
+                  (150 * Math.abs(parseBusinessPlanNumber(item.net_profit))) /
+                  max;
+                const loss = parseBusinessPlanNumber(item.net_profit) < 0;
+                const breakEven =
+                  !loss &&
+                  index > 0 &&
+                  parseBusinessPlanNumber(financials[index - 1]?.net_profit) <
+                    0;
+                return (
+                  <g key={index}>
+                    <rect
+                      x={x}
+                      y={238 - revenue}
+                      width="44"
+                      height={revenue}
+                      rx="4"
+                      fill="var(--acc)"
+                    />
+                    <rect
+                      x={x + 50}
+                      y={loss ? 238 : 238 - profit}
+                      width="44"
+                      height={profit}
+                      rx="4"
+                      fill={loss ? "var(--warn)" : "var(--pri)"}
+                    />
+                    <text
+                      x={x + 47}
+                      y="280"
+                      textAnchor="middle"
+                      fill="var(--ink2)"
+                      fontSize="12"
+                    >
+                      {asText(item.year)}
+                    </text>
+                    {breakEven ? (
+                      <g>
+                        <line
+                          x1={x + 72}
+                          y1="35"
+                          x2={x + 72}
+                          y2="245"
+                          stroke="var(--acc)"
+                          strokeDasharray="5 5"
+                        />
+                        <rect
+                          x={x + 28}
+                          y="16"
+                          width="88"
+                          height="22"
+                          rx="11"
+                          fill="var(--acc-p)"
+                        />
+                        <text
+                          x={x + 72}
+                          y="31"
+                          textAnchor="middle"
+                          fill="var(--pri)"
+                          fontSize="10"
+                          fontWeight="700"
+                        >
+                          盈亏平衡点
+                        </text>
+                      </g>
+                    ) : null}
+                  </g>
+                );
+              })}
+              <g transform="translate(680 20)">
+                <rect width="12" height="12" fill="var(--acc)" />
+                <text x="18" y="11" fontSize="11" fill="var(--ink2)">
+                  收入
+                </text>
+                <rect x="70" width="12" height="12" fill="var(--pri)" />
+                <text x="88" y="11" fontSize="11" fill="var(--ink2)">
+                  净利润
+                </text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      )}
+      {variant === "financial" ? <PendingNotes module={module} /> : null}
     </>
   );
 }
@@ -943,23 +1023,149 @@ const MODULE_RENDERERS: Record<
   team: TeamModule,
 };
 
-function ModuleSection({ module }: { module: BusinessPlanReportModule }) {
+type ReportPage = {
+  key: string;
+  module: BusinessPlanReportModule;
+  variant: PageVariant;
+  subTitle?: string;
+  primary: boolean;
+};
+
+function hasObjectValues(value: unknown): boolean {
+  const record = asObject(value);
+  return Object.values(record).some(item => {
+    if (Array.isArray(item)) return item.length > 0;
+    if (item && typeof item === "object") return hasObjectValues(item);
+    return (
+      typeof item === "number" ||
+      (typeof item === "string" && item.trim() !== "")
+    );
+  });
+}
+
+function buildReportPages(modules: BusinessPlanReportModule[]): ReportPage[] {
+  return modules.flatMap(module => {
+    const variants: Array<{ variant: PageVariant; subTitle?: string }> = [];
+    switch (module.key) {
+      case "product_model": {
+        const hasSolution =
+          asArray(module.fields.solution).length > 0 ||
+          asArray(module.fields.core_value).length > 0;
+        const hasBusiness =
+          hasObjectValues(module.fields.business_model) ||
+          Boolean(asText(module.fields.sales_model, ""));
+        if (hasSolution) variants.push({ variant: "solution" });
+        if (hasBusiness)
+          variants.push({ variant: "business", subTitle: "商业模式" });
+        if (variants.length === 0) variants.push({ variant: "solution" });
+        break;
+      }
+      case "market":
+        if (hasObjectValues(module.fields.market_size))
+          variants.push({ variant: "space" });
+        if (asArray(module.fields.growth_forecast).length > 0)
+          variants.push({ variant: "growth", subTitle: "市场增长" });
+        if (variants.length === 0) variants.push({ variant: "space" });
+        break;
+      case "competition":
+        if (asArray(module.fields.competitors).length > 0)
+          variants.push({ variant: "matrix" });
+        if (asArray(module.fields.differentiation).length > 0)
+          variants.push({ variant: "advantages", subTitle: "核心优势" });
+        if (variants.length === 0) variants.push({ variant: "matrix" });
+        break;
+      case "plan":
+        if (asArray(module.fields.roadmap).length > 0)
+          variants.push({ variant: "roadmap" });
+        if (asArray(module.fields.financial_projection).length > 0)
+          variants.push({ variant: "financial", subTitle: "财务预测" });
+        if (variants.length === 0) variants.push({ variant: "roadmap" });
+        break;
+      default:
+        variants.push({ variant: "full" });
+    }
+    return variants.map((page, index) => ({
+      ...page,
+      key: `${module.id}-${page.variant}`,
+      module,
+      primary: index === 0,
+    }));
+  });
+}
+
+function formatPageNumber(page: number, total: number): string {
+  return `${String(page).padStart(2, "0")} / ${String(total).padStart(2, "0")}`;
+}
+
+function ModuleSection({
+  page,
+  pageNumber,
+  totalPages,
+}: {
+  page: ReportPage;
+  pageNumber: number;
+  totalPages: number;
+}) {
+  const { module, variant, primary, subTitle } = page;
   const Renderer = MODULE_RENDERERS[module.key];
+  const title = primary
+    ? module.headline || module.title
+    : subTitle || module.title;
   return (
-    <section className="bp-section">
-      <div className="bp-shell">
+    <section className="bp-document-page">
+      <div className="bp-page-content">
         <div className="bp-module-label">
-          模块 {module.id}　{module.title}
+          模块 {module.id} · {module.title}
         </div>
-        <h2 className="bp-title">{module.title}</h2>
+        <h2 className="bp-title">{title}</h2>
         <div className="bp-divider" />
         {module.status === "error" ? (
           <div className="bp-card flex min-h-64 items-center justify-center border-dashed text-[var(--ink3)]">
             生成失败
           </div>
         ) : (
-          <Renderer module={module} />
+          <Renderer module={module} variant={variant} />
         )}
+      </div>
+      <div className="bp-page-number">
+        {formatPageNumber(pageNumber, totalPages)}
+      </div>
+    </section>
+  );
+}
+
+function BackCover({
+  companyName,
+  slogan,
+  pageNumber,
+  totalPages,
+}: {
+  companyName: string;
+  slogan: string;
+  pageNumber: number;
+  totalPages: number;
+}) {
+  return (
+    <section className="bp-document-page bp-cover">
+      <svg className="bp-cover-grid" viewBox="0 0 1200 700" aria-hidden="true">
+        <g fill="none" stroke="var(--acc-l)" strokeOpacity=".28">
+          <circle cx="920" cy="350" r="190" />
+          <circle cx="920" cy="350" r="116" />
+          <path d="M180 520C390 320 560 620 920 350" />
+        </g>
+        <g fill="var(--acc)">
+          <circle cx="180" cy="520" r="7" />
+          <circle cx="920" cy="350" r="9" />
+        </g>
+      </svg>
+      <div className="bp-shell bp-cover-content">
+        <h2 className="max-w-3xl text-5xl font-bold leading-tight">
+          {companyName}
+        </h2>
+        {slogan ? <p className="bp-cover-slogan">{slogan}</p> : null}
+      </div>
+      <div className="bp-page-number text-white/45">
+        {formatPageNumber(pageNumber, totalPages)}
       </div>
     </section>
   );
@@ -1021,6 +1227,8 @@ export default function BusinessPlanReport() {
   if (!validId || query.isError) return <StatePage kind="error" />;
   if (query.isLoading || !report) return <StatePage kind="loading" />;
   if (query.data?.status !== "done") return <StatePage kind="running" />;
+  const pages = buildReportPages(report.modules);
+  const totalPages = pages.length + 2;
   return (
     <main className="bp-report min-h-screen" data-theme="gold">
       <style>{BP_REPORT_CSS}</style>
@@ -1038,47 +1246,63 @@ export default function BusinessPlanReport() {
           </span>
         </div>
       </header>
-      <section className="bp-cover">
-        <svg
-          className="bp-cover-grid"
-          viewBox="0 0 1200 700"
-          preserveAspectRatio="xMidYMid slice"
-          aria-hidden="true"
-        >
-          <g fill="none" stroke="var(--acc-l)" strokeOpacity=".26">
-            <path d="M700 610V390M790 610V330M880 610V370M970 610V280" />
-            <path d="M700 390Q850 150 1080 130M790 330Q920 180 1080 130M880 370Q970 220 1080 130M970 280Q1020 190 1080 130" />
-          </g>
-          <g fill="var(--acc)" fillOpacity=".5">
-            <circle cx="700" cy="390" r="5" />
-            <circle cx="790" cy="330" r="5" />
-            <circle cx="880" cy="370" r="5" />
-            <circle cx="970" cy="280" r="5" />
-          </g>
-          <ellipse
-            cx="1080"
-            cy="130"
-            rx="72"
-            ry="42"
-            fill="var(--acc)"
-            fillOpacity=".18"
-            stroke="var(--acc-l)"
+      <div className="bp-document">
+        <section className="bp-document-page bp-cover">
+          <svg
+            className="bp-cover-grid"
+            viewBox="0 0 1200 700"
+            preserveAspectRatio="xMidYMid slice"
+            aria-hidden="true"
+          >
+            <g fill="none" stroke="var(--acc-l)" strokeOpacity=".26">
+              <path d="M700 610V390M790 610V330M880 610V370M970 610V280" />
+              <path d="M700 390Q850 150 1080 130M790 330Q920 180 1080 130M880 370Q970 220 1080 130M970 280Q1020 190 1080 130" />
+            </g>
+            <g fill="var(--acc)" fillOpacity=".5">
+              <circle cx="700" cy="390" r="5" />
+              <circle cx="790" cy="330" r="5" />
+              <circle cx="880" cy="370" r="5" />
+              <circle cx="970" cy="280" r="5" />
+            </g>
+            <ellipse
+              cx="1080"
+              cy="130"
+              rx="72"
+              ry="42"
+              fill="var(--acc)"
+              fillOpacity=".18"
+              stroke="var(--acc-l)"
+            />
+          </svg>
+          <div className="bp-shell bp-cover-content">
+            <div className="bp-cover-mark">智</div>
+            <h1>{report.cover.companyName}</h1>
+            {report.cover.slogan ? (
+              <p className="bp-cover-slogan">{report.cover.slogan}</p>
+            ) : null}
+            <p className="bp-cover-date">
+              商业计划书　|　{formatDate(report.cover.date)}
+            </p>
+          </div>
+          <div className="bp-page-number text-white/45">
+            {formatPageNumber(1, totalPages)}
+          </div>
+        </section>
+        {pages.map((page, index) => (
+          <ModuleSection
+            key={page.key}
+            page={page}
+            pageNumber={index + 2}
+            totalPages={pages.length + 2}
           />
-        </svg>
-        <div className="bp-shell bp-cover-content">
-          <div className="bp-cover-mark">智</div>
-          <h1>{report.cover.companyName}</h1>
-          {report.cover.slogan ? (
-            <p className="bp-cover-slogan">{report.cover.slogan}</p>
-          ) : null}
-          <p className="bp-cover-date">
-            商业计划书　|　{formatDate(report.cover.date)}
-          </p>
-        </div>
-      </section>
-      {report.modules.map(module => (
-        <ModuleSection key={module.id} module={module} />
-      ))}
+        ))}
+        <BackCover
+          companyName={report.cover.companyName}
+          slogan={report.cover.slogan}
+          pageNumber={totalPages}
+          totalPages={totalPages}
+        />
+      </div>
     </main>
   );
 }

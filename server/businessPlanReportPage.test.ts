@@ -6,15 +6,35 @@ function read(relativePath: string): string {
 }
 
 describe("business plan report page", () => {
-  it("fetches the owned BP record and renders exactly eight ordered modules", () => {
+  it("fetches the owned BP record and builds document pages from eight ordered modules", () => {
     const source = read("../client/src/pages/BusinessPlanReport.tsx");
 
     expect(source).toContain("trpc.businessPlan.get.useQuery");
-    expect(source).toContain("report.modules.map");
-    expect(source).toContain("MODULE_RENDERERS[module.key]");
+    expect(source).toContain("buildReportPages(report.modules)");
+    expect(source).toContain("pageNumber={index + 2}");
+    expect(source).toContain("totalPages={pages.length + 2}");
     expect(source).not.toContain("executive_summary");
     expect(source).not.toContain("执行摘要");
     expect(source).not.toContain("公司简介");
+  });
+
+  it("uses engine headlines, content subpage titles, and customer-safe pending labels", () => {
+    const source = read("../client/src/pages/BusinessPlanReport.tsx");
+
+    expect(source).toContain("module.headline || module.title");
+    expect(source).toContain("模块 {module.id} · {module.title}");
+    expect(source).not.toContain("待补充：{item.fieldName}");
+    expect(source).not.toContain("调试");
+  });
+
+  it("renders adaptive page cards, cover and back cover with document page numbers", () => {
+    const source = read("../client/src/pages/BusinessPlanReport.tsx");
+
+    expect(source).toContain("bp-document-page");
+    expect(source).toContain("bp-page-number");
+    expect(source).toContain("BackCover");
+    expect(source).toContain("min-height:");
+    expect(source).not.toContain("aspect-ratio: 16 / 9");
   });
 
   it("uses the approved gold theme variables without navy-blue colors", () => {
