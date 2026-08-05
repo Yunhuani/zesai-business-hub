@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { adminProcedure, protectedProcedure, router } from "../_core/trpc";
+import { BUSINESS_PLAN_SAMPLE } from "../businessPlanSample";
 import {
   createBusinessPlan,
   getBusinessPlan,
@@ -73,6 +74,18 @@ export const businessPlanRouter = router({
       return {
         businessPlanId: await createBusinessPlan(ctx.user.id, input.bpIntake),
       };
+    }),
+  submitSample: adminProcedure
+    .input(z.object({ skipBilling: z.boolean().default(false) }).strict())
+    .mutation(async ({ ctx, input }) => {
+      // Development-only debugging capability: this route must remain administrator-only
+      // and skipBilling must never be exposed through a normal-user procedure.
+      const businessPlanId = await createBusinessPlan(
+        ctx.user.id,
+        BUSINESS_PLAN_SAMPLE,
+        { skipBilling: input.skipBilling }
+      );
+      return { businessPlanId, skipBilling: input.skipBilling };
     }),
   retry: protectedProcedure
     .input(z.object({ businessPlanId: z.number().int().positive() }))

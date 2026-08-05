@@ -10,6 +10,7 @@ import { getDb } from "./db";
 import { getActionCredits } from "./pricingConfig";
 
 type JsonObject = Record<string, unknown>;
+type CreateBusinessPlanOptions = { skipBilling?: boolean };
 
 export const BUSINESS_PLAN_FLOW_KEY = "business_plan_v1";
 const BUSINESS_PLAN_BILLING_KEY = "business_plan_full";
@@ -83,19 +84,28 @@ export async function markBusinessPlanError(
 
 export async function createBusinessPlan(
   userId: number,
-  intake: JsonObject
+  intake: JsonObject,
+  options: CreateBusinessPlanOptions = {}
 ): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await checkAndResetCredits(userId);
-  const credits = await getActionCredits("business_plan");
+  // Development-only debugging capability: only an administrator-only caller may
+  // explicitly enable this, and it must never be exposed through a normal-user path.
+  const skipBilling = options.skipBilling === true;
+  let credits: number | null = null;
+  if (!skipBilling) {
+    await checkAndResetCredits(userId);
+    credits = await getActionCredits("business_plan");
+  }
 
   const businessPlanId = await db.transaction(async tx => {
     const [insertResult] = await tx
       .insert(businessPlans)
       .values({ userId, intake, status: "pending" });
     const id = insertResult.insertId;
-    await chargeBusinessPlan(tx, userId, id, credits);
+    if (credits !== null) {
+      await chargeBusinessPlan(tx, userId, id, credits);
+    }
     await tx
       .delete(diagnosisDrafts)
       .where(and(

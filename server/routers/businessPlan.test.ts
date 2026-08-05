@@ -24,7 +24,11 @@ import { getActionCredits } from "../pricingConfig";
 import { businessPlanRouter } from "./businessPlan";
 
 function createCaller() {
-  return businessPlanRouter.createCaller({ user: { id: 7 }, req: {}, res: {} } as any);
+  return businessPlanRouter.createCaller({ user: { id: 7, role: "user" }, req: {}, res: {} } as any);
+}
+
+function createAdminCaller() {
+  return businessPlanRouter.createCaller({ user: { id: 9, role: "admin" }, req: {}, res: {} } as any);
 }
 
 describe("business plan router", () => {
@@ -83,5 +87,37 @@ describe("business plan router", () => {
     vi.mocked(getBusinessPlan).mockResolvedValue({ id: 51, userId: 8 } as never);
 
     await expect(createCaller().get({ id: 51 })).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
+  it("allows only an administrator to submit the sample with explicit billing control", async () => {
+    vi.mocked(createBusinessPlan).mockResolvedValue(88);
+
+    await expect(createCaller().submitSample({ skipBilling: true }))
+      .rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(createBusinessPlan).not.toHaveBeenCalled();
+
+    await expect(createAdminCaller().submitSample({ skipBilling: true }))
+      .resolves.toEqual({ businessPlanId: 88, skipBilling: true });
+    expect(createBusinessPlan).toHaveBeenCalledWith(
+      9,
+      expect.objectContaining({
+        project_overview: expect.objectContaining({
+          company_name: "深圳智造云科技有限公司",
+        }),
+      }),
+      { skipBilling: true }
+    );
+  });
+
+  it("charges sample submissions by default", async () => {
+    vi.mocked(createBusinessPlan).mockResolvedValue(89);
+
+    await expect(createAdminCaller().submitSample({}))
+      .resolves.toEqual({ businessPlanId: 89, skipBilling: false });
+    expect(createBusinessPlan).toHaveBeenCalledWith(
+      9,
+      expect.any(Object),
+      { skipBilling: false }
+    );
   });
 });
