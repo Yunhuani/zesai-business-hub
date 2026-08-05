@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>智造云 · 商业计划书（自研 V2）</title>
+<style>
+:root,[data-theme="navy"]{--pri:#12305C;--pri-deep:#0C2242;--pri-mid:#1A4677;--acc:#1C9FE0;--acc-l:#5FC4F0;--acc-p:#E8F4FC;--acc-p2:#F3F9FD;--ok:#12A594;--warn:#D9822B;--bg:#FBFBF9;--card:#FFF;--ink:#14243C;--ink2:#54637A;--ink3:#8A96A6;--line:#E1E7EE}
+[data-theme="teal"]{--pri:#0E4A47;--pri-deep:#093633;--pri-mid:#146460;--acc:#12A594;--acc-l:#4FCBBC;--acc-p:#E6F5F3;--acc-p2:#F2FAF9;--ok:#1C9FE0;--warn:#D9822B;--bg:#FAFBF9;--ink:#12302E;--ink2:#4E6664;--ink3:#879997;--line:#DFE9E7}
+[data-theme="gold"]{--pri:#1F3D32;--pri-deep:#152A23;--pri-mid:#2C5544;--acc:#C9A24B;--acc-l:#DFC183;--acc-p:#F7F1E2;--acc-p2:#FBF8F0;--ok:#4E8C6A;--warn:#C2703A;--bg:#FAFAF8;--ink:#1E2B25;--ink2:#586158;--ink3:#8E958C;--line:#E6E4DA}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#EDEFF2;font-family:"Noto Sans SC","PingFang SC",sans-serif;padding:28px 0;color:var(--ink)}
+.wrap{max-width:1160px;margin:0 auto;padding:0 20px}
+.bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;font-size:13px;color:#5a6472}
+.bar b{color:#12305C}
+.tbtn{padding:7px 15px;border:1px solid #cfd6de;background:#fff;border-radius:20px;font-size:12.5px;cursor:pointer;color:#54637A;margin-left:7px}
+.tbtn.on{background:#12305C;color:#fff;border-color:#12305C}
+.slide{position:relative;width:100%;aspect-ratio:16/9;background:var(--bg);border-radius:8px;overflow:hidden;margin-bottom:24px;box-shadow:0 6px 24px rgba(20,36,60,.13)}
+.in{position:absolute;inset:0;padding:28px 38px 0;display:flex;flex-direction:column}
+.hasC .in{padding-bottom:66px}
+.mod{font-size:12px;color:var(--ink2);display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.mod:before{content:"";width:3px;height:13px;background:var(--acc);border-radius:2px}
+.mod .en{color:var(--ink3)}
+h2.t{font-size:24px;font-weight:700;line-height:1.3;color:var(--pri)}
+h2.t .a{color:var(--acc)}
+.hr{height:1px;background:var(--line);margin:10px 0 13px}
+.stage{flex:1;min-height:0;display:flex;flex-direction:column}
+.concl{position:absolute;left:0;right:0;bottom:0;background:var(--pri);color:#fff;padding:14px 38px;font-size:16px;font-weight:700;display:flex;align-items:center;gap:13px}
+.concl:before{content:"";width:24px;height:2px;background:var(--acc);flex-shrink:0}
+.concl .a{color:var(--acc-l)}
+.pn{position:absolute;bottom:16px;right:13px;font-size:10px;color:rgba(255,255,255,.45);z-index:2}
+.cov{background:linear-gradient(135deg,var(--pri-deep) 0%,var(--pri) 55%,var(--pri-mid) 100%)}
+.cov .in,.bk .in{padding:46px 50px;justify-content:center}
+.lg{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+.lgi{width:33px;height:33px;border-radius:8px;background:var(--acc);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700}
+.lgt{color:#fff;font-size:14.5px;font-weight:500}
+.cov h1{color:#fff;font-size:42px;font-weight:700;line-height:1.24}
+.cov h1 .a{color:var(--acc-l)}
+.cov .sl{color:rgba(255,255,255,.7);font-size:13.5px;margin-top:15px;letter-spacing:.14em}
+.cov .dt{color:rgba(255,255,255,.48);font-size:12px;margin-top:26px;letter-spacing:.08em}
+.cov .tags{position:absolute;left:50px;bottom:40px;display:flex}
+.tg{color:rgba(255,255,255,.8);font-size:11.5px;padding:0 17px;border-left:1px solid rgba(255,255,255,.2)}
+.tg:first-child{padding-left:0;border-left:none}
+.tg b{display:block;font-size:13px;color:#fff;font-weight:500;margin-bottom:2px}
+.gfx{position:absolute;right:-30px;top:0;bottom:0;width:50%;opacity:.5}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:13px 14px;display:flex;align-items:center;gap:11px}
+.kpi .ic{width:34px;height:34px;border-radius:8px;background:var(--acc-p);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kpi .v{font-size:25px;font-weight:700;color:var(--pri);line-height:1}
+.kpi .v small{font-size:12.5px;font-weight:500}
+.kpi .l{font-size:11px;color:var(--ink2);margin-top:4px}
+.quad{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;flex:1;min-height:0;margin-top:11px}
+.qc{background:var(--card);border:1px solid var(--line);border-radius:8px;display:flex;flex-direction:column;overflow:hidden}
+.qc .h{background:var(--pri);color:#fff;padding:8px 12px;font-size:13px;font-weight:700}
+.qc .b{padding:11px;font-size:11px;color:var(--ink2);line-height:1.6;flex:1;display:flex;flex-direction:column}
+.qc .lead{color:var(--ink);font-weight:700;font-size:12px;margin-bottom:7px;line-height:1.5}
+.qc li{list-style:none;padding-left:10px;position:relative;margin-bottom:4px}
+.qc li:before{content:"";position:absolute;left:0;top:6px;width:4px;height:4px;border-radius:50%;background:var(--acc)}
+.cols{display:flex;flex-direction:row;gap:12px;flex:1;min-height:0}
+.stage.cols{flex-direction:row}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:13px 15px;display:flex;flex-direction:column}
+.card .ch{font-size:13px;font-weight:700;color:var(--pri);margin-bottom:9px}
+.badge{background:var(--pri);color:#fff;font-size:11.5px;font-weight:700;padding:7px 13px;border-radius:5px;display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.p3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;flex:1;min-height:0}
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:13px;display:flex;flex-direction:column}
+.ph{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.no{width:23px;height:23px;border-radius:5px;background:var(--pri);color:#fff;font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.pcard h4{font-size:15px;font-weight:700;color:var(--pri)}
+.pcard li{list-style:none;font-size:11px;color:var(--ink2);line-height:1.7;padding-left:10px;position:relative}
+.pcard li:before{content:"";position:absolute;left:0;top:7px;width:4px;height:4px;border-radius:50%;background:var(--acc)}
+.chain{margin-top:auto;padding-top:9px;border-top:1px dashed var(--line)}
+.ct{font-size:10px;color:var(--warn);font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.flow4{display:flex;align-items:flex-start;gap:2px}
+.fx{flex:1;text-align:center}
+.fi{width:25px;height:25px;margin:0 auto 3px;border-radius:50%;background:var(--acc-p);display:flex;align-items:center;justify-content:center}
+.fl{font-size:8px;color:var(--ink2);line-height:1.3}
+.far{color:var(--ink3);font-size:8px;padding-top:9px}
+.tri{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;background:var(--acc-p2);border:1px solid var(--line);border-radius:8px;padding:10px 13px;margin-top:10px}
+.ti{display:flex;align-items:center;gap:9px}
+.tic{width:27px;height:27px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ti b{font-size:12px;color:var(--pri);display:block}
+.ti span{font-size:10px;color:var(--ink2)}
+.arch{display:flex;align-items:stretch;gap:8px;flex:1;min-height:0}
+.acol{flex:1;display:flex;flex-direction:column;gap:6px}
+.at{font-size:11px;font-weight:700;color:#fff;background:var(--pri);padding:5px 9px;border-radius:5px;text-align:center}
+.abox{background:var(--card);border:1px solid var(--line);border-radius:7px;padding:9px;flex:1;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.achip{background:var(--acc-p2);border:1px solid var(--line);border-radius:5px;padding:5px 7px;font-size:10.5px;color:var(--ink2);display:flex;align-items:center;gap:5px}
+.aarrow{display:flex;align-items:center;color:var(--acc);font-size:14px;padding-top:24px}
+.mbox{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--acc);border-radius:6px;padding:8px 10px}
+.mt{font-size:12px;font-weight:700;color:var(--pri);margin-bottom:2px}
+.md{font-size:10px;color:var(--ink2);line-height:1.5}
+.conv{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-top:10px}
+.cv{background:var(--card);border:1px solid var(--line);border-radius:7px;padding:8px 11px;display:flex;align-items:center;gap:8px;font-size:10.5px}
+.cv .from{color:var(--ink3)}
+.cv .ar,.cv .to{color:var(--acc);font-weight:700}
+.fun{display:flex;flex-direction:column;gap:6px;flex:1;justify-content:center}
+.fr{display:flex}
+.fl-lab{color:#fff;padding:12px 10px;display:flex;flex-direction:column;justify-content:center;text-align:center;flex-shrink:0;border-radius:5px 0 0 5px}
+.fl-lab b{font-size:15px;font-weight:700;line-height:1}
+.fl-lab span{font-size:9px;opacity:.8;margin-top:3px}
+.fl-val{flex:1;background:var(--acc-p2);border:1px solid var(--line);border-left:none;border-radius:0 5px 5px 0;padding:9px 15px;display:flex;align-items:center;justify-content:space-between}
+.fname{font-size:11.5px;color:var(--ink2)}
+.fnum{font-size:22px;font-weight:700;color:var(--pri)}
+.fnum small{font-size:11.5px;font-weight:500}
+.drv{display:flex;flex-direction:column;gap:9px;flex:1;justify-content:center}
+.dv{display:flex;gap:10px;align-items:flex-start}
+.di{width:32px;height:32px;border-radius:50%;background:var(--acc-p);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dv b{font-size:12px;color:var(--pri);display:block;margin-bottom:3px}
+.dv p{font-size:10.5px;color:var(--ink2);line-height:1.6}
+table.mx{width:100%;border-collapse:separate;border-spacing:0;font-size:11.5px;background:var(--card);border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+table.mx th{background:var(--pri);color:#fff;padding:9px 7px;font-weight:700;font-size:11.5px}
+table.mx td{padding:10px 7px;text-align:center;border-bottom:1px solid var(--line);color:var(--ink2)}
+table.mx tr:last-child td{border-bottom:none}
+table.mx td:first-child{text-align:left;font-weight:700;color:var(--pri);padding-left:13px}
+tr.us td{background:var(--acc-p);color:var(--pri);font-weight:700}
+.dots{display:flex;gap:3px;justify-content:center}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--line)}
+.dot.f{background:var(--acc)}
+.dot.fd{background:var(--pri)}
+.dlab{font-size:9px;color:var(--ink3);margin-top:3px}
+.ck{color:var(--ok);font-weight:700}
+.rm{display:flex;gap:9px;flex:1;min-height:0}
+.rs{flex:1;display:flex;flex-direction:column}
+.rh{background:var(--pri);color:#fff;padding:8px 11px;border-radius:6px 6px 0 0;display:flex;align-items:center;gap:7px}
+.rs:nth-child(2) .rh{background:var(--pri-mid)}
+.rs:nth-child(3) .rh{background:var(--acc)}
+.rh b{font-size:12.5px;font-weight:700}
+.rb{background:var(--card);border:1px solid var(--line);border-top:none;border-radius:0 0 6px 6px;padding:11px;flex:1;font-size:10.5px;color:var(--ink2);line-height:1.7}
+.rb li{list-style:none;padding-left:10px;position:relative;margin-bottom:4px}
+.rb li:before{content:"";position:absolute;left:0;top:6px;width:4px;height:4px;border-radius:50%;background:var(--acc)}
+.rg{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:10.5px}
+.gv{color:var(--acc);font-weight:700;font-size:12.5px}
+.tm{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;flex:1;min-height:0}
+.tc2{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:13px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.tav{width:52px;height:52px;border-radius:50%;background:linear-gradient(140deg,var(--acc-p),var(--card));border:2px solid var(--acc);display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;color:var(--pri);margin-bottom:8px}
+.tn{font-size:14px;font-weight:700;color:var(--pri)}
+.trole{font-size:10.5px;color:var(--acc);margin:2px 0 8px}
+.tc2 li{list-style:none;font-size:10px;color:var(--ink2);line-height:1.65;text-align:left;padding-left:10px;position:relative;width:100%}
+.tc2 li:before{content:"";position:absolute;left:0;top:6px;width:4px;height:4px;border-radius:50%;background:var(--acc)}
+.pend{color:var(--warn);font-style:italic}
+.note{font-size:9.5px;color:var(--ink3);margin-top:7px;display:flex;align-items:center;gap:5px}
+.bk{background:linear-gradient(135deg,var(--pri-deep) 0%,var(--pri) 60%,var(--pri-mid) 100%)}
+.bk h2{color:#fff;font-size:34px;font-weight:700;line-height:1.3}
+.bk h2 .a{color:var(--acc-l)}
+.bk .sub{color:rgba(255,255,255,.7);font-size:13.5px;margin-top:14px}
+.bk .ct2{margin-top:28px;color:rgba(255,255,255,.8);font-size:12.5px;line-height:2}
+svg{display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="bar">
+  <div>智造云 · 商业计划书 —— <b>自研 V2</b>（藏青亮蓝 · 信息图 · 结论收口）</div>
+  <div><button class="tbtn on" onclick="st('navy',this)">藏青商务</button><button class="tbtn" onclick="st('teal',this)">科技青</button><button class="tbtn" onclick="st('gold',this)">墨绿金</button></div>
+</div>
+
+<div class="slide cov">
+<svg class="gfx" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+<defs><linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5FC4F0" stop-opacity=".5"/><stop offset="1" stop-color="#5FC4F0" stop-opacity="0"/></linearGradient></defs>
+<g stroke="url(#gl)" fill="none" stroke-width=".8"><path d="M60,238 L60,172 M100,238 L100,152 M140,238 L140,166 M180,238 L180,142"/><path d="M60,172 Q140,92 248,82 M100,152 Q170,97 248,82 M140,166 Q190,112 248,82 M180,142 Q215,107 248,82"/></g>
+<g fill="#5FC4F0" opacity=".85"><circle cx="60" cy="172" r="3"/><circle cx="100" cy="152" r="3"/><circle cx="140" cy="166" r="3"/><circle cx="180" cy="142" r="3"/></g>
+<ellipse cx="248" cy="82" rx="46" ry="26" fill="#1C9FE0" opacity=".22"/><ellipse cx="248" cy="82" rx="46" ry="26" fill="none" stroke="#5FC4F0" stroke-width="1.2"/>
+<text x="248" y="86" text-anchor="middle" fill="#fff" font-size="11" font-family="Noto Sans SC">智造云</text>
+<g fill="none" stroke="#5FC4F0" stroke-width=".8" opacity=".42"><rect x="300" y="118" width="58" height="38" rx="3"/><rect x="300" y="164" width="58" height="38" rx="3"/></g>
+<g fill="#5FC4F0" opacity=".5"><rect x="308" y="140" width="5" height="10"/><rect x="317" y="134" width="5" height="16"/><rect x="326" y="128" width="5" height="22"/><rect x="335" y="124" width="5" height="26"/><rect x="308" y="188" width="42" height="3" rx="1.5"/><rect x="308" y="178" width="30" height="3" rx="1.5"/><rect x="308" y="168" width="36" height="3" rx="1.5"/></g>
+<g fill="#5FC4F0" opacity=".28"><rect x="40" y="226" width="26" height="22" rx="2"/><rect x="76" y="218" width="30" height="30" rx="2"/><rect x="116" y="230" width="24" height="18" rx="2"/><rect x="150" y="214" width="32" height="34" rx="2"/><rect x="192" y="226" width="26" height="22" rx="2"/></g>
+<line x1="0" y1="249" x2="400" y2="249" stroke="#5FC4F0" opacity=".3" stroke-width=".6"/>
+</svg>
+<div class="in">
+<div class="lg"><div class="lgi">智</div><div class="lgt">深圳智造云科技有限公司</div></div>
+<h1>智造云<br><span class="a">让每一台设备开口说话</span></h1>
+<div class="sl">设备联网　·　数据驱动　·　让制造更聪明</div>
+<div class="dt">商业计划书　|　2026 年 8 月</div>
+<div class="tags"><div class="tg"><b>连接设备</b>打通数据孤岛</div><div class="tg"><b>数据驱动</b>挖掘设备价值</div><div class="tg"><b>智能决策</b>提升运营效率</div></div>
+</div></div>
+
+<div class="slide hasC"><div class="in">
+<h2 class="t">智造云用<span class="a">低成本边缘网关 + 云端 SaaS</span>，切入中小制造设备联网蓝海</h2>
+<div class="hr"></div>
+<div class="stage">
+<div class="kpis">
+<div class="kpi"><div class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h2M9 13h2M15 9h1M15 13h1"/></svg></div><div><div class="v">1,200<small>家</small></div><div class="l">付费企业客户</div></div></div>
+<div class="kpi"><div class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M7 7V4h10v3M8 12h8M8 16h4"/></svg></div><div><div class="v">3.8<small>万台</small></div><div class="l">已接入设备</div></div></div>
+<div class="kpi"><div class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M17 7h4v4"/></svg></div><div><div class="v">4,600<small>万</small></div><div class="l">年经常性收入 ARR</div></div></div>
+<div class="kpi"><div class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M12 20V10M6 20v-6M18 20V4"/></svg></div><div><div class="v">18<small>%</small></div><div class="l">过去12个月月环比增长</div></div></div>
+</div>
+<div class="quad">
+<div class="qc"><div class="h">问题</div><div class="b"><div class="lead">设备黑箱，传统方案百万级、部署以年计</div><li>设备数据无法采集，故障靠事后维修</li><li>产能利用率无从优化</li><li>中小厂预算有限，ROI 难覆盖</li></div></div>
+<div class="qc"><div class="h">方案</div><div class="b"><div class="lead">低成本边缘网关 + 云端 SaaS，每月几千元</div><li>即插即用，无需改造产线</li><li>实时监控 / 故障预警 / 产能分析</li><li>按订阅付费，最快当天上线</li></div></div>
+<div class="qc"><div class="h">牵引</div><div class="b"><div class="lead">1,200 客户 / 3.8万设备 / 4,600万 ARR</div>
+<svg viewBox="0 0 150 66" style="width:100%;margin-top:5px">
+<polyline points="6,56 26,51 46,44 66,36 86,27 106,17 126,7" fill="none" stroke="var(--acc)" stroke-width="2"/>
+<g fill="var(--pri)"><rect x="3" y="52" width="7" height="9"/><rect x="23" y="47" width="7" height="14"/><rect x="43" y="40" width="7" height="21"/><rect x="63" y="32" width="7" height="29"/><rect x="83" y="23" width="7" height="38"/><rect x="103" y="14" width="7" height="47"/><rect x="123" y="5" width="7" height="56"/></g>
+<text x="133" y="12" font-size="8" fill="var(--acc)" font-family="Noto Sans SC">4,600</text></svg>
+<div style="font-size:9px;color:var(--ink3);text-align:center;margin-top:2px">ARR 持续增长（万元）</div></div></div>
+<div class="qc"><div class="h">融资</div><div class="b"><div class="lead">本轮融资 3,000 万元</div>
+<div style="display:flex;align-items:center;gap:9px;margin-top:3px">
+<svg viewBox="0 0 70 70" style="width:60px;flex-shrink:0">
+<circle cx="35" cy="35" r="26" fill="none" stroke="var(--pri)" stroke-width="14" stroke-dasharray="65 163" transform="rotate(-90 35 35)"/>
+<circle cx="35" cy="35" r="26" fill="none" stroke="var(--acc)" stroke-width="14" stroke-dasharray="57 163" stroke-dashoffset="-65" transform="rotate(-90 35 35)"/>
+<circle cx="35" cy="35" r="26" fill="none" stroke="var(--acc-l)" stroke-width="14" stroke-dasharray="33 163" stroke-dashoffset="-122" transform="rotate(-90 35 35)"/>
+<circle cx="35" cy="35" r="26" fill="none" stroke="var(--line)" stroke-width="14" stroke-dasharray="8 163" stroke-dashoffset="-155" transform="rotate(-90 35 35)"/></svg>
+<div style="font-size:9.5px;line-height:1.9">
+<div><b style="color:var(--pri)">40%</b> 产品研发</div><div><b style="color:var(--acc)">35%</b> 市场拓展</div><div><b style="color:var(--acc-l)">20%</b> 团队建设</div><div><b style="color:var(--ink3)">5%</b> 其他</div></div></div></div></div>
+</div></div></div>
+<div class="concl">用轻量工业互联网产品，把大型工厂才用得起的设备数据能力<span class="a">下沉到中小制造</span>。</div><div class="pn">02</div></div>
+
+<div class="slide hasC"><div class="in">
+<div class="mod">模块 0　项目概况</div>
+<h2 class="t">一家面向中小制造企业的<span class="a">工业设备联网与数据分析 SaaS</span></h2>
+<div class="hr"></div>
+<div class="stage cols">
+<div class="card" style="flex:1.1"><div class="ch">公司基本信息</div>
+<div style="font-size:12px;line-height:2.4;color:var(--ink2)">
+<div style="display:flex;border-bottom:1px solid var(--line)"><span style="width:84px;color:var(--pri);font-weight:700">公司全称</span><span>深圳智造云科技有限公司</span></div>
+<div style="display:flex;border-bottom:1px solid var(--line)"><span style="width:84px;color:var(--pri);font-weight:700">成立时间</span><span>2022 年 3 月</span></div>
+<div style="display:flex;border-bottom:1px solid var(--line)"><span style="width:84px;color:var(--pri);font-weight:700">主营业务</span><span>中小制造企业设备联网与数据分析 SaaS</span></div>
+<div style="display:flex;border-bottom:1px solid var(--line)"><span style="width:84px;color:var(--pri);font-weight:700">一句话定位</span><span>让中小工厂用得起的工业互联网</span></div>
+<div style="display:flex"><span style="width:84px;color:var(--pri);font-weight:700">团队规模</span><span>46 人</span></div></div></div>
+<div class="card"><div class="ch">组织结构（按人数）</div>
+<div style="display:flex;gap:10px;flex:1;align-items:flex-end;padding-bottom:5px">
+<div style="flex:1;text-align:center"><div style="font-size:21px;font-weight:700;color:var(--pri)">28<span style="font-size:11px">人</span></div><div style="height:66px;background:var(--pri);border-radius:4px 4px 0 0;margin:6px 0 5px"></div><div style="font-size:11px;font-weight:700;color:var(--pri)">研发</div><div style="font-size:11.5px;color:var(--acc);font-weight:700">61%</div></div>
+<div style="flex:1;text-align:center"><div style="font-size:21px;font-weight:700;color:var(--acc)">12<span style="font-size:11px">人</span></div><div style="height:28px;background:var(--acc);border-radius:4px 4px 0 0;margin:6px 0 5px"></div><div style="font-size:11px;font-weight:700;color:var(--pri)">市场销售</div><div style="font-size:11.5px;color:var(--acc);font-weight:700">26%</div></div>
+<div style="flex:1;text-align:center"><div style="font-size:21px;font-weight:700;color:var(--acc-l)">6<span style="font-size:11px">人</span></div><div style="height:14px;background:var(--acc-l);border-radius:4px 4px 0 0;margin:6px 0 5px"></div><div style="font-size:11px;font-weight:700;color:var(--pri)">职能</div><div style="font-size:11.5px;color:var(--acc);font-weight:700">13%</div></div></div>
+<div style="background:var(--acc-p2);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:10.5px;color:var(--ink2)">研发占比约 61%，符合设备联网与数据平台的产品化阶段</div></div>
+</div></div>
+<div class="concl">研发为主的组织结构，支撑设备联网、数据平台与故障预警的<span class="a">能力建设</span>。</div><div class="pn">03</div></div>
+
+<div class="slide hasC"><div class="in">
+<div class="mod">模块 1　需求 <span class="en">/ Why</span></div>
+<h2 class="t">中小制造的核心问题不是没有设备，而是<span class="a">设备不会说话</span></h2>
+<div class="hr"></div>
+<div class="badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="9" cy="7" r="3"/><path d="M2 20c0-3.9 3.1-7 7-7s7 3.1 7 7M17 11h5M19.5 8.5v5"/></svg>目标客户：年产值 2,000万–5亿元的中小制造企业，尤其是注塑、五金、机械加工、电子组装等离散制造</div>
+<div class="stage">
+<div class="p3">
+<div class="pcard"><div class="ph"><div class="no">01</div><h4>设备黑箱</h4></div>
+<li>运行状态 / 故障 / 能耗靠人工巡检</li><li>管理者看不到实时数据</li><li>决策靠经验</li>
+<div class="chain"><div class="ct"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2.5"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>损失机制</div>
+<div class="flow4">
+<div class="fx"><div class="fi"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M17.9 17.9A10.1 10.1 0 0112 20C7 20 2.7 16.9 1 12a18.5 18.5 0 015.1-6.9M9.9 4.2A10.1 10.1 0 0112 4c5 0 9.3 3.1 11 8a18.5 18.5 0 01-2.2 3.9M1 1l22 22"/></svg></div><div class="fl">信息不可见</div></div>
+<div class="far">▶</div>
+<div class="fx"><div class="fi"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M3 3v18h18M7 15l3-4 3 3 5-7"/></svg></div><div class="fl">数据滞后</div></div>
+<div class="far">▶</div>
+<div class="fx"><div class="fi"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M9 21h6M12 3a6 6 0 00-3 11v3h6v-3a6 6 0 00-3-11z"/></svg></div><div class="fl">判断不准</div></div>
+<div class="far">▶</div>
+<div class="fx"><div class="fi"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div><div class="fl">风险放大</div></div>
+</div></div></div>
+<div class="pcard"><div class="ph"><div class="no">02</div><h4>被动维修</h4></div>
+<li>坏了再修</li><li>非计划停机损失数万元</li><li>影响交期</li>
+<div class="chain"><div class="ct"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2.5"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>损失机制</div>
+<div class="flow4">
+<div class="fx"><div class="fi"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2"><path d="M12 2a6 6 0 016 6v4l2 4H4l2-4V8a6 6 0 016-6z"/></svg></div><div class="fl">突发故障</div></div>
+<div class="far">▶</div>
+<div class="fx"><div class="fi"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div class="fl">停机维修</div></div>
+<div class="far">▶</div>
+<div class="fx"><div class="fi"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2"><path d="M6 6h12M6 11h12M12 11v7M9 15h6"/></svg></div><div class="fl">直接损失</div></div>
+<div class="far">▶</div>
+<div class="fx"><div class="fi"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg></div><div class="fl">交期延误</div></div>
+</div></div></div>
+<div class="pcard"><div class="ph"><div class="no">03</div><h4>产能不透明</h4></div>
+<li>不知道瓶颈设备</li><li>OEE / 良率缺少实时判断</li><li>优化无从下手</li>
+<div class="chain"><div class="ct"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2.5"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>损失机制</div>
+<div class="flow4">
+<div class="fx"><div class="fi"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div><div class="fl">瓶颈不清晰</div></div>
+<div class="far">▶</div>
+<div class="fx"><div class="fi"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 12l4-3"/></svg></div><div class="fl">OEE 难掌握</div></div>
+<div class="far">▶</div>
+<div class="fx"><div class="fi"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M4 8h16M4 16h16M9 5v6M15 13v6"/></svg></div><div class="fl">改善无方向</div></div>
+<div class="far">▶</div>
+<div class="fx"><div class="fi"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M21 12v5h-5"/></svg></div><div class="fl">产能浪费</div></div>
+</div></div></div>
+</div>
+<div class="tri">
+<div class="ti"><div class="tic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2"><path d="M3 7l6 6 4-4 8 8M21 17v-5h-5"/></svg></div><div><b>利润变薄</b><span>价格竞争加剧，毛利承压</span></div></div>
+<div class="ti"><div class="tic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2"><circle cx="9" cy="7" r="3"/><path d="M2 20c0-3.9 3.1-7 7-7s7 3.1 7 7M17 8l2 2 4-4"/></svg></div><div><b>用工成本上升</b><span>招人难、留人难</span></div></div>
+<div class="ti"><div class="tic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg></div><div><b>交期要求变严</b><span>小批量、快交付、零容错</span></div></div>
+</div></div></div>
+<div class="concl">设备数据化正在从可选项，变成中小厂的<span class="a">生存项</span>。</div><div class="pn">04</div></div>
+
+<div class="slide hasC"><div class="in">
+<div class="mod">模块 2　产品与模式 <span class="en">/ How</span></div>
+<h2 class="t">用边缘网关采集数据，用<span class="a">云端 SaaS</span> 输出经营动作</h2>
+<div class="hr"></div>
+<div class="stage">
+<div class="arch">
+<div class="acol"><div class="at">工业设备与产线</div><div class="abox">
+<div class="achip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h4M7 14h2"/></svg>数控机床</div>
+<div class="achip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M5 21V9l7-5 7 5v12M9 21v-6h6v6"/></svg>机器人 / 产线</div>
+<div class="achip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>PLC / 传感器</div></div></div>
+<div class="aarrow">▶</div>
+<div class="acol"><div class="at">低成本边缘网关</div><div class="abox" style="align-items:center">
+<svg viewBox="0 0 100 54" style="width:84px">
+<rect x="16" y="20" width="68" height="26" rx="3" fill="var(--pri)"/><rect x="16" y="20" width="68" height="7" rx="3" fill="var(--acc)" opacity=".55"/>
+<g stroke="var(--pri)" stroke-width="2" fill="none"><path d="M32,20 L26,6"/><path d="M68,20 L74,6"/></g>
+<g fill="var(--acc-l)"><rect x="24" y="34" width="9" height="7" rx="1"/><rect x="36" y="34" width="9" height="7" rx="1"/><rect x="48" y="34" width="9" height="7" rx="1"/></g>
+<circle cx="74" cy="38" r="2.5" fill="var(--ok)"/></svg>
+<div class="achip" style="width:100%;justify-content:center">即插即用</div>
+<div class="achip" style="width:100%;justify-content:center">无需改造产线</div>
+<div class="achip" style="width:100%;justify-content:center">最快当天上线</div></div></div>
+<div class="aarrow">▶</div>
+<div class="acol"><div class="at">云端 SaaS 平台</div><div class="abox" style="align-items:center">
+<svg viewBox="0 0 110 52" style="width:96px">
+<path d="M28,42 a13,13 0 0,1 2,-25 a18,18 0 0,1 34,-4 a14,14 0 0,1 18,15 a11,11 0 0,1 -4,14 z" fill="var(--acc-p)" stroke="var(--acc)" stroke-width="1.5"/>
+<text x="55" y="34" text-anchor="middle" font-size="11" font-weight="700" fill="var(--pri)" font-family="Noto Sans SC">智造云</text></svg>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;width:100%">
+<div class="achip" style="justify-content:center;font-size:9.5px">数据存储</div><div class="achip" style="justify-content:center;font-size:9.5px">流式计算</div>
+<div class="achip" style="justify-content:center;font-size:9.5px">AI 算法</div><div class="achip" style="justify-content:center;font-size:9.5px">安全合规</div></div></div></div>
+<div class="aarrow">▶</div>
+<div class="acol" style="flex:1.25"><div class="at">经营动作与业务模块</div><div class="abox">
+<div class="mbox"><div class="mt">实时监控看板</div><div class="md">设备、产线、工厂运行状态实时可视化</div></div>
+<div class="mbox"><div class="mt">故障预警引擎</div><div class="md">多维数据建模，提前发现异常与故障风险</div></div>
+<div class="mbox"><div class="mt">产能分析模块</div><div class="md">OEE、稼动率分析，识别瓶颈与改善机会</div></div></div></div>
+</div>
+<div class="conv">
+<div class="cv"><span class="from">设备黑箱</span><span class="ar">▶</span><span class="to">实时可视</span></div>
+<div class="cv"><span class="from">被动维修</span><span class="ar">▶</span><span class="to">坏前预警</span></div>
+<div class="cv"><span class="from">产能不透明</span><span class="ar">▶</span><span class="to">OEE 与瓶颈识别</span></div>
+</div></div></div>
+<div class="concl">产品不是看板工具，而是从设备数据采集到经营分析动作的<span class="a">低成本闭环</span>。</div><div class="pn">05</div></div>
+
+<div class="slide hasC"><div class="in">
+<div class="mod">模块 2　产品与模式 <span class="en">/ How</span></div>
+<h2 class="t">订阅收入为主，硬件网关作为<span class="a">低成本入口</span></h2>
+<div class="hr"></div>
+<div class="stage cols">
+<div class="card" style="flex:.85"><div class="ch">核心价值</div>
+<div style="display:flex;flex-direction:column;gap:10px;flex:1;justify-content:center">
+<div style="display:flex;gap:10px"><div style="width:29px;height:29px;border-radius:7px;background:var(--acc-p);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div><b style="font-size:12.5px;color:var(--pri)">便宜</b><div style="font-size:10px;color:var(--ink2);line-height:1.55">每月几千元 vs 传统百万级方案</div></div></div>
+<div style="display:flex;gap:10px"><div style="width:29px;height:29px;border-radius:7px;background:var(--acc-p);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M13 2L4.1 12.9a1 1 0 00.8 1.6H11l-1 7.5 8.9-10.9a1 1 0 00-.8-1.6H12z"/></svg></div><div><b style="font-size:12.5px;color:var(--pri)">快</b><div style="font-size:10px;color:var(--ink2);line-height:1.55">开机即用、无需改造产线，最快当天上线</div></div></div>
+<div style="display:flex;gap:10px"><div style="width:29px;height:29px;border-radius:7px;background:var(--acc-p);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13M10 21v-6h4v6"/></svg></div><div><b style="font-size:12.5px;color:var(--pri)">懂中小制造</b><div style="font-size:10px;color:var(--ink2);line-height:1.55">预置离散制造场景模板</div></div></div>
+</div></div>
+<div class="card" style="flex:1.15"><div class="ch">收入结构</div>
+<div style="display:flex;align-items:center;gap:13px;flex:1">
+<svg viewBox="0 0 120 120" style="width:112px;flex-shrink:0">
+<circle cx="60" cy="60" r="42" fill="none" stroke="var(--pri)" stroke-width="26" stroke-dasharray="198 264" transform="rotate(-90 60 60)"/>
+<circle cx="60" cy="60" r="42" fill="none" stroke="var(--acc)" stroke-width="26" stroke-dasharray="53 264" stroke-dashoffset="-198" transform="rotate(-90 60 60)"/>
+<circle cx="60" cy="60" r="42" fill="none" stroke="var(--acc-l)" stroke-width="26" stroke-dasharray="13 264" stroke-dashoffset="-251" transform="rotate(-90 60 60)"/>
+<text x="60" y="58" text-anchor="middle" font-size="9.5" fill="var(--ink2)" font-family="Noto Sans SC">收入</text>
+<text x="60" y="69" text-anchor="middle" font-size="9.5" fill="var(--ink2)" font-family="Noto Sans SC">结构</text></svg>
+<div style="flex:1;font-size:11.5px">
+<div style="display:flex;align-items:baseline;gap:7px;margin-bottom:10px"><span style="width:9px;height:9px;border-radius:2px;background:var(--pri)"></span><span style="color:var(--ink2)">SaaS 订阅</span><b style="font-size:18px;color:var(--pri);margin-left:auto">75%</b></div>
+<div style="display:flex;align-items:baseline;gap:7px;margin-bottom:10px"><span style="width:9px;height:9px;border-radius:2px;background:var(--acc)"></span><span style="color:var(--ink2)">硬件网关</span><b style="font-size:18px;color:var(--acc);margin-left:auto">20%</b></div>
+<div style="display:flex;align-items:baseline;gap:7px"><span style="width:9px;height:9px;border-radius:2px;background:var(--acc-l)"></span><span style="color:var(--ink2)">增值分析</span><b style="font-size:18px;color:var(--acc-l);margin-left:auto">5%</b></div>
+</div></div></div>
+<div class="card"><div class="ch">商业健康度</div>
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:11px">
+<div style="padding-bottom:10px;border-bottom:1px solid var(--line)"><div style="font-size:10.5px;color:var(--ink2);margin-bottom:3px">毛利率</div><div style="font-size:25px;font-weight:700;color:var(--pri)">约 68<span style="font-size:13px">%</span></div></div>
+<div style="padding-bottom:10px;border-bottom:1px solid var(--line)"><div style="font-size:10.5px;color:var(--ink2);margin-bottom:3px">净利率</div><div style="font-size:15px;font-weight:700" class="pend">待补充</div><div style="font-size:9.5px;color:var(--ink3);margin-top:2px">扩张期，投入大于盈利</div></div>
+<div><div style="font-size:10.5px;color:var(--ink2);margin-bottom:5px">销售模式</div><div style="font-size:10px;color:var(--ink2);line-height:1.75">· 直销团队<br>· 区域制造业协会 / 行业渠道<br>· 2 家设备厂商预装合作</div></div>
+</div></div>
+</div></div>
+<div class="concl">低成本硬件降低采集门槛，SaaS 订阅承接<span class="a">长期价值</span>。</div><div class="pn">06</div></div>
+
+<div class="slide hasC"><div class="in">
+<div class="mod">模块 3　市场规模 <span class="en">/ Where</span></div>
+<h2 class="t">中小制造数字化，是工业软件中<span class="a">渗透率低、增速快</span>的蓝海</h2>
+<div class="hr"></div>
+<div class="stage cols">
+<div style="flex:1.15;display:flex;flex-direction:column">
+<div class="fun">
+<div class="fr"><div class="fl-lab" style="background:var(--pri);width:92px"><b>TAM</b><span>总体市场</span></div>
+<div class="fl-val"><div class="fname">中国工业软件市场<br><span style="font-size:9.5px;color:var(--ink3)">2025 年</span></div><div class="fnum">2,800<small> 亿元</small></div></div></div>
+<div class="fr" style="padding-left:24px"><div class="fl-lab" style="background:var(--pri-mid);width:86px"><b>SAM</b><span>可服务市场</span></div>
+<div class="fl-val"><div class="fname">中小制造数字化细分</div><div class="fnum">600<small> 亿元</small></div></div></div>
+<div class="fr" style="padding-left:48px"><div class="fl-lab" style="background:var(--acc);width:80px"><b>SOM</b><span>可获得市场</span></div>
+<div class="fl-val"><div class="fname">离散制造 + 华南华东<br><span style="font-size:9.5px;color:var(--ink3)">3 年内可触达</span></div><div class="fnum">40<small> 亿元</small></div></div></div>
+</div>
+<div class="note"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--ink3)" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>市场规模为客户预估口径；如引用公开资料旁证，将标注来源并注明需验证，不替换客户数字。</div>
+</div>
+<div class="card"><div class="ch">市场驱动逻辑</div>
+<div class="drv">
+<div class="dv"><div class="di"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M21 12V7h-5"/></svg></div><div><b>渗透率低</b><p>中小制造在核心工业软件的渗透率<b style="color:var(--acc)">不足 15%</b>，存在大规模未被满足的需求。</p></div></div>
+<div class="dv"><div class="di"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M3 21h18M5 21V10l7-6 7 6v11M10 21v-6h4v6"/></svg></div><div><b>政策驱动</b><p>"专精特新"梯度培育、智能制造专项等政策，持续降低中小制造数字化门槛。</p></div></div>
+<div class="dv"><div class="di"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 9h6M12 9v7M9 13h6"/></svg></div><div><b>成本压力驱动</b><p>原材料、人工与交付成本上升挤压利润，企业以更快 ROI 推动数字化投资决策。</p></div></div>
+</div></div>
+</div></div>
+<div class="concl">机会不在泛工业软件，而在传统重方案无法覆盖的<span class="a">中小制造数字化长尾</span>。</div><div class="pn">07</div></div>
+
+<div class="slide hasC"><div class="in">
+<div class="mod">模块 3　市场规模 <span class="en">/ Where</span></div>
+<h2 class="t">细分市场预计<span class="a">五年翻倍</span>，窗口期来自低渗透率的快速补课</h2>
+<div class="hr"></div>
+<div class="stage cols">
+<div class="card" style="flex:1.5"><div class="ch">细分市场规模预测（亿元）</div>
+<svg viewBox="0 0 480 200" style="flex:1;width:100%">
+<g stroke="var(--line)"><line x1="44" y1="170" x2="470" y2="170"/><line x1="44" y1="128" x2="470" y2="128" stroke-dasharray="3 4"/><line x1="44" y1="86" x2="470" y2="86" stroke-dasharray="3 4"/><line x1="44" y1="44" x2="470" y2="44" stroke-dasharray="3 4"/></g>
+<g font-size="9" fill="var(--ink3)" text-anchor="end" font-family="Noto Sans SC"><text x="38" y="174">0</text><text x="38" y="132">400</text><text x="38" y="90">800</text><text x="38" y="48">1200</text></g>
+<g fill="var(--pri)"><rect x="70" y="107" width="46" height="63" rx="3"/><rect x="156" y="94" width="46" height="76" rx="3"/><rect x="242" y="80" width="46" height="90" rx="3"/><rect x="328" y="62" width="46" height="108" rx="3"/><rect x="414" y="41" width="46" height="129" rx="3"/></g>
+<g font-size="11.5" font-weight="700" fill="var(--pri)" text-anchor="middle" font-family="Noto Sans SC"><text x="93" y="101">600</text><text x="179" y="88">720</text><text x="265" y="74">860</text><text x="351" y="56">1,030</text><text x="437" y="35">1,230</text></g>
+<g font-size="10" fill="var(--ink2)" text-anchor="middle" font-family="Noto Sans SC"><text x="93" y="188">2026</text><text x="179" y="188">2027</text><text x="265" y="188">2028</text><text x="351" y="188">2029</text><text x="437" y="188">2030</text></g>
+<g font-family="Noto Sans SC"><rect x="120" y="106" width="32" height="15" rx="7.5" fill="var(--acc-p)"/><text x="136" y="117" font-size="9.5" fill="var(--acc)" text-anchor="middle" font-weight="700">20%</text>
+<rect x="206" y="92" width="32" height="15" rx="7.5" fill="var(--acc-p)"/><text x="222" y="103" font-size="9.5" fill="var(--acc)" text-anchor="middle" font-weight="700">19%</text>
+<rect x="292" y="76" width="32" height="15" rx="7.5" fill="var(--acc-p)"/><text x="308" y="87" font-size="9.5" fill="var(--acc)" text-anchor="middle" font-weight="700">20%</text>
+<rect x="378" y="55" width="32" height="15" rx="7.5" fill="var(--acc-p)"/><text x="394" y="66" font-size="9.5" fill="var(--acc)" text-anchor="middle" font-weight="700">19%</text></g>
+</svg>
+<div class="note"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>客户预估口径，需验证。</div></div>
+<div class="card"><div class="ch">关键解读</div>
+<div class="drv">
+<div class="dv"><div class="di"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M21 12V7h-5"/></svg></div><div><b>渗透率低形成增量空间</b><p>当前渗透率仍处低位，未来五年有望快速提升，带来显著增量。</p></div></div>
+<div class="dv"><div class="di"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M4 21h16M6 21V9h12v12M12 3l7 6H5z"/></svg></div><div><b>政策与成本压力共同驱动</b><p>政策引导叠加降本增效诉求，推动需求持续释放。</p></div></div>
+<div class="dv"><div class="di"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M13 2L4.1 12.9a1 1 0 00.8 1.6H11l-1 7.5 8.9-10.9a1 1 0 00-.8-1.6H12z"/></svg></div><div><b>快部署低成本更适合中小厂</b><p>中小厂预算与人力有限，更倾向快速上线、低成本的方案。</p></div></div>
+</div></div>
+</div></div>
+<div class="concl">低渗透率市场的关键不是教育所有客户，而是用可负担、快上线的方案<span class="a">先占住标准化入口</span>。</div><div class="pn">08</div></div>
+
+<div class="slide hasC"><div class="in">
+<div class="mod">模块 4　竞争分析 <span class="en">/ Which</span></div>
+<h2 class="t">避开大厂重方案，用<span class="a">轻量标准化</span>切入中小厂</h2>
+<div class="hr"></div>
+<div class="stage">
+<table class="mx">
+<tr><th style="text-align:left;padding-left:13px">竞争对手</th><th>产品</th><th>价格</th><th>部署速度</th><th>中小适配</th><th>我方对比</th></tr>
+<tr><td>A　传统工业互联网大厂</td><td>功能全、重</td><td>百万级</td><td>以年计</td><td><div class="dots"><span class="dot fd"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div class="dlab">差</div></td><td><span class="ck">✓</span> 我们更轻更便宜</td></tr>
+<tr><td>B　通用 IoT 平台</td><td>通用、需自配</td><td>中等</td><td>数月</td><td><div class="dots"><span class="dot f"></span><span class="dot f"></span><span class="dot f"></span><span class="dot"></span><span class="dot"></span></div><div class="dlab">中</div></td><td><span class="ck">✓</span> 我们预置制造场景</td></tr>
+<tr><td>C　本地集成商方案</td><td>定制、封闭</td><td>项目制、贵</td><td>慢</td><td><div class="dots"><span class="dot f"></span><span class="dot f"></span><span class="dot f"></span><span class="dot"></span><span class="dot"></span></div><div class="dlab">中</div></td><td><span class="ck">✓</span> 我们标准化可复制</td></tr>
+<tr class="us"><td>智造云</td><td>网关 + SaaS</td><td>每月几千元</td><td>最快当天</td><td><div class="dots"><span class="dot f"></span><span class="dot f"></span><span class="dot f"></span><span class="dot f"></span><span class="dot f"></span></div><div class="dlab" style="color:var(--acc)">高</div></td><td><span class="ck">✓</span> 中小制造专用</td></tr>
+</table>
+<div class="tri" style="margin-top:auto">
+<div class="ti"><div class="tic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13M10 21v-5h4v5"/></svg></div><div><b>场景 know-how</b><span>预置离散制造模板</span></div></div>
+<div class="ti"><div class="tic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div><b>成本结构优势</b><span>自研网关 + SaaS 规模化</span></div></div>
+<div class="ti"><div class="tic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg></div><div><b>渠道卡位</b><span>设备厂商预装合作</span></div></div>
+</div></div></div>
+<div class="concl">传统方案不是没有能力，而是<span class="a">商业模式和交付结构</span>不适配中小厂。</div><div class="pn">09</div></div>
+
+<div class="slide hasC"><div class="in">
+<div class="mod">模块 5　目前状况 <span class="en">/ Traction</span></div>
+<h2 class="t">产品、客户、设备与收入指标，已形成<span class="a">早期基本盘</span></h2>
+<div class="hr"></div>
+<div class="stage">
+<div class="kpis" style="grid-template-columns:repeat(5,1fr)">
+<div class="kpi" style="flex-direction:column;align-items:flex-start;gap:0"><div class="v" style="font-size:14px">产品已上线</div><div class="l">三大模块可用</div></div>
+<div class="kpi" style="flex-direction:column;align-items:flex-start;gap:0"><div class="v">1,200<small>家</small></div><div class="l">付费企业客户</div></div>
+<div class="kpi" style="flex-direction:column;align-items:flex-start;gap:0"><div class="v">3.8<small>万台</small></div><div class="l">接入设备</div></div>
+<div class="kpi" style="flex-direction:column;align-items:flex-start;gap:0"><div class="v">4,600<small>万</small></div><div class="l">ARR</div></div>
+<div class="kpi" style="flex-direction:column;align-items:flex-start;gap:0"><div class="v">18<small>%</small></div><div class="l">月环比增长</div></div>
+</div>
+<div class="cols" style="margin-top:11px">
+<div class="card" style="flex:1.3"><div class="ch">ARR 增长（近 12 个月 · 万元）</div>
+<svg viewBox="0 0 400 128" style="flex:1;width:100%">
+<defs><linearGradient id="ag2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--acc)" stop-opacity=".26"/><stop offset="1" stop-color="var(--acc)" stop-opacity="0"/></linearGradient></defs>
+<line x1="10" y1="108" x2="390" y2="108" stroke="var(--line)"/>
+<path d="M14,99 L48,94 82,87 116,79 150,70 184,60 218,48 252,37 286,28 320,20 354,12 388,6 388,108 14,108 Z" fill="url(#ag2)"/>
+<polyline points="14,99 48,94 82,87 116,79 150,70 184,60 218,48 252,37 286,28 320,20 354,12 388,6" fill="none" stroke="var(--acc)" stroke-width="2.5"/>
+<circle cx="388" cy="6" r="4.5" fill="var(--acc)"/>
+<text x="378" y="22" text-anchor="end" font-size="12" font-weight="700" fill="var(--pri)" font-family="Noto Sans SC">4,600</text>
+<text x="14" y="122" font-size="9" fill="var(--ink3)">M1</text><text x="388" y="122" text-anchor="end" font-size="9" fill="var(--ink3)">M12</text></svg></div>
+<div class="card"><div class="ch">区域覆盖（按付费客户数）</div>
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px">
+<div><div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px"><span style="color:var(--ink2)">华南</span><b style="color:var(--pri)">60%</b></div><div style="height:9px;background:var(--acc-p);border-radius:5px"><div style="width:60%;height:100%;background:var(--pri);border-radius:5px"></div></div></div>
+<div><div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px"><span style="color:var(--ink2)">华东</span><b style="color:var(--acc)">30%</b></div><div style="height:9px;background:var(--acc-p);border-radius:5px"><div style="width:30%;height:100%;background:var(--acc);border-radius:5px"></div></div></div>
+<div><div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px"><span style="color:var(--ink2)">其他</span><b style="color:var(--acc-l)">10%</b></div><div style="height:9px;background:var(--acc-p);border-radius:5px"><div style="width:10%;height:100%;background:var(--acc-l);border-radius:5px"></div></div></div>
+</div></div>
+<div class="card"><div class="ch">合作与背书</div>
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:12px">
+<div style="display:flex;gap:9px"><div style="width:27px;height:27px;border-radius:50%;background:var(--acc-p);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13"/></svg></div><div><b style="font-size:11.5px;color:var(--pri)">2 家工业设备厂商预装合作</b><div style="font-size:9.5px;color:var(--ink2);line-height:1.5">设备出厂即带智造云入口</div></div></div>
+<div style="display:flex;gap:9px"><div style="width:27px;height:27px;border-radius:50%;background:var(--acc-p);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><circle cx="12" cy="9" r="6"/><path d="M8 14l-2 7 6-3 6 3-2-7"/></svg></div><div><b style="font-size:11.5px;color:var(--pri)">入选某市"专精特新"培育名单</b><div style="font-size:9.5px;color:var(--ink2);line-height:1.5">获得地方政府认可与资源支持</div></div></div>
+</div></div>
+</div></div></div>
+<div class="concl">已有牵引证明产品能被中小厂购买，下一阶段需验证<span class="a">规模化获客效率</span>。</div><div class="pn">10</div></div>
+
+<div class="slide hasC"><div class="in">
+<div class="mod">模块 6　未来规划</div>
+<h2 class="t">三年从区域产品化验证，走向<span class="a">跨区域规模复制</span></h2>
+<div class="hr"></div>
+<div class="stage"><div class="rm">
+<div class="rs"><div class="rh"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13"/></svg><b>夯实华南华东</b><span style="margin-left:auto;font-size:10px;opacity:.8">0-12 月</span></div>
+<div class="rb"><li>聚焦制造业密集区，深化重点行业场景</li><li>打磨标准化产品与交付体系</li><li>构建标杆案例，沉淀行业解决方案</li>
+<div class="rg">客户数 <span class="gv">1,200 → 3,000 家</span><br>设备接入 <span class="gv">3.8 → 10 万台</span></div></div></div>
+<div class="rs"><div class="rh"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M21 12V7h-5"/></svg><b>扩展华中与成渝</b><span style="margin-left:auto;font-size:10px;opacity:.8">12-24 月</span></div>
+<div class="rb"><li>拓展区域渠道与合作伙伴网络</li><li>复制华南华东的行业打法与交付模式</li><li>建立区域服务与实施能力</li>
+<div class="rg">客户数 <span class="gv">→ 5,500 家</span><br>上线 <span class="gv">智能排产模块</span></div></div></div>
+<div class="rs"><div class="rh"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="7" r="2"/><circle cx="19" cy="7" r="2"/><circle cx="5" cy="17" r="2"/><circle cx="19" cy="17" r="2"/></svg><b>智能排产与供应链协同</b><span style="margin-left:auto;font-size:10px;opacity:.8">24-36 月</span></div>
+<div class="rb"><li>推出智能排产与 APS，打通计划与执行</li><li>连接供应链上下游，构建协同网络</li><li>拓展高客单价模块，提升 ARPU</li>
+<div class="rg">客户数 <span class="gv">→ 8,000 家</span><br>设备接入 <span class="gv">→ 30 万台</span></div></div></div>
+</div></div></div>
+<div class="concl">增长路径从设备联网入口出发，逐步提高每家工厂的<span class="a">数据深度与业务覆盖</span>。</div><div class="pn">11</div></div>
+
+<div class="slide hasC"><div class="in">
+<div class="mod">模块 6　财务预测</div>
+<h2 class="t"><span class="a">2027 年转正</span>，之后进入规模化盈利阶段</h2>
+<div class="hr"></div>
+<div class="stage cols">
+<div class="card" style="flex:1.6"><div class="ch">营业收入与净利润预测（2026–2030 · 万元）</div>
+<div style="display:flex;gap:15px;font-size:10.5px;color:var(--ink2);margin-bottom:5px">
+<span style="display:flex;align-items:center;gap:6px"><i style="width:10px;height:10px;background:var(--pri);border-radius:2px;display:inline-block"></i>营业收入</span>
+<span style="display:flex;align-items:center;gap:6px"><i style="width:10px;height:10px;background:var(--acc);border-radius:2px;display:inline-block"></i>净利润</span></div>
+<svg viewBox="0 0 460 196" style="flex:1;width:100%">
+<g stroke="var(--line)"><line x1="46" y1="146" x2="450" y2="146"/><line x1="46" y1="108" x2="450" y2="108" stroke-dasharray="3 4"/><line x1="46" y1="70" x2="450" y2="70" stroke-dasharray="3 4"/><line x1="46" y1="32" x2="450" y2="32" stroke-dasharray="3 4"/></g>
+<g font-size="9" fill="var(--ink3)" text-anchor="end" font-family="Noto Sans SC"><text x="41" y="150">0</text><text x="41" y="112">2万</text><text x="41" y="74">4万</text><text x="41" y="36">6万</text><text x="41" y="172">-1万</text></g>
+<g fill="var(--pri)"><rect x="62" y="133" width="24" height="13" rx="2"/><rect x="142" y="124" width="24" height="22" rx="2"/><rect x="222" y="108" width="24" height="38" rx="2"/><rect x="302" y="86" width="24" height="60" rx="2"/><rect x="382" y="56" width="24" height="90" rx="2"/></g>
+<rect x="90" y="146" width="24" height="16" rx="2" fill="var(--warn)"/>
+<g fill="var(--acc)"><rect x="170" y="142" width="24" height="4" rx="2"/><rect x="250" y="135" width="24" height="11" rx="2"/><rect x="330" y="122" width="24" height="24" rx="2"/><rect x="410" y="102" width="24" height="44" rx="2"/></g>
+<line x1="182" y1="32" x2="182" y2="162" stroke="var(--acc)" stroke-dasharray="4 3" stroke-width="1.5"/>
+<circle cx="182" cy="146" r="5" fill="none" stroke="var(--acc)" stroke-width="2"/>
+<rect x="150" y="14" width="66" height="16" rx="8" fill="var(--acc-p)"/>
+<text x="183" y="25" text-anchor="middle" font-size="9.5" font-weight="700" fill="var(--acc)" font-family="Noto Sans SC">盈亏平衡点</text>
+<g font-size="10" font-weight="700" fill="var(--pri)" text-anchor="middle" font-family="Noto Sans SC"><text x="74" y="128">6,500</text><text x="154" y="119">1.1亿</text><text x="234" y="103">1.9亿</text><text x="314" y="81">3.0亿</text><text x="394" y="51">4.5亿</text></g>
+<g font-size="9" fill="var(--acc)" text-anchor="middle" font-family="Noto Sans SC"><text x="102" y="174" fill="var(--warn)">-800</text><text x="182" y="139">200</text><text x="262" y="131">2,800</text><text x="342" y="118">6,000</text><text x="422" y="98">1.1亿</text></g>
+<g font-size="10" fill="var(--ink2)" text-anchor="middle" font-family="Noto Sans SC"><text x="88" y="188">2026</text><text x="168" y="188">2027</text><text x="248" y="188">2028</text><text x="328" y="188">2029</text><text x="408" y="188">2030</text></g>
+</svg></div>
+<div class="card"><div class="ch">关键阶段</div>
+<div class="drv">
+<div class="dv"><div class="di"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2"><path d="M3 7l6 6 4-4 8 8M21 17v-5h-5"/></svg></div><div><b>2026　投入期</b><p>重点投入产品迭代与市场拓展，利润为负属正常战略投入。</p></div></div>
+<div class="dv"><div class="di"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M21 12V7h-5"/></svg></div><div><b>2027　转正</b><p>实现盈亏平衡，开始贡献利润，经营杠杆开始显现。</p></div></div>
+<div class="dv"><div class="di"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M12 20V10M6 20v-6M18 20V4"/></svg></div><div><b>2030　规模化盈利</b><p>收入达 4.5 亿，净利润 1.1 亿，规模化效应释放。</p></div></div>
+</div>
+<div class="note"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>营业收入与净利润均为客户预估。</div></div>
+</div></div>
+<div class="concl">预测成立的关键是客户扩张、设备数提升与 <span class="a">SaaS 收入占比提高</span>。</div><div class="pn">12</div></div>
+
+<div class="slide hasC"><div class="in">
+<div class="mod">模块 7　融资计划</div>
+<h2 class="t">本轮融资 <span class="a">3,000 万元</span>，用于产品研发、市场拓展和团队建设</h2>
+<div class="hr"></div>
+<div class="stage cols">
+<div style="width:196px;background:linear-gradient(160deg,var(--pri-deep),var(--pri));border-radius:8px;padding:20px 18px;display:flex;flex-direction:column;justify-content:center;color:#fff;flex-shrink:0">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--acc-l)" stroke-width="1.8" style="margin-bottom:14px"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+<div style="font-size:12px;opacity:.72">本轮融资</div>
+<div style="font-size:38px;font-weight:700;line-height:1.1;margin:3px 0">3,000</div>
+<div style="font-size:12px;opacity:.72;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.2)">万元人民币</div>
+<div style="font-size:12px;opacity:.72;margin-top:16px">计划稀释</div>
+<div style="font-size:24px;font-weight:700;color:var(--acc-l)">10% – 15%</div></div>
+<div class="card" style="flex:1"><div class="ch">资金用途与分配</div>
+<div style="display:flex;align-items:center;gap:18px;flex:1">
+<svg viewBox="0 0 130 130" style="width:118px;flex-shrink:0">
+<circle cx="65" cy="65" r="46" fill="none" stroke="var(--pri)" stroke-width="30" stroke-dasharray="116 289" transform="rotate(-90 65 65)"/>
+<circle cx="65" cy="65" r="46" fill="none" stroke="var(--acc)" stroke-width="30" stroke-dasharray="101 289" stroke-dashoffset="-116" transform="rotate(-90 65 65)"/>
+<circle cx="65" cy="65" r="46" fill="none" stroke="var(--acc-l)" stroke-width="30" stroke-dasharray="58 289" stroke-dashoffset="-217" transform="rotate(-90 65 65)"/>
+<circle cx="65" cy="65" r="46" fill="none" stroke="var(--line)" stroke-width="30" stroke-dasharray="14 289" stroke-dashoffset="-275" transform="rotate(-90 65 65)"/></svg>
+<div style="flex:1">
+<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)"><span style="width:10px;height:10px;background:var(--pri);border-radius:2px"></span><div style="flex:1"><b style="font-size:12.5px;color:var(--pri)">产品研发</b><div style="font-size:10px;color:var(--ink2)">智能排产等新模块</div></div><b style="font-size:19px;color:var(--pri)">40%</b></div>
+<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)"><span style="width:10px;height:10px;background:var(--acc);border-radius:2px"></span><div style="flex:1"><b style="font-size:12.5px;color:var(--pri)">市场拓展</b><div style="font-size:10px;color:var(--ink2)">华中 / 成渝扩张</div></div><b style="font-size:19px;color:var(--acc)">35%</b></div>
+<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)"><span style="width:10px;height:10px;background:var(--acc-l);border-radius:2px"></span><div style="flex:1"><b style="font-size:12.5px;color:var(--pri)">团队建设</b><div style="font-size:10px;color:var(--ink2)">补强销售与算法</div></div><b style="font-size:19px;color:var(--acc-l)">20%</b></div>
+<div style="display:flex;align-items:center;gap:10px;padding:10px 0"><span style="width:10px;height:10px;background:var(--line);border-radius:2px"></span><div style="flex:1"><b style="font-size:12.5px;color:var(--pri)">其他</b><div style="font-size:10px;color:var(--ink2)">运营储备</div></div><b style="font-size:19px;color:var(--ink3)">5%</b></div>
+</div></div></div>
+</div></div>
+<div class="concl">资金用途与下一阶段增长假设一致：产品升维、区域复制、<span class="a">补强销售与算法能力</span>。</div><div class="pn">13</div></div>
+
+<div class="slide hasC"><div class="in">
+<div class="mod">模块 8　团队 <span class="en">/ Who</span></div>
+<h2 class="t">工业自动化、IoT 云平台与 To B SaaS 增长<span class="a">经验互补</span></h2>
+<div class="hr"></div>
+<div class="stage">
+<div class="tm">
+<div class="tc2"><div class="tav">张</div><div class="tn">张明</div><div class="trole">创始人 & CEO</div>
+<li>15 年工业自动化行业经验</li><li>曾任某工业设备上市公司产品总监</li><li>主导多个工厂数字化项目</li><li>清华大学自动化系</li></div>
+<div class="tc2"><div class="tav">李</div><div class="tn">李伟</div><div class="trole">联合创始人 & CTO</div>
+<li>前某头部云厂商 IoT 平台架构师</li><li>10 年物联网与云平台经验</li><li>负责智造云技术架构</li></div>
+<div class="tc2"><div class="tav">王</div><div class="tn">王芳</div><div class="trole">COO</div>
+<li>12 年 To B SaaS 运营与销售管理经验</li><li>曾带领团队将 ARR 从 0 做到过亿</li><li>负责运营与销售管理</li></div>
+</div>
+<div class="cols" style="flex:none;margin-top:11px;gap:11px">
+<div class="card" style="flex:1.4;padding:10px 13px">
+<div style="display:flex;align-items:center;gap:20px">
+<div style="display:flex;align-items:center;gap:8px;flex:1"><div style="width:29px;height:29px;border-radius:7px;background:var(--acc-p);display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13"/></svg></div><div><b style="font-size:12px;color:var(--pri)">工业场景</b><div style="font-size:9.5px;color:var(--ink2)">理解业务痛点与落地路径</div></div></div>
+<span style="color:var(--acc);font-size:14px">×</span>
+<div style="display:flex;align-items:center;gap:8px;flex:1"><div style="width:29px;height:29px;border-radius:7px;background:var(--acc-p);display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M17 18a4 4 0 000-8 6 6 0 00-11.7 2A3.5 3.5 0 006 18z"/></svg></div><div><b style="font-size:12px;color:var(--pri)">IoT 云平台</b><div style="font-size:9.5px;color:var(--ink2)">支撑规模化交付</div></div></div>
+<span style="color:var(--acc);font-size:14px">×</span>
+<div style="display:flex;align-items:center;gap:8px;flex:1"><div style="width:29px;height:29px;border-radius:7px;background:var(--acc-p);display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M21 12V7h-5"/></svg></div><div><b style="font-size:12px;color:var(--pri)">To B 商业化</b><div style="font-size:9.5px;color:var(--ink2)">驱动持续增长</div></div></div>
+</div></div>
+<div class="card" style="flex:.75;padding:10px 13px;flex-direction:row;align-items:center;gap:10px;border-style:dashed;opacity:.8">
+<div style="width:32px;height:32px;border-radius:50%;border:2px dashed var(--ink3);display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:14px;flex-shrink:0">?</div>
+<div><b style="font-size:12px;color:var(--pri)">故障预警算法负责人</b><div style="font-size:10px" class="pend">待补充</div></div></div>
+</div></div></div>
+<div class="concl">团队组合覆盖工业场景、IoT 平台与 To B 商业化，是走向<span class="a">规模扩张</span>的基本条件。</div><div class="pn">14</div></div>
+
+<div class="slide bk">
+<svg class="gfx" style="opacity:.4" viewBox="0 0 300 260" preserveAspectRatio="xMidYMid slice">
+<defs><linearGradient id="gl2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5FC4F0" stop-opacity=".5"/><stop offset="1" stop-color="#5FC4F0" stop-opacity="0"/></linearGradient></defs>
+<ellipse cx="180" cy="70" rx="52" ry="30" fill="#1C9FE0" opacity=".2"/><ellipse cx="180" cy="70" rx="52" ry="30" fill="none" stroke="#5FC4F0" stroke-width="1.2"/>
+<g stroke="url(#gl2)" fill="none" stroke-width=".9"><path d="M100,190 Q140,120 180,100 M140,200 Q165,140 180,100 M220,195 Q205,140 180,100"/></g>
+<g fill="#5FC4F0" opacity=".7"><circle cx="100" cy="190" r="3.5"/><circle cx="140" cy="200" r="3.5"/><circle cx="220" cy="195" r="3.5"/></g>
+<g fill="none" stroke="#5FC4F0" stroke-width=".8" opacity=".4"><rect x="60" y="215" width="42" height="30" rx="3"/><rect x="118" y="215" width="42" height="30" rx="3"/><rect x="176" y="215" width="42" height="30" rx="3"/></g>
+</svg>
+<div class="in">
+<div class="lg"><div class="lgi">智</div><div class="lgt">深圳智造云科技有限公司</div></div>
+<h2>智联设备　<span class="a">数造未来</span></h2>
+<div class="sub">让每一台设备开口说话，让每一家中小工厂用得起工业互联网。</div>
+<div class="ct2">联系人：<span style="color:rgba(255,255,255,.5);font-style:italic">待补充</span><br>邮箱 / 电话：<span style="color:rgba(255,255,255,.5);font-style:italic">待补充</span></div>
+</div></div>
+
+</div>
+<script>function st(t,b){document.documentElement.setAttribute('data-theme',t);document.querySelectorAll('.tbtn').forEach(x=>x.classList.remove('on'));b.classList.add('on')}</script>
+</body>
+</html>
