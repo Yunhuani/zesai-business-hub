@@ -407,6 +407,107 @@ export async function refundDiagnosisFullIfCharged(
   });
 }
 
+export async function refundBusinessPlanFullIfCharged(
+  businessPlanId: number
+): Promise<{ refunded: boolean; amount: number }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return db.transaction(async tx => {
+    const [charge] = await tx
+      .select({
+        id: creditsTransactions.id,
+        userId: creditsTransactions.userId,
+        amount: creditsTransactions.amount,
+        balancePurchased: creditsTransactions.balancePurchased,
+        balanceSubscription: creditsTransactions.balanceSubscription,
+        createdAt: creditsTransactions.createdAt,
+      })
+      .from(creditsTransactions)
+      .where(and(
+        eq(creditsTransactions.relatedDiagnosisId, businessPlanId),
+        eq(creditsTransactions.billingKey, "business_plan_full"),
+        eq(creditsTransactions.type, "consume")
+      ))
+      .limit(1);
+    if (!charge) return { refunded: false, amount: 0 };
+
+    const [existingRefund] = await tx
+      .select({ id: creditsTransactions.id })
+      .from(creditsTransactions)
+      .where(and(
+        eq(creditsTransactions.relatedDiagnosisId, businessPlanId),
+        eq(creditsTransactions.billingKey, "refund:business_plan_full"),
+        eq(creditsTransactions.type, "refund")
+      ))
+      .limit(1);
+    if (existingRefund) return { refunded: false, amount: 0 };
+
+    const refundAmount = Math.abs(charge.amount);
+    const [previousTransaction] = await tx
+      .select({
+        balancePurchased: creditsTransactions.balancePurchased,
+        balanceSubscription: creditsTransactions.balanceSubscription,
+      })
+      .from(creditsTransactions)
+      .where(and(
+        eq(creditsTransactions.userId, charge.userId),
+        or(
+          lt(creditsTransactions.createdAt, charge.createdAt),
+          and(
+            eq(creditsTransactions.createdAt, charge.createdAt),
+            lt(creditsTransactions.id, charge.id)
+          )
+        )
+      ))
+      .orderBy(desc(creditsTransactions.createdAt), desc(creditsTransactions.id))
+      .limit(1);
+    const [user] = await tx.select().from(users).where(eq(users.id, charge.userId)).limit(1);
+    if (!user) throw new Error("User not found");
+
+    const inferredSubscriptionRefund = previousTransaction
+      ? Math.max(0, previousTransaction.balanceSubscription - charge.balanceSubscription)
+      : 0;
+    const inferredPurchasedRefund = previousTransaction
+      ? Math.max(0, previousTransaction.balancePurchased - charge.balancePurchased)
+      : 0;
+    const hasExactAllocation =
+      inferredSubscriptionRefund + inferredPurchasedRefund === refundAmount;
+    const subscriptionRefund = hasExactAllocation
+      ? inferredSubscriptionRefund
+      : charge.balanceSubscription > 0
+        ? refundAmount
+        : 0;
+    const purchasedRefund = refundAmount - subscriptionRefund;
+    const nextPurchased = user.creditsPurchased + purchasedRefund;
+    const nextSubscription = user.creditsSubscription + subscriptionRefund;
+
+    await tx.update(users).set({
+      creditsPurchased: nextPurchased,
+      creditsSubscription: nextSubscription,
+    }).where(eq(users.id, charge.userId));
+    await tx.insert(creditsTransactions).values({
+      userId: charge.userId,
+      type: "refund",
+      amount: refundAmount,
+      balancePurchased: nextPurchased,
+      balanceSubscription: nextSubscription,
+      description: `BP generation failed refund - BusinessPlan #${businessPlanId}`,
+      relatedDiagnosisId: businessPlanId,
+      billingKey: "refund:business_plan_full",
+    });
+
+    notifyOps({
+      category: "refund",
+      message: "Business plan charge refunded after generation error",
+      userId: charge.userId,
+      details: { businessPlanId, amount: refundAmount },
+    }).catch(() => {});
+
+    return { refunded: true, amount: refundAmount };
+  });
+}
+
 export async function deductCreditsOnce(
   userId: number,
   amount: number,

@@ -41,6 +41,20 @@ export const diagnoses = mysqlTable("diagnoses", {
 	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
 });
 
+export const businessPlans = mysqlTable("businessPlans", {
+	id: int().autoincrement().primaryKey(),
+	userId: int().notNull(),
+	engineJobId: varchar({ length: 255 }),
+	intake: json().notNull(),
+	status: mysqlEnum(['pending','running','done','error']).default('pending').notNull(),
+	result: json(),
+	creditsDeducted: int().default(0).notNull(),
+	retryCount: int().default(0).notNull(),
+	errorMessage: text(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).onUpdateNow().notNull(),
+});
+
 export const diagnosisDrafts = mysqlTable("diagnosisDrafts", {
 	id: int().autoincrement().primaryKey(),
 	userId: int().notNull(),
