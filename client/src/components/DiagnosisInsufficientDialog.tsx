@@ -16,6 +16,9 @@ interface DiagnosisInsufficientDialogProps {
   onOpenChange: (open: boolean) => void;
   isFreeUser: boolean;
   credits: DiagnosisInsufficientCredits | null;
+  productLabel?: string;
+  actionLabel?: string;
+  actionPrefix?: string;
 }
 
 export function DiagnosisInsufficientDialog({
@@ -23,6 +26,9 @@ export function DiagnosisInsufficientDialog({
   onOpenChange,
   isFreeUser,
   credits,
+  productLabel = "NBG 增长诊断",
+  actionLabel: productActionLabel = "诊断",
+  actionPrefix = "做一次",
 }: DiagnosisInsufficientDialogProps) {
   if (!credits) return null;
 
@@ -44,12 +50,12 @@ export function DiagnosisInsufficientDialog({
             <DialogDescription className="pt-2 text-sm leading-7 text-[var(--zs-sub)]">
               {isFreeUser ? (
                 <>
-                  做一次 NBG 增长诊断需 {credits.required.toLocaleString()} 积分，您还差{" "}
+                  {actionPrefix}{productLabel}需 {credits.required.toLocaleString()} 积分，您还差{" "}
                   {credits.missing.toLocaleString()} 积分。成为泽思AI会员即可获得积分并使用。
                 </>
               ) : (
                 <>
-                  本次诊断需 {credits.required.toLocaleString()} 积分，您还差{" "}
+                  本次{productActionLabel}需 {credits.required.toLocaleString()} 积分，您还差{" "}
                   {credits.missing.toLocaleString()} 积分。可购买积分包补充后继续。
                 </>
               )}

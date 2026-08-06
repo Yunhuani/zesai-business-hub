@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowUp, Check, Pencil, Plus, Send, Trash2 } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { APP_LOGO } from "@/const";
+import { useAuth } from "@/_core/hooks/useAuth";
 import {
+  clearBusinessPlanDraft,
   getRestorableBusinessPlanUnitIndex,
   loadBusinessPlanDraft,
   saveBusinessPlanDraft,
@@ -10,6 +12,9 @@ import {
   type BusinessPlanDraftRow,
   type BusinessPlanScoreMatrixAnswer,
 } from "@/lib/businessPlanDraft";
+import { DiagnosisInsufficientDialog } from "@/components/DiagnosisInsufficientDialog";
+import { parseDiagnosisInsufficientCredits, type DiagnosisInsufficientCredits } from "@/lib/diagnosisSubmissionError";
+import { trpc } from "@/lib/trpc";
 import {
   BUSINESS_PLAN_QUESTIONS,
   BUSINESS_PLAN_SECTIONS,
@@ -21,6 +26,7 @@ import {
   type BPTextQuestion,
 } from "./businessPlanQuestionnaire";
 import { resolveBusinessPlanSingleOption } from "./businessPlanConversationProtocol";
+import { buildBusinessPlanIntake, validateBusinessPlanAnswers, validateBusinessPlanQuestion } from "./businessPlanSubmission";
 
 type Answers = Record<string, BusinessPlanDraftAnswer>;
 type ConversationUnit = BPQuestion & { sectionIntro: string };
@@ -147,11 +153,17 @@ function ActiveAnswer({ question, answers, onComplete }: { question: BPQuestion;
 }
 
 export default function BusinessPlanConversation() {
+  const [, setLocation] = useLocation();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [initialDraft] = useState(loadBusinessPlanDraft);
   const [answers, setAnswers] = useState<Answers>(() => initialDraft?.answers ?? {});
   const [customValues] = useState<Record<string, string>>(() => initialDraft?.customValues ?? {});
   const [unitIndex, setUnitIndex] = useState(() => getRestorableBusinessPlanUnitIndex(initialDraft?.conversationUnitIndex, initialDraft?.answers ?? {}, CONVERSATION_UNITS.map(unit => unit.id)));
   const [editingUnitIndex, setEditingUnitIndex] = useState<number | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [insufficientCredits, setInsufficientCredits] = useState<DiagnosisInsufficientCredits | null>(null);
+  const submittingRef = useRef(false);
+  const submitBusinessPlan = trpc.businessPlan.submit.useMutation();
   const bottomRef = useRef<HTMLDivElement>(null);
   const visibleUnits = CONVERSATION_UNITS.slice(0, Math.min(unitIndex + 1, TOTAL_QUESTIONS));
   const activeUnitIndex = editingUnitIndex ?? unitIndex;
@@ -159,14 +171,62 @@ export default function BusinessPlanConversation() {
   const currentQuestion = CONVERSATION_UNITS[activeUnitIndex];
   const displayLabel = (question: ConversationUnit) => question.labelByAnswer ? question.labelByAnswer.values[String(answers[question.labelByAnswer.field] ?? "")] ?? question.label : question.label;
 
-  useEffect(() => { saveBusinessPlanDraft({ answers, customValues, conversationUnitIndex: unitIndex }); }, [answers, customValues, unitIndex]);
+  useEffect(() => {
+    if (!submittingRef.current) saveBusinessPlanDraft({ answers, customValues, conversationUnitIndex: unitIndex });
+  }, [answers, customValues, unitIndex]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }); }, [editingUnitIndex, unitIndex]);
 
   const complete = (answer: BusinessPlanDraftAnswer, fields: Record<string, string> = {}) => {
     if (!currentQuestion) return;
-    setAnswers(current => ({ ...current, ...fields, [currentQuestion.id]: answer, ...("field" in currentQuestion && currentQuestion.field ? { [currentQuestion.field]: answer } : {}) }));
+    const nextAnswers = {
+      ...answers,
+      ...fields,
+      [currentQuestion.id]: answer,
+      ...( "field" in currentQuestion && currentQuestion.field ? { [currentQuestion.field]: answer } : {}),
+    };
+    const error = validateBusinessPlanQuestion(currentQuestion, nextAnswers);
+    if (error) {
+      setValidationError(error.message);
+      return;
+    }
+    setValidationError(null);
+    setAnswers(nextAnswers);
     if (editingUnitIndex !== null) setEditingUnitIndex(null);
     else setUnitIndex(current => Math.min(current + 1, TOTAL_QUESTIONS));
+  };
+
+  const submitReport = async () => {
+    const validation = validateBusinessPlanAnswers(answers);
+    if (validation.errors.length) {
+      const firstError = validation.errors[0];
+      const questionIndex = CONVERSATION_UNITS.findIndex(question => question.id === firstError.questionId || question.field === firstError.path);
+      if (questionIndex >= 0) {
+        setUnitIndex(questionIndex);
+        setEditingUnitIndex(null);
+      }
+      setValidationError(firstError.message);
+      return;
+    }
+    if (authLoading) return;
+    if (!isAuthenticated) {
+      setLocation("/login");
+      return;
+    }
+    submittingRef.current = true;
+    saveBusinessPlanDraft({ answers, customValues, conversationUnitIndex: unitIndex });
+    try {
+      const { businessPlanId } = await submitBusinessPlan.mutateAsync({
+        bpIntake: buildBusinessPlanIntake(answers),
+      });
+      clearBusinessPlanDraft();
+      setLocation(`/business-plan/${businessPlanId}/processing`);
+    } catch (error) {
+      const creditsError = parseDiagnosisInsufficientCredits(error);
+      if (creditsError) setInsufficientCredits(creditsError);
+      else setValidationError("提交失败，请稍后重试。");
+      submittingRef.current = false;
+      saveBusinessPlanDraft({ answers, customValues, conversationUnitIndex: unitIndex });
+    }
   };
 
   const bottomHint = !currentQuestion
@@ -243,19 +303,38 @@ export default function BusinessPlanConversation() {
       <div className="shrink-0 bg-[linear-gradient(to_top,var(--zs-bg)_72%,transparent)] px-3 pb-3 pt-4 sm:px-6 sm:pb-4">
         <div className="mx-auto w-full max-w-[860px]">
           {currentQuestion && (currentQuestion.type === "text" || currentQuestion.type === "textarea" || currentQuestion.type === "number") ? (
-            <BottomInput
+            <div className="space-y-2">
+              {validationError ? <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{validationError}</p> : null}
+              <BottomInput
               key={currentQuestion.id}
               question={currentQuestion}
               answers={answers}
               onComplete={complete}
               onSkip={currentQuestion.optional ? () => complete("已跳过") : undefined}
-            />
+              />
+            </div>
+          ) : unitIndex === TOTAL_QUESTIONS && editingUnitIndex === null ? (
+            <div className="space-y-2">
+              {validationError ? <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{validationError}</p> : null}
+              <button type="button" onClick={submitReport} disabled={submitBusinessPlan.isPending || authLoading} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--zs-primary)] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">
+                <Check className="h-4 w-4" />{submitBusinessPlan.isPending ? "正在生成…" : "生成商业计划书"}
+              </button>
+            </div>
           ) : (
-            <div className="flex items-center justify-center py-2.5 text-xs text-[var(--zs-sub)]">{bottomHint}</div>
+            <div className="flex items-center justify-center py-2.5 text-xs text-[var(--zs-sub)]">{validationError ?? bottomHint}</div>
           )}
         </div>
       </div>
       </main>
+      <DiagnosisInsufficientDialog
+        open={insufficientCredits !== null}
+        onOpenChange={open => { if (!open) setInsufficientCredits(null); }}
+        isFreeUser={false}
+        credits={insufficientCredits}
+        productLabel="商业计划书"
+        actionLabel="生成商业计划书"
+        actionPrefix="生成一份"
+      />
     </div>
   );
 }
