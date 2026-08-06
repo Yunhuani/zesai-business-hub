@@ -34,7 +34,7 @@ const INPUT_CLASS = "w-full rounded-xl border border-[var(--zs-line)] bg-white p
 const CONFIRM_BUTTON_CLASS = "inline-flex items-center gap-1.5 rounded-xl bg-[var(--zs-primary-soft)] px-4 py-2 text-sm font-semibold text-[var(--zs-primary)] transition hover:bg-[#e0e9e1]";
 
 function ZesaiMark() {
-  return <img src={APP_LOGO} alt="" aria-hidden="true" className="shrink-0 object-contain h-9 w-9" />;
+  return <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--zs-primary)] text-[13px] font-semibold text-white">泽</div>;
 }
 
 // BP 独立版消息行，样式复制自 AgentChat.tsx 1067-1085 的 MessageRow
@@ -176,7 +176,8 @@ export default function BusinessPlanConversation() {
       : "请在上方填写后提交";
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-[var(--zs-bg)] text-[var(--zs-ink)]">
+    <div className="flex h-dvh overflow-hidden bg-[var(--zs-bg)] text-[var(--zs-ink)]">
+      <main className="relative flex min-w-0 flex-1 flex-col bg-[var(--zs-bg)]">
       <header className="z-20 flex h-[68px] shrink-0 items-center justify-between border-b border-[var(--zs-line)] bg-[rgba(250,250,248,.9)] px-4 backdrop-blur-xl sm:px-6">
         <div className="flex min-w-0 items-center gap-3">
           <Link href="/" aria-label="返回泽思AI首页" className="shrink-0">
@@ -191,8 +192,7 @@ export default function BusinessPlanConversation() {
           </div>
         </div>
         <div className="shrink-0 text-right">
-          <div className="text-sm font-semibold text-[var(--zs-primary)]">已完成 {unitIndex} / {TOTAL_QUESTIONS} 题</div>
-          <div className="text-xs text-[var(--zs-sub)]">进度 {progress}%</div>
+          <div className="text-sm font-semibold text-[var(--zs-primary)]">已完成 {unitIndex} / {TOTAL_QUESTIONS} 题 · {progress}%</div>
         </div>
       </header>
 
@@ -255,6 +255,7 @@ export default function BusinessPlanConversation() {
           )}
         </div>
       </div>
+      </main>
     </div>
   );
 }
