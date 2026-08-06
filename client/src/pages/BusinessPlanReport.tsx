@@ -63,7 +63,7 @@ const BP_REPORT_CSS = `
 .bp-pending { display: inline-flex; margin: 18px 8px 0 0; padding: 5px 10px; border: 1px solid rgba(194,112,58,.2); border-radius: 999px; background: #FFF9F3; color: var(--warn); font-size: 11px; font-style: italic; }
 .bp-source { margin-left: 8px; color: var(--ink3); font-size: 10px; font-weight: 400; }
 .bp-horizontal-scroll { overflow-x: auto; padding-bottom: 4px; }
-.bp-cover { position: relative; display: flex; min-height: 760px; align-items: center; overflow: hidden; border-color: transparent; background: linear-gradient(135deg,var(--pri-deep),var(--pri) 58%,var(--pri-mid)); color: white; }
+.bp-cover, .bp-back-cover { position: relative; display: flex; min-height: 760px; align-items: center; overflow: hidden; border-color: transparent; background: linear-gradient(135deg,var(--pri-deep),var(--pri) 58%,var(--pri-mid)); color: white; }
 .bp-cover-grid { position: absolute; inset: 0; opacity: .44; }
 .bp-cover-content { position: relative; z-index: 1; padding: 100px 0 72px; }
 .bp-cover-mark { display: flex; height: 38px; width: 38px; align-items: center; justify-content: center; border-radius: 8px; background: var(--acc); color: white; font-weight: 700; }
@@ -75,11 +75,12 @@ const BP_REPORT_CSS = `
   .bp-document { padding-top: 72px; }
   .bp-document-page { width: min(100% - 24px, 1120px); min-height: 560px; margin-bottom: 28px; border-radius: 12px; }
   .bp-page-content { padding: 42px 24px 64px; }
-  .bp-cover { min-height: 680px; }
+  .bp-cover, .bp-back-cover { min-height: 680px; }
 }
 @media print {
   .bp-report header { display: none; }
   .bp-pdf-hidden { display: none !important; }
+  .bp-page-number { display: none !important; }
   .bp-document { padding: 0; }
   .bp-document-page { width: 100%; min-height: 0; margin: 0; border: 0; border-radius: 0; box-shadow: none; break-after: page; }
   .bp-card, .bp-team-card, .bp-pain-card { break-inside: avoid; }
@@ -1147,7 +1148,7 @@ function BackCover({
   totalPages: number;
 }) {
   return (
-    <section className="bp-document-page bp-cover">
+    <section className="bp-document-page bp-back-cover">
       <svg className="bp-cover-grid" viewBox="0 0 1200 700" aria-hidden="true">
         <g fill="none" stroke="var(--acc-l)" strokeOpacity=".28">
           <circle cx="920" cy="350" r="190" />
@@ -1285,7 +1286,7 @@ export default function BusinessPlanReport() {
             ) : (
               <Download className="h-3.5 w-3.5" />
             )}
-            {downloading ? "姝ｅ湪鐢熸垚" : "涓嬭浇 PDF"}
+            {downloading ? "正在生成" : "下载商业计划书"}
           </button>
         </div>
       </header>
