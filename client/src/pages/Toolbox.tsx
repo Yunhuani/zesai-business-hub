@@ -1,126 +1,33 @@
 import { AppFooter, AppHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  ArrowRight,
-  Bell,
-  ChartNoAxesCombined,
-  FileText,
-  Goal,
-  Network,
-  Search,
-  Sparkles,
-  Target,
-  Users,
-  WalletCards,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { agents as agentCatalog, type Agent } from "@/config/agents";
+import { ArrowRight, Bell, Sparkles, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "wouter";
 
-type SkillStatus = "live" | "soon";
+const skillGroups = Array.from(
+  new Map(
+    agentCatalog.map(agent => [
+      `${agent.toolboxNo}-${agent.toolboxCategory}`,
+      { category: agent.toolboxCategory, no: agent.toolboxNo },
+    ])
+  ).values()
+).map(group => ({
+  ...group,
+  skills: agentCatalog.filter(
+    agent => agent.toolboxNo === group.no && agent.toolboxCategory === group.category
+  ),
+}));
 
-type ProductSkill = {
-  title: string;
-  category: string;
-  description: string;
-  status: SkillStatus;
-  href?: string;
-  Icon: LucideIcon;
-};
-
-const skillGroups: Array<{ category: string; no: string; skills: ProductSkill[] }> = [
-  {
-    category: "增长诊断",
-    no: "01",
-    skills: [
-      {
-        title: "NBG 增长诊断",
-        category: "增长诊断",
-        description: "从企业经营基本盘出发，完成五维健康度诊断，定位真正限制增长的关键卡点。",
-        status: "live",
-        href: "/diagnosis",
-        Icon: ChartNoAxesCombined,
-      },
-      {
-        title: "竞争分析",
-        category: "增长诊断",
-        description: "拆解竞争对手、市场位置与差异化机会，形成可执行的竞争策略判断。",
-        status: "soon",
-        Icon: Search,
-      },
-    ],
-  },
-  {
-    category: "战略规划",
-    no: "02",
-    skills: [
-      {
-        title: "战略规划",
-        category: "战略规划",
-        description: "梳理企业战略方向、增长路径与关键取舍，形成清晰的阶段性经营路线。",
-        status: "soon",
-        Icon: Target,
-      },
-      {
-        title: "商业模式设计",
-        category: "战略规划",
-        description: "围绕客户、价值、收入与成本结构，设计更清晰、可验证的商业模式。",
-        status: "soon",
-        Icon: Sparkles,
-      },
-    ],
-  },
-  {
-    category: "资本融资",
-    no: "03",
-    skills: [
-      {
-        title: "商业计划书",
-        category: "资本融资",
-        description: "用投资人视角组织项目亮点、市场逻辑、商业模型与融资叙事。",
-        status: "soon",
-        Icon: FileText,
-      },
-      {
-        title: "股权架构设计",
-        category: "资本融资",
-        description: "围绕合伙人、控制权、激励与退出机制，设计更稳健的股权结构。",
-        status: "soon",
-        Icon: Network,
-      },
-    ],
-  },
-  {
-    category: "组织管理",
-    no: "04",
-    skills: [
-      {
-        title: "OKR 制定",
-        category: "组织管理",
-        description: "把战略目标拆成可执行、可追踪、可复盘的组织目标与关键结果。",
-        status: "soon",
-        Icon: Goal,
-      },
-      {
-        title: "薪酬绩效设计",
-        category: "组织管理",
-        description: "设计目标、绩效、激励与薪酬之间的联动机制，让团队动作对齐业务结果。",
-        status: "soon",
-        Icon: WalletCards,
-      },
-    ],
-  },
-];
-
-function notifyUpcoming(skill: ProductSkill) {
+function notifyUpcoming(skill: Agent) {
   toast("预约通知已记录", {
-    description: `${skill.title} 即将上线，我们会优先开放给预约用户。`,
+    description: `${skill.name} 即将上线，我们会优先开放给预约用户。`,
   });
 }
 
-function SkillCard({ skill }: { skill: ProductSkill }) {
-  const Icon = skill.Icon;
+function SkillCard({ skill }: { skill: Agent }) {
+  const Icon = skill.icon;
   const isLive = skill.status === "live";
   const statusLabel = isLive ? "已上线 · 完整可用" : "即将上线";
 
@@ -155,16 +62,16 @@ function SkillCard({ skill }: { skill: ProductSkill }) {
         </div>
 
         <div className="mt-5 text-[12px] font-bold tracking-[.08em] text-[var(--zs-gold)]">
-          {skill.category}
+          {skill.toolboxCategory}
         </div>
-        <h3 className="mt-2 text-[21px] font-extrabold leading-[1.35]">{skill.title}</h3>
+        <h3 className="mt-2 text-[21px] font-extrabold leading-[1.35]">{skill.name}</h3>
         <p className="mt-3 flex-1 text-[14px] leading-[1.75] text-[var(--zs-sub)]">
-          {skill.description}
+          {skill.summary}
         </p>
 
-        {isLive && skill.href ? (
+        {isLive && skill.startPath ? (
           <Button asChild className="mt-7 w-full justify-between rounded-[11px]">
-            <Link href={skill.href}>
+            <Link href={skill.startPath}>
               开始使用
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -225,7 +132,7 @@ export default function Toolbox() {
 
                 <div className="grid gap-5 md:grid-cols-2">
                   {group.skills.map((skill) => (
-                    <SkillCard key={skill.title} skill={skill} />
+                    <SkillCard key={skill.id} skill={skill} />
                   ))}
                 </div>
               </section>

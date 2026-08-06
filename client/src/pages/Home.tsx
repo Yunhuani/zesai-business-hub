@@ -5,59 +5,26 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ExpertConsultationDialog } from "@/components/ExpertConsultationDialog";
 import { NBG_REPORT_SAMPLE_SLIDE_COUNT, NbgReportSampleCarousel } from "@/components/NbgReportSampleCarousel";
 import { WeChatBrowserGuide } from "@/components/WeChatBrowserGuide";
+import { agents as agentCatalog } from "@/config/agents";
 import { ADVISOR_SUGGESTED_PROMPTS } from "@/lib/agentChatPresentation";
-import { trackAgent, AgentEvents, trackConversion, ConversionEvents } from "@/lib/analytics";
+import { trackConversion, ConversionEvents } from "@/lib/analytics";
 import { trpc } from "@/lib/trpc";
 import { isWeChatBrowser } from "@/utils/wechatDetector";
 import {
   Bot,
   BriefcaseBusiness,
   Building2,
-  ChartNoAxesCombined,
   CheckCircle2,
   ClipboardList,
   Factory,
   FileText,
-  Goal,
   Landmark,
   ListChecks,
-  Network,
   Search,
   Store,
   Users,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
-
-const serviceCards = [
-  {
-    problem: "要融资，但没有像样的计划书",
-    service: "商业计划书",
-    meta: "约 20 分钟 · 输出投资人视角的结构化 BP",
-    agentName: "融资商业计划书",
-    Icon: FileText,
-  },
-  {
-    problem: "合伙人股权怎么分才合理",
-    service: "股权架构设计",
-    meta: "约 15 分钟 · 输出股权结构与机制建议",
-    agentName: "股权架构师",
-    Icon: Network,
-  },
-  {
-    problem: "看不清竞争对手怎么打",
-    service: "竞争分析",
-    meta: "约 15 分钟 · 输出竞争格局与打法建议",
-    agentName: "竞品分析专家",
-    Icon: ChartNoAxesCombined,
-  },
-  {
-    problem: "团队目标定不下来",
-    service: "OKR 制定",
-    meta: "约 10 分钟 · 输出对齐可衡量的目标体系",
-    agentName: "OKR目标管理教练",
-    Icon: Goal,
-  },
-];
 
 const processSteps = [
   {
@@ -133,12 +100,10 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const { data: agents, isLoading: agentsLoading } = trpc.agent.list.useQuery();
 
-  const agentByName = useMemo(() => {
-    return new Map((agents ?? []).map((agent) => [agent.name, agent]));
-  }, [agents]);
-
-  const advisorAgentId =
-    agentByName.get("泽思AI顾问")?.id ?? agentByName.get("智能AI助手")?.id ?? 0;
+  const advisorAgentId = useMemo(
+    () => agents?.find(agent => agent.name === "泽思AI顾问")?.id ?? agents?.find(agent => agent.name === "智能AI助手")?.id ?? 0,
+    [agents]
+  );
 
   useEffect(() => {
     trackConversion(ConversionEvents.HOME_VISIT);
@@ -298,36 +263,36 @@ export default function Home() {
           </Card>
 
           <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {serviceCards.map((service) => {
-              const agent = agentByName.get(service.agentName);
-              const Icon = service.Icon;
+            {agentCatalog.filter(agent => agent.homeCard).map((agent) => {
+              const Icon = agent.icon;
               const card = (
                 <Card className="h-full rounded-[16px] border-[var(--zs-line)] bg-white transition hover:-translate-y-1 hover:shadow-[0_30px_64px_-42px_rgba(31,61,50,.32)]">
                   <CardContent className="flex h-full flex-col p-6">
                     <div className="flex h-11 w-11 items-center justify-center rounded-[11px] bg-[var(--zs-primary-soft)] text-[var(--zs-primary)]">
                       <Icon className="h-[22px] w-[22px]" strokeWidth={1.7} />
                     </div>
-                    <h3 className="mt-5 text-[18px] font-bold leading-[1.4]">{service.problem}</h3>
-                    <p className="mt-3 text-[13.5px] leading-[1.7] text-[var(--zs-sub)]">{service.meta}</p>
+                    <h3 className="mt-5 text-[18px] font-bold leading-[1.4]">{agent.problem}</h3>
+                    <p className="mt-3 text-[13.5px] leading-[1.7] text-[var(--zs-sub)]">{agent.summary}</p>
                     <div className="mt-auto flex items-center justify-between pt-6">
-                      <span className="text-[13px] font-bold text-[var(--zs-gold)]">{service.service}</span>
-                      <span className="text-[14px] font-semibold text-[var(--zs-primary)]">开始 →</span>
+                      <span className="text-[13px] font-bold text-[var(--zs-gold)]">{agent.name}</span>
+                      <span className="text-[14px] font-semibold text-[var(--zs-primary)]">
+                        {agent.status === "live" ? "开始 →" : "即将开放"}
+                      </span>
                     </div>
                   </CardContent>
                 </Card>
               );
 
-              return agent ? (
+              return agent.status === "live" && agent.startPath ? (
                 <Link
-                  key={service.problem}
-                  href={`/agent/${agent.id}`}
-                  onClick={() => trackAgent(AgentEvents.AGENT_CLICK, agent.id, agent.name)}
+                  key={agent.id}
+                  href={agent.startPath}
                   className="block h-full"
                 >
                   {card}
                 </Link>
               ) : (
-                <div key={service.problem} className="h-full">
+                <div key={agent.id} className="h-full">
                   {card}
                 </div>
               );
