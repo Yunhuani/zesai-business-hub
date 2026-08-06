@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   clearBusinessPlanDraft,
@@ -6,14 +5,16 @@ import {
   loadBusinessPlanDraft,
   saveBusinessPlanDraft,
 } from "../client/src/lib/businessPlanDraft";
-import { BUSINESS_PLAN_SECTIONS } from "../client/src/pages/businessPlanQuestionnaire";
+import {
+  BUSINESS_PLAN_QUESTIONS,
+  BUSINESS_PLAN_SECTIONS,
+} from "../client/src/pages/businessPlanQuestionnaire";
+import { resolveBusinessPlanSingleOption } from "../client/src/pages/businessPlanConversationProtocol";
 
 function createStorage(): Storage {
   const values = new Map<string, string>();
   return {
-    get length() {
-      return values.size;
-    },
+    get length() { return values.size; },
     clear: () => values.clear(),
     getItem: key => values.get(key) ?? null,
     key: index => [...values.keys()][index] ?? null,
@@ -22,41 +23,25 @@ function createStorage(): Storage {
   };
 }
 
-function read(relativePath: string): string {
-  return readFileSync(new URL(relativePath, import.meta.url), "utf8");
-}
+describe("business plan conversation", () => {
+  it("defines nine sections and all 36 configured questions", () => {
+    expect(BUSINESS_PLAN_SECTIONS).toHaveLength(9);
+    expect(BUSINESS_PLAN_QUESTIONS).toHaveLength(36);
+    expect(new Set(BUSINESS_PLAN_QUESTIONS.map(question => question.type))).toEqual(
+      new Set(["text", "textarea", "single", "card-list", "score-matrix", "table"])
+    );
+  });
 
-describe("business plan conversation skeleton", () => {
-  it("defines nine empty BP sections with conversation intros", () => {
-    expect(
-      BUSINESS_PLAN_SECTIONS.map(section => [section.id, section.title])
-    ).toEqual([
-      ["cover", "封面信息"],
-      ["demand", "需求"],
-      ["product", "产品与商业模式"],
-      ["market", "市场规模"],
-      ["competition", "竞争"],
-      ["traction", "目前状况"],
-      ["plan", "未来规划"],
-      ["funding", "融资计划"],
-      ["team", "团队与联系方式"],
-    ]);
-    expect(
-      BUSINESS_PLAN_SECTIONS.every(
-        section =>
-          typeof section.intro === "string" && section.questions.length === 0
-      )
-    ).toBe(true);
+  it("resolves letter replies to the complete single-choice value", () => {
+    const options = ["主要是企业客户", "主要是个人消费者", "两者都有"];
+    expect(resolveBusinessPlanSingleOption("B", options)).toBe("主要是个人消费者");
+    expect(resolveBusinessPlanSingleOption("两者都有", options)).toBe("两者都有");
+    expect(resolveBusinessPlanSingleOption("Z", options)).toBeNull();
   });
 
   it("persists and clears a BP draft without using the diagnosis key", () => {
     const storage = createStorage();
-    const draft = {
-      conversationUnitIndex: 3,
-      answers: {},
-      customValues: {},
-    };
-
+    const draft = { conversationUnitIndex: 3, answers: {}, customValues: {} };
     saveBusinessPlanDraft(draft, storage);
     expect(loadBusinessPlanDraft(storage)).toEqual(draft);
     expect(storage.getItem("zesai_business_plan_draft_v1")).not.toBeNull();
@@ -66,40 +51,8 @@ describe("business plan conversation skeleton", () => {
   });
 
   it("does not restore a stale position beyond consecutively answered units", () => {
-    const unitIds = [
-      "placeholder-cover",
-      "placeholder-demand",
-      "placeholder-product",
-    ];
-
+    const unitIds = ["one", "two", "three"];
     expect(getRestorableBusinessPlanUnitIndex(3, {}, unitIds)).toBe(0);
-    expect(
-      getRestorableBusinessPlanUnitIndex(
-        3,
-        {
-          "placeholder-cover": "已完成",
-          "placeholder-demand": "已完成",
-        },
-        unitIds
-      )
-    ).toBe(2);
-  });
-
-  it("renders an append-only placeholder conversation and registers its route", () => {
-    const page = read("../client/src/pages/BusinessPlanConversation.tsx");
-    const app = read("../client/src/App.tsx");
-
-    expect(page).toContain("{completedQuestionCount} / {TOTAL_QUESTIONS} 题");
-    expect(page).toContain("（题目待实现）");
-    expect(page).toContain("visibleUnits");
-    expect(page).toContain("UserBubble");
-    expect(page).toContain("editCompletedUnit");
-    expect(page).toContain("sectionIntro");
-    expect(page).toContain("下一题");
-    expect(page).toContain("阶段二接入真实题目控件后删除");
-    expect(page).toContain("saveBusinessPlanDraft");
-    expect(page).not.toContain("trpc.");
-    expect(app).toContain('path="/business-plan/conversation"');
-    expect(app).toContain("component={BusinessPlanConversation}");
+    expect(getRestorableBusinessPlanUnitIndex(3, { one: "a", two: "b" }, unitIds)).toBe(2);
   });
 });

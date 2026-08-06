@@ -1,7 +1,16 @@
+export type BusinessPlanDraftRow = Record<string, string | number | null>;
+
+export type BusinessPlanScoreMatrixAnswer = {
+  columns: string[];
+  scores: Record<string, Record<string, number | null>>;
+  customDimension?: string;
+};
+
 export type BusinessPlanDraftAnswer =
   | string
   | string[]
-  | Array<Record<string, string | number | null>>;
+  | BusinessPlanDraftRow[]
+  | BusinessPlanScoreMatrixAnswer;
 
 export type BusinessPlanDraft = {
   answers: Record<string, BusinessPlanDraftAnswer>;
