@@ -1,6 +1,13 @@
-import type { DiagnosisDraft } from "@shared/diagnosisDraft";
+export type BusinessPlanDraftAnswer =
+  | string
+  | string[]
+  | Array<Record<string, string | number | null>>;
 
-export type BusinessPlanDraft = DiagnosisDraft;
+export type BusinessPlanDraft = {
+  answers: Record<string, BusinessPlanDraftAnswer>;
+  customValues: Record<string, string>;
+  conversationUnitIndex: number;
+};
 
 const BUSINESS_PLAN_DRAFT_KEY = "zesai_business_plan_draft_v1";
 

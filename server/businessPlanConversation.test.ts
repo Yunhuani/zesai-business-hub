@@ -5,7 +5,7 @@ import {
   loadBusinessPlanDraft,
   saveBusinessPlanDraft,
 } from "../client/src/lib/businessPlanDraft";
-import { BUSINESS_PLAN_STEPS } from "../client/src/pages/businessPlanQuestionnaire";
+import { BUSINESS_PLAN_SECTIONS } from "../client/src/pages/businessPlanQuestionnaire";
 
 function createStorage(): Storage {
   const values = new Map<string, string>();
@@ -26,8 +26,10 @@ function read(relativePath: string): string {
 }
 
 describe("business plan conversation skeleton", () => {
-  it("defines the nine empty BP intake steps in order", () => {
-    expect(BUSINESS_PLAN_STEPS.map(step => [step.id, step.title])).toEqual([
+  it("defines nine empty BP sections with conversation intros", () => {
+    expect(
+      BUSINESS_PLAN_SECTIONS.map(section => [section.id, section.title])
+    ).toEqual([
       ["cover", "封面信息"],
       ["demand", "需求"],
       ["product", "产品与商业模式"],
@@ -39,8 +41,9 @@ describe("business plan conversation skeleton", () => {
       ["team", "团队与联系方式"],
     ]);
     expect(
-      BUSINESS_PLAN_STEPS.every(
-        step => step.transition === "" && step.questions.length === 0
+      BUSINESS_PLAN_SECTIONS.every(
+        section =>
+          typeof section.intro === "string" && section.questions.length === 0
       )
     ).toBe(true);
   });
@@ -48,7 +51,6 @@ describe("business plan conversation skeleton", () => {
   it("persists and clears a BP draft without using the diagnosis key", () => {
     const storage = createStorage();
     const draft = {
-      stepIndex: 3,
       conversationUnitIndex: 3,
       answers: {},
       customValues: {},
@@ -62,12 +64,16 @@ describe("business plan conversation skeleton", () => {
     expect(loadBusinessPlanDraft(storage)).toBeNull();
   });
 
-  it("renders the nine-step placeholder flow and registers its route", () => {
+  it("renders an append-only placeholder conversation and registers its route", () => {
     const page = read("../client/src/pages/BusinessPlanConversation.tsx");
     const app = read("../client/src/App.tsx");
 
-    expect(page).toContain("第 {currentStepIndex + 1}/{TOTAL_STEPS} 步");
-    expect(page).toContain("（本步题目待实现）");
+    expect(page).toContain("{completedQuestionCount} / {TOTAL_QUESTIONS} 题");
+    expect(page).toContain("（题目待实现）");
+    expect(page).toContain("visibleUnits");
+    expect(page).toContain("UserBubble");
+    expect(page).toContain("editCompletedUnit");
+    expect(page).toContain("sectionIntro");
     expect(page).toContain("saveBusinessPlanDraft");
     expect(page).not.toContain("trpc.");
     expect(app).toContain('path="/business-plan/conversation"');
