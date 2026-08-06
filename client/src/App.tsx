@@ -36,6 +36,7 @@ import Diagnosis from "./pages/Diagnosis";
 import DiagnosisConversation from "./pages/DiagnosisConversation";
 import DiagnosisProcessing from "./pages/DiagnosisProcessing";
 import DiagnosisReport from "./pages/DiagnosisReport";
+import BusinessPlanConversation from "./pages/BusinessPlanConversation";
 import BusinessPlanReport from "./pages/BusinessPlanReport";
 import MyDiagnoses from "./pages/MyDiagnoses";
 import {
@@ -82,6 +83,7 @@ function Router() {
       <Route path="/diagnosis/conversation" component={DiagnosisConversation} />
       <Route path="/diagnosis/:id/processing" component={DiagnosisProcessing} />
       <Route path="/diagnosis/:id/report" component={DiagnosisReport} />
+      <Route path="/business-plan/conversation" component={BusinessPlanConversation} />
       <Route path="/business-plan/:id/report" component={BusinessPlanReport} />
       <Route path="/my-diagnoses" component={MyDiagnoses} />
       {/* 推荐功能暂时隐藏 */}
