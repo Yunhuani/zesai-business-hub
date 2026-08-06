@@ -395,6 +395,55 @@ async function startServer() {
       return res.status(500).json({ error: "PDF generation failed" });
     }
   });
+  app.get("/api/business-plan/:id/report.pdf", async (req, res) => {
+    try {
+      const businessPlanId = Number(req.params.id);
+      if (!Number.isInteger(businessPlanId) || businessPlanId <= 0) {
+        return res.status(400).json({ error: "Invalid business plan id" });
+      }
+
+      const { getBusinessPlan } = await import("../businessPlanService");
+      const businessPlan = await getBusinessPlan(businessPlanId);
+      if (!businessPlan || businessPlan.status !== "done") {
+        return res.status(404).json({ error: "Report not found" });
+      }
+
+      const context = await createContext({ req, res } as any);
+      if (!context.user || context.user.id !== businessPlan.userId) {
+        return res.status(404).json({ error: "Report not found" });
+      }
+
+      const protocol = req.protocol;
+      const baseUrl = `${protocol}://${req.get("host")}`;
+      const authToken = req.headers.authorization?.replace(/^Bearer\s+/i, "");
+      const {
+        buildBusinessPlanPdfFileName,
+        getBusinessPlanCompanyName,
+        renderBusinessPlanReportPdf,
+      } = await import("../businessPlanReportPdf");
+      const companyName = getBusinessPlanCompanyName(businessPlan.result);
+      const pdf = await renderBusinessPlanReportPdf({
+        baseUrl,
+        businessPlanId,
+        companyName,
+        authToken,
+        cookieHeader: req.headers.cookie,
+      });
+      const fileName = encodeURIComponent(
+        buildBusinessPlanPdfFileName(companyName, businessPlanId)
+      );
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename*=UTF-8''${fileName}`
+      );
+      res.setHeader("Content-Length", String(pdf.length));
+      return res.send(pdf);
+    } catch (error) {
+      console.error("[BusinessPlan PDF] Generation failed:", error);
+      return res.status(500).json({ error: "PDF generation failed" });
+    }
+  });
 
   // tRPC API
   app.use(

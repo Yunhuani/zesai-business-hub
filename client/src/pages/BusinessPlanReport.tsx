@@ -1,6 +1,6 @@
 import { trpc } from "@/lib/trpc";
-import { ArrowLeft, CircleAlert, LoaderCircle } from "lucide-react";
-import { useEffect, type ReactElement } from "react";
+import { ArrowLeft, CircleAlert, Download, LoaderCircle } from "lucide-react";
+import { useEffect, useState, type ReactElement } from "react";
 import { Link, useParams } from "wouter";
 import {
   buildBusinessPlanReport,
@@ -79,6 +79,7 @@ const BP_REPORT_CSS = `
 }
 @media print {
   .bp-report header { display: none; }
+  .bp-pdf-hidden { display: none !important; }
   .bp-document { padding: 0; }
   .bp-document-page { width: 100%; min-height: 0; margin: 0; border: 0; border-radius: 0; box-shadow: none; break-after: page; }
   .bp-card, .bp-team-card, .bp-pain-card { break-inside: avoid; }
@@ -1220,6 +1221,7 @@ export default function BusinessPlanReport() {
     { id: businessPlanId },
     { enabled: validId, retry: 1, refetchOnWindowFocus: false }
   );
+  const [downloading, setDownloading] = useState(false);
   const report = query.data ? buildBusinessPlanReport(query.data) : null;
   useEffect(() => {
     if (report) document.title = `${report.cover.companyName} · 商业计划书`;
@@ -1227,6 +1229,34 @@ export default function BusinessPlanReport() {
   if (!validId || query.isError) return <StatePage kind="error" />;
   if (query.isLoading || !report) return <StatePage kind="loading" />;
   if (query.data?.status !== "done") return <StatePage kind="running" />;
+
+  async function downloadPdf() {
+    if (!report) return;
+    setDownloading(true);
+    try {
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch(`/api/business-plan/${businessPlanId}/report.pdf`, {
+        credentials: "include",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!response.ok) throw new Error("PDF generation failed");
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${report.cover.companyName || "商业计划书"}-商业计划书-${businessPlanId}.pdf`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      window.alert("PDF 下载失败，请稍后重试");
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   const pages = buildReportPages(report.modules);
   const totalPages = pages.length + 2;
   return (
@@ -1244,6 +1274,19 @@ export default function BusinessPlanReport() {
           <span className="text-xs tracking-[.22em] text-white/50">
             商业计划书
           </span>
+          <button
+            type="button"
+            className="bp-pdf-hidden inline-flex items-center gap-2 rounded border border-[var(--acc)]/70 px-3 py-1.5 text-xs text-[var(--acc-l)] transition hover:bg-white/10 disabled:cursor-wait disabled:opacity-60"
+            onClick={downloadPdf}
+            disabled={downloading}
+          >
+            {downloading ? (
+              <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Download className="h-3.5 w-3.5" />
+            )}
+            {downloading ? "姝ｅ湪鐢熸垚" : "涓嬭浇 PDF"}
+          </button>
         </div>
       </header>
       <div className="bp-document">
