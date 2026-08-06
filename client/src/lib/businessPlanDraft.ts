@@ -9,6 +9,20 @@ export type BusinessPlanDraft = {
   conversationUnitIndex: number;
 };
 
+export function getRestorableBusinessPlanUnitIndex(
+  savedIndex: number | undefined,
+  answers: BusinessPlanDraft["answers"],
+  unitIds: readonly string[]
+): number {
+  const firstUnansweredIndex = unitIds.findIndex(
+    unitId => !Object.prototype.hasOwnProperty.call(answers, unitId)
+  );
+  const answeredUnitCount =
+    firstUnansweredIndex < 0 ? unitIds.length : firstUnansweredIndex;
+
+  return Math.min(Math.max(savedIndex ?? 0, 0), answeredUnitCount);
+}
+
 const BUSINESS_PLAN_DRAFT_KEY = "zesai_business_plan_draft_v1";
 
 export function loadBusinessPlanDraft(

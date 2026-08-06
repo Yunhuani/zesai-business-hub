@@ -3,6 +3,7 @@ import { Check, Pencil } from "lucide-react";
 import { Link } from "wouter";
 import { APP_LOGO_FULL } from "@/const";
 import {
+  getRestorableBusinessPlanUnitIndex,
   loadBusinessPlanDraft,
   saveBusinessPlanDraft,
   type BusinessPlanDraftAnswer,
@@ -65,14 +66,14 @@ function SectionIntro({ children }: { children: React.ReactNode }) {
   );
 }
 
-function getInitialUnitIndex(savedIndex: number | undefined): number {
-  return Math.min(Math.max(savedIndex ?? 0, 0), TOTAL_QUESTIONS);
-}
-
 export default function BusinessPlanConversation() {
   const [initialDraft] = useState(loadBusinessPlanDraft);
   const [unitIndex, setUnitIndex] = useState(() =>
-    getInitialUnitIndex(initialDraft?.conversationUnitIndex)
+    getRestorableBusinessPlanUnitIndex(
+      initialDraft?.conversationUnitIndex,
+      initialDraft?.answers ?? {},
+      CONVERSATION_UNITS.map(unit => unit.id)
+    )
   );
   const [editingUnitIndex, setEditingUnitIndex] = useState<number | null>(null);
   const [answers, setAnswers] = useState<Answers>(
@@ -186,13 +187,14 @@ export default function BusinessPlanConversation() {
                         跳过
                       </button>
                     ) : null}
+                    {/* 临时推进按钮：阶段二接入真实题目控件后删除。 */}
                     <button
                       type="button"
                       onClick={() => completeCurrentUnit()}
                       className="inline-flex items-center gap-2 rounded-xl bg-[var(--pri)] px-4 py-2.5 text-sm font-semibold text-white"
                     >
                       <Check className="h-4 w-4" />
-                      继续
+                      下一题
                     </button>
                   </div>
                 ) : displayedAnswer ? (

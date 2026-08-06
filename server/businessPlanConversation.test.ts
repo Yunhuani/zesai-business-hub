@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   clearBusinessPlanDraft,
+  getRestorableBusinessPlanUnitIndex,
   loadBusinessPlanDraft,
   saveBusinessPlanDraft,
 } from "../client/src/lib/businessPlanDraft";
@@ -64,6 +65,26 @@ describe("business plan conversation skeleton", () => {
     expect(loadBusinessPlanDraft(storage)).toBeNull();
   });
 
+  it("does not restore a stale position beyond consecutively answered units", () => {
+    const unitIds = [
+      "placeholder-cover",
+      "placeholder-demand",
+      "placeholder-product",
+    ];
+
+    expect(getRestorableBusinessPlanUnitIndex(3, {}, unitIds)).toBe(0);
+    expect(
+      getRestorableBusinessPlanUnitIndex(
+        3,
+        {
+          "placeholder-cover": "已完成",
+          "placeholder-demand": "已完成",
+        },
+        unitIds
+      )
+    ).toBe(2);
+  });
+
   it("renders an append-only placeholder conversation and registers its route", () => {
     const page = read("../client/src/pages/BusinessPlanConversation.tsx");
     const app = read("../client/src/App.tsx");
@@ -74,6 +95,8 @@ describe("business plan conversation skeleton", () => {
     expect(page).toContain("UserBubble");
     expect(page).toContain("editCompletedUnit");
     expect(page).toContain("sectionIntro");
+    expect(page).toContain("下一题");
+    expect(page).toContain("阶段二接入真实题目控件后删除");
     expect(page).toContain("saveBusinessPlanDraft");
     expect(page).not.toContain("trpc.");
     expect(app).toContain('path="/business-plan/conversation"');
