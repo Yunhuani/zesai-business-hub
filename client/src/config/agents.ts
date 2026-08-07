@@ -114,7 +114,8 @@ export const agents: Agent[] = [
     methodology: null, // TODO: 待业务方提供
     structure: [], // TODO: 待业务方提供
     steps: [], // TODO: 待业务方提供
-    status: "live",
+    // 暂停开放：生成链路存在未修复缺陷，修复后改回 live
+    status: "upcoming",
     startPath: "/business-plan/conversation",
     icon: FileText,
     homeCard: true,
