@@ -54,7 +54,7 @@ export const agents: Agent[] = [
       { title: "获得增长诊断报告", description: "五维健康度、三大关键发现、增长瓶颈与突破方向" },
     ],
     status: "live",
-    startPath: "/diagnosis",
+    startPath: "/diagnosis/conversation",
     icon: ChartNoAxesCombined,
     homeCard: false,
     toolboxCategory: "增长诊断",

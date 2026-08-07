@@ -12,7 +12,7 @@ describe("unified agent catalog", () => {
   it("keeps only NBG and business plan live with their existing start paths", () => {
     expect(agents.filter(agent => agent.status === "live")).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ id: "nbg-diagnosis", startPath: "/diagnosis" }),
+        expect.objectContaining({ id: "nbg-diagnosis", startPath: "/diagnosis/conversation" }),
         expect.objectContaining({ id: "business-plan", startPath: "/business-plan/conversation" }),
       ])
     );

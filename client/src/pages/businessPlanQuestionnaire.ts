@@ -92,7 +92,7 @@ export const BUSINESS_PLAN_SECTIONS: BPSection[] = [
     id: "demand", title: "需求", intro: "好的，接下来我们聊聊您的客户。投资人看一份商业计划书，最先想弄清楚的就是——您在为谁解决问题，这个问题到底有多痛。",
     questions: [
       { id: "customer_type", section: "demand", type: "single", field: "_meta.customer_type", label: "在开始之前，先跟您确认一下：您的产品或服务，主要是卖给企业，还是卖给个人消费者？", options: ["主要是企业客户", "主要是个人消费者", "两者都有，是平台或者双边模式"] },
-      { id: "target_customer", section: "demand", type: "textarea", field: "demand.target_customer", label: "请详细描述一下您的目标客户——他们大概在什么行业、什么规模、处在什么发展阶段，有什么共同的特征？说得越具体，后面这份计划书就越有说服力。", labelByAnswer: { field: "_meta.customer_type", values: { "主要是企业客户": "请详细描述一下您的目标客户——他们大概在什么行业、什么规模、处在什么发展阶段，有什么共同的特征？说得越具体，后面这份计划书就越有说服力。", "主要是个人消费者": "请详细描述一下您的目标客户——他们大概是什么年龄、什么职业、什么生活状态，有什么共同的特征和偏好？说得越具体，后面这份计划书就越有说服力。", "两者都有，是平台或者双边模式": "您这是双边模式，那我们分开说，一类一类来。\n第一格标签：第一类客户是谁？他们大概有什么特征？\n第二格标签：第二类客户又是谁？他们有什么特征？" } } },
+      { id: "target_customer", section: "demand", type: "textarea", field: "demand.target_customer", label: "请详细描述一下您的目标客户——他们大概在什么行业、什么规模、处在什么发展阶段，有什么共同的特征？说得越具体，后面这份计划书就越有说服力。", labelByAnswer: { field: "_meta.customer_type", values: { "主要是企业客户": "请详细描述一下您的目标客户——他们大概在什么行业、什么规模、处在什么发展阶段，有什么共同的特征？说得越具体，后面这份计划书就越有说服力。", "主要是个人消费者": "请详细描述一下您的目标客户——他们大概是什么年龄、什么职业、什么生活状态，有什么共同的特征和偏好？说得越具体，后面这份计划书就越有说服力。", "两者都有，是平台或者双边模式": "您这是双边模式，那我们分开说，一类一类来。" } } },
       { id: "pain_points", section: "demand", type: "card-list", field: "demand.pain_points", label: "接下来是最关键的一部分。请您说一说，您的目标客户在什么样的场景下，会遇到什么样的痛点？如果有多个，最多可以说三个。", minCards: 1, maxCards: 3, fields: [
         { id: "description", label: "客户在什么场景下，遇到了什么问题？", type: "textarea" },
         { id: "why_rigid_demand", label: "这个问题他们现在是怎么解决的？为什么现在解决得不够好？", type: "textarea" },

@@ -209,7 +209,7 @@ export default function Home() {
                 </p>
                 <div className="mt-[22px] flex flex-wrap items-center gap-5">
                   <Button asChild className="rounded-[11px] px-[30px] py-[14px] text-[16px]">
-                    <Link href="/diagnosis">开始诊断 →</Link>
+                    <Link href="/diagnosis/conversation">开始诊断 →</Link>
                   </Button>
                 </div>
 
