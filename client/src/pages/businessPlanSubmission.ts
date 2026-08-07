@@ -1,14 +1,12 @@
 import type {
   BPField,
   BPQuestion,
-  BPScoreMatrixQuestion,
   BPTextQuestion,
 } from "./businessPlanQuestionnaire";
 import { BUSINESS_PLAN_QUESTIONS } from "./businessPlanQuestionnaire";
 import type {
   BusinessPlanDraftAnswer,
   BusinessPlanDraftRow,
-  BusinessPlanScoreMatrixAnswer,
 } from "@/lib/businessPlanDraft";
 
 export type BusinessPlanAnswers = Record<string, BusinessPlanDraftAnswer>;
@@ -23,14 +21,6 @@ export type BusinessPlanValidationResult = {
   errors: BusinessPlanValidationError[];
   warnings: string[];
 };
-
-// 临时限制：这是引擎侧放宽 1-3 条之前的临时限制；引擎放宽后删除即可恢复 1-3 条。
-const TEMP_REQUIRE_EXACTLY_THREE = new Set([
-  "demand.pain_points",
-  "product_model.core_values",
-  "competition.differentiations",
-  "product_model.solutions",
-]);
 
 const NUMERIC_TEXT_FIELDS = new Set([
   "product_model.gross_margin",
@@ -90,9 +80,6 @@ export function validateBusinessPlanQuestion(
 
   if (question.type === "card-list") {
     const rows = rowsFor(answers, question.field);
-    if (TEMP_REQUIRE_EXACTLY_THREE.has(question.field) && rows.length !== 3) {
-      return { questionId: question.id, path: questionField, message: "目前需要填满 3 条" };
-    }
     const min = question.minCards ?? 1;
     const max = question.maxCards ?? Number.POSITIVE_INFINITY;
     if (rows.length < min || rows.length > max) {
@@ -123,19 +110,6 @@ export function validateBusinessPlanQuestion(
       : null;
   }
 
-  const scoreQuestion = question as BPScoreMatrixQuestion;
-  const matrix = answers[scoreQuestion.field] as BusinessPlanScoreMatrixAnswer | undefined;
-  const columns = matrix?.columns ?? [];
-  const minColumns = (scoreQuestion.minColumns ?? 0) + 1;
-  const maxColumns = (scoreQuestion.maxColumns ?? Number.POSITIVE_INFINITY) + 1;
-  if (columns.length < minColumns || columns.length > maxColumns || columns.slice(1).some(column => !isFilled(column))) {
-    return { questionId: scoreQuestion.id, path: scoreQuestion.field, message: "请填写 3-4 家对手（含您的公司列）" };
-  }
-  const scores = matrix?.scores ?? {};
-  const rows = [...scoreQuestion.rows, ...(isFilled(matrix?.customDimension) ? [{ id: "custom", label: matrix!.customDimension! }] : [])];
-  if (rows.some(row => columns.some((_, index) => typeof scores[row.id]?.[String(index)] !== "number"))) {
-    return { questionId: scoreQuestion.id, path: scoreQuestion.field, message: "每个竞争维度都必须完成打分" };
-  }
   return null;
 }
 
@@ -192,6 +166,7 @@ function setNested(target: Record<string, unknown>, path: string, value: unknown
 
 export function buildBusinessPlanIntake(answers: BusinessPlanAnswers): Record<string, unknown> {
   const intake: Record<string, unknown> = {};
+  setNested(intake, "competition.competitors", null);
   for (const question of BUSINESS_PLAN_QUESTIONS) {
     if (question.type === "score-matrix" || question.type === "card-list" || question.type === "table" || question.type === "single") {
       setNested(intake, question.field, answers[question.field]);

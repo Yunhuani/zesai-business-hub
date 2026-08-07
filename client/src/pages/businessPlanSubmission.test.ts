@@ -33,16 +33,45 @@ describe("business plan submission validation", () => {
     expect(result.warnings).toContain("收入来源占比合计应为 100%");
   });
 
-  it("requires exactly three pain points", () => {
+  it("accepts between one and three pain points", () => {
     const question = BUSINESS_PLAN_QUESTIONS.find(item => item.id === "pain_points")!;
-    const result = validateBusinessPlanQuestion(question, {
+    const oneRow = validateBusinessPlanQuestion(question, {
+      "demand.pain_points": [{ description: "a", why_rigid_demand: "b" }],
+    });
+    const threeRows = validateBusinessPlanQuestion(question, {
       "demand.pain_points": [
         { description: "a", why_rigid_demand: "b" },
         { description: "c", why_rigid_demand: "d" },
+        { description: "e", why_rigid_demand: "f" },
       ],
     });
 
-    expect(result?.message).toBe("目前需要填满 3 条");
+    expect(oneRow).toBeNull();
+    expect(threeRows).toBeNull();
+    expect(validateBusinessPlanQuestion(question, { "demand.pain_points": [] })?.message).toContain("1-3");
+    expect(validateBusinessPlanQuestion(question, {
+      "demand.pain_points": [
+        { description: "a", why_rigid_demand: "b" },
+        { description: "c", why_rigid_demand: "d" },
+        { description: "e", why_rigid_demand: "f" },
+        { description: "g", why_rigid_demand: "h" },
+      ],
+    })?.message).toContain("1-3");
+  });
+
+  it("accepts one to three solutions and writes omitted competitors as null", () => {
+    const question = BUSINESS_PLAN_QUESTIONS.find(item => item.id === "solutions")!;
+    const row = { pain_point: "a", solution: "b" };
+
+    expect(validateBusinessPlanQuestion(question, {
+      "demand.pain_points": [row],
+      "product_model.solutions": [row],
+    })).toBeNull();
+    expect(validateBusinessPlanQuestion(question, {
+      "demand.pain_points": [row, row, row, row],
+      "product_model.solutions": [row, row, row, row],
+    })?.message).toContain("1-3");
+    expect(buildBusinessPlanIntake({}).competition).toEqual({ competitors: null });
   });
 
   it("blocks funding percentage mismatch", () => {

@@ -102,7 +102,7 @@ export const BUSINESS_PLAN_SECTIONS: BPSection[] = [
   {
     id: "product", title: "产品与商业模式", intro: "好，客户的问题我们说清楚了。接下来聊聊您是怎么解决的。",
     questions: [
-      { id: "solutions", section: "product", type: "card-list", field: "product_model.solutions", label: "刚才这三个痛点，我们一个一个看，您分别是怎么解决的？", minCards: 1, addable: false, echoFrom: { field: "demand.pain_points", itemField: "description", targetField: "pain_point" }, fields: [
+      { id: "solutions", section: "product", type: "card-list", field: "product_model.solutions", label: "刚才这三个痛点，我们一个一个看，您分别是怎么解决的？", minCards: 1, maxCards: 3, addable: false, echoFrom: { field: "demand.pain_points", itemField: "description", targetField: "pain_point" }, fields: [
         { id: "pain_point", label: "客户痛点", type: "textarea", readonly: true },
         { id: "solution", label: "您是怎么解决的？", type: "textarea" },
       ] },
@@ -169,4 +169,9 @@ export const BUSINESS_PLAN_SECTIONS: BPSection[] = [
   },
 ];
 
-export const BUSINESS_PLAN_QUESTIONS = BUSINESS_PLAN_SECTIONS.flatMap(section => section.questions);
+// Score-matrix 控件存在点击分数后整页白屏的缺陷，待控件重做后恢复。
+export const TEMP_DISABLE_SCORE_MATRIX = true;
+
+export const BUSINESS_PLAN_QUESTIONS = BUSINESS_PLAN_SECTIONS
+  .flatMap(section => section.questions)
+  .filter(question => !(TEMP_DISABLE_SCORE_MATRIX && question.type === "score-matrix"));

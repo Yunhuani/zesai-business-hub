@@ -24,11 +24,12 @@ function createStorage(): Storage {
 }
 
 describe("business plan conversation", () => {
-  it("defines nine sections and all 36 configured questions", () => {
+  it("defines nine sections and exposes 35 active questions", () => {
     expect(BUSINESS_PLAN_SECTIONS).toHaveLength(9);
-    expect(BUSINESS_PLAN_QUESTIONS).toHaveLength(36);
+    expect(BUSINESS_PLAN_QUESTIONS).toHaveLength(35);
+    expect(BUSINESS_PLAN_QUESTIONS.find(question => question.id === "competitors")).toBeUndefined();
     expect(new Set(BUSINESS_PLAN_QUESTIONS.map(question => question.type))).toEqual(
-      new Set(["text", "textarea", "single", "card-list", "score-matrix", "table"])
+      new Set(["text", "textarea", "single", "card-list", "table"])
     );
   });
 

@@ -104,6 +104,10 @@ function asText(value: unknown, fallback = "—"): string {
   return fallback;
 }
 
+function adaptiveGridClass(count: number): string {
+  return count === 1 ? "md:grid-cols-1" : count === 2 ? "md:grid-cols-2" : "md:grid-cols-3";
+}
+
 function formatDate(value: string | null): string {
   const date = value ? new Date(value) : new Date();
   const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
@@ -293,7 +297,7 @@ function ProductModule({
         <ProductArchitecture />
         <div className="mt-5">
           <h3 className="bp-card-title">痛点到解法的转化</h3>
-          <div className="bp-conversion-pair grid gap-3 md:grid-cols-3">
+          <div className={`bp-conversion-pair grid gap-3 ${adaptiveGridClass(solutions.length)}`}>
             {solutions.map((item, index) => (
               <div key={index} className="bp-card p-4">
                 <div className="text-xs text-[var(--ink3)]">
@@ -306,7 +310,7 @@ function ProductModule({
               </div>
             ))}
           </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <div className={`mt-4 grid gap-3 ${adaptiveGridClass(values.length)}`}>
             {values.map((value, index) => (
               <div
                 key={index}
@@ -543,8 +547,13 @@ function CompetitionModule({
   return (
     <>
       {variant === "matrix" ? (
-        <div className="bp-horizontal-scroll bp-card">
-          <table className="w-full min-w-[780px] border-collapse text-center text-xs">
+        competitors.length === 0 ? (
+          <div className="bp-card flex min-h-64 items-center justify-center border-dashed text-sm text-[var(--ink3)]">
+            待补充
+          </div>
+        ) : (
+          <div className="bp-horizontal-scroll bp-card">
+            <table className="w-full min-w-[780px] border-collapse text-center text-xs">
             <thead className="bg-[var(--pri)] text-white">
               <tr>
                 <th className="p-4 text-left">竞争对象</th>
@@ -598,10 +607,11 @@ function CompetitionModule({
                 ))}
               </tr>
             </tbody>
-          </table>
-        </div>
+            </table>
+          </div>
+        )
       ) : (
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className={`grid gap-4 ${adaptiveGridClass(asArray(module.fields.differentiation).length)}`}>
           {asArray(module.fields.differentiation).map((item, index) => (
             <div
               key={index}

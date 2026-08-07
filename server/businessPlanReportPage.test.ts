@@ -88,6 +88,15 @@ describe("business plan report page", () => {
     expect(source).not.toContain("模块结论");
   });
 
+  it("renders variable card columns and a pending competitors state", () => {
+    const source = read("../client/src/pages/BusinessPlanReport.tsx");
+
+    expect(source).toContain("md:grid-cols-1");
+    expect(source).toContain("md:grid-cols-2");
+    expect(source).toContain("competitors.length === 0");
+    expect(source).toContain("待补充");
+  });
+
   it("registers the BP report route without changing the diagnosis route", () => {
     const app = read("../client/src/App.tsx");
 
